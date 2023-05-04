@@ -1,6 +1,6 @@
 package tfhe
 
-import "github.com/sp301415/tfhe/internal/poly"
+import "github.com/sp301415/tfhe/math/poly"
 
 // Evaluater handles homomorphic operation of values.
 // This is meant to be public.

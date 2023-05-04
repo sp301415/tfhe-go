@@ -4,14 +4,12 @@ import (
 	"math"
 )
 
-// FFT calculates the Fourier Transform of src, and stores it in dst & returns it.
-// If dst == nil, it allocates a new complex128 slice and returns it.
+// FFT calculates the Fourier Transform of src, and stores it to dst.
 func (e Evaluater[T]) FFT(src []float64, dst []complex128) {
 	e.fft.Coefficients(dst, src)
 }
 
-// InvFFT calculates the Inverse Fourier Transform of src, and stores it in dst & returns it.
-// If dst == nil, it allocates a new complex128 slice and returns it.
+// InvFFT calculates the Inverse Fourier Transform of src, and stores it to dst.
 func (e Evaluater[T]) InvFFT(src []complex128, dst []float64) {
 	e.fft.Sequence(dst, src)
 

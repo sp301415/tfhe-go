@@ -1,10 +1,10 @@
 package tfhe
 
 import (
-	"github.com/sp301415/tfhe/internal/num"
-	"github.com/sp301415/tfhe/internal/poly"
-	"github.com/sp301415/tfhe/internal/rand"
-	"github.com/sp301415/tfhe/internal/vec"
+	"github.com/sp301415/tfhe/math/num"
+	"github.com/sp301415/tfhe/math/poly"
+	"github.com/sp301415/tfhe/math/rand"
+	"github.com/sp301415/tfhe/math/vec"
 )
 
 // Encrypter encrypts and decrypts values.
@@ -29,32 +29,16 @@ func NewEncrypter[T Tint](params Parameters[T]) Encrypter[T] {
 	glweSampler := rand.GaussianSampler[T]{StdDev: params.GLWEStdDev}
 
 	// Sample binary LWE key
-	lweKey := NewLWESecretKey(params)
-	for i := 0; i < lweKey.Len(); i += 32 {
-		buf := uniformSampler.Sample()
-		for j := 0; j < 32; j++ {
-			idx := i + j
-			if idx > lweKey.Len()-1 {
-				break
-			}
-			lweKey.value[idx] = (buf >> j) & 1
-		}
+	lweKey := LWESecretKey[T]{
+		body: uniformSampler.SampleBinarySlice(params.LWEDimension),
 	}
 
 	// Sample binary GLWE key
-	glweKey := NewGLWESecretKey(params)
-	for i := 0; i < glweKey.Len(); i++ {
-		for j := 0; j < params.PolyDegree; j += 32 {
-			buf := uniformSampler.Sample()
-			for k := 0; k < 32; k++ {
-				idx := j + k
-				if idx > params.PolyDegree {
-					break
-				}
-				glweKey.value[i].Coeffs[idx] = (buf >> k) & 1
-			}
-		}
+	glweKeyBody := make([]poly.Poly[T], params.GLWEDimension)
+	for i := 0; i < params.GLWEDimension; i++ {
+		glweKeyBody[i] = poly.Poly[T]{Coeffs: uniformSampler.SampleBinarySlice(params.PolyDegree)}
 	}
+	glweKey := GLWESecretKey[T]{body: glweKeyBody}
 
 	return Encrypter[T]{
 		params: params,
@@ -75,6 +59,11 @@ func (e Encrypter[T]) LWESecretKey() LWESecretKey[T] {
 	return e.lweKey.Copy()
 }
 
+// GLWESecretKey returns a copy of GLWE secret key.
+func (e Encrypter[T]) GLWESecretKey() GLWESecretKey[T] {
+	return e.glweKey.Copy()
+}
+
 // EncryptLWE encrypts the message to LWE ciphertext.
 //
 //	WARNING: This does not handle overflow.
@@ -82,11 +71,8 @@ func (e Encrypter[T]) EncryptLWE(msg int) LWECiphertext[T] {
 	pt := T(msg * e.params.Delta)
 
 	// ct = (a_1, ..., a_n, b = <a, s> + Δm + e)
-	ct := NewLWECiphertext(e.params)
-	for i := 0; i < e.params.LWEDimension; i++ {
-		ct.value[i] = e.uniformSampler.Sample()
-	}
-	ct.value[ct.Len()-1] = vec.Dot(ct.mask(), e.lweKey.value) + pt + e.lweSampler.Sample()
+	ct := LWECiphertext[T]{body: e.uniformSampler.SampleSlice(e.params.LWEDimension)}
+	ct.mask = vec.Dot(ct.body, e.lweKey.body) + pt + e.lweSampler.Sample()
 
 	return ct
 }
@@ -96,7 +82,7 @@ func (e Encrypter[T]) EncryptLWE(msg int) LWECiphertext[T] {
 //	WARNING: This does not handle overflow.
 func (e Encrypter[T]) DecryptLWE(ct LWECiphertext[T]) int {
 	// msg = round(b - <a, s> / Delta)
-	pt := ct.body() - vec.Dot(ct.mask(), e.lweKey.value)
+	pt := ct.mask - vec.Dot(ct.body, e.lweKey.body)
 	msg := int(num.RoundRatio(pt, T(e.params.Delta)))
 
 	return msg
@@ -116,21 +102,14 @@ func (e Encrypter[T]) EncryptGLWE(msgs []int) GLWECiphertext[T] {
 	// ct = (a_1, ..., a_k, b = sum a*s + Δm + e)
 	ct := NewGLWECiphertext(e.params)
 	for i := 0; i < e.params.GLWEDimension; i++ {
-		for j := 0; j < e.params.PolyDegree; j++ {
-			ct.value[i].Coeffs[j] = e.uniformSampler.Sample()
-		}
+		ct.body[i] = poly.Poly[T]{Coeffs: e.uniformSampler.SampleSlice(e.params.PolyDegree)}
 	}
 
 	for i := 0; i < e.params.GLWEDimension; i++ {
-		e.polyEvaluator.MulAddAssign(ct.value[i], e.glweKey.value[i], ct.value[ct.Len()-1])
+		e.polyEvaluator.MulAddAssign(ct.body[i], e.glweKey.body[i], ct.mask)
 	}
-	e.polyEvaluator.AddAssign(pt, ct.value[ct.Len()-1])
-
-	err := poly.New[T](e.params.PolyDegree)
-	for i := range err.Coeffs {
-		err.Coeffs[i] = e.glweSampler.Sample()
-	}
-	e.polyEvaluator.AddAssign(err, ct.value[ct.Len()-1])
+	e.polyEvaluator.AddAssign(pt, ct.mask)
+	e.polyEvaluator.AddAssign(poly.Poly[T]{Coeffs: e.glweSampler.SampleSlice(e.params.PolyDegree)}, ct.mask)
 
 	return ct
 }
@@ -140,9 +119,9 @@ func (e Encrypter[T]) EncryptGLWE(msgs []int) GLWECiphertext[T] {
 //	WARNING: This does not handle overflow.
 func (e Encrypter[T]) DecryptGLWE(ct GLWECiphertext[T]) []int {
 	// msg = round(b - sum a*s / Delta)
-	pt := ct.body().Copy()
+	pt := ct.mask.Copy()
 	for i := 0; i < e.params.GLWEDimension; i++ {
-		e.polyEvaluator.MulSubAssign(ct.value[i], e.glweKey.value[i], pt)
+		e.polyEvaluator.MulSubAssign(ct.body[i], e.glweKey.body[i], pt)
 	}
 
 	msgs := make([]int, e.params.PolyDegree)

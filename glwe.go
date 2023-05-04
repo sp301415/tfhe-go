@@ -1,12 +1,12 @@
 package tfhe
 
 import (
-	"github.com/sp301415/tfhe/internal/poly"
+	"github.com/sp301415/tfhe/math/poly"
 )
 
 // GLWESecretKey is a GLWE secret key, sampled from uniform binary distribution.
 type GLWESecretKey[T Tint] struct {
-	value []poly.Poly[T]
+	body []poly.Poly[T]
 }
 
 // NewGLWESecretKey allocates an empty GLWESecretKey.
@@ -15,35 +15,35 @@ func NewGLWESecretKey[T Tint](params Parameters[T]) GLWESecretKey[T] {
 	for i := range polys {
 		polys[i] = poly.New[T](params.PolyDegree)
 	}
-	return GLWESecretKey[T]{value: polys}
+	return GLWESecretKey[T]{body: polys}
 }
 
 // Copy returns a copy of the key.
 func (sk GLWESecretKey[T]) Copy() GLWESecretKey[T] {
 	polys := make([]poly.Poly[T], sk.Len())
 	for i := range polys {
-		polys[i] = sk.value[i].Copy()
+		polys[i] = sk.body[i].Copy()
 	}
-	return GLWESecretKey[T]{value: polys}
+	return GLWESecretKey[T]{body: polys}
 }
 
 // Len returns the length of the key.
 func (sk GLWESecretKey[T]) Len() int {
-	return len(sk.value)
+	return len(sk.body)
 }
 
 // Degree returns the polynomial degree of elements of the key.
 func (sk GLWESecretKey[T]) Degree() int {
-	return sk.value[0].Degree()
+	return sk.body[0].Degree()
 }
 
 // ToLWESecretKey returns a new LWE secret key derived from the GLWE secret key.
 func (sk GLWESecretKey[T]) ToLWESecretKey() LWESecretKey[T] {
 	values := make([]T, sk.Len()*sk.Degree())
 	for i := 0; i < sk.Len(); i++ {
-		copy(values[i*sk.Degree():], sk.value[i].Coeffs)
+		copy(values[i*sk.Degree():], sk.body[i].Coeffs)
 	}
-	return LWESecretKey[T]{value: values}
+	return LWESecretKey[T]{body: values}
 }
 
 // GLWEPlaintext represents an encoded GLWE plaintext.
@@ -58,45 +58,40 @@ func (pt GLWEPlaintext[T]) Copy() GLWEPlaintext[T] {
 
 // GLWECiphertext represents an encrypted GLWE ciphertext.
 type GLWECiphertext[T Tint] struct {
-	value []poly.Poly[T]
+	body []poly.Poly[T]
+	mask poly.Poly[T]
 }
 
 // NewGLWECiphertext allocates an empty GLWECiphertext.
 func NewGLWECiphertext[T Tint](params Parameters[T]) GLWECiphertext[T] {
-	polys := make([]poly.Poly[T], params.GLWEDimension+1)
+	polys := make([]poly.Poly[T], params.GLWEDimension)
 	for i := range polys {
 		polys[i] = poly.New[T](params.PolyDegree)
 	}
-	return GLWECiphertext[T]{value: polys}
+	return GLWECiphertext[T]{body: polys, mask: poly.New[T](params.PolyDegree)}
 }
 
 // Copy returns a copy of the ciphertext.
 func (ct GLWECiphertext[T]) Copy() GLWECiphertext[T] {
 	polys := make([]poly.Poly[T], ct.Len())
 	for i := range polys {
-		polys[i] = ct.value[i].Copy()
+		polys[i] = ct.body[i].Copy()
 	}
-	return GLWECiphertext[T]{value: polys}
+	return GLWECiphertext[T]{body: polys, mask: ct.mask.Copy()}
 }
 
 // Len returns the length of the ciphertext.
 func (ct GLWECiphertext[T]) Len() int {
-	return len(ct.value)
+	return len(ct.body) + 1
 }
 
 // Degree returns the polynomial degree of elements of the ciphertext.
 func (ct GLWECiphertext[T]) Degree() int {
-	return ct.value[0].Degree()
+	return ct.body[0].Degree()
 }
 
-// mask returns the first LWEDimension subslice of this ciphertext.
-// This corresponds to the "a" part of the ciphertext.
-func (ct GLWECiphertext[T]) mask() []poly.Poly[T] {
-	return ct.value[:ct.Len()-1]
-}
-
-// body returns the last element of this ciphertext.
-// This corresponds to the "b" part of the ciphertext.
-func (ct GLWECiphertext[T]) body() poly.Poly[T] {
-	return ct.value[ct.Len()-1]
+// asSlice returns the slice containing body + mask.
+// This is intended to be read-only.
+func (ct GLWECiphertext[T]) asSlice() []poly.Poly[T] {
+	return append(ct.body, ct.mask)
 }

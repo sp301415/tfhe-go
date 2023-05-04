@@ -1,18 +1,12 @@
 package poly
 
 import (
-	"github.com/sp301415/tfhe/internal/num"
+	"github.com/sp301415/tfhe/math/num"
 	"golang.org/x/exp/constraints"
 	"golang.org/x/exp/slices"
 )
 
 // Poly represents the polynomial modulo X^N + 1. N should be power of two.
-//
-// Operations on polynomial has three types. For example, for addition,
-//
-//   - poly.Add(a, b Poly) Poly returns the new polynomial p = a + b.
-//   - p.Add(a, b) assigns a + b to p. No memory allocation is performed.
-//   - p.AddAssign(a) assigns p + a to p. No memory allocation is performed.
 type Poly[T constraints.Integer] struct {
 	Coeffs []T
 }

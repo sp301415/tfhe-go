@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"math"
 
+	"github.com/sp301415/tfhe/math/num"
 	"golang.org/x/exp/constraints"
 )
 
@@ -39,4 +40,29 @@ func (s UniformSampler[T]) SampleRange(a, b T) T {
 			return T(res%max) + a
 		}
 	}
+}
+
+// SampleVec uniformly samples a length n slice.
+func (s UniformSampler[T]) SampleSlice(n int) []T {
+	samples := make([]T, n)
+	for i := range samples {
+		samples[i] = s.Sample()
+	}
+	return samples
+}
+
+// SampleBinarySlice uniformly samples a length n binary slice.
+func (s UniformSampler[T]) SampleBinarySlice(n int) []T {
+	l := num.Log2(num.MaxT[T]())
+	samples := make([]T, n)
+	for i := 0; i < n; i += l {
+		for j := 0; j < l; j++ {
+			idx := i + j
+			if idx >= n {
+				break
+			}
+			samples[idx] = (s.Sample() >> j) & 1
+		}
+	}
+	return samples
 }

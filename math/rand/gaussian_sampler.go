@@ -8,7 +8,7 @@ import (
 	"encoding/binary"
 	"math"
 
-	"github.com/sp301415/tfhe/internal/num"
+	"github.com/sp301415/tfhe/math/num"
 	"golang.org/x/exp/constraints"
 )
 
@@ -176,4 +176,13 @@ func (s GaussianSampler[T]) Sample() T {
 			return T(sample)
 		}
 	}
+}
+
+// SampleSlice returns a length n gaussian slice.
+func (s GaussianSampler[T]) SampleSlice(n int) []T {
+	samples := make([]T, n)
+	for i := range samples {
+		samples[i] = s.Sample()
+	}
+	return samples
 }

@@ -4,7 +4,7 @@ import (
 	"math"
 	"math/cmplx"
 
-	"github.com/sp301415/tfhe/internal/num"
+	"github.com/sp301415/tfhe/math/num"
 	"golang.org/x/exp/constraints"
 	"gonum.org/v1/gonum/dsp/fourier"
 )
@@ -44,7 +44,8 @@ type Evaluater[T constraints.Integer] struct {
 	buffp1c []complex128
 }
 
-// NewEvaluater creates a new Evaluater from N.
+// NewEvaluater creates a new Evaluater with degree N.
+// N should be power of two.
 func NewEvaluater[T constraints.Integer](N int) Evaluater[T] {
 	if !num.IsPowerOfTwo(N) {
 		panic("degree should be power of two")
