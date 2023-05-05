@@ -15,19 +15,19 @@ type Poly[T constraints.Integer] struct {
 // N should be power of two.
 func New[T constraints.Integer](N int) Poly[T] {
 	if !num.IsPowerOfTwo(N) {
-		panic("degree should be power of two")
+		panic("degree not power of two")
 
 	}
 	return Poly[T]{Coeffs: make([]T, N)}
 }
 
-// From copies the slice, and creates a polynomial from it.
-// Length of the slice should be power of two.
+// From creates a new polynomial from given coefficient slice.
+// This function has potential side effects, as it does not copy the slice.
 func From[T constraints.Integer](coeffs []T) Poly[T] {
 	if !num.IsPowerOfTwo(len(coeffs)) {
-		panic("degree should be power of two")
+		panic("degree not power of two")
 	}
-	return Poly[T]{Coeffs: slices.Clone(coeffs)}
+	return Poly[T]{Coeffs: coeffs}
 }
 
 // Copy returns a copy of the polynomial.

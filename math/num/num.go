@@ -47,8 +47,9 @@ func MaxT[T constraints.Integer]() uint64 {
 }
 
 // IsPowerOfTwo returns whether x is a power of two.
+// If x <= 0, it always returns false.
 func IsPowerOfTwo[T constraints.Integer](x T) bool {
-	return (x != 0) && (x&(x-1)) == 0
+	return (x > 0) && (x&(x-1)) == 0
 }
 
 // Log2 returns floor(log2(x)).

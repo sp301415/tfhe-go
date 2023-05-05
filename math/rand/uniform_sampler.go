@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"math"
 
-	"github.com/sp301415/tfhe/math/num"
+	"github.com/sp301415/tfhe/math/poly"
 	"golang.org/x/exp/constraints"
 )
 
@@ -19,9 +19,14 @@ func (s UniformSampler[T]) Read(b []byte) (n int, err error) {
 }
 
 // Sample uniformly samples a random integer.
+// Panics when error occurs from crypto/rand.Read(), but this is highly unlikely.
 func (s UniformSampler[T]) Sample() T {
 	var sample T
-	binary.Read(s, binary.BigEndian, &sample)
+	err := binary.Read(s, binary.BigEndian, &sample)
+	if err != nil {
+		panic(err)
+	}
+
 	return sample
 }
 
@@ -42,27 +47,17 @@ func (s UniformSampler[T]) SampleRange(a, b T) T {
 	}
 }
 
-// SampleVec uniformly samples a length n slice.
+// SampleSlice returns a slice of length n from uniform distribuition.
 func (s UniformSampler[T]) SampleSlice(n int) []T {
-	samples := make([]T, n)
-	for i := range samples {
-		samples[i] = s.Sample()
+	vec := make([]T, n)
+	for i := range vec {
+		vec[i] = s.Sample()
 	}
-	return samples
+	return vec
 }
 
-// SampleBinarySlice uniformly samples a length n binary slice.
-func (s UniformSampler[T]) SampleBinarySlice(n int) []T {
-	l := num.Log2(num.MaxT[T]())
-	samples := make([]T, n)
-	for i := 0; i < n; i += l {
-		for j := 0; j < l; j++ {
-			idx := i + j
-			if idx >= n {
-				break
-			}
-			samples[idx] = (s.Sample() >> j) & 1
-		}
-	}
-	return samples
+// SamplePoly returns a polynomial of degree N from uniform distribution.
+// N should be power of two.
+func (s UniformSampler[T]) SamplePoly(N int) poly.Poly[T] {
+	return poly.From(s.SampleSlice(N))
 }

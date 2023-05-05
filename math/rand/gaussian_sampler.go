@@ -9,6 +9,7 @@ import (
 	"math"
 
 	"github.com/sp301415/tfhe/math/num"
+	"github.com/sp301415/tfhe/math/poly"
 	"golang.org/x/exp/constraints"
 )
 
@@ -178,11 +179,17 @@ func (s GaussianSampler[T]) Sample() T {
 	}
 }
 
-// SampleSlice returns a length n gaussian slice.
+// SampleSlice returns a slice of length n from discrete gaussian distribution.
 func (s GaussianSampler[T]) SampleSlice(n int) []T {
-	samples := make([]T, n)
-	for i := range samples {
-		samples[i] = s.Sample()
+	vec := make([]T, n)
+	for i := range vec {
+		vec[i] = s.Sample()
 	}
-	return samples
+	return vec
+}
+
+// SamplePoly returns a polynomial of degree N from discrete gaussian distribution.
+// N should be power of two.
+func (s GaussianSampler[T]) SamplePoly(N int) poly.Poly[T] {
+	return poly.From(s.SampleSlice(N))
 }

@@ -9,7 +9,7 @@ type LWESecretKey[T Tint] struct {
 
 // NewLWESecretKey allocates an empty LWESecretKey.
 func NewLWESecretKey[T Tint](params Parameters[T]) LWESecretKey[T] {
-	return LWESecretKey[T]{body: make([]T, params.LWEDimension)}
+	return LWESecretKey[T]{body: make([]T, params.lweDimension)}
 }
 
 // Copy returns a copy of the key.
@@ -33,6 +33,8 @@ func (pt LWEPlaintext[T]) Copy() LWEPlaintext[T] {
 }
 
 // LWECiphertext represents an encrypted LWE ciphertext.
+//
+// LWE ciphertexts are the default encrypted form of the ciphertext.
 type LWECiphertext[T Tint] struct {
 	body []T
 	mask T
@@ -41,7 +43,7 @@ type LWECiphertext[T Tint] struct {
 // NewLWECiphertext allocates an empty LWECiphertext.
 func NewLWECiphertext[T Tint](params Parameters[T]) LWECiphertext[T] {
 	// mask is intentionally empty; defaults to zero value.
-	return LWECiphertext[T]{body: make([]T, params.LWEDimension, params.LWEDimension+1)}
+	return LWECiphertext[T]{body: make([]T, params.lweDimension)}
 }
 
 // Copy returns a copy of the ciphertext.

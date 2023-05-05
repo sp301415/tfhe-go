@@ -11,9 +11,9 @@ type GLWESecretKey[T Tint] struct {
 
 // NewGLWESecretKey allocates an empty GLWESecretKey.
 func NewGLWESecretKey[T Tint](params Parameters[T]) GLWESecretKey[T] {
-	polys := make([]poly.Poly[T], params.GLWEDimension)
+	polys := make([]poly.Poly[T], params.glweDimension)
 	for i := range polys {
-		polys[i] = poly.New[T](params.PolyDegree)
+		polys[i] = poly.New[T](params.polyDegree)
 	}
 	return GLWESecretKey[T]{body: polys}
 }
@@ -51,6 +51,11 @@ type GLWEPlaintext[T Tint] struct {
 	value poly.Poly[T]
 }
 
+// NewGLWEPlaintext allocates an empty GLWEPlaintext.
+func NewGLWEPlaintext[T Tint](params Parameters[T]) GLWEPlaintext[T] {
+	return GLWEPlaintext[T]{value: poly.New[T](params.polyDegree)}
+}
+
 // Copy returns a copy of the plaintext.
 func (pt GLWEPlaintext[T]) Copy() GLWEPlaintext[T] {
 	return GLWEPlaintext[T]{value: pt.value.Copy()}
@@ -64,11 +69,11 @@ type GLWECiphertext[T Tint] struct {
 
 // NewGLWECiphertext allocates an empty GLWECiphertext.
 func NewGLWECiphertext[T Tint](params Parameters[T]) GLWECiphertext[T] {
-	polys := make([]poly.Poly[T], params.GLWEDimension)
+	polys := make([]poly.Poly[T], params.glweDimension)
 	for i := range polys {
-		polys[i] = poly.New[T](params.PolyDegree)
+		polys[i] = poly.New[T](params.polyDegree)
 	}
-	return GLWECiphertext[T]{body: polys, mask: poly.New[T](params.PolyDegree)}
+	return GLWECiphertext[T]{body: polys, mask: poly.New[T](params.polyDegree)}
 }
 
 // Copy returns a copy of the ciphertext.

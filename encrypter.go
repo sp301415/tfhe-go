@@ -1,10 +1,19 @@
 package tfhe
 
 import (
+	"errors"
+
 	"github.com/sp301415/tfhe/math/num"
 	"github.com/sp301415/tfhe/math/poly"
 	"github.com/sp301415/tfhe/math/rand"
 	"github.com/sp301415/tfhe/math/vec"
+)
+
+var (
+	// ErrMessageOutOfBound is returned when the encrypting message is too large for the given parameters.
+	ErrMessageOutOfBound = errors.New("message out of bound")
+	// ErrTooManyMessages is returned when the message cannot be packed into one GLWE plaintext because len(messages) > params.PolyDegree.
+	ErrTooManyMessages = errors.New("too many messages to pack")
 )
 
 // Encrypter encrypts and decrypts values.
@@ -13,6 +22,7 @@ type Encrypter[T Tint] struct {
 	params Parameters[T]
 
 	uniformSampler rand.UniformSampler[T]
+	binarySampler  rand.BinarySampler[T]
 	lweSampler     rand.GaussianSampler[T]
 	glweSampler    rand.GaussianSampler[T]
 
@@ -25,18 +35,17 @@ type Encrypter[T Tint] struct {
 // NewEncrypter returns the initialized encrypter with given parameters.
 func NewEncrypter[T Tint](params Parameters[T]) Encrypter[T] {
 	uniformSampler := rand.UniformSampler[T]{}
-	lweSampler := rand.GaussianSampler[T]{StdDev: params.LWEStdDev}
-	glweSampler := rand.GaussianSampler[T]{StdDev: params.GLWEStdDev}
+	binarySampler := rand.BinarySampler[T]{}
+	lweSampler := rand.GaussianSampler[T]{StdDev: params.lweStdDev}
+	glweSampler := rand.GaussianSampler[T]{StdDev: params.glweStdDev}
 
 	// Sample binary LWE key
-	lweKey := LWESecretKey[T]{
-		body: uniformSampler.SampleBinarySlice(params.LWEDimension),
-	}
+	lweKey := LWESecretKey[T]{body: binarySampler.SampleSlice(params.lweDimension)}
 
 	// Sample binary GLWE key
-	glweKeyBody := make([]poly.Poly[T], params.GLWEDimension)
-	for i := 0; i < params.GLWEDimension; i++ {
-		glweKeyBody[i] = poly.Poly[T]{Coeffs: uniformSampler.SampleBinarySlice(params.PolyDegree)}
+	glweKeyBody := make([]poly.Poly[T], params.glweDimension)
+	for i := 0; i < params.glweDimension; i++ {
+		glweKeyBody[i] = binarySampler.SamplePoly(params.polyDegree)
 	}
 	glweKey := GLWESecretKey[T]{body: glweKeyBody}
 
@@ -47,7 +56,7 @@ func NewEncrypter[T Tint](params Parameters[T]) Encrypter[T] {
 		lweSampler:     lweSampler,
 		glweSampler:    glweSampler,
 
-		polyEvaluator: poly.NewEvaluater[T](params.PolyDegree),
+		polyEvaluator: poly.NewEvaluater[T](params.polyDegree),
 
 		lweKey:  lweKey,
 		glweKey: glweKey,
@@ -64,69 +73,116 @@ func (e Encrypter[T]) GLWESecretKey() GLWESecretKey[T] {
 	return e.glweKey.Copy()
 }
 
-// EncryptLWE encrypts the message to LWE ciphertext.
-//
-//	WARNING: This does not handle overflow.
-func (e Encrypter[T]) EncryptLWE(msg int) LWECiphertext[T] {
-	pt := T(msg * e.params.Delta)
+// Encrypt encrypts the integer message to LWE ciphertext.
+// The bound of the encryptable message is determined by the paramter's MessageModulus.
+// If message < 0 or message >= MessageModulus, ErrMessageOutOfBound error is returned.
+func (e Encrypter[T]) Encrypt(message int) (LWECiphertext[T], error) {
+	if message < 0 || uint64(message) > uint64(e.params.messageModulus) {
+		return LWECiphertext[T]{}, ErrMessageOutOfBound
+	}
 
-	// ct = (a_1, ..., a_n, b = <a, s> + Δm + e)
-	ct := LWECiphertext[T]{body: e.uniformSampler.SampleSlice(e.params.LWEDimension)}
-	ct.mask = vec.Dot(ct.body, e.lweKey.body) + pt + e.lweSampler.Sample()
+	pt := LWEPlaintext[T]{value: T(message) * e.params.delta}
+	return e.EncryptLWE(pt), nil
+}
+
+// MustEncrypt is equivalant to Encrypt, but it panics instead of returning error.
+func (e Encrypter[T]) MustEncrypt(message int) LWECiphertext[T] {
+	ct, err := e.Encrypt(message)
+	if err != nil {
+		panic(err)
+	}
+	return ct
+}
+
+// EncryptLWE encrypts a LWE plaintext to LWE ciphertext.
+func (e Encrypter[T]) EncryptLWE(pt LWEPlaintext[T]) LWECiphertext[T] {
+	// ct = (a_1, ..., a_n, b = <a, s> + pt + e)
+	ct := LWECiphertext[T]{body: e.uniformSampler.SampleSlice(e.params.lweDimension)}
+	ct.mask = vec.Dot(ct.body, e.lweKey.body) + pt.value + e.lweSampler.Sample()
 
 	return ct
 }
 
-// DecryptLWE decrypts the LWE ciphertext to message.
-//
-//	WARNING: This does not handle overflow.
-func (e Encrypter[T]) DecryptLWE(ct LWECiphertext[T]) int {
-	// msg = round(b - <a, s> / Delta)
-	pt := ct.mask - vec.Dot(ct.body, e.lweKey.body)
-	msg := int(num.RoundRatio(pt, T(e.params.Delta)))
-
-	return msg
+// Decrypt decrypts a LWE ciphertext to integer message.
+// Decrypt always succeeds, even though the decrypted value could be wrong.
+func (e Encrypter[T]) Decrypt(ct LWECiphertext[T]) int {
+	pt := e.DecryptLWE(ct)
+	message := int(num.RoundRatio(pt.value, e.params.delta))
+	return message
 }
 
-// EncryptGLWE encrypts the packed messages to GLWE ciphertext.
-func (e Encrypter[T]) EncryptGLWE(msgs []int) GLWECiphertext[T] {
-	if len(msgs) > e.params.PolyDegree {
-		panic("too many messages")
+// DecryptLWE decrypts a LWE ciphertext to LWE plaintext.
+func (e Encrypter[T]) DecryptLWE(ct LWECiphertext[T]) LWEPlaintext[T] {
+	// pt = b - <a, s>
+	pt := ct.mask - vec.Dot(ct.body, e.lweKey.body)
+	return LWEPlaintext[T]{value: pt}
+}
+
+// EncryptPacked encrypts up to params.PolyDegree integer messages into one GLWE ciphertext.
+// However, there are not much to do with GLWE ciphertext, so this is only useful
+// when you want to reduce communication costs.
+//
+// If message < 0 or message >= MessageModulus, ErrMessageOutOfBound error is returned.
+// If len(messages) > params.PolyDegree, ErrTooManyMessages error is returned.
+func (e Encrypter[T]) EncryptPacked(messages []int) (GLWECiphertext[T], error) {
+	if len(messages) > e.params.polyDegree {
+		return GLWECiphertext[T]{}, ErrTooManyMessages
 	}
 
-	pt := poly.New[T](e.params.PolyDegree)
-	for i, m := range msgs {
-		pt.Coeffs[i] = T(m * e.params.Delta)
+	pt := NewGLWEPlaintext(e.params)
+	for i, message := range messages {
+		if message < 0 || uint64(message) > uint64(e.params.messageModulus) {
+			return GLWECiphertext[T]{}, ErrMessageOutOfBound
+		}
+		pt.value.Coeffs[i] = T(message) * e.params.delta
 	}
 
-	// ct = (a_1, ..., a_k, b = sum a*s + Δm + e)
-	ct := NewGLWECiphertext(e.params)
-	for i := 0; i < e.params.GLWEDimension; i++ {
-		ct.body[i] = poly.Poly[T]{Coeffs: e.uniformSampler.SampleSlice(e.params.PolyDegree)}
+	return e.EncryptGLWE(pt), nil
+}
+
+// MustEncryptPacked is equivalant to EncryptPacked, but it panics instead of returning error.
+func (e Encrypter[T]) MustEncryptPacked(messages []int) GLWECiphertext[T] {
+	ct, err := e.EncryptPacked(messages)
+	if err != nil {
+		panic(err)
+	}
+	return ct
+}
+
+// EncryptGLWE encrypts a GLWE plaintext to GLWE ciphertext.
+func (e Encrypter[T]) EncryptGLWE(pt GLWEPlaintext[T]) GLWECiphertext[T] {
+	// ct = (a_1, ..., a_k, b = sum a*s + pt + e)
+	ct := GLWECiphertext[T]{body: make([]poly.Poly[T], e.params.glweDimension), mask: poly.New[T](e.params.polyDegree)}
+	for i := 0; i < e.params.glweDimension; i++ {
+		ct.body[i] = e.uniformSampler.SamplePoly(e.params.polyDegree)
 	}
 
-	for i := 0; i < e.params.GLWEDimension; i++ {
+	for i := 0; i < e.params.glweDimension; i++ {
 		e.polyEvaluator.MulAddAssign(ct.body[i], e.glweKey.body[i], ct.mask)
 	}
-	e.polyEvaluator.AddAssign(pt, ct.mask)
-	e.polyEvaluator.AddAssign(poly.Poly[T]{Coeffs: e.glweSampler.SampleSlice(e.params.PolyDegree)}, ct.mask)
+	e.polyEvaluator.AddAssign(pt.value, ct.mask)
+	e.polyEvaluator.AddAssign(e.glweSampler.SamplePoly(e.params.polyDegree), ct.mask)
 
 	return ct
 }
 
-// DecryptGLWE decrypts the GLWE ciphertext to slice of messages.
-//
-//	WARNING: This does not handle overflow.
-func (e Encrypter[T]) DecryptGLWE(ct GLWECiphertext[T]) []int {
-	// msg = round(b - sum a*s / Delta)
-	pt := ct.mask.Copy()
-	for i := 0; i < e.params.GLWEDimension; i++ {
-		e.polyEvaluator.MulSubAssign(ct.body[i], e.glweKey.body[i], pt)
-	}
+// DecryptPacked decrypts a GLWE ciphertext to integer messages.
+// Decrypt always succeeds, even though the decrypted value could be wrong.
+func (e Encrypter[T]) DecryptPacked(ct GLWECiphertext[T]) []int {
+	pt := e.DecryptGLWE(ct)
 
-	msgs := make([]int, e.params.PolyDegree)
-	for i := 0; i < e.params.PolyDegree; i++ {
-		msgs[i] = int(num.RoundRatio(pt.Coeffs[i], T(e.params.Delta)))
+	messages := make([]int, e.params.polyDegree)
+	for i := 0; i < e.params.polyDegree; i++ {
+		messages[i] = int(num.RoundRatio(pt.value.Coeffs[i], e.params.delta))
 	}
-	return msgs
+	return messages
+}
+
+// DecryptGLWE decrypts a GLWE ciphertext to GLWE plaintext.
+func (e Encrypter[T]) DecryptGLWE(ct GLWECiphertext[T]) GLWEPlaintext[T] {
+	pt := GLWEPlaintext[T]{value: ct.mask.Copy()}
+	for i := 0; i < e.params.glweDimension; i++ {
+		e.polyEvaluator.MulSubAssign(ct.body[i], e.glweKey.body[i], pt.value)
+	}
+	return pt
 }
