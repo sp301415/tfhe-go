@@ -12,7 +12,7 @@ type Poly[T constraints.Integer] struct {
 }
 
 // NewPoly creates a polynomial with degree N with empty coefficients.
-// N should be power of two.
+// N should be power of two. Otherwise, it panics.
 func New[T constraints.Integer](N int) Poly[T] {
 	if !num.IsPowerOfTwo(N) {
 		panic("degree not power of two")

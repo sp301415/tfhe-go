@@ -3,7 +3,7 @@ package tfhe_test
 import (
 	"testing"
 
-	"github.com/sp301415/tfhe"
+	"github.com/sp301415/tfhe/tfhe"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -53,6 +53,7 @@ func NewEncrypter[T Tint](params Parameters[T]) Encrypter[T] {
 		params: params,
 
 		uniformSampler: uniformSampler,
+		binarySampler:  binarySampler,
 		lweSampler:     lweSampler,
 		glweSampler:    glweSampler,
 

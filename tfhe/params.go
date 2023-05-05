@@ -19,6 +19,7 @@ var (
 		CarryModulus:   1 << 0,
 	}.Compile()
 
+	// ParamsMessage4Carry0 ensures 4 bit of message space and 0 bit of carry space.
 	ParamsMessage4Carry0 = ParametersLiteral[uint64]{
 		LWEDimension:  742,
 		GLWEDimension: 1,

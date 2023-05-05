@@ -63,5 +63,9 @@ func Log2[T constraints.Integer](x T) int {
 
 // RoundRatio returns round(a/b).
 func RoundRatio[T constraints.Integer](a, b T) T {
-	return T(math.Round(float64(a) / float64(b)))
+	ratio := a / b
+	if 2*(a%b) >= b {
+		ratio += 1
+	}
+	return ratio
 }
