@@ -179,17 +179,16 @@ func (s GaussianSampler[T]) Sample() T {
 	}
 }
 
-// SampleSlice returns a slice of length n from discrete gaussian distribution.
-func (s GaussianSampler[T]) SampleSlice(n int) []T {
-	vec := make([]T, n)
-	for i := range vec {
-		vec[i] = s.Sample()
+// SampleSlice samples gaussian values to v.
+func (s GaussianSampler[T]) SampleSlice(v []T) {
+	for i := range v {
+		v[i] = s.Sample()
 	}
-	return vec
 }
 
-// SamplePoly returns a polynomial of degree N from discrete gaussian distribution.
-// N should be power of two.
-func (s GaussianSampler[T]) SamplePoly(N int) poly.Poly[T] {
-	return poly.From(s.SampleSlice(N))
+// SamplePoly samples a polynomial from gaussian distribution.
+func (s GaussianSampler[T]) SamplePoly(p poly.Poly[T]) {
+	for i := range p.Coeffs {
+		p.Coeffs[i] = s.Sample()
+	}
 }

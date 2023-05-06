@@ -87,6 +87,22 @@ func RoundRatio[T constraints.Integer](x, y T) T {
 	return ratio
 }
 
+// RoundRatioBits is a bit-optimzed version of RoundRatio: it computes round(x/2^bits).
+//   - If bits == 0, then it returns x.
+//   - If bits < 0, it panics.
+func RoundRatioBits[T constraints.Integer](x T, bits int) T {
+	if bits == 0 {
+		return x
+	}
+
+	// Compute the ratio
+	ratio := x >> bits
+	// Compute the first decimal: if it is 1, then we should round up
+	decimal := (x >> (bits - 1)) & 1
+	ratio += decimal // Equivalant to if decimal == 1 { ratio += 1 }
+	return ratio
+}
+
 // Gcd returns the GCD(Greatest Common Divisor) of x and y.
 //   - If x = y = 0, Gcd returns 0.
 //   - If x = 0 and y != 0, Gcd returns |y|.

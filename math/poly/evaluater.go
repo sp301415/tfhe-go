@@ -80,13 +80,3 @@ func NewEvaluater[T constraints.Integer](N int) Evaluater[T] {
 func (e Evaluater[T]) Degree() int {
 	return e.degree
 }
-
-// checkDegree checks if polynomials in ps has the same degree as evaluater,
-// and panics if it doesn't.
-func (e Evaluater[T]) checkDegree(ps ...Poly[T]) {
-	for _, p := range ps {
-		if p.Degree() != e.Degree() {
-			panic("degree mismatch")
-		}
-	}
-}

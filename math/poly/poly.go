@@ -36,7 +36,7 @@ func (p Poly[T]) Copy() Poly[T] {
 }
 
 // CopyFrom copies p0 to p.
-func (p *Poly[T]) CopyFrom(p0 Poly[T]) {
+func (p Poly[T]) CopyFrom(p0 Poly[T]) {
 	copy(p.Coeffs, p0.Coeffs)
 }
 
@@ -44,4 +44,11 @@ func (p *Poly[T]) CopyFrom(p0 Poly[T]) {
 // This is equivalent with length of coefficients.
 func (p Poly[T]) Degree() int {
 	return len(p.Coeffs)
+}
+
+// Clear clears all the coefficients to zero.
+func (p Poly[T]) Clear() {
+	for i := range p.Coeffs {
+		p.Coeffs[i] = 0
+	}
 }

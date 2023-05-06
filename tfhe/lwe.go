@@ -37,18 +37,21 @@ func (pt LWEPlaintext[T]) Copy() LWEPlaintext[T] {
 // LWE ciphertexts are the default encrypted form of the ciphertext.
 type LWECiphertext[T Tint] struct {
 	Mask []T
-	Body T
+
+	// Body is a pointer to T, not just T.
+	// This is an ugly hack to match reference-copying behavior of GLWE, etc.
+	Body *T
 }
 
 // NewLWECiphertext allocates an empty LWECiphertext.
 func NewLWECiphertext[T Tint](params Parameters[T]) LWECiphertext[T] {
-	// mask is intentionally empty; defaults to zero value.
-	return LWECiphertext[T]{Mask: make([]T, params.lweDimension)}
+	return LWECiphertext[T]{Mask: make([]T, params.lweDimension), Body: new(T)}
 }
 
 // Copy returns a copy of the ciphertext.
 func (ct LWECiphertext[T]) Copy() LWECiphertext[T] {
-	return LWECiphertext[T]{Mask: slices.Clone(ct.Mask), Body: ct.Body}
+	bodyCopy := *ct.Body
+	return LWECiphertext[T]{Mask: slices.Clone(ct.Mask), Body: &bodyCopy}
 }
 
 // Len returns the length of the ciphertext.

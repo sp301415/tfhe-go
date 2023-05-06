@@ -47,17 +47,16 @@ func (s UniformSampler[T]) SampleRange(a, b T) T {
 	}
 }
 
-// SampleSlice returns a slice of length n from uniform distribuition.
-func (s UniformSampler[T]) SampleSlice(n int) []T {
-	vec := make([]T, n)
-	for i := range vec {
-		vec[i] = s.Sample()
+// SampleSlice samples uniform values to v.
+func (s UniformSampler[T]) SampleSlice(v []T) {
+	for i := range v {
+		v[i] = s.Sample()
 	}
-	return vec
 }
 
-// SamplePoly returns a polynomial of degree N from uniform distribution.
-// N should be power of two.
-func (s UniformSampler[T]) SamplePoly(N int) poly.Poly[T] {
-	return poly.From(s.SampleSlice(N))
+// SamplePoly samples a polynomial from uniform distribution.
+func (s UniformSampler[T]) SamplePoly(p poly.Poly[T]) {
+	for i := range p.Coeffs {
+		p.Coeffs[i] = s.Sample()
+	}
 }

@@ -48,17 +48,16 @@ func (s BinarySampler[T]) Sample() T {
 	return sample
 }
 
-// SampleSlice returns a slice of length n from uniform binary distribuition.
-func (s BinarySampler[T]) SampleSlice(n int) []T {
-	vec := make([]T, n)
-	for i := range vec {
-		vec[i] = s.Sample()
+// SampleSlice samples uniform binary values to v.
+func (s BinarySampler[T]) SampleSlice(v []T) {
+	for i := range v {
+		v[i] = s.Sample()
 	}
-	return vec
 }
 
-// SamplePoly returns a polynomial of degree N from uniform binary distribution.
-// N should be power of two.
-func (s BinarySampler[T]) SamplePoly(N int) poly.Poly[T] {
-	return poly.From(s.SampleSlice(N))
+// SamplePoly samples a polynomial from uniform binary distribution.
+func (s BinarySampler[T]) SamplePoly(p poly.Poly[T]) {
+	for i := range p.Coeffs {
+		p.Coeffs[i] = s.Sample()
+	}
 }

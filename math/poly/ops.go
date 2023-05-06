@@ -14,8 +14,6 @@ func (e Evaluater[T]) Add(p0, p1 Poly[T]) Poly[T] {
 
 // AddInPlace adds p0, p1 and writes it to pOut.
 func (e Evaluater[T]) AddInPlace(p0, p1, pOut Poly[T]) {
-	e.checkDegree(p0, p1, pOut)
-
 	for i := 0; i < e.degree; i++ {
 		pOut.Coeffs[i] = p0.Coeffs[i] + p1.Coeffs[i]
 	}
@@ -35,8 +33,6 @@ func (e Evaluater[T]) Sub(p0, p1 Poly[T]) Poly[T] {
 
 // SubInPlace subtracts p0, p1 and writes it to pOut.
 func (e Evaluater[T]) SubInPlace(p0, p1, pOut Poly[T]) {
-	e.checkDegree(p0, p1, pOut)
-
 	for i := 0; i < e.degree; i++ {
 		pOut.Coeffs[i] = p0.Coeffs[i] - p1.Coeffs[i]
 	}
@@ -45,6 +41,25 @@ func (e Evaluater[T]) SubInPlace(p0, p1, pOut Poly[T]) {
 // SubAssign subtracts p0 from pOut.
 func (e Evaluater[T]) SubAssign(p0, pOut Poly[T]) {
 	e.SubInPlace(pOut, p0, pOut)
+}
+
+// Neg negates p0 and returns the result.
+func (e Evaluater[T]) Neg(p0 Poly[T]) Poly[T] {
+	p := New[T](e.degree)
+	e.NegInPlace(p0, p)
+	return p
+}
+
+// NegInPlace negates p0 and writes it to pOut.
+func (e Evaluater[T]) NegInPlace(p0, pOut Poly[T]) {
+	for i := 0; i < e.degree; i++ {
+		pOut.Coeffs[i] = -p0.Coeffs[i]
+	}
+}
+
+// NegAssign negates p0.
+func (e Evaluater[T]) NegAssign(p0 Poly[T]) {
+	e.NegInPlace(p0, p0)
 }
 
 // Mul multiplies p0, p1 and returns the result.
@@ -56,8 +71,6 @@ func (e Evaluater[T]) Mul(p0, p1 Poly[T]) Poly[T] {
 
 // MulInPlace multiplies p0, p1 and writes it to pOut.
 func (e Evaluater[T]) MulInPlace(p0, p1, pOut Poly[T]) {
-	e.checkDegree(p0, p1, pOut)
-
 	for i := 0; i < e.degree; i++ {
 		e.buffp0f[i] = float64(p0.Coeffs[i])
 		e.buffp1f[i] = float64(p1.Coeffs[i])
@@ -70,15 +83,13 @@ func (e Evaluater[T]) MulInPlace(p0, p1, pOut Poly[T]) {
 	}
 }
 
-// MulAssign multiplies p0 to ptOut.
+// MulAssign multiplies p0 to pOut.
 func (e Evaluater[T]) MulAssign(p0, pOut Poly[T]) {
 	e.MulInPlace(p0, pOut, pOut)
 }
 
 // MulAddAssign multiplies p0, p1 and adds to pOut.
 func (e Evaluater[T]) MulAddAssign(p0, p1, pOut Poly[T]) {
-	e.checkDegree(p0, p1, pOut)
-
 	for i := 0; i < e.degree; i++ {
 		e.buffp0f[i] = float64(p0.Coeffs[i])
 		e.buffp1f[i] = float64(p1.Coeffs[i])
@@ -93,8 +104,6 @@ func (e Evaluater[T]) MulAddAssign(p0, p1, pOut Poly[T]) {
 
 // MulSubAssign multiplies p0, p1 and subtracts from pOut.
 func (e Evaluater[T]) MulSubAssign(p0, p1, pOut Poly[T]) {
-	e.checkDegree(p0, p1, pOut)
-
 	for i := 0; i < e.degree; i++ {
 		e.buffp0f[i] = float64(p0.Coeffs[i])
 		e.buffp1f[i] = float64(p1.Coeffs[i])
@@ -116,8 +125,6 @@ func (e Evaluater[T]) ScalarMul(p0 Poly[T], c T) Poly[T] {
 
 // ScalarMulInPlace multplies c to p0 and writes it to pOut.
 func (e Evaluater[T]) ScalarMulInPlace(p0 Poly[T], c T, pOut Poly[T]) {
-	e.checkDegree(p0, pOut)
-
 	for i := 0; i < e.degree; i++ {
 		pOut.Coeffs[i] = c * p0.Coeffs[i]
 	}
@@ -137,8 +144,6 @@ func (e Evaluater[T]) ScalarDiv(p0 Poly[T], c T) Poly[T] {
 
 // ScalarDivInPlace divides c from p0 and writes it to pOut.
 func (e Evaluater[T]) ScalarDivInPlace(p0 Poly[T], c T, pOut Poly[T]) {
-	e.checkDegree(p0, pOut)
-
 	for i := 0; i < e.degree; i++ {
 		pOut.Coeffs[i] = num.RoundRatio(p0.Coeffs[i], c)
 	}

@@ -1,38 +1,31 @@
 package tfhe
 
 import (
-	"errors"
-
 	"github.com/sp301415/tfhe/math/num"
 )
 
 var (
-	// ParamsMessage1Carry0 is a default boolean parameters set with 128-bit security.
-	ParamsMessage1Carry0 = ParametersLiteral[uint32]{
-		LWEDimension:  777,
-		GLWEDimension: 3,
-		PolyDegree:    512,
-
-		LWEStdDev:  0.000003725679281679651,
-		GLWEStdDev: 0.0000000000034525330484572114,
-
-		Delta:          1 << 24,
-		MessageModulus: 1 << 1,
-		CarryModulus:   1 << 0,
-	}.Compile()
-
 	// ParamsMessage4Carry0 ensures 4 bit of message space and 0 bit of carry space.
 	ParamsMessage4Carry0 = ParametersLiteral[uint64]{
 		LWEDimension:  742,
 		GLWEDimension: 1,
 		PolyDegree:    2048,
 
-		LWEStdDev:  0.000007069849454709433,
+		LWEStdDev:  0,
 		GLWEStdDev: 0.00000000000000029403601535432533,
 
 		Delta:          1 << (63 - 4 - 0),
 		MessageModulus: 1 << 4,
 		CarryModulus:   1 << 0,
+
+		PBSParameters: DecompositionParametersLiteral[uint64]{
+			Base:  1 << 23,
+			Level: 1,
+		},
+		KeyswitchParameters: DecompositionParametersLiteral[uint64]{
+			Base:  1 << 5,
+			Level: 3,
+		},
 	}.Compile()
 )
 
@@ -44,27 +37,42 @@ type Tint interface {
 
 // DecompositionParameters is a Parameter for gadget decomposition,
 // used in GSW and GGSW encryptions.
-type DecompositionParameters[T Tint] struct {
+type DecompositionParametersLiteral[T Tint] struct {
 	// Base is a base of gadget. It must be power of two.
 	Base T
 	// Level is a length of gadget.
 	Level int
 }
 
-// IsValid checks if DecompositionParameters are valid, and returns error if is not.
-func (p DecompositionParameters[T]) IsValid() error {
+// Compile transforms DecompositionParametersLiteral to read-only DecompositionParameters.
+// If Level = 0, it still compiles, but you will have runtime panics when trying to use this parameter.
+// If there is any invalid parameter in the literal, it panics.
+func (p DecompositionParametersLiteral[T]) Compile() DecompositionParameters[T] {
+	if p.Level == 0 {
+		return DecompositionParameters[T]{}
+	}
+
 	switch {
 	case !num.IsPowerOfTwo(p.Base):
-		return errors.New("base not power of two")
+		panic("base not power of two")
 	case p.Level <= 0:
-		return errors.New("Level smaller than zero")
+		panic("Level smaller than zero")
+	case num.TLen[T]() <= num.Log2(p.Base)+p.Level:
+		panic("Base * Level larger than Q")
 	}
-	return nil
+	return DecompositionParameters[T]{
+		base:    p.Base,
+		baseLog: num.Log2(p.Base),
+		maxBits: num.TLen[T](),
+		level:   p.Level,
+	}
 }
 
-// BaseLog returns the bit length of Base.
-func (p DecompositionParameters[T]) BaseLog() int {
-	return num.Log2(p.Base)
+type DecompositionParameters[T Tint] struct {
+	base    T
+	baseLog int
+	maxBits int
+	level   int
 }
 
 // ParametersLiteral is a structure for binary TFHE parameters.
@@ -93,10 +101,15 @@ type ParametersLiteral[T Tint] struct {
 	MessageModulus T
 	// CarryModulus is the size of the carry buffer.
 	CarryModulus T
+
+	// PBSParameters is the decomposition parameters for Programmable Bootstrapping.
+	PBSParameters DecompositionParametersLiteral[T]
+	// KeyswitchParameters is the decomposition parameters for Keyswitching.
+	KeyswitchParameters DecompositionParametersLiteral[T]
 }
 
 // Compile transforms ParametersLiteral to read-only Parameters.
-// If there are invalid parameter in the literal, it panics.
+// If there is any invalid parameter in the literal, it panics.
 func (p ParametersLiteral[T]) Compile() Parameters[T] {
 	switch {
 	case p.LWEDimension <= 0:
@@ -125,9 +138,15 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		lweStdDev:  p.LWEStdDev,
 		glweStdDev: p.GLWEStdDev,
 
-		delta:          p.Delta,
-		messageModulus: p.MessageModulus,
-		carryModulus:   p.CarryModulus,
+		delta:             p.Delta,
+		deltaLog:          num.Log2(p.Delta),
+		messageModulus:    p.MessageModulus,
+		messageModulusLog: num.Log2(p.MessageModulus),
+		carryModulus:      p.CarryModulus,
+		carryModulusLog:   num.Log2(p.CarryModulus),
+
+		pbsParameters:       p.PBSParameters.Compile(),
+		keyswitchParameters: p.KeyswitchParameters.Compile(),
 	}
 }
 
@@ -150,10 +169,21 @@ type Parameters[T Tint] struct {
 	// Delta is the scaling factor used for message encoding.
 	// The lower log(Delta) bits are reserved for errors.
 	delta T
+	// DeltaLog equals log(Delta).
+	deltaLog int
 	// MessageModulus is the largest message that could be encoded.
 	messageModulus T
+	// MessageModulusLog equals log(MessageModulus).
+	messageModulusLog int
 	// CarryModulus is the size of the carry buffer.
 	carryModulus T
+	// CarryModulusLog equals log(CarryModulus).
+	carryModulusLog int
+
+	// pbsParameters is the decomposition parameters for Programmable Bootstrapping.
+	pbsParameters DecompositionParameters[T]
+	// keyswitchParameters is the decomposition parameters for Keyswitching.
+	keyswitchParameters DecompositionParameters[T]
 }
 
 // LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
@@ -189,6 +219,21 @@ func (p Parameters[T]) Delta() T {
 	return p.delta
 }
 
+// DeltaLog equals log(Delta).
+func (p Parameters[T]) DeltaLog() int {
+	return p.deltaLog
+}
+
+// MessageModulusLog equals log(MessageModulus).
+func (p Parameters[T]) MessageModulusLog() int {
+	return p.messageModulusLog
+}
+
+// CarryModulusLog equals log(CarryModulus).
+func (p Parameters[T]) CarryModulusLog() int {
+	return p.carryModulusLog
+}
+
 // MessageModulus is the largest message that could be encoded.
 func (p Parameters[T]) MessageModulus() T {
 	return p.messageModulus
@@ -197,4 +242,14 @@ func (p Parameters[T]) MessageModulus() T {
 // CarryModulus is the size of the carry buffer.
 func (p Parameters[T]) CarryModulus() T {
 	return p.carryModulus
+}
+
+// PBSParameters is the decomposition parameters for Programmable Bootstrapping.
+func (p Parameters[T]) PBSParameters() DecompositionParameters[T] {
+	return p.pbsParameters
+}
+
+// KeyswitchParameters is the decomposition parameters for Keyswitching.
+func (p Parameters[T]) KeyswitchParameters() DecompositionParameters[T] {
+	return p.keyswitchParameters
 }

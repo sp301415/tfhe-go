@@ -2,8 +2,8 @@ package tfhe
 
 // GGSWCiphertext represents an encrypted GGSW ciphertext.
 // GGSW ciphertext is a collection of leveled GLWE ciphertexts,
-// ordered as [k+1][l]GLWECiphertext.
 type GGSWCiphertext[T Tint] struct {
+	// Value is ordered as [k+1][l]GLWECiphertext.
 	Value [][]GLWECiphertext[T]
 
 	decompParams DecompositionParameters[T]
@@ -13,14 +13,10 @@ type GGSWCiphertext[T Tint] struct {
 //
 // Panics if decompParams is invalid.
 func NewGGSWCiphertext[T Tint](params Parameters[T], decompParams DecompositionParameters[T]) GGSWCiphertext[T] {
-	if err := decompParams.IsValid(); err != nil {
-		panic(err)
-	}
-
 	ct := make([][]GLWECiphertext[T], params.glweDimension+1)
 	for i := 0; i < params.glweDimension+1; i++ {
-		ct[i] = make([]GLWECiphertext[T], decompParams.Level)
-		for j := 0; j < decompParams.Level; j++ {
+		ct[i] = make([]GLWECiphertext[T], decompParams.level)
+		for j := 0; j < decompParams.level; j++ {
 			ct[i][j] = NewGLWECiphertext(params)
 		}
 	}
@@ -39,22 +35,12 @@ func (ct GGSWCiphertext[T]) Copy() GGSWCiphertext[T] {
 	return GGSWCiphertext[T]{Value: c, decompParams: ct.decompParams}
 }
 
-// Len returns the length of the ciphertext.
-func (ct GGSWCiphertext[T]) Len() int {
-	return len(ct.Value)
+// DecompositionParameters returns the decomposition parameters of the ciphertext.
+func (ct GGSWCiphertext[T]) DecompositionParameters() DecompositionParameters[T] {
+	return ct.decompParams
 }
 
-// Degree returns the polynomial degree of elements of the ciphertext.
-func (ct GGSWCiphertext[T]) Degree() int {
-	return ct.Value[0][0].Degree()
-}
-
-// Level returns the level of the ciphertext.
-func (ct GGSWCiphertext[T]) Level() int {
-	return len(ct.Value[0])
-}
-
-// Base returns the gadget base of the ciphertext.
-func (ct GGSWCiphertext[T]) Base() T {
-	return ct.decompParams.Base
+// ToGLev returns the last row, which is the GLev ciphertext of original message.
+func (ct GGSWCiphertext[T]) ToGLev() []GLWECiphertext[T] {
+	return ct.Value[len(ct.Value)-1]
 }
