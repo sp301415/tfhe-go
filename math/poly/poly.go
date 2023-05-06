@@ -35,6 +35,11 @@ func (p Poly[T]) Copy() Poly[T] {
 	return Poly[T]{Coeffs: slices.Clone(p.Coeffs)}
 }
 
+// CopyFrom copies p0 to p.
+func (p *Poly[T]) CopyFrom(p0 Poly[T]) {
+	copy(p.Coeffs, p0.Coeffs)
+}
+
 // Degree returns the degree of the polynomial.
 // This is equivalent with length of coefficients.
 func (p Poly[T]) Degree() int {

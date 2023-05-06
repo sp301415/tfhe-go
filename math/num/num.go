@@ -8,7 +8,7 @@ import (
 )
 
 // Abs returns the absolute value of x.
-func Abs[T constraints.Signed](x T) T {
+func Abs[T constraints.Integer](x T) T {
 	if x < 0 {
 		return -x
 	}
@@ -42,8 +42,25 @@ func MaxT[T constraints.Integer]() uint64 {
 	case uintptr:
 		return math.MaxUint
 	}
+	return math.MaxUint
+}
 
-	panic("unreachable")
+// TLen returns the bits required to express value of type T in int.
+func TLen[T constraints.Integer]() int {
+	var z T
+	switch any(z).(type) {
+	case int, uint, uintptr:
+		return bits.UintSize
+	case int8, uint8:
+		return 8
+	case int16, uint16:
+		return 16
+	case int32, uint32:
+		return 32
+	case int64, uint64:
+		return 64
+	}
+	return 64
 }
 
 // IsPowerOfTwo returns whether x is a power of two.
@@ -61,11 +78,32 @@ func Log2[T constraints.Integer](x T) int {
 	return int(bits.Len64(uint64(x))) - 1
 }
 
-// RoundRatio returns round(a/b).
-func RoundRatio[T constraints.Integer](a, b T) T {
-	ratio := a / b
-	if 2*(a%b) >= b {
+// RoundRatio returns round(x/y).
+func RoundRatio[T constraints.Integer](x, y T) T {
+	ratio := x / y
+	if 2*(x%y) >= y {
 		ratio += 1
 	}
 	return ratio
+}
+
+// Gcd returns the GCD(Greatest Common Divisor) of x and y.
+//   - If x = y = 0, Gcd returns 0.
+//   - If x = 0 and y != 0, Gcd returns |y|.
+//   - If x != 0 and y = 0, Gcd returns |x|.
+func Gcd[T constraints.Integer](x, y T) T {
+	switch {
+	case x == 0 && y == 0:
+		return 0
+	case x == 0 && y != 0:
+		return Abs(y)
+	case x != 0 && y == 0:
+		return Abs(x)
+	}
+
+	x, y = Abs(x), Abs(y)
+	for y > 0 {
+		x, y = y, x%y
+	}
+	return x
 }

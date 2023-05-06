@@ -1,6 +1,8 @@
 package tfhe
 
 import (
+	"errors"
+
 	"github.com/sp301415/tfhe/math/num"
 )
 
@@ -38,6 +40,31 @@ var (
 // Currently, it supports Q = 2^32 and Q = 2^64 (uint32 and uint64).
 type Tint interface {
 	uint32 | uint64
+}
+
+// DecompositionParameters is a Parameter for gadget decomposition,
+// used in GSW and GGSW encryptions.
+type DecompositionParameters[T Tint] struct {
+	// Base is a base of gadget. It must be power of two.
+	Base T
+	// Level is a length of gadget.
+	Level int
+}
+
+// IsValid checks if DecompositionParameters are valid, and returns error if is not.
+func (p DecompositionParameters[T]) IsValid() error {
+	switch {
+	case !num.IsPowerOfTwo(p.Base):
+		return errors.New("base not power of two")
+	case p.Level <= 0:
+		return errors.New("Level smaller than zero")
+	}
+	return nil
+}
+
+// BaseLog returns the bit length of Base.
+func (p DecompositionParameters[T]) BaseLog() int {
+	return num.Log2(p.Base)
 }
 
 // ParametersLiteral is a structure for binary TFHE parameters.
@@ -105,18 +132,28 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 }
 
 // Parameters are read-only, compiled parameters based on ParametersLiteral.
-// For explanation of each fields, see ParametersLiteral.
 type Parameters[T Tint] struct {
-	lweDimension  int
+	// LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
+	// Length of LWE secret key is LWEDimension, and the length of LWE ciphertext is LWEDimension+1.
+	lweDimension int
+	// GLWEDimension is the dimension of GLWE lattice used. Usually this is denoted by k.
+	// Length of GLWE secret key is GLWEDimension, and the length of GLWE ciphertext is GLWEDimension+1.
 	glweDimension int
-	polyDegree    int
+	// PolyDegree is the degree of polynomials in GLWE entities. Usually this is denoted by N.
+	polyDegree int
 
-	lweStdDev  float64
+	// LWEStdDev is the standard deviation used for gaussian error sampling in LWE encryption.
+	lweStdDev float64
+	// GLWEStdDev is the standard deviation used for gaussian error sampling in GLWE encryption.
 	glweStdDev float64
 
-	delta          T
+	// Delta is the scaling factor used for message encoding.
+	// The lower log(Delta) bits are reserved for errors.
+	delta T
+	// MessageModulus is the largest message that could be encoded.
 	messageModulus T
-	carryModulus   T
+	// CarryModulus is the size of the carry buffer.
+	carryModulus T
 }
 
 // LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.

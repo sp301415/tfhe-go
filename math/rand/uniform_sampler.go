@@ -21,13 +21,13 @@ func (s UniformSampler[T]) Read(b []byte) (n int, err error) {
 // Sample uniformly samples a random integer.
 // Panics when error occurs from crypto/rand.Read(), but this is highly unlikely.
 func (s UniformSampler[T]) Sample() T {
-	var sample T
+	var sample uint64
 	err := binary.Read(s, binary.BigEndian, &sample)
 	if err != nil {
 		panic(err)
 	}
 
-	return sample
+	return T(sample)
 }
 
 // SampleRange uniformly samples a random integer from [a, b).

@@ -1,6 +1,9 @@
 package vec
 
-import "golang.org/x/exp/constraints"
+import (
+	"github.com/sp301415/tfhe/math/num"
+	"golang.org/x/exp/constraints"
+)
 
 // checkLen2 checks if the length of v1 and v2 are the same, and panics if is not.
 // If all vectors have the same length, it returns the length.
@@ -18,6 +21,33 @@ func checkLen3[T any](v1, v2, v3 []T) int {
 		panic("length mismatch")
 	}
 	return len(v1)
+}
+
+// Rotate rotates the vector l times to the left.
+// If l < 0, then it rotates the vector l times to the right.
+// This uses the juggling algroithm, which takes O(N) time.
+func Rotate[T any](s []T, l int) {
+	if l < 0 {
+		l = len(s) + l
+	}
+	l %= len(s)
+
+	for i := 0; i < num.Gcd(len(s), l); i++ {
+		tmp := s[i]
+		j := i
+		for {
+			k := j + l
+			if k >= len(s) {
+				k -= len(s)
+			}
+			if k == i {
+				break
+			}
+			s[j] = s[k]
+			j = k
+		}
+		s[j] = tmp
+	}
 }
 
 // Dot returns the dot product of two vectors.
@@ -49,7 +79,7 @@ func AddInPlace[T constraints.Integer](v0, v1, vOut []T) {
 	}
 }
 
-// AddAssign adds v0, vOut and writes it to vOut.
+// AddAssign adds v0to vOut.
 func AddAssign[T constraints.Integer](v0, vOut []T) {
 	n := checkLen2(v0, vOut)
 
@@ -76,7 +106,7 @@ func SubInPlace[T constraints.Integer](v0, v1, vOut []T) {
 	}
 }
 
-// SubAssign subtracts v0 from vOut and writes it to pOut.
+// SubAssign subtracts v0 from vOut.
 func SubAssign[T constraints.Integer](v0, vOut []T) {
 	n := checkLen2(v0, vOut)
 

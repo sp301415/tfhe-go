@@ -15,13 +15,13 @@ func TestEncrypter(t *testing.T) {
 
 	t.Run("LWE", func(t *testing.T) {
 		for _, msg := range msgs {
-			ct := enc.MustEncrypt(msg)
+			ct := enc.Encrypt(msg)
 			assert.Equal(t, msg, enc.Decrypt(ct))
 		}
 	})
 
 	t.Run("GLWE", func(t *testing.T) {
-		ct := enc.MustEncryptPacked(msgs)
+		ct := enc.EncryptPacked(msgs)
 		assert.Equal(t, msgs, enc.DecryptPacked(ct)[:len(msgs)])
 	})
 }

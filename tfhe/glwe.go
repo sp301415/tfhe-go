@@ -6,97 +6,96 @@ import (
 
 // GLWESecretKey is a GLWE secret key, sampled from uniform binary distribution.
 type GLWESecretKey[T Tint] struct {
-	body []poly.Poly[T]
+	Value []poly.Poly[T]
 }
 
 // NewGLWESecretKey allocates an empty GLWESecretKey.
 func NewGLWESecretKey[T Tint](params Parameters[T]) GLWESecretKey[T] {
-	polys := make([]poly.Poly[T], params.glweDimension)
-	for i := range polys {
-		polys[i] = poly.New[T](params.polyDegree)
+	sk := make([]poly.Poly[T], params.glweDimension)
+	for i := range sk {
+		sk[i] = poly.New[T](params.polyDegree)
 	}
-	return GLWESecretKey[T]{body: polys}
+	return GLWESecretKey[T]{Value: sk}
 }
 
 // Copy returns a copy of the key.
 func (sk GLWESecretKey[T]) Copy() GLWESecretKey[T] {
-	polys := make([]poly.Poly[T], sk.Len())
-	for i := range polys {
-		polys[i] = sk.body[i].Copy()
+	skCopy := make([]poly.Poly[T], sk.Len())
+	for i := range skCopy {
+		skCopy[i] = sk.Value[i].Copy()
 	}
-	return GLWESecretKey[T]{body: polys}
+	return GLWESecretKey[T]{Value: skCopy}
 }
 
 // Len returns the length of the key.
 func (sk GLWESecretKey[T]) Len() int {
-	return len(sk.body)
+	return len(sk.Value)
 }
 
 // Degree returns the polynomial degree of elements of the key.
 func (sk GLWESecretKey[T]) Degree() int {
-	return sk.body[0].Degree()
+	return sk.Value[0].Degree()
 }
 
 // ToLWESecretKey returns a new LWE secret key derived from the GLWE secret key.
 func (sk GLWESecretKey[T]) ToLWESecretKey() LWESecretKey[T] {
 	values := make([]T, sk.Len()*sk.Degree())
 	for i := 0; i < sk.Len(); i++ {
-		copy(values[i*sk.Degree():], sk.body[i].Coeffs)
+		copy(values[i*sk.Degree():], sk.Value[i].Coeffs)
 	}
-	return LWESecretKey[T]{body: values}
+	return LWESecretKey[T]{Value: values}
 }
 
 // GLWEPlaintext represents an encoded GLWE plaintext.
 type GLWEPlaintext[T Tint] struct {
-	value poly.Poly[T]
+	Value poly.Poly[T]
 }
 
 // NewGLWEPlaintext allocates an empty GLWEPlaintext.
 func NewGLWEPlaintext[T Tint](params Parameters[T]) GLWEPlaintext[T] {
-	return GLWEPlaintext[T]{value: poly.New[T](params.polyDegree)}
+	return GLWEPlaintext[T]{Value: poly.New[T](params.polyDegree)}
 }
 
 // Copy returns a copy of the plaintext.
 func (pt GLWEPlaintext[T]) Copy() GLWEPlaintext[T] {
-	return GLWEPlaintext[T]{value: pt.value.Copy()}
+	return GLWEPlaintext[T]{Value: pt.Value.Copy()}
+}
+
+// Degree returns the polynomial degree of elements of the plaintext.
+func (ct GLWEPlaintext[T]) Degree() int {
+	return ct.Value.Degree()
 }
 
 // GLWECiphertext represents an encrypted GLWE ciphertext.
 type GLWECiphertext[T Tint] struct {
-	body []poly.Poly[T]
-	mask poly.Poly[T]
+	Mask []poly.Poly[T]
+	Body poly.Poly[T]
 }
 
 // NewGLWECiphertext allocates an empty GLWECiphertext.
 func NewGLWECiphertext[T Tint](params Parameters[T]) GLWECiphertext[T] {
-	polys := make([]poly.Poly[T], params.glweDimension)
-	for i := range polys {
-		polys[i] = poly.New[T](params.polyDegree)
+	mask := make([]poly.Poly[T], params.glweDimension)
+	for i := range mask {
+		mask[i] = poly.New[T](params.polyDegree)
 	}
-	return GLWECiphertext[T]{body: polys, mask: poly.New[T](params.polyDegree)}
+	return GLWECiphertext[T]{Mask: mask, Body: poly.New[T](params.polyDegree)}
 }
 
 // Copy returns a copy of the ciphertext.
 func (ct GLWECiphertext[T]) Copy() GLWECiphertext[T] {
-	polys := make([]poly.Poly[T], ct.Len())
-	for i := range polys {
-		polys[i] = ct.body[i].Copy()
+	maskCopy := make([]poly.Poly[T], ct.Len())
+	for i := range maskCopy {
+		maskCopy[i] = ct.Mask[i].Copy()
 	}
-	return GLWECiphertext[T]{body: polys, mask: ct.mask.Copy()}
+	return GLWECiphertext[T]{Mask: maskCopy, Body: ct.Body.Copy()}
 }
 
 // Len returns the length of the ciphertext.
 func (ct GLWECiphertext[T]) Len() int {
-	return len(ct.body) + 1
+	return len(ct.Mask) + 1
 }
 
 // Degree returns the polynomial degree of elements of the ciphertext.
 func (ct GLWECiphertext[T]) Degree() int {
-	return ct.body[0].Degree()
-}
-
-// asSlice returns the slice containing body + mask.
-// This is intended to be read-only.
-func (ct GLWECiphertext[T]) asSlice() []poly.Poly[T] {
-	return append(ct.body, ct.mask)
+	return ct.Mask[0].Degree()
 }

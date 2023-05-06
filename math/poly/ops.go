@@ -1,9 +1,14 @@
 package poly
 
+import (
+	"github.com/sp301415/tfhe/math/num"
+	"github.com/sp301415/tfhe/math/vec"
+)
+
 // Add adds p0, p1 and returns the result.
 func (e Evaluater[T]) Add(p0, p1 Poly[T]) Poly[T] {
 	p := New[T](e.degree)
-	e.AddInPlace(p0, p1, p)
+	vec.AddInPlace(p0.Coeffs, p1.Coeffs, p.Coeffs)
 	return p
 }
 
@@ -16,7 +21,7 @@ func (e Evaluater[T]) AddInPlace(p0, p1, pOut Poly[T]) {
 	}
 }
 
-// AddAssign adds p0, pOut and writes it to pOut.
+// AddAssign adds p0 to ptOut.
 func (e Evaluater[T]) AddAssign(p0, pOut Poly[T]) {
 	e.AddInPlace(p0, pOut, pOut)
 }
@@ -37,7 +42,7 @@ func (e Evaluater[T]) SubInPlace(p0, p1, pOut Poly[T]) {
 	}
 }
 
-// SubAssign subtracts p0 from pOut and writes it to pOut.
+// SubAssign subtracts p0 from pOut.
 func (e Evaluater[T]) SubAssign(p0, pOut Poly[T]) {
 	e.SubInPlace(pOut, p0, pOut)
 }
@@ -65,7 +70,7 @@ func (e Evaluater[T]) MulInPlace(p0, p1, pOut Poly[T]) {
 	}
 }
 
-// MulAssign multiplies p0, pOut and writes it to pOut.
+// MulAssign multiplies p0 to ptOut.
 func (e Evaluater[T]) MulAssign(p0, pOut Poly[T]) {
 	e.MulInPlace(p0, pOut, pOut)
 }
@@ -118,7 +123,28 @@ func (e Evaluater[T]) ScalarMulInPlace(p0 Poly[T], c T, pOut Poly[T]) {
 	}
 }
 
-// ScalarMulAssign multplies c to pOut and writes it to pOut.
+// ScalarMulAssign multplies c to pOut.
 func (e Evaluater[T]) ScalarMulAssign(c T, pOut Poly[T]) {
 	e.ScalarMulInPlace(pOut, c, pOut)
+}
+
+// ScalarDiv divides c from p0 and returns the result.
+func (e Evaluater[T]) ScalarDiv(p0 Poly[T], c T) Poly[T] {
+	p := New[T](e.degree)
+	e.ScalarDivInPlace(p0, c, p)
+	return p
+}
+
+// ScalarDivInPlace divides c from p0 and writes it to pOut.
+func (e Evaluater[T]) ScalarDivInPlace(p0 Poly[T], c T, pOut Poly[T]) {
+	e.checkDegree(p0, pOut)
+
+	for i := 0; i < e.degree; i++ {
+		pOut.Coeffs[i] = num.RoundRatio(p0.Coeffs[i], c)
+	}
+}
+
+// ScalarDivAssign divides c from pOut.
+func (e Evaluater[T]) ScalarDivAssign(c T, pOut Poly[T]) {
+	e.ScalarDivInPlace(pOut, c, pOut)
 }
