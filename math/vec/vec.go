@@ -69,7 +69,7 @@ func Sub[T constraints.Integer](v0, v1 []T) []T {
 	return v
 }
 
-// SubInPlace subtracts v0, v1 and writes it to pOut.
+// SubInPlace subtracts v0, v1 and writes it to vOut.
 func SubInPlace[T constraints.Integer](v0, v1, vOut []T) {
 	for i := 0; i < len(vOut); i++ {
 		vOut[i] = v0[i] - v1[i]
@@ -80,5 +80,38 @@ func SubInPlace[T constraints.Integer](v0, v1, vOut []T) {
 func SubAssign[T constraints.Integer](v0, vOut []T) {
 	for i := 0; i < len(vOut); i++ {
 		vOut[i] -= v0[i]
+	}
+}
+
+// ScalarMul multplies c to v0 and returns the result.
+func ScalarMul[T constraints.Integer](v0 []T, c T) []T {
+	v := make([]T, len(v0))
+	ScalarMulInPlace(v0, c, v)
+	return v
+}
+
+// ScalarMulInPlace multplies c to v0 and writes it to vOut.
+func ScalarMulInPlace[T constraints.Integer](v0 []T, c T, vOut []T) {
+	for i := 0; i < len(vOut); i++ {
+		vOut[i] = c * v0[i]
+	}
+}
+
+// ScalarMulAssign multplies c to vOut.
+func ScalarMulAssign[T constraints.Integer](c T, vOut []T) {
+	ScalarMulInPlace(vOut, c, vOut)
+}
+
+// ScalarMulAddAssign multiplies c to v1 and adds to vOut.
+func ScalarMulAddAssign[T constraints.Integer](v0 []T, c T, vOut []T) {
+	for i := 0; i < len(vOut); i++ {
+		vOut[i] += c * v0[i]
+	}
+}
+
+// ScalarMulSubAssign multiplies c to v0 and subtracts from vOut.
+func ScalarMulSubAssign[T constraints.Integer](v0 []T, c T, vOut []T) {
+	for i := 0; i < len(vOut); i++ {
+		vOut[i] -= c * v0[i]
 	}
 }

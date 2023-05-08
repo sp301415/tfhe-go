@@ -158,8 +158,8 @@ func (e Evaluater[T]) MulWithFourierInPlace(p0 Poly[T], fp FourierPoly, pOut Pol
 
 	// Unfold
 	for j := 0; j < N/2; j++ {
-		pOut.Coeffs[j] = T(math.Round(real(e.buffp0c[j])))
-		pOut.Coeffs[j+N/2] = T(math.Round(imag(e.buffp0c[j])))
+		pOut.Coeffs[j] = fromFloat[T](math.Round(real(e.buffp0c[j])))
+		pOut.Coeffs[j+N/2] = fromFloat[T](math.Round(imag(e.buffp0c[j])))
 	}
 
 }

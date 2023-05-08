@@ -1,10 +1,10 @@
 package tfhe
 
 // GGSWCiphertext represents an encrypted GGSW ciphertext.
-// GGSW ciphertext is a collection of leveled GLWE ciphertexts,
+// which is a GLWEDimension+1 collection of GLev ciphertexts.
 type GGSWCiphertext[T Tint] struct {
-	// Value is ordered as [k+1][l]GLWECiphertext.
-	Value [][]GLWECiphertext[T]
+	// Value has length GLWEDimension + 1.
+	Value []GLevCiphertext[T]
 
 	decompParams DecompositionParameters[T]
 }
@@ -13,26 +13,20 @@ type GGSWCiphertext[T Tint] struct {
 //
 // Panics if decompParams is invalid.
 func NewGGSWCiphertext[T Tint](params Parameters[T], decompParams DecompositionParameters[T]) GGSWCiphertext[T] {
-	ct := make([][]GLWECiphertext[T], params.glweDimension+1)
+	ct := make([]GLevCiphertext[T], params.glweDimension+1)
 	for i := 0; i < params.glweDimension+1; i++ {
-		ct[i] = make([]GLWECiphertext[T], decompParams.level)
-		for j := 0; j < decompParams.level; j++ {
-			ct[i][j] = NewGLWECiphertext(params)
-		}
+		ct[i] = NewGLevCiphertext(params, decompParams)
 	}
 	return GGSWCiphertext[T]{Value: ct, decompParams: decompParams}
 }
 
 // Copy returns a copy of the ciphertext.
 func (ct GGSWCiphertext[T]) Copy() GGSWCiphertext[T] {
-	c := make([][]GLWECiphertext[T], len(ct.Value))
-	for i := range c {
-		c[i] = make([]GLWECiphertext[T], len(ct.Value[i]))
-		for j := range c[i] {
-			c[i][j] = ct.Value[i][j].Copy()
-		}
+	ctCopy := make([]GLevCiphertext[T], len(ct.Value))
+	for i := range ct.Value {
+		ctCopy[i] = ct.Value[i].Copy()
 	}
-	return GGSWCiphertext[T]{Value: c, decompParams: ct.decompParams}
+	return GGSWCiphertext[T]{Value: ctCopy, decompParams: ct.decompParams}
 }
 
 // DecompositionParameters returns the decomposition parameters of the ciphertext.
@@ -41,6 +35,6 @@ func (ct GGSWCiphertext[T]) DecompositionParameters() DecompositionParameters[T]
 }
 
 // ToGLev returns the last row, which is the GLev ciphertext of original message.
-func (ct GGSWCiphertext[T]) ToGLev() []GLWECiphertext[T] {
-	return ct.Value[len(ct.Value)-1]
+func (ct GGSWCiphertext[T]) ToGLev() GLevCiphertext[T] {
+	return ct.Value[ct.decompParams.level-1]
 }

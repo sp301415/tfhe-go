@@ -3,6 +3,7 @@ package poly
 import (
 	"github.com/sp301415/tfhe/math/num"
 	"github.com/sp301415/tfhe/math/vec"
+	"golang.org/x/exp/constraints"
 )
 
 // Add adds p0, p1 and returns the result.
@@ -69,6 +70,18 @@ func (e Evaluater[T]) Mul(p0, p1 Poly[T]) Poly[T] {
 	return p
 }
 
+// fromFloat converts float64 to T, wrapping with MaxT.
+func fromFloat[T constraints.Integer](f float64) T {
+	maxT := float64(num.MaxT[T]())
+	for f < 0 {
+		f += maxT
+	}
+	for f > maxT {
+		f -= maxT
+	}
+	return T(f)
+}
+
 // MulInPlace multiplies p0, p1 and writes it to pOut.
 func (e Evaluater[T]) MulInPlace(p0, p1, pOut Poly[T]) {
 	for i := 0; i < e.degree; i++ {
@@ -79,7 +92,7 @@ func (e Evaluater[T]) MulInPlace(p0, p1, pOut Poly[T]) {
 	e.convolve(e.buffp0f, e.buffp1f, e.buffpOutf)
 
 	for i := 0; i < e.degree; i++ {
-		pOut.Coeffs[i] = T(e.buffpOutf[i])
+		pOut.Coeffs[i] = fromFloat[T](e.buffpOutf[i])
 	}
 }
 
@@ -98,7 +111,7 @@ func (e Evaluater[T]) MulAddAssign(p0, p1, pOut Poly[T]) {
 	e.convolve(e.buffp0f, e.buffp1f, e.buffpOutf)
 
 	for i := 0; i < e.degree; i++ {
-		pOut.Coeffs[i] += T(e.buffpOutf[i])
+		pOut.Coeffs[i] += fromFloat[T](e.buffpOutf[i])
 	}
 }
 
@@ -112,7 +125,7 @@ func (e Evaluater[T]) MulSubAssign(p0, p1, pOut Poly[T]) {
 	e.convolve(e.buffp0f, e.buffp1f, e.buffpOutf)
 
 	for i := 0; i < e.degree; i++ {
-		pOut.Coeffs[i] -= T(e.buffpOutf[i])
+		pOut.Coeffs[i] -= fromFloat[T](e.buffpOutf[i])
 	}
 }
 

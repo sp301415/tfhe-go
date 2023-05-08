@@ -2,28 +2,25 @@ package tfhe
 
 import "golang.org/x/exp/slices"
 
-// LWESecretKey is a LWE secret key, sampled from uniform binary distribution.
-type LWESecretKey[T Tint] struct {
+// LWEKey is a LWE secret key, sampled from uniform binary distribution.
+type LWEKey[T Tint] struct {
+	// Value has length LWEDimension.
 	Value []T
 }
 
-// NewLWESecretKey allocates an empty LWESecretKey.
-func NewLWESecretKey[T Tint](params Parameters[T]) LWESecretKey[T] {
-	return LWESecretKey[T]{Value: make([]T, params.lweDimension)}
+// NewLWEKey allocates an empty LWESecretKey.
+func NewLWEKey[T Tint](params Parameters[T]) LWEKey[T] {
+	return LWEKey[T]{Value: make([]T, params.lweDimension)}
 }
 
 // Copy returns a copy of the key.
-func (sk LWESecretKey[T]) Copy() LWESecretKey[T] {
-	return LWESecretKey[T]{Value: slices.Clone(sk.Value)}
-}
-
-// Len returns the length of the key.
-func (sk LWESecretKey[T]) Len() int {
-	return len(sk.Value)
+func (sk LWEKey[T]) Copy() LWEKey[T] {
+	return LWEKey[T]{Value: slices.Clone(sk.Value)}
 }
 
 // LWEPlaintext represents an encoded LWE plaintext.
 type LWEPlaintext[T Tint] struct {
+	// Value is a scalar.
 	Value T
 }
 
@@ -36,25 +33,55 @@ func (pt LWEPlaintext[T]) Copy() LWEPlaintext[T] {
 //
 // LWE ciphertexts are the default encrypted form of the ciphertext.
 type LWECiphertext[T Tint] struct {
-	Mask []T
-
-	// Body is a pointer to T, not just T.
-	// This is an ugly hack to match reference-copying behavior of GLWE, etc.
-	Body *T
+	// Value is ordered as [body, mask],
+	// since Go doesn't provide an easy way to take last element of slice.
+	// Therefore, value has length LWEDimension + 1.
+	Value []T
 }
 
 // NewLWECiphertext allocates an empty LWECiphertext.
 func NewLWECiphertext[T Tint](params Parameters[T]) LWECiphertext[T] {
-	return LWECiphertext[T]{Mask: make([]T, params.lweDimension), Body: new(T)}
+	return LWECiphertext[T]{Value: make([]T, params.lweDimension+1)}
+}
+
+// NewLargeLWECiphertext allocates an empty LWECiphertext,
+// but with dimension GLWEDimension + 1.
+func NewLargeLWECiphertext[T Tint](params Parameters[T]) LWECiphertext[T] {
+	return LWECiphertext[T]{Value: make([]T, params.glweDimension+1)}
 }
 
 // Copy returns a copy of the ciphertext.
 func (ct LWECiphertext[T]) Copy() LWECiphertext[T] {
-	bodyCopy := *ct.Body
-	return LWECiphertext[T]{Mask: slices.Clone(ct.Mask), Body: &bodyCopy}
+	return LWECiphertext[T]{Value: slices.Clone(ct.Value)}
 }
 
-// Len returns the length of the ciphertext.
-func (ct LWECiphertext[T]) Len() int {
-	return len(ct.Mask) + 1
+// LevCiphertext is a leveled LWE ciphertext, decomposed according to DecompositionParameters.
+type LevCiphertext[T Tint] struct {
+	// Value has length Level.
+	Value []LWECiphertext[T]
+
+	decompParams DecompositionParameters[T]
+}
+
+// NewLevCiphertext allocates an empty LevCiphertext.
+func NewLevCiphertext[T Tint](params Parameters[T], decompParams DecompositionParameters[T]) LevCiphertext[T] {
+	ct := make([]LWECiphertext[T], decompParams.level)
+	for i := 0; i < decompParams.level; i++ {
+		ct[i] = NewLWECiphertext(params)
+	}
+	return LevCiphertext[T]{Value: ct, decompParams: decompParams}
+}
+
+// Copy returns a copy of the ciphertext.
+func (ct LevCiphertext[T]) Copy() LevCiphertext[T] {
+	ctCopy := make([]LWECiphertext[T], len(ct.Value))
+	for i := range ct.Value {
+		ctCopy[i] = ct.Value[i].Copy()
+	}
+	return LevCiphertext[T]{Value: ctCopy, decompParams: ct.decompParams}
+}
+
+// DecompositionParameters returns the decomposition parameters of the ciphertext.
+func (ct LevCiphertext[T]) DecompositionParameters() DecompositionParameters[T] {
+	return ct.decompParams
 }
