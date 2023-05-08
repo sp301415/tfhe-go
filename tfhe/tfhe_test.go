@@ -1,6 +1,7 @@
 package tfhe_test
 
 import (
+	"runtime"
 	"testing"
 
 	"github.com/sp301415/tfhe/tfhe"
@@ -66,22 +67,26 @@ func BenchmarkKeyGen(b *testing.B) {
 			enc.GenKeySwitchingKeyForBootstrapping()
 		}
 	})
+	runtime.GC()
 
 	b.Run("KeySwitchingKeyParallel", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			enc.GenKeySwitchingKeyForBootstrappingParallel()
 		}
 	})
+	runtime.GC()
 
 	b.Run("BootstrappingKey", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			enc.GenBootstrappingKey()
 		}
 	})
+	runtime.GC()
 
 	b.Run("BootstrappingKeyParallel", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			enc.GenBootstrappingKeyParallel()
 		}
 	})
+	runtime.GC()
 }

@@ -104,15 +104,20 @@ func (e Evaluater[T]) MulSubAssign(p0, p1, pOut Poly[T]) {
 }
 
 // MulFourier multiplies fp0, fp1 and returns the result.
-func (e Evaluater[T]) MulWithFourier(fp0, fp1 FourierPoly) FourierPoly {
+func (e Evaluater[T]) MulFourier(fp0, fp1 FourierPoly) FourierPoly {
 	fp := NewFourierPoly(e.degree)
-	e.MulWithFourierInPlace(fp0, fp1, fp)
+	e.MulFourierInPlace(fp0, fp1, fp)
 	return fp
 }
 
 // MulFourierInPlace multiplies fp0, fp1 and writes it to fpOut.
-func (e Evaluater[T]) MulWithFourierInPlace(fp0, fp1, fpOut FourierPoly) {
+func (e Evaluater[T]) MulFourierInPlace(fp0, fp1, fpOut FourierPoly) {
 	vec.ElementWiseMulInPlace(fp0.Coeffs, fp1.Coeffs, fpOut.Coeffs)
+}
+
+// MulFourierAssign multiplies fp0 to fpOut.
+func (e Evaluater[T]) MulFourierAssign(fp0, fpOut FourierPoly) {
+	vec.ElementWiseMulAssign(fp0.Coeffs, fpOut.Coeffs)
 }
 
 // MulAddFourierAssign multiplies fp0, fp1 and adds to fpOut.

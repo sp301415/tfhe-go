@@ -2,9 +2,8 @@ package tfhe
 
 import (
 	"math"
+	"runtime"
 	"sync"
-
-	"github.com/sp301415/tfhe/math/num"
 )
 
 // GenLWEKey samples a new LWE key.
@@ -72,10 +71,8 @@ func (e Encrypter[T]) GenBootstrappingKey() BootstrappingKey[T] {
 func (e Encrypter[T]) GenBootstrappingKeyParallel() BootstrappingKey[T] {
 	bsk := NewBootstrappingKey(e.Parameters, e.Parameters.pbsParameters)
 
-	// Typically, LWE Dimension is between 500 and 1000.
-	// Therefore, I think sqrt(LWEDimension) is a reasonable chunk size.
-	chunkSize := int(math.Sqrt(float64(e.Parameters.lweDimension)))
-	chunkCount := num.RoundRatio(e.Parameters.lweDimension, chunkSize)
+	chunkSize := runtime.NumCPU()
+	chunkCount := int(math.Ceil(float64(e.Parameters.lweDimension) / float64(chunkSize)))
 
 	encrypters := make([]Encrypter[T], chunkCount)
 	for i := 0; i < chunkCount; i++ {
@@ -140,10 +137,8 @@ func (e Encrypter[T]) GenKeySwitchingKey(skIn LWEKey[T], decompParams Decomposit
 func (e Encrypter[T]) GenKeySwitchingKeyParallel(skIn LWEKey[T], decompParams DecompositionParameters[T]) KeySwitchingKey[T] {
 	ksk := NewKeySwitchingKey(len(skIn.Value), len(e.lweKey.Value), decompParams)
 
-	// Typically, LWE Dimension is between 500 and 1000.
-	// Therefore, I think sqrt(LWEDimension) is a reasonable chunk size.
-	chunkSize := int(math.Sqrt(float64(ksk.InputLWEDimension())))
-	chunkCount := num.RoundRatio(ksk.InputLWEDimension(), chunkSize)
+	chunkSize := runtime.NumCPU()
+	chunkCount := int(math.Ceil(float64(e.Parameters.lweDimension) / float64(chunkSize)))
 
 	encrypters := make([]Encrypter[T], chunkCount)
 	for i := 0; i < chunkCount; i++ {
