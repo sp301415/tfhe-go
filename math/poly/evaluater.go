@@ -31,17 +31,18 @@ type Evaluater[T constraints.Integer] struct {
 
 	/* Buffers */
 
-	// buffp0f saves the coefficients of p0 in float64.
-	buffp0f []float64
-	//buffp1f saves the coefficients of p1 in float64.
-	buffp1f []float64
-	// buffpOutf saves the coefficients of pOut in float64.
-	buffpOutf []float64
-
-	// buffp0c saves the fourier transform of p0 in convolution.
-	buffp0c []complex128
-	// buff1c saves the fourier transform of p1 in convolution.
-	buffp1c []complex128
+	// buffFP0 holds the fourier polynomial of p0.
+	buffFP0 FourierPoly
+	// buffFP1 holds the fourier polynomial of p1.
+	buffFP1 FourierPoly
+	// buffFPOut holds the fourier polynomial of pOut.
+	buffFPOut FourierPoly
+	// buffInvFP holds the untwisted/unfolded/InvFFT-applied fourier polynomial
+	// while converting fourier polynomial to standard polynomial.
+	buffInvFP FourierPoly
+	// buffPOut holds the intermediate standard polynomial
+	// for MulAdd or MulSub operations.
+	buffPOut Poly[T]
 }
 
 // NewEvaluater creates a new Evaluater with degree N.
@@ -67,12 +68,11 @@ func NewEvaluater[T constraints.Integer](N int) Evaluater[T] {
 		wj:    wj,
 		wjInv: wjInv,
 
-		buffp0f:   make([]float64, N),
-		buffp1f:   make([]float64, N),
-		buffpOutf: make([]float64, N),
-
-		buffp0c: make([]complex128, N/2),
-		buffp1c: make([]complex128, N/2),
+		buffFP0:   NewFourierPoly(N),
+		buffFP1:   NewFourierPoly(N),
+		buffFPOut: NewFourierPoly(N),
+		buffInvFP: NewFourierPoly(N),
+		buffPOut:  New[T](N),
 	}
 }
 

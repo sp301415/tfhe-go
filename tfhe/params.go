@@ -80,19 +80,19 @@ func (p DecompositionParametersLiteral[T]) Compile() DecompositionParameters[T] 
 		panic("base not power of two")
 	case p.Level <= 0:
 		panic("Level smaller than zero")
-	case num.TLen[T]() <= num.Log2(p.Base)+p.Level:
+	case num.SizeT[T]() <= num.Log2(p.Base)+p.Level:
 		panic("Base * Level larger than Q")
 	}
 
 	scaledBasesLog := make([]int, p.Level)
 	for i := range scaledBasesLog {
-		scaledBasesLog[i] = num.TLen[T]() - (i+1)*num.Log2(p.Base)
+		scaledBasesLog[i] = num.SizeT[T]() - (i+1)*num.Log2(p.Base)
 	}
 
 	return DecompositionParameters[T]{
 		base:           p.Base,
 		baseLog:        num.Log2(p.Base),
-		maxBits:        num.TLen[T](),
+		maxBits:        num.SizeT[T](),
 		level:          p.Level,
 		scaledBasesLog: scaledBasesLog,
 	}

@@ -45,8 +45,8 @@ func MaxT[T constraints.Integer]() uint64 {
 	return math.MaxUint
 }
 
-// TLen returns the bits required to express value of type T in int.
-func TLen[T constraints.Integer]() int {
+// SizeT returns the bits required to express value of type T in int.
+func SizeT[T constraints.Integer]() int {
 	var z T
 	switch any(z).(type) {
 	case int, uint, uintptr:
@@ -61,6 +61,40 @@ func TLen[T constraints.Integer]() int {
 		return 64
 	}
 	return 64
+}
+
+// MinT returns the minimum possible value of type T in int64.
+func MinT[T constraints.Integer]() int64 {
+	var z T
+	switch any(z).(type) {
+	case int:
+		return math.MinInt
+	case int8:
+		return math.MinInt8
+	case int16:
+		return math.MinInt16
+	case int32:
+		return math.MinInt32
+	case int64:
+		return math.MinInt64
+	}
+	return 0
+}
+
+// IsSigned returns if type T is a signed integer type.
+func IsSigned[T constraints.Integer]() bool {
+	var z T
+	return z-1 < 0
+}
+
+// FromFloat64 casts a float64 value to T, wrapping around.
+// If float64 is not valid (NaN, Inf), it returns 0.
+func FromFloat64[T constraints.Integer](f float64) T {
+	if math.IsNaN(f) || math.IsInf(f, 0) {
+		return 0
+	}
+
+	return T(math.Round(f))
 }
 
 // IsPowerOfTwo returns whether x is a power of two.

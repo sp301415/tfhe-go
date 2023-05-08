@@ -3,26 +3,23 @@ package poly
 import (
 	"github.com/sp301415/tfhe/math/num"
 	"github.com/sp301415/tfhe/math/vec"
-	"golang.org/x/exp/constraints"
 )
 
 // Add adds p0, p1 and returns the result.
 func (e Evaluater[T]) Add(p0, p1 Poly[T]) Poly[T] {
 	p := New[T](e.degree)
-	vec.AddInPlace(p0.Coeffs, p1.Coeffs, p.Coeffs)
+	e.AddInPlace(p0, p1, p)
 	return p
 }
 
 // AddInPlace adds p0, p1 and writes it to pOut.
 func (e Evaluater[T]) AddInPlace(p0, p1, pOut Poly[T]) {
-	for i := 0; i < e.degree; i++ {
-		pOut.Coeffs[i] = p0.Coeffs[i] + p1.Coeffs[i]
-	}
+	vec.AddInPlace(p0.Coeffs, p1.Coeffs, pOut.Coeffs)
 }
 
 // AddAssign adds p0 to ptOut.
 func (e Evaluater[T]) AddAssign(p0, pOut Poly[T]) {
-	e.AddInPlace(p0, pOut, pOut)
+	vec.AddAssign(p0.Coeffs, pOut.Coeffs)
 }
 
 // Sub subtracts p0, p1 and returns the result.
@@ -34,14 +31,12 @@ func (e Evaluater[T]) Sub(p0, p1 Poly[T]) Poly[T] {
 
 // SubInPlace subtracts p0, p1 and writes it to pOut.
 func (e Evaluater[T]) SubInPlace(p0, p1, pOut Poly[T]) {
-	for i := 0; i < e.degree; i++ {
-		pOut.Coeffs[i] = p0.Coeffs[i] - p1.Coeffs[i]
-	}
+	vec.SubInPlace(p0.Coeffs, p1.Coeffs, pOut.Coeffs)
 }
 
 // SubAssign subtracts p0 from pOut.
 func (e Evaluater[T]) SubAssign(p0, pOut Poly[T]) {
-	e.SubInPlace(pOut, p0, pOut)
+	vec.SubAssign(p0.Coeffs, pOut.Coeffs)
 }
 
 // Neg negates p0 and returns the result.
@@ -53,14 +48,12 @@ func (e Evaluater[T]) Neg(p0 Poly[T]) Poly[T] {
 
 // NegInPlace negates p0 and writes it to pOut.
 func (e Evaluater[T]) NegInPlace(p0, pOut Poly[T]) {
-	for i := 0; i < e.degree; i++ {
-		pOut.Coeffs[i] = -p0.Coeffs[i]
-	}
+	vec.NegInPlace(p0.Coeffs, pOut.Coeffs)
 }
 
 // NegAssign negates p0.
 func (e Evaluater[T]) NegAssign(p0 Poly[T]) {
-	e.NegInPlace(p0, p0)
+	vec.NegAssign(p0.Coeffs)
 }
 
 // Mul multiplies p0, p1 and returns the result.
@@ -70,63 +63,67 @@ func (e Evaluater[T]) Mul(p0, p1 Poly[T]) Poly[T] {
 	return p
 }
 
-// fromFloat converts float64 to T, wrapping with MaxT.
-func fromFloat[T constraints.Integer](f float64) T {
-	maxT := float64(num.MaxT[T]())
-	for f < 0 {
-		f += maxT
-	}
-	for f > maxT {
-		f -= maxT
-	}
-	return T(f)
-}
-
 // MulInPlace multiplies p0, p1 and writes it to pOut.
 func (e Evaluater[T]) MulInPlace(p0, p1, pOut Poly[T]) {
-	for i := 0; i < e.degree; i++ {
-		e.buffp0f[i] = float64(p0.Coeffs[i])
-		e.buffp1f[i] = float64(p1.Coeffs[i])
-	}
+	e.ToFourierPolyInPlace(p0, e.buffFP0)
+	e.ToFourierPolyInPlace(p1, e.buffFP1)
 
-	e.convolve(e.buffp0f, e.buffp1f, e.buffpOutf)
+	vec.ElementWiseMulInPlace(e.buffFP0.Coeffs, e.buffFP1.Coeffs, e.buffFPOut.Coeffs)
 
-	for i := 0; i < e.degree; i++ {
-		pOut.Coeffs[i] = fromFloat[T](e.buffpOutf[i])
-	}
+	e.ToStandardPolyInPlace(e.buffFPOut, pOut)
 }
 
 // MulAssign multiplies p0 to pOut.
 func (e Evaluater[T]) MulAssign(p0, pOut Poly[T]) {
-	e.MulInPlace(p0, pOut, pOut)
+	e.ToFourierPolyInPlace(p0, e.buffFP0)
+	e.ToFourierPolyInPlace(pOut, e.buffFPOut)
+
+	vec.ElementWiseMulAssign(e.buffFP0.Coeffs, e.buffFPOut.Coeffs)
+
+	e.ToStandardPolyInPlace(e.buffFPOut, pOut)
 }
 
 // MulAddAssign multiplies p0, p1 and adds to pOut.
 func (e Evaluater[T]) MulAddAssign(p0, p1, pOut Poly[T]) {
-	for i := 0; i < e.degree; i++ {
-		e.buffp0f[i] = float64(p0.Coeffs[i])
-		e.buffp1f[i] = float64(p1.Coeffs[i])
-	}
+	e.ToFourierPolyInPlace(p0, e.buffFP0)
+	e.ToFourierPolyInPlace(p1, e.buffFP1)
 
-	e.convolve(e.buffp0f, e.buffp1f, e.buffpOutf)
+	vec.ElementWiseMulInPlace(e.buffFP0.Coeffs, e.buffFP1.Coeffs, e.buffFPOut.Coeffs)
 
-	for i := 0; i < e.degree; i++ {
-		pOut.Coeffs[i] += fromFloat[T](e.buffpOutf[i])
-	}
+	e.toStandardPolyAddInPlace(e.buffFPOut, pOut)
 }
 
 // MulSubAssign multiplies p0, p1 and subtracts from pOut.
 func (e Evaluater[T]) MulSubAssign(p0, p1, pOut Poly[T]) {
-	for i := 0; i < e.degree; i++ {
-		e.buffp0f[i] = float64(p0.Coeffs[i])
-		e.buffp1f[i] = float64(p1.Coeffs[i])
-	}
+	e.ToFourierPolyInPlace(p0, e.buffFP0)
+	e.ToFourierPolyInPlace(p1, e.buffFP1)
 
-	e.convolve(e.buffp0f, e.buffp1f, e.buffpOutf)
+	vec.ElementWiseMulInPlace(e.buffFP0.Coeffs, e.buffFP1.Coeffs, e.buffFPOut.Coeffs)
 
-	for i := 0; i < e.degree; i++ {
-		pOut.Coeffs[i] -= fromFloat[T](e.buffpOutf[i])
-	}
+	e.toStandardPolySubInPlace(e.buffFPOut, pOut)
+}
+
+// MulFourier multiplies fp0, fp1 and returns the result.
+func (e Evaluater[T]) MulWithFourier(fp0, fp1 FourierPoly) FourierPoly {
+	fp := NewFourierPoly(e.degree)
+	e.MulWithFourierInPlace(fp0, fp1, fp)
+	return fp
+}
+
+// MulFourierInPlace multiplies fp0, fp1 and writes it to fpOut.
+func (e Evaluater[T]) MulWithFourierInPlace(fp0, fp1, fpOut FourierPoly) {
+	vec.ElementWiseMulInPlace(fp0.Coeffs, fp1.Coeffs, fpOut.Coeffs)
+}
+
+// MulAddFourierAssign multiplies fp0, fp1 and adds to fpOut.
+func (e Evaluater[T]) MulAddFourierAssign(fp0, fp1, fpOut FourierPoly) {
+	vec.ElementWiseMulAddAssign(fp0.Coeffs, fp1.Coeffs, fpOut.Coeffs)
+}
+
+// MulSubFourierAssign multiplies fp0, fp1 and subtracts from fpOut.
+func (e Evaluater[T]) MulSubFourierAssign(fp0, fp1, fpOut Poly[T]) {
+	vec.ElementWiseMulSubAssign(fp0.Coeffs, fp1.Coeffs, fpOut.Coeffs)
+
 }
 
 // ScalarMul multplies c to p0 and returns the result.
