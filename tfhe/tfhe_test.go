@@ -33,12 +33,55 @@ func TestEvaluater(t *testing.T) {
 
 	t.Run("KeySwitch", func(t *testing.T) {
 		encOut := tfhe.NewEncrypter(params)
-		ksk := encOut.SampleKeySwitchingKeyFrom(enc.LWEKey(), params.KeySwitchParameters())
+		ksk := encOut.GenKeySwitchingKey(enc.LWEKey(), params.KeySwitchParameters())
 
 		for _, msg := range msgs {
 			ct := enc.Encrypt(msg)
 			ctOut := eval.KeySwitch(ct, ksk)
 			assert.Equal(t, msg, encOut.Decrypt(ctOut))
+		}
+	})
+}
+
+func BenchmarkKeyGen(b *testing.B) {
+	enc := tfhe.NewEncrypterWithoutKey(params)
+
+	b.Run("LWE", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			enc.GenLWEKey()
+		}
+	})
+
+	b.Run("GLWE", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			enc.GenGLWEKey()
+		}
+	})
+
+	enc.SetLWEKey(enc.GenLWEKey())
+	enc.SetGLWEKey(enc.GenGLWEKey())
+
+	b.Run("KeySwitchingKey", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			enc.GenKeySwitchingKeyForBootstrapping()
+		}
+	})
+
+	b.Run("KeySwitchingKeyParallel", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			enc.GenKeySwitchingKeyForBootstrappingParallel()
+		}
+	})
+
+	b.Run("BootstrappingKey", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			enc.GenBootstrappingKey()
+		}
+	})
+
+	b.Run("BootstrappingKeyParallel", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			enc.GenBootstrappingKeyParallel()
 		}
 	})
 }

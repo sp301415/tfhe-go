@@ -65,42 +65,42 @@ func (e Evaluater[T]) Mul(p0, p1 Poly[T]) Poly[T] {
 
 // MulInPlace multiplies p0, p1 and writes it to pOut.
 func (e Evaluater[T]) MulInPlace(p0, p1, pOut Poly[T]) {
-	e.ToFourierPolyInPlace(p0, e.buffFP0)
-	e.ToFourierPolyInPlace(p1, e.buffFP1)
+	e.ToFourierPolyInPlace(p0, e.buffer.fp0)
+	e.ToFourierPolyInPlace(p1, e.buffer.fp1)
 
-	vec.ElementWiseMulInPlace(e.buffFP0.Coeffs, e.buffFP1.Coeffs, e.buffFPOut.Coeffs)
+	vec.ElementWiseMulInPlace(e.buffer.fp0.Coeffs, e.buffer.fp1.Coeffs, e.buffer.fpOut.Coeffs)
 
-	e.ToStandardPolyInPlace(e.buffFPOut, pOut)
+	e.ToStandardPolyInPlace(e.buffer.fpOut, pOut)
 }
 
 // MulAssign multiplies p0 to pOut.
 func (e Evaluater[T]) MulAssign(p0, pOut Poly[T]) {
-	e.ToFourierPolyInPlace(p0, e.buffFP0)
-	e.ToFourierPolyInPlace(pOut, e.buffFPOut)
+	e.ToFourierPolyInPlace(p0, e.buffer.fp0)
+	e.ToFourierPolyInPlace(pOut, e.buffer.fpOut)
 
-	vec.ElementWiseMulAssign(e.buffFP0.Coeffs, e.buffFPOut.Coeffs)
+	vec.ElementWiseMulAssign(e.buffer.fp0.Coeffs, e.buffer.fpOut.Coeffs)
 
-	e.ToStandardPolyInPlace(e.buffFPOut, pOut)
+	e.ToStandardPolyInPlace(e.buffer.fpOut, pOut)
 }
 
 // MulAddAssign multiplies p0, p1 and adds to pOut.
 func (e Evaluater[T]) MulAddAssign(p0, p1, pOut Poly[T]) {
-	e.ToFourierPolyInPlace(p0, e.buffFP0)
-	e.ToFourierPolyInPlace(p1, e.buffFP1)
+	e.ToFourierPolyInPlace(p0, e.buffer.fp0)
+	e.ToFourierPolyInPlace(p1, e.buffer.fp1)
 
-	vec.ElementWiseMulInPlace(e.buffFP0.Coeffs, e.buffFP1.Coeffs, e.buffFPOut.Coeffs)
+	vec.ElementWiseMulInPlace(e.buffer.fp0.Coeffs, e.buffer.fp1.Coeffs, e.buffer.fpOut.Coeffs)
 
-	e.toStandardPolyAddInPlace(e.buffFPOut, pOut)
+	e.toStandardPolyAddInPlace(e.buffer.fpOut, pOut)
 }
 
 // MulSubAssign multiplies p0, p1 and subtracts from pOut.
 func (e Evaluater[T]) MulSubAssign(p0, p1, pOut Poly[T]) {
-	e.ToFourierPolyInPlace(p0, e.buffFP0)
-	e.ToFourierPolyInPlace(p1, e.buffFP1)
+	e.ToFourierPolyInPlace(p0, e.buffer.fp0)
+	e.ToFourierPolyInPlace(p1, e.buffer.fp1)
 
-	vec.ElementWiseMulInPlace(e.buffFP0.Coeffs, e.buffFP1.Coeffs, e.buffFPOut.Coeffs)
+	vec.ElementWiseMulInPlace(e.buffer.fp0.Coeffs, e.buffer.fp1.Coeffs, e.buffer.fpOut.Coeffs)
 
-	e.toStandardPolySubInPlace(e.buffFPOut, pOut)
+	e.toStandardPolySubInPlace(e.buffer.fpOut, pOut)
 }
 
 // MulFourier multiplies fp0, fp1 and returns the result.
@@ -123,7 +123,6 @@ func (e Evaluater[T]) MulAddFourierAssign(fp0, fp1, fpOut FourierPoly) {
 // MulSubFourierAssign multiplies fp0, fp1 and subtracts from fpOut.
 func (e Evaluater[T]) MulSubFourierAssign(fp0, fp1, fpOut Poly[T]) {
 	vec.ElementWiseMulSubAssign(fp0.Coeffs, fp1.Coeffs, fpOut.Coeffs)
-
 }
 
 // ScalarMul multplies c to p0 and returns the result.

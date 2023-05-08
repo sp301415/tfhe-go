@@ -28,20 +28,21 @@ type Evaluater[T constraints.Integer] struct {
 	// wjInv holds the precomputed values of w_2N^-j where j = 0 ~ N.
 	wjInv []complex128
 
-	/* Buffers */
+	buffer evaluationBuffer[T]
+}
 
-	// buffFP0 holds the fourier polynomial of p0.
-	buffFP0 FourierPoly
-	// buffFP1 holds the fourier polynomial of p1.
-	buffFP1 FourierPoly
-	// buffFPOut holds the fourier polynomial of pOut.
-	buffFPOut FourierPoly
-	// buffInvFP holds the untwisted/unfolded/InvFFT-applied fourier polynomial
-	// while converting fourier polynomial to standard polynomial.
-	buffInvFP FourierPoly
-	// buffPOut holds the intermediate standard polynomial
-	// for MulAdd or MulSub operations.
-	buffPOut Poly[T]
+// evaluationBuffer contains buffer values for Evaluater.
+type evaluationBuffer[T constraints.Integer] struct {
+	// fp0 holds the fourier polynomial of p0.
+	fp0 FourierPoly
+	// fp1 holds the fourier polynomial of p1.
+	fp1 FourierPoly
+	// fpOut holds the fourier polynomial of pOut.
+	fpOut FourierPoly
+	// fpInv holds the InvFTT & Untwisted & Unfolded value of fp.
+	fpInv FourierPoly
+	// pOut holds the result polynomial in MulAdd or MulSub operations.
+	pOut Poly[T]
 }
 
 // NewEvaluater creates a new Evaluater with degree N.
@@ -67,11 +68,34 @@ func NewEvaluater[T constraints.Integer](N int) Evaluater[T] {
 		wj:    wj,
 		wjInv: wjInv,
 
-		buffFP0:   NewFourierPoly(N),
-		buffFP1:   NewFourierPoly(N),
-		buffFPOut: NewFourierPoly(N),
-		buffInvFP: NewFourierPoly(N),
-		buffPOut:  New[T](N),
+		buffer: newEvaluationBuffer[T](N),
+	}
+}
+
+// newEvaluationBuffer allocates an empty evaluation buffer.
+func newEvaluationBuffer[T constraints.Integer](N int) evaluationBuffer[T] {
+	return evaluationBuffer[T]{
+		fp0:   NewFourierPoly(N),
+		fp1:   NewFourierPoly(N),
+		fpOut: NewFourierPoly(N),
+		fpInv: NewFourierPoly(N),
+		pOut:  New[T](N),
+	}
+}
+
+// ShallowCopy returns a shallow copy of this Evaluater.
+// Returned Evaluater is safe for concurrent use.
+func (e Evaluater[T]) ShallowCopy() Evaluater[T] {
+	return Evaluater[T]{
+		degree: e.degree,
+
+		fft:     fourier.NewFFT(e.degree),
+		fftHalf: fourier.NewCmplxFFT(e.degree / 2),
+
+		wj:    e.wj,
+		wjInv: e.wjInv,
+
+		buffer: newEvaluationBuffer[T](e.degree),
 	}
 }
 

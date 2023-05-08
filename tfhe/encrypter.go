@@ -17,19 +17,27 @@ type Encrypter[T Tint] struct {
 	lweSampler     rand.GaussianSampler[T]
 	glweSampler    rand.GaussianSampler[T]
 
-	polyEvaluator poly.Evaluater[T]
+	polyEvaluater poly.Evaluater[T]
 
 	lweKey  LWEKey[T]
 	glweKey GLWEKey[T]
 	// lweLargeKey is a LWE key derived from GLWE key.
 	lweLargeKey LWEKey[T]
 
-	// buffGLWEPtForGGSW is used to store intermediate Plaintext values
-	// especially in GGSW computation.
-	buffGLWEPtForGGSW poly.Poly[T]
-	// buffGLWEPtForGLev is used to store intermediate Plaintext values
-	// especially in GLev computation.
-	buffGLWEPtForGLev poly.Poly[T]
+	buffer encryptionBuffer[T]
+}
+
+// encryptionBuffer contains buffer values for Encrypter.
+type encryptionBuffer[T Tint] struct {
+	// GLWEPtForGGSW holds GLWE plaintexts in GGSW encryption.
+	GLWEPtForGGSW GLWEPlaintext[T]
+	// GLWEPtForGLev holds GLWE plaintexts in GLev encryption.
+	GLWEPtForGLev GLWEPlaintext[T]
+
+	// GLEWPtForPBSKeyGen holds GLWE plaintexts in bootstrapping key generation.
+	GLWEPtForPBSKeyGen GLWEPlaintext[T]
+	// GLWECtForPBSKeyGen holds GLWE ciphertexts in bootstrapping key generation.
+	GLWECtForPBSKeyGen GLWECiphertext[T]
 }
 
 // NewEncrypter returns a initialized Encrypter with given parameters.
@@ -37,8 +45,8 @@ type Encrypter[T Tint] struct {
 func NewEncrypter[T Tint](params Parameters[T]) Encrypter[T] {
 	encrypter := NewEncrypterWithoutKey(params)
 
-	encrypter.lweKey = encrypter.SampleLWEKey()
-	encrypter.glweKey = encrypter.SampleGLWEKey()
+	encrypter.lweKey = encrypter.GenLWEKey()
+	encrypter.glweKey = encrypter.GenGLWEKey()
 	encrypter.lweLargeKey = encrypter.glweKey.ToLWEKey()
 
 	return encrypter
@@ -56,10 +64,40 @@ func NewEncrypterWithoutKey[T Tint](params Parameters[T]) Encrypter[T] {
 		lweSampler:     rand.GaussianSampler[T]{StdDev: params.lweStdDev * float64(num.MaxT[T]())},
 		glweSampler:    rand.GaussianSampler[T]{StdDev: params.glweStdDev * float64(num.MaxT[T]())},
 
-		polyEvaluator: poly.NewEvaluater[T](params.polyDegree),
+		polyEvaluater: poly.NewEvaluater[T](params.polyDegree),
 
-		buffGLWEPtForGGSW: poly.New[T](params.polyDegree),
-		buffGLWEPtForGLev: poly.New[T](params.polyDegree),
+		buffer: newEncryptionBuffer(params),
+	}
+}
+
+// newEncryptionBuffer allocates an empty encryptionBuffer.
+func newEncryptionBuffer[T Tint](params Parameters[T]) encryptionBuffer[T] {
+	return encryptionBuffer[T]{
+		GLWEPtForGGSW:      NewGLWEPlaintext(params),
+		GLWEPtForGLev:      NewGLWEPlaintext(params),
+		GLWEPtForPBSKeyGen: NewGLWEPlaintext(params),
+		GLWECtForPBSKeyGen: NewGLWECiphertext(params),
+	}
+}
+
+// ShallowCopy returns a shallow copy of this Encrypter.
+// Returned Encrypter is safe for concurrent use.
+func (e Encrypter[T]) ShallowCopy() Encrypter[T] {
+	return Encrypter[T]{
+		Parameters: e.Parameters,
+
+		uniformSampler: e.uniformSampler,
+		binarySampler:  e.binarySampler,
+		lweSampler:     e.lweSampler,
+		glweSampler:    e.glweSampler,
+
+		lweKey:      e.lweKey,
+		glweKey:     e.glweKey,
+		lweLargeKey: e.lweLargeKey,
+
+		polyEvaluater: e.polyEvaluater.ShallowCopy(),
+
+		buffer: newEncryptionBuffer(e.Parameters),
 	}
 }
 
@@ -98,15 +136,13 @@ func (e Encrypter[T]) EncodeLWEDelta(message int, delta T) LWEPlaintext[T] {
 
 // DecodeLWE deocdes the LWE plaintext into integer message.
 func (e Encrypter[T]) DecodeLWE(pt LWEPlaintext[T]) int {
-	messageDeltaLog := 63 - (e.Parameters.messageModulusLog + e.Parameters.carryModulusLog)
-	closest_representable := num.RoundRatioBits(pt.Value, messageDeltaLog) << messageDeltaLog
-	return int(num.RoundRatioBits(closest_representable, e.Parameters.deltaLog) % e.Parameters.messageModulus)
+	return int(num.RoundRatioBits(pt.Value, e.Parameters.deltaLog) % e.Parameters.messageModulus)
 }
 
 // DecodeLWEDelta decodes an integer message with custom delta.
 // It does not handle message modulus.
-func (e Encrypter[T]) DecodeLWEDelta(pt LWEPlaintext[T], delta int) int {
-	return int(num.RoundRatio(pt.Value, T(delta)))
+func (e Encrypter[T]) DecodeLWEDelta(pt LWEPlaintext[T], delta T) int {
+	return int(num.RoundRatio(pt.Value, delta))
 }
 
 // Encrypt encrypts an integer message to LWE ciphertext.
@@ -162,22 +198,42 @@ func (e Encrypter[T]) DecryptLev(ct LevCiphertext[T]) LWEPlaintext[T] {
 // If len(messages) > Parameters.PolyDegree, the leftovers are discarded.
 func (e Encrypter[T]) EncodeGLWE(messages []int) GLWEPlaintext[T] {
 	pt := NewGLWEPlaintext(e.Parameters)
-	for i, message := range messages {
-		if i >= e.Parameters.polyDegree {
-			break
-		}
-		pt.Value.Coeffs[i] = (T(message) % e.Parameters.messageModulus) << e.Parameters.deltaLog
+	for i := 0; i < e.Parameters.polyDegree && i < len(messages); i++ {
+		pt.Value.Coeffs[i] = (T(messages[i]) % e.Parameters.messageModulus) << e.Parameters.deltaLog
+	}
+	return pt
+}
+
+// EncodeGLWEDelta encodes up to Parameters.PolyDegree integer messages into one GLWE plaintext using custom delta.
+// It does not handle message modulus.
+//
+// If len(messages) < Parameters.PolyDegree, the leftovers are padded with zero.
+// If len(messages) > Parameters.PolyDegree, the leftovers are discarded.
+func (e Encrypter[T]) EncodeGLWEDelta(messages []int, delta T) GLWEPlaintext[T] {
+	pt := NewGLWEPlaintext(e.Parameters)
+	for i := 0; i < e.Parameters.polyDegree && i < len(messages); i++ {
+		pt.Value.Coeffs[i] = T(messages[i]) * delta
 	}
 	return pt
 }
 
 // DecodeGLWE decodes a GLWE plaintext to integer messages.
+// The returned messages are always of length Parameters.PolyDegree.
 func (e Encrypter[T]) DecodeGLWE(pt GLWEPlaintext[T]) []int {
-	messageDeltaLog := 63 - (e.Parameters.messageModulusLog + e.Parameters.carryModulusLog)
 	messages := make([]int, e.Parameters.polyDegree)
 	for i := 0; i < e.Parameters.polyDegree; i++ {
-		closest_representable := num.RoundRatioBits(pt.Value.Coeffs[i], messageDeltaLog) << messageDeltaLog
-		messages[i] = int((num.RoundRatioBits(closest_representable, e.Parameters.deltaLog) % e.Parameters.messageModulus))
+		messages[i] = int((num.RoundRatioBits(pt.Value.Coeffs[i], e.Parameters.deltaLog) % e.Parameters.messageModulus))
+	}
+	return messages
+}
+
+// DecodeGLWE decodes a GLWE plaintext to integer messages using custom delta.
+// The returned messages are always of length Parameters.PolyDegree.
+// It does not handle message modulus.
+func (e Encrypter[T]) DecodeGLWEDelta(pt GLWEPlaintext[T], delta T) []int {
+	messages := make([]int, e.Parameters.polyDegree)
+	for i := 0; i < e.Parameters.polyDegree; i++ {
+		messages[i] = int(num.RoundRatio(pt.Value.Coeffs[i], delta))
 	}
 	return messages
 }
@@ -207,21 +263,21 @@ func (e Encrypter[T]) EncryptGLWEInPlace(pt GLWEPlaintext[T], ct GLWECiphertext[
 	}
 
 	e.glweSampler.SamplePoly(ct.Value[0])
-	e.polyEvaluator.AddAssign(pt.Value, ct.Value[0])
+	e.polyEvaluater.AddAssign(pt.Value, ct.Value[0])
 	for i := 0; i < e.Parameters.glweDimension; i++ {
-		e.polyEvaluator.MulAddAssign(ct.Value[i+1], e.glweKey.Value[i], ct.Value[0])
+		e.polyEvaluater.MulAddAssign(ct.Value[i+1], e.glweKey.Value[i], ct.Value[0])
 	}
 }
 
 // EncryptGLevInPlace encrypts GLWE plaintext to GLev ciphertexts.
 func (e Encrypter[T]) EncryptGLevInPlace(pt GLWEPlaintext[T], ct GLevCiphertext[T]) {
-	e.polyEvaluator.ScalarMulInPlace(pt.Value, ct.decompParams.FirstScaledBase(), e.buffGLWEPtForGLev)
+	e.polyEvaluater.ScalarMulInPlace(pt.Value, ct.decompParams.FirstScaledBase(), e.buffer.GLWEPtForGLev.Value)
 
 	for i := 0; i < ct.decompParams.level; i++ {
-		e.EncryptGLWEInPlace(GLWEPlaintext[T]{Value: e.buffGLWEPtForGLev}, ct.Value[i])
+		e.EncryptGLWEInPlace(e.buffer.GLWEPtForGLev, ct.Value[i])
 
 		if i < ct.decompParams.level-1 { // Skip last loop
-			e.polyEvaluator.ScalarDivAssign(ct.decompParams.base, e.buffGLWEPtForGLev)
+			e.polyEvaluater.ScalarDivAssign(ct.decompParams.base, e.buffer.GLWEPtForGLev.Value)
 		}
 	}
 }
@@ -244,7 +300,7 @@ func (e Encrypter[T]) DecryptGLWEInPlace(ct GLWECiphertext[T], pt GLWEPlaintext[
 	// pt = b - sum a*s
 	pt.Value.CopyFrom(ct.Value[0])
 	for i := 0; i < e.Parameters.glweDimension; i++ {
-		e.polyEvaluator.MulSubAssign(ct.Value[i+1], e.glweKey.Value[i], pt.Value)
+		e.polyEvaluater.MulSubAssign(ct.Value[i+1], e.glweKey.Value[i], pt.Value)
 	}
 }
 
@@ -285,12 +341,12 @@ func (e Encrypter[T]) EncryptGGSW(pt GLWEPlaintext[T], decompParams Decompositio
 func (e Encrypter[T]) EncryptGGSWInPlace(pt GLWEPlaintext[T], ct GGSWCiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		if i == 0 {
-			e.buffGLWEPtForGGSW.CopyFrom(pt.Value)
+			e.EncryptGLevInPlace(pt, ct.Value[i])
 		} else {
-			e.polyEvaluator.MulInPlace(pt.Value, e.glweKey.Value[i-1], e.buffGLWEPtForGGSW)
-			e.polyEvaluator.NegAssign(e.buffGLWEPtForGGSW)
+			e.polyEvaluater.MulInPlace(pt.Value, e.glweKey.Value[i-1], e.buffer.GLWEPtForGGSW.Value)
+			e.polyEvaluater.NegAssign(e.buffer.GLWEPtForGGSW.Value)
+			e.EncryptGLevInPlace(e.buffer.GLWEPtForGGSW, ct.Value[i])
 		}
-		e.EncryptGLevInPlace(GLWEPlaintext[T]{Value: e.buffGLWEPtForGGSW}, ct.Value[i])
 	}
 }
 

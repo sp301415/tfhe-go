@@ -82,13 +82,13 @@ func (e Evaluater[T]) ToStandardPolyInPlace(fp FourierPoly, p Poly[T]) {
 	N := e.degree
 
 	// InvFFT
-	e.fftHalf.Sequence(e.buffInvFP.Coeffs, fp.Coeffs)
+	e.fftHalf.Sequence(e.buffer.fpInv.Coeffs, fp.Coeffs)
 
 	// Untwist and Unfold
 	for j := 0; j < N/2; j++ {
-		e.buffInvFP.Coeffs[j] *= e.wjInv[j] / complex(float64(N/2), 0)
-		p.Coeffs[j] = num.FromFloat64[T](real(e.buffInvFP.Coeffs[j]))
-		p.Coeffs[j+N/2] = num.FromFloat64[T](imag(e.buffInvFP.Coeffs[j]))
+		e.buffer.fpInv.Coeffs[j] *= e.wjInv[j] / complex(float64(N/2), 0)
+		p.Coeffs[j] = num.FromFloat64[T](real(e.buffer.fpInv.Coeffs[j]))
+		p.Coeffs[j+N/2] = num.FromFloat64[T](imag(e.buffer.fpInv.Coeffs[j]))
 	}
 }
 
@@ -97,13 +97,13 @@ func (e Evaluater[T]) toStandardPolyAddInPlace(fp FourierPoly, p Poly[T]) {
 	N := e.degree
 
 	// InvFFT
-	e.fftHalf.Sequence(e.buffInvFP.Coeffs, fp.Coeffs)
+	e.fftHalf.Sequence(e.buffer.fpInv.Coeffs, fp.Coeffs)
 
 	// Untwist and Unfold
 	for j := 0; j < N/2; j++ {
-		e.buffInvFP.Coeffs[j] *= e.wjInv[j] / complex(float64(N/2), 0)
-		p.Coeffs[j] += num.FromFloat64[T](real(e.buffInvFP.Coeffs[j]))
-		p.Coeffs[j+N/2] += num.FromFloat64[T](imag(e.buffInvFP.Coeffs[j]))
+		e.buffer.fpInv.Coeffs[j] *= e.wjInv[j] / complex(float64(N/2), 0)
+		p.Coeffs[j] += num.FromFloat64[T](real(e.buffer.fpInv.Coeffs[j]))
+		p.Coeffs[j+N/2] += num.FromFloat64[T](imag(e.buffer.fpInv.Coeffs[j]))
 	}
 }
 
@@ -112,12 +112,12 @@ func (e Evaluater[T]) toStandardPolySubInPlace(fp FourierPoly, p Poly[T]) {
 	N := e.degree
 
 	// InvFFT
-	e.fftHalf.Sequence(e.buffInvFP.Coeffs, fp.Coeffs)
+	e.fftHalf.Sequence(e.buffer.fpInv.Coeffs, fp.Coeffs)
 
 	// Untwist and Unfold
 	for j := 0; j < N/2; j++ {
-		e.buffInvFP.Coeffs[j] *= e.wjInv[j] / complex(float64(N/2), 0)
-		p.Coeffs[j] -= num.FromFloat64[T](real(e.buffInvFP.Coeffs[j]))
-		p.Coeffs[j+N/2] -= num.FromFloat64[T](imag(e.buffInvFP.Coeffs[j]))
+		e.buffer.fpInv.Coeffs[j] *= e.wjInv[j] / complex(float64(N/2), 0)
+		p.Coeffs[j] -= num.FromFloat64[T](real(e.buffer.fpInv.Coeffs[j]))
+		p.Coeffs[j+N/2] -= num.FromFloat64[T](imag(e.buffer.fpInv.Coeffs[j]))
 	}
 }

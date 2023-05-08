@@ -138,6 +138,18 @@ func RoundRatioBits[T constraints.Integer](x T, bits int) T {
 	return ratio
 }
 
+// ClosestMultiple returns the closest multiple of x respect to y
+// It is same as round(x/y) * y.
+func ClosestMultiple[T constraints.Integer](x, y T) T {
+	return RoundRatio(x, y) * y
+}
+
+// ClosestMultipleBits returns the closest multiple of x respect to 2^bits.
+// It is same as round(x/2^bits) * 2^bits.
+func ClosestMultipleBits[T constraints.Integer](x T, bits int) T {
+	return RoundRatioBits(x, bits) << bits
+}
+
 // Gcd returns the GCD(Greatest Common Divisor) of x and y.
 //   - If x = y = 0, Gcd returns 0.
 //   - If x = 0 and y != 0, Gcd returns |y|.
@@ -157,4 +169,20 @@ func Gcd[T constraints.Integer](x, y T) T {
 		x, y = y, x%y
 	}
 	return x
+}
+
+// Min returns the smaller value between x and y.
+func Min[T constraints.Integer](x, y T) T {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+// Max returns the larger value between x and y.
+func Max[T constraints.Integer](x, y T) T {
+	if x > y {
+		return x
+	}
+	return y
 }

@@ -165,7 +165,7 @@ func (p DecompositionParameters[T]) Decompose(x T) []T {
 	x = num.RoundRatioBits(x, p.LastScaledBaseLog())
 	d := make([]T, p.level)
 	for i := 0; i < p.level; i++ {
-		res := x % p.base
+		res := x & (p.base - 1)
 		x >>= p.baseLog
 		carry := ((res - 1) | x) & res
 		carry >>= p.baseLog - 1

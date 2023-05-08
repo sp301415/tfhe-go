@@ -46,6 +46,19 @@ func Rotate[T any](s []T, l int) {
 	}
 }
 
+// Chunk reslices the vector to subslices each of size chunkSize.
+func Chunk[T any](s []T, chunkSize int) [][]T {
+	chunkCount := num.RoundRatio(len(s), chunkSize)
+	result := make([][]T, chunkCount)
+
+	for i := 0; i < chunkCount-1; i++ {
+		result[i] = s[i*chunkSize : (i+1)*chunkSize]
+	}
+	result[chunkCount-1] = s[(chunkCount-1)*chunkSize:]
+
+	return result
+}
+
 // Dot returns the dot product of two vectors.
 func Dot[T Number](v1, v2 []T) T {
 	var res T

@@ -35,7 +35,7 @@ func (ct FourierGLWECiphertext) Copy() FourierGLWECiphertext {
 // Essentially, this is a GGSW encryption of LWE key with GLWE key.
 // However, FFT is already applied for fast external product.
 type BootstrappingKey[T Tint] struct {
-	// Value is ordered as [LWEDimension][GLWEDimension+1][l]FourierGLWECiphertext.
+	// Value is ordered as [LWEDimension][GLWEDimension+1][Level]FourierGLWECiphertext.
 	Value [][][]FourierGLWECiphertext
 
 	decompParams DecompositionParameters[T]
@@ -46,7 +46,7 @@ func NewBootstrappingKey[T Tint](params Parameters[T], decompParams Decompositio
 	bsk := make([][][]FourierGLWECiphertext, params.lweDimension)
 	for i := 0; i < params.lweDimension; i++ {
 		bsk[i] = make([][]FourierGLWECiphertext, params.glweDimension+1)
-		for j := 0; i < params.glweDimension+1; i++ {
+		for j := 0; j < params.glweDimension+1; j++ {
 			bsk[i][j] = make([]FourierGLWECiphertext, decompParams.level)
 			for k := 0; k < decompParams.level; k++ {
 				bsk[i][j][k] = NewFourierGLWECiphertext(params)
@@ -124,4 +124,16 @@ func (e Evaluater[T]) KeySwitchInPlace(ct LWECiphertext[T], ksk KeySwitchingKey[
 			vec.ScalarMulSubAssign(ksk.Value[i].Value[j].Value, decomposedMask[j], ctOut.Value)
 		}
 	}
+}
+
+// KeySwitchForBootstrap performs the keyswitching using evaulater's bootstrapping key.
+// Input ciphertext should be length GLWEDimension + 1, and output ciphertext will be length LWEDimension + 1.
+func (e Evaluater[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[T] {
+	return e.KeySwitch(ct, e.evaluationKey.KeySwitchingKey)
+}
+
+// KeySwitchForBootstrapInPlace performs the keyswitching using evaulater's bootstrapping key.
+// Input ciphertext should be length GLWEDimension + 1, and output ciphertext should be length LWEDimension + 1.
+func (e Evaluater[T]) KeySwitchForBootstrapInPlace(ct, ctOut LWECiphertext[T]) {
+	e.KeySwitchInPlace(ct, e.evaluationKey.KeySwitchingKey, ctOut)
 }
