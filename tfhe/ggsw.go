@@ -10,8 +10,6 @@ type GGSWCiphertext[T Tint] struct {
 }
 
 // NewGGSWCiphertext allocates an empty GGSW ciphertext.
-//
-// Panics if decompParams is invalid.
 func NewGGSWCiphertext[T Tint](params Parameters[T], decompParams DecompositionParameters[T]) GGSWCiphertext[T] {
 	ct := make([]GLevCiphertext[T], params.glweDimension+1)
 	for i := 0; i < params.glweDimension+1; i++ {

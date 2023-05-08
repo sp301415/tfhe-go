@@ -1,3 +1,12 @@
+// Package vec implements vector operations action on slices.
+//
+// Operations usually take three forms: for example,
+//   - Add(v0, v1) is equivalent to v := v0 + v1
+//   - AddInPlace(v0, v1, vOut) is equivalent to vOut = v0 + v1
+//   - AddAssign(v0, vOut) is equivalent to vOut += v0
+//
+// For performance reasons, functions in this package usually don't implement bound checks,
+// so be careful.
 package vec
 
 import (

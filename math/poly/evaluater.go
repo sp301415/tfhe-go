@@ -10,11 +10,10 @@ import (
 )
 
 // Evaluater calculates polynomial algorithms.
-// Most operations have three formats: For example, for Add,
-//
-//   - Add(p0, p1) returns a new polynomial p = p0 + p1.
-//   - AddInPlace(p0, p1, pOut) overrides pOut as p0 + p1.
-//   - AddAssign(p0, pOut) overrides pOut as pOut + p0.
+// Operations usually take three forms: for example,
+//   - Add(p0, p1) is equivalent to var p = p0 + p1
+//   - AddInPlace(p0, p1, pOut) is equivalent to pOut = p0 + p1
+//   - AddAssign(p0, pOut) is equivalent to pOut += p0
 type Evaluater[T constraints.Integer] struct {
 	// degree is the degree of polynomial that this evaluater can handle.
 	degree int

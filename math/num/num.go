@@ -1,3 +1,4 @@
+// Package num implements various utility functions regarding constraints.Integer.
 package num
 
 import (
