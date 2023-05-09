@@ -1,11 +1,7 @@
 package poly
 
 import (
-	"math"
-	"math/cmplx"
-
 	"github.com/sp301415/tfhe/math/num"
-	"gonum.org/v1/gonum/dsp/fourier"
 )
 
 // Evaluater calculates polynomial algorithms.
@@ -17,31 +13,33 @@ type Evaluater[T num.Integer] struct {
 	// degree is the degree of polynomial that this evaluater can handle.
 	degree int
 
-	// fft holds gonum's fourier.FFT.
-	fft *fourier.FFT
-	// fftHalf holds gonum's fourier.CmplxFFT for N/2. Used for negacyclic convolution.
-	fftHalf *fourier.CmplxFFT
-
-	// wj holds the precomputed values of w_2N^j where j = 0 ~ N.
-	wj []complex128
-	// wjInv holds the precomputed values of w_2N^-j where j = 0 ~ N.
-	wjInv []complex128
-
-	buffer evaluationBuffer[T]
+	buffer evaluaterBuffer[T]
 }
 
-// evaluationBuffer contains buffer values for Evaluater.
-type evaluationBuffer[T num.Integer] struct {
-	// fp0 holds the fourier polynomial of p0.
-	fp0 FourierPoly
-	// fp1 holds the fourier polynomial of p1.
-	fp1 FourierPoly
-	// fpOut holds the fourier polynomial of pOut.
-	fpOut FourierPoly
-	// fpInv holds the InvFTT & Untwisted & Unfolded value of fp.
-	fpInv FourierPoly
-	// pOut holds the result polynomial in MulAdd or MulSub operations.
+// evaluaterBuffer contains buffer values for Evaluater.
+type evaluaterBuffer[T num.Integer] struct {
+	// karatsubaBuffer holds the intermediate buffers used in karatsuba multiplication.
+	// Each buffer can be indexed as ((3^depth - 1)/2) + index. (I know, right?)
+	karatsubaBuffer []karatsubaBuffer[T]
+
+	// pOut holds the intermediate polynomial in MulAssign, MulAdd or MulSub type operations.
+	// This may take aditional O(N) loop, but the multiplication itself is a dominating factor,
+	// so it doesn't matter.
 	pOut Poly[T]
+}
+
+// karatsubaBuffer contains vuffer values for each karatsuba multiplication.
+type karatsubaBuffer[T num.Integer] struct {
+	// a0 = p0 + q0
+	a0 Poly[T]
+	// a1 = p1 + q1
+	a1 Poly[T]
+	// d0 = karatsuba(p0, q0)
+	d0 Poly[T]
+	// d1 = karatsuba(p1, q1)
+	d1 Poly[T]
+	// d2 = karatsuba(a0, a1)
+	d2 Poly[T]
 }
 
 // NewEvaluater creates a new Evaluater with degree N.
@@ -51,34 +49,41 @@ func NewEvaluater[T num.Integer](N int) Evaluater[T] {
 		panic("degree should be power of two")
 	}
 
-	wj := make([]complex128, N)
-	wjInv := make([]complex128, N)
-	for j := 0; j < N/2; j++ {
-		e := math.Pi * float64(j) / float64(N)
-		wj[j] = cmplx.Exp(complex(0, e))
-		wjInv[j] = cmplx.Exp(-complex(0, e))
-	}
-
 	return Evaluater[T]{
-		degree:  N,
-		fft:     fourier.NewFFT(N),
-		fftHalf: fourier.NewCmplxFFT(N / 2),
-
-		wj:    wj,
-		wjInv: wjInv,
+		degree: N,
 
 		buffer: newEvaluationBuffer[T](N),
 	}
 }
 
 // newEvaluationBuffer allocates an empty evaluation buffer.
-func newEvaluationBuffer[T num.Integer](N int) evaluationBuffer[T] {
-	return evaluationBuffer[T]{
-		fp0:   NewFourierPoly(N),
-		fp1:   NewFourierPoly(N),
-		fpOut: NewFourierPoly(N),
-		fpInv: NewFourierPoly(N),
-		pOut:  New[T](N),
+func newEvaluationBuffer[T num.Integer](N int) evaluaterBuffer[T] {
+	// Allocate karatsuba buffers.
+	// The full depth of the tree = log2(N / KaratsubaThreshold)
+	depth := num.Log2(N / KaratsubaRecurseThreshold)
+	// Number of nodes = 3^0 + 3^1 + ... + 3^depth = (3^(depth+1) - 1) / 2
+	kBuff := make([]karatsubaBuffer[T], (num.Pow(3, depth+1)-1)/2)
+
+	for i := 0; i < depth; i++ {
+		for j := 0; j < num.Pow(3, i); j++ {
+			treeIdx := (num.Pow(3, i)-1)/2 + j
+
+			// In depth i, karatsuba inputs have size N / 2^i
+			NN := N >> i
+			kBuff[treeIdx] = karatsubaBuffer[T]{
+				a0: New[T](NN / 2),
+				a1: New[T](NN / 2),
+				d0: New[T](NN),
+				d1: New[T](NN),
+				d2: New[T](NN),
+			}
+		}
+	}
+
+	return evaluaterBuffer[T]{
+		karatsubaBuffer: kBuff,
+
+		pOut: New[T](N),
 	}
 }
 
@@ -87,14 +92,6 @@ func newEvaluationBuffer[T num.Integer](N int) evaluationBuffer[T] {
 func (e Evaluater[T]) ShallowCopy() Evaluater[T] {
 	return Evaluater[T]{
 		degree: e.degree,
-
-		fft:     fourier.NewFFT(e.degree),
-		fftHalf: fourier.NewCmplxFFT(e.degree / 2),
-
-		wj:    e.wj,
-		wjInv: e.wjInv,
-
-		buffer: newEvaluationBuffer[T](e.degree),
 	}
 }
 

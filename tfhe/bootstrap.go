@@ -146,7 +146,7 @@ func (e Evaluater[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchingKey[T]) LWE
 func (e Evaluater[T]) KeySwitchInPlace(ct LWECiphertext[T], ksk KeySwitchingKey[T], ctOut LWECiphertext[T]) {
 	ctOut.Value[0] = ct.Value[0] // ct = (b, 0, ...)
 
-	for i := 0; i < ksk.OutputLWEDimension(); i++ {
+	for i := 0; i < ksk.InputLWEDimension(); i++ {
 		decomposedMask := e.Decompose(ct.Value[i+1], ksk.decompParams)
 		for j := 0; j < ksk.decompParams.level; j++ {
 			vec.ScalarMulSubAssign(ksk.Value[i].Value[j].Value, decomposedMask[j], ctOut.Value)

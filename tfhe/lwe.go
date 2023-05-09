@@ -1,6 +1,6 @@
 package tfhe
 
-import "golang.org/x/exp/slices"
+import "github.com/sp301415/tfhe/math/vec"
 
 // LWEKey is a LWE secret key, sampled from uniform binary distribution.
 type LWEKey[T Tint] struct {
@@ -15,7 +15,7 @@ func NewLWEKey[T Tint](params Parameters[T]) LWEKey[T] {
 
 // Copy returns a copy of the key.
 func (sk LWEKey[T]) Copy() LWEKey[T] {
-	return LWEKey[T]{Value: slices.Clone(sk.Value)}
+	return LWEKey[T]{Value: vec.Copy(sk.Value)}
 }
 
 // LWEPlaintext represents an encoded LWE plaintext.
@@ -52,7 +52,7 @@ func NewLargeLWECiphertext[T Tint](params Parameters[T]) LWECiphertext[T] {
 
 // Copy returns a copy of the ciphertext.
 func (ct LWECiphertext[T]) Copy() LWECiphertext[T] {
-	return LWECiphertext[T]{Value: slices.Clone(ct.Value)}
+	return LWECiphertext[T]{Value: vec.Copy(ct.Value)}
 }
 
 // LevCiphertext is a leveled LWE ciphertext, decomposed according to DecompositionParameters.

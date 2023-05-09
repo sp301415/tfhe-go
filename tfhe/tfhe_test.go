@@ -21,6 +21,13 @@ func TestEncrypter(t *testing.T) {
 		}
 	})
 
+	t.Run("LWELarge", func(t *testing.T) {
+		for _, msg := range msgs {
+			ct := enc.EncryptLarge(msg)
+			assert.Equal(t, msg, enc.DecryptLarge(ct))
+		}
+	})
+
 	t.Run("GLWE", func(t *testing.T) {
 		ct := enc.EncryptPacked(msgs)
 		assert.Equal(t, msgs, enc.DecryptPacked(ct)[:len(msgs)])
@@ -29,17 +36,15 @@ func TestEncrypter(t *testing.T) {
 
 func TestEvaluater(t *testing.T) {
 	enc := tfhe.NewEncrypter(params)
-	encLarge := tfhe.NewEncrypterWithoutKey(params)
-	encLarge.SetLWEKey(enc.GLWEKey().ToLWEKey())
 
 	eval := tfhe.NewEvaluaterWithoutKey(params)
-	msgs := []int{1, 2, 4, 8}
+	msgs := []int{1, 2, 3, 4}
 
 	t.Run("KeySwitch", func(t *testing.T) {
 		ksk := enc.GenKeySwitchingKeyForBootstrapping()
 
 		for _, msg := range msgs {
-			ct := encLarge.Encrypt(msg)
+			ct := enc.EncryptLarge(msg)
 			ctOut := eval.KeySwitch(ct, ksk)
 			assert.Equal(t, msg, enc.Decrypt(ctOut))
 		}
@@ -48,9 +53,9 @@ func TestEvaluater(t *testing.T) {
 	t.Run("SampleExtract", func(t *testing.T) {
 		index := 0
 
-		glweCt := enc.EncryptPacked(msgs)
-		lweCt := eval.SampleExtract(glweCt, index)
-		assert.Equal(t, msgs[index], encLarge.Decrypt(lweCt))
+		ct := enc.EncryptPacked(msgs)
+		ctExtracted := eval.SampleExtract(ct, index)
+		assert.Equal(t, msgs[index], enc.DecryptLarge(ctExtracted))
 	})
 }
 

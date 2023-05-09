@@ -11,6 +11,7 @@ package vec
 
 import (
 	"github.com/sp301415/tfhe/math/num"
+	"golang.org/x/exp/slices"
 )
 
 // Rotate rotates v l times to the right, and returns it.
@@ -31,8 +32,8 @@ func RotateInPlace[T any](v []T, l int, vOut []T) {
 		l %= len(v)
 	}
 
-	copy(vOut[l:], v)
-	copy(vOut[:l], v[len(v)-l:])
+	CopyAssign(v, vOut[l:])
+	CopyAssign(v[len(v)-l:], vOut[:l])
 }
 
 // RotateAssign rotates v l times to the right.
@@ -83,11 +84,21 @@ func Chunk[T any](s []T, chunkSize int) [][]T {
 	return result
 }
 
+// CopyAssign copies v0 to v1.
+func CopyAssign[T any](v0, v1 []T) {
+	copy(v1, v0)
+}
+
+// Copy returns a copy of v.
+func Copy[T any](v []T) []T {
+	return slices.Clone(v)
+}
+
 // Dot returns the dot product of two vectors.
-func Dot[T num.Number](v1, v2 []T) T {
+func Dot[T num.Number](v0, v1 []T) T {
 	var res T
-	for i := range v1 {
-		res += v1[i] * v2[i]
+	for i := range v0 {
+		res += v0[i] * v1[i]
 	}
 	return res
 }

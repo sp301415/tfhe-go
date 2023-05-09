@@ -1,6 +1,8 @@
 package tfhe
 
 import (
+	"math"
+
 	"github.com/sp301415/tfhe/math/num"
 	"github.com/sp301415/tfhe/math/poly"
 	"github.com/sp301415/tfhe/math/rand"
@@ -17,7 +19,8 @@ type Encrypter[T Tint] struct {
 	lweSampler     rand.GaussianSampler[T]
 	glweSampler    rand.GaussianSampler[T]
 
-	polyEvaluater poly.Evaluater[T]
+	polyEvaluater      poly.Evaluater[T]
+	fourierTransformer poly.FourierTransformer[T]
 
 	lweKey  LWEKey[T]
 	glweKey GLWEKey[T]
@@ -56,8 +59,8 @@ func NewEncrypter[T Tint](params Parameters[T]) Encrypter[T] {
 // If you try to encrypt without keys, it will panic.
 // You can supply LWE or GLWE key later by using SetLWEKey() or SetGLWEKey().
 func NewEncrypterWithoutKey[T Tint](params Parameters[T]) Encrypter[T] {
-	// maxTf := math.Pow(2, float64(num.SizeT[T]()))
-	maxTf := 0.0
+	maxTf := math.Pow(2, float64(num.SizeT[T]()))
+
 	return Encrypter[T]{
 		Parameters: params,
 
@@ -66,7 +69,8 @@ func NewEncrypterWithoutKey[T Tint](params Parameters[T]) Encrypter[T] {
 		lweSampler:     rand.GaussianSampler[T]{StdDev: params.lweStdDev * maxTf},
 		glweSampler:    rand.GaussianSampler[T]{StdDev: params.glweStdDev * maxTf},
 
-		polyEvaluater: poly.NewEvaluater[T](params.polyDegree),
+		polyEvaluater:      poly.NewEvaluater[T](params.polyDegree),
+		fourierTransformer: poly.NewFourierTransformer[T](params.polyDegree),
 
 		buffer: newEncryptionBuffer(params),
 	}
@@ -97,7 +101,8 @@ func (e Encrypter[T]) ShallowCopy() Encrypter[T] {
 		glweKey:     e.glweKey,
 		lweLargeKey: e.lweLargeKey,
 
-		polyEvaluater: e.polyEvaluater.ShallowCopy(),
+		polyEvaluater:      e.polyEvaluater.ShallowCopy(),
+		fourierTransformer: e.fourierTransformer.ShallowCopy(),
 
 		buffer: newEncryptionBuffer(e.Parameters),
 	}
@@ -141,10 +146,23 @@ func (e Encrypter[T]) Encrypt(message int) LWECiphertext[T] {
 	return e.EncryptLWE(e.EncodeLWE(message))
 }
 
+// EncryptLarge encrypts an integer message to LWE ciphertext, but using key derived from GLWE key.
+// The output ciphertext will have dimension GLWEDimension * PolyDegree + 1.
+func (e Encrypter[T]) EncryptLarge(message int) LWECiphertext[T] {
+	return e.EncryptLWELarge(e.EncodeLWE(message))
+}
+
 // EncryptLWE encrypts a LWE plaintext to LWE ciphertext.
 func (e Encrypter[T]) EncryptLWE(pt LWEPlaintext[T]) LWECiphertext[T] {
 	ct := NewLWECiphertext(e.Parameters)
 	e.EncryptLWEInPlace(pt, ct)
+	return ct
+}
+
+// EncryptLWELarge encrypts a LWE plaintext to LWE ciphertext, but using key derived from GLWE key.
+func (e Encrypter[T]) EncryptLWELarge(pt LWEPlaintext[T]) LWECiphertext[T] {
+	ct := NewLargeLWECiphertext(e.Parameters)
+	e.EncryptLWELargeInPlace(pt, ct)
 	return ct
 }
 
@@ -153,6 +171,13 @@ func (e Encrypter[T]) EncryptLWEInPlace(pt LWEPlaintext[T], ct LWECiphertext[T])
 	// ct = (b = <a, s> + pt + e, a_1, ..., a_n)
 	e.uniformSampler.SampleSlice(ct.Value[1:])
 	ct.Value[0] = vec.Dot(ct.Value[1:], e.lweKey.Value) + pt.Value + e.lweSampler.Sample()
+}
+
+// EncryptLWELargeInPlace encrypts pt and saves it to ct,  but using key derived from GLWE key.
+func (e Encrypter[T]) EncryptLWELargeInPlace(pt LWEPlaintext[T], ct LWECiphertext[T]) {
+	// ct = (b = <a, s> + pt + e, a_1, ..., a_n)
+	e.uniformSampler.SampleSlice(ct.Value[1:])
+	ct.Value[0] = vec.Dot(ct.Value[1:], e.lweLargeKey.Value) + pt.Value + e.lweSampler.Sample()
 }
 
 // EncryptLevInPlace encrypts a LWE plaintext to leveled LWE ciphertext.
@@ -168,10 +193,23 @@ func (e Encrypter[T]) Decrypt(ct LWECiphertext[T]) int {
 	return e.DecodeLWE(e.DecryptLWE(ct))
 }
 
+// DecryptLarge decrypts a LWE ciphertext to integer message, but using key derived from GLWE key.
+// Decrypt always succeeds, even though the decrypted value could be wrong.
+func (e Encrypter[T]) DecryptLarge(ct LWECiphertext[T]) int {
+	return e.DecodeLWE(e.DecryptLWELarge(ct))
+}
+
 // DecryptLWE decrypts a LWE ciphertext to LWE plaintext.
 func (e Encrypter[T]) DecryptLWE(ct LWECiphertext[T]) LWEPlaintext[T] {
 	// pt = b - <a, s>
 	pt := ct.Value[0] - vec.Dot(ct.Value[1:], e.lweKey.Value)
+	return LWEPlaintext[T]{Value: pt}
+}
+
+// DecryptLWELarge decrypts a LWE ciphertext to LWE plaintext, but using key derived from GLWE key.
+func (e Encrypter[T]) DecryptLWELarge(ct LWECiphertext[T]) LWEPlaintext[T] {
+	// pt = b - <a, s>
+	pt := ct.Value[0] - vec.Dot(ct.Value[1:], e.lweLargeKey.Value)
 	return LWEPlaintext[T]{Value: pt}
 }
 

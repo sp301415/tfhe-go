@@ -103,7 +103,7 @@ func (e Encrypter[T]) genBootstrappingKeyIndex(i int, bsk BootstrappingKey[T]) {
 				e.buffer.GLWEPtForPBSKeyGen.Value.Coeffs[0] = e.lweKey.Value[i] << e.Parameters.pbsParameters.ScaledBaseLog(k)
 				e.EncryptGLWEInPlace(e.buffer.GLWEPtForPBSKeyGen, e.buffer.GLWECtForPBSKeyGen)
 				for l := 0; l < e.Parameters.glweDimension+1; l++ {
-					e.polyEvaluater.ToFourierPolyInPlace(e.buffer.GLWECtForPBSKeyGen.Value[l], bsk.Value[i][j][k].Value[l])
+					e.fourierTransformer.ToFourierPolyInPlace(e.buffer.GLWECtForPBSKeyGen.Value[l], bsk.Value[i][j][k].Value[l])
 				}
 			}
 		} else {
@@ -112,7 +112,7 @@ func (e Encrypter[T]) genBootstrappingKeyIndex(i int, bsk BootstrappingKey[T]) {
 				e.polyEvaluater.MulAssign(e.glweKey.Value[j-1], e.buffer.GLWEPtForPBSKeyGen.Value)
 				e.EncryptGLWEInPlace(e.buffer.GLWEPtForPBSKeyGen, e.buffer.GLWECtForPBSKeyGen)
 				for l := 0; l < e.Parameters.glweDimension+1; l++ {
-					e.polyEvaluater.ToFourierPolyInPlace(e.buffer.GLWECtForPBSKeyGen.Value[l], bsk.Value[i][j][k].Value[l])
+					e.fourierTransformer.ToFourierPolyInPlace(e.buffer.GLWECtForPBSKeyGen.Value[l], bsk.Value[i][j][k].Value[l])
 				}
 			}
 
@@ -165,11 +165,11 @@ func (e Encrypter[T]) GenKeySwitchingKeyParallel(skIn LWEKey[T], decompParams De
 // This may take a long time, depending on the parameters.
 // Consider using GenKeySwitchingKeyForBootstrappingParallel.
 func (e Encrypter[T]) GenKeySwitchingKeyForBootstrapping() KeySwitchingKey[T] {
-	return e.GenKeySwitchingKey(e.lweLargeKey, e.Parameters.pbsParameters)
+	return e.GenKeySwitchingKey(e.lweLargeKey, e.Parameters.keyswitchParameters)
 }
 
 // GenKeySwitchingKeyForBootstrappingParallel samples a new keyswitching key LWELargeKey -> LWEKey in parallel,
 // used for bootstrapping.
 func (e Encrypter[T]) GenKeySwitchingKeyForBootstrappingParallel() KeySwitchingKey[T] {
-	return e.GenKeySwitchingKeyParallel(e.lweLargeKey, e.Parameters.pbsParameters)
+	return e.GenKeySwitchingKeyParallel(e.lweLargeKey, e.Parameters.keyswitchParameters)
 }

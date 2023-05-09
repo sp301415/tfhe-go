@@ -11,7 +11,7 @@ package poly
 
 import (
 	"github.com/sp301415/tfhe/math/num"
-	"golang.org/x/exp/slices"
+	"github.com/sp301415/tfhe/math/vec"
 )
 
 // Poly represents the polynomial modulo X^N + 1. N should be power of two.
@@ -40,12 +40,12 @@ func From[T num.Integer](coeffs []T) Poly[T] {
 
 // Copy returns a copy of the polynomial.
 func (p Poly[T]) Copy() Poly[T] {
-	return Poly[T]{Coeffs: slices.Clone(p.Coeffs)}
+	return Poly[T]{Coeffs: vec.Copy(p.Coeffs)}
 }
 
 // CopyFrom copies p0 to p.
 func (p Poly[T]) CopyFrom(p0 Poly[T]) {
-	copy(p.Coeffs, p0.Coeffs)
+	vec.CopyAssign(p0.Coeffs, p.Coeffs)
 }
 
 // Degree returns the degree of the polynomial.

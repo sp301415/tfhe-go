@@ -2,6 +2,7 @@ package tfhe
 
 import (
 	"github.com/sp301415/tfhe/math/poly"
+	"github.com/sp301415/tfhe/math/vec"
 )
 
 // GLWEKey is a GLWE secret key, sampled from uniform binary distribution.
@@ -35,7 +36,7 @@ func (sk GLWEKey[T]) ToLWEKey() LWEKey[T] {
 
 	lweKey := LWEKey[T]{Value: make([]T, glweDimension*degree)}
 	for i := 0; i < glweDimension; i++ {
-		copy(lweKey.Value[i*degree:(i+1)*degree], sk.Value[i].Coeffs)
+		vec.CopyAssign(sk.Value[i].Coeffs, lweKey.Value[i*degree:(i+1)*degree])
 	}
 	return lweKey
 }

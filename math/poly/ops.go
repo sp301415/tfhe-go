@@ -65,69 +65,33 @@ func (e Evaluater[T]) Mul(p0, p1 Poly[T]) Poly[T] {
 
 // MulInPlace multiplies p0, p1 and writes it to pOut.
 func (e Evaluater[T]) MulInPlace(p0, p1, pOut Poly[T]) {
-	e.ToFourierPolyInPlace(p0, e.buffer.fp0)
-	e.ToFourierPolyInPlace(p1, e.buffer.fp1)
-
-	vec.ElementWiseMulInPlace(e.buffer.fp0.Coeffs, e.buffer.fp1.Coeffs, e.buffer.fpOut.Coeffs)
-
-	e.ToStandardPolyInPlace(e.buffer.fpOut, pOut)
+	if e.degree <= KaratsubaRecurseThreshold {
+		e.mulInPlaceNaive(p0, p1, pOut)
+	} else {
+		e.mulInPlaceKaratsuba(p0, p1, pOut)
+	}
 }
 
 // MulAssign multiplies p0 to pOut.
 func (e Evaluater[T]) MulAssign(p0, pOut Poly[T]) {
-	e.ToFourierPolyInPlace(p0, e.buffer.fp0)
-	e.ToFourierPolyInPlace(pOut, e.buffer.fpOut)
-
-	vec.ElementWiseMulAssign(e.buffer.fp0.Coeffs, e.buffer.fpOut.Coeffs)
-
-	e.ToStandardPolyInPlace(e.buffer.fpOut, pOut)
+	e.buffer.pOut.CopyFrom(pOut)
+	if e.degree <= KaratsubaRecurseThreshold {
+		e.mulInPlaceNaive(p0, e.buffer.pOut, pOut)
+	} else {
+		e.mulInPlaceKaratsuba(p0, e.buffer.pOut, pOut)
+	}
 }
 
-// MulAddAssign multiplies p0, p1 and adds to pOut.
+// MulAddAssign multiplies p0, p1 and adds it to pOut.
 func (e Evaluater[T]) MulAddAssign(p0, p1, pOut Poly[T]) {
-	e.ToFourierPolyInPlace(p0, e.buffer.fp0)
-	e.ToFourierPolyInPlace(p1, e.buffer.fp1)
-
-	vec.ElementWiseMulInPlace(e.buffer.fp0.Coeffs, e.buffer.fp1.Coeffs, e.buffer.fpOut.Coeffs)
-
-	e.toStandardPolyAddInPlace(e.buffer.fpOut, pOut)
+	e.MulInPlace(p0, p1, e.buffer.pOut)
+	e.AddAssign(e.buffer.pOut, pOut)
 }
 
-// MulSubAssign multiplies p0, p1 and subtracts from pOut.
+// MulSubAssign multiplies p0, p1 and subtracts it from pOut.
 func (e Evaluater[T]) MulSubAssign(p0, p1, pOut Poly[T]) {
-	e.ToFourierPolyInPlace(p0, e.buffer.fp0)
-	e.ToFourierPolyInPlace(p1, e.buffer.fp1)
-
-	vec.ElementWiseMulInPlace(e.buffer.fp0.Coeffs, e.buffer.fp1.Coeffs, e.buffer.fpOut.Coeffs)
-
-	e.toStandardPolySubInPlace(e.buffer.fpOut, pOut)
-}
-
-// MulFourier multiplies fp0, fp1 and returns the result.
-func (e Evaluater[T]) MulFourier(fp0, fp1 FourierPoly) FourierPoly {
-	fp := NewFourierPoly(e.degree)
-	e.MulFourierInPlace(fp0, fp1, fp)
-	return fp
-}
-
-// MulFourierInPlace multiplies fp0, fp1 and writes it to fpOut.
-func (e Evaluater[T]) MulFourierInPlace(fp0, fp1, fpOut FourierPoly) {
-	vec.ElementWiseMulInPlace(fp0.Coeffs, fp1.Coeffs, fpOut.Coeffs)
-}
-
-// MulFourierAssign multiplies fp0 to fpOut.
-func (e Evaluater[T]) MulFourierAssign(fp0, fpOut FourierPoly) {
-	vec.ElementWiseMulAssign(fp0.Coeffs, fpOut.Coeffs)
-}
-
-// MulAddFourierAssign multiplies fp0, fp1 and adds to fpOut.
-func (e Evaluater[T]) MulAddFourierAssign(fp0, fp1, fpOut FourierPoly) {
-	vec.ElementWiseMulAddAssign(fp0.Coeffs, fp1.Coeffs, fpOut.Coeffs)
-}
-
-// MulSubFourierAssign multiplies fp0, fp1 and subtracts from fpOut.
-func (e Evaluater[T]) MulSubFourierAssign(fp0, fp1, fpOut Poly[T]) {
-	vec.ElementWiseMulSubAssign(fp0.Coeffs, fp1.Coeffs, fpOut.Coeffs)
+	e.MulInPlace(p0, p1, e.buffer.pOut)
+	e.SubAssign(e.buffer.pOut, pOut)
 }
 
 // ScalarMul multplies c to p0 and returns the result.
@@ -175,12 +139,8 @@ func (e Evaluater[T]) MonomialMul(p0 Poly[T], c T, d int) Poly[T] {
 }
 
 // MonomialMulInPlace multplies c * X^d to p0 and writes it to pOut.
-// Panics if d < 0.
+// Assumes d >= 0.
 func (e Evaluater[T]) MonomialMulInPlace(p0 Poly[T], c T, d int, pOut Poly[T]) {
-	if d < 0 {
-		panic("d smaller than zero")
-	}
-
 	// We can only consider d % 2*N, since X^2N = 1.
 	d %= 2 * e.degree
 
@@ -190,25 +150,22 @@ func (e Evaluater[T]) MonomialMulInPlace(p0 Poly[T], c T, d int, pOut Poly[T]) {
 		return
 	}
 
-	copy(pOut.Coeffs[d:], p0.Coeffs)
-	copy(pOut.Coeffs[:d], p0.Coeffs[e.degree-d:])
-
 	for i := 0; i < e.degree; i++ {
-		if i < d {
-			pOut.Coeffs[i] *= -c
+		//                   d
+		// |++++++++++++++|+++++| p0
+		// |-----|++++++++++++++| pOut
+		//    d
+		if i < e.degree-d {
+			pOut.Coeffs[i+d] = c * p0.Coeffs[i]
 		} else {
-			pOut.Coeffs[i] *= c
+			pOut.Coeffs[i-(e.degree-d)] = -c * p0.Coeffs[i]
 		}
 	}
 }
 
 // MonomialMulAssign multplies c*x^d to pOut.
-// Panics if d < 0.
+// Assumes d >= 0.
 func (e Evaluater[T]) MonomialMulAssign(c T, d int, pOut Poly[T]) {
-	if d < 0 {
-		panic("d smaller than zero")
-	}
-
 	// We can only consider d % 2*N, since X^2N = 1.
 	d %= 2 * e.degree
 
@@ -225,6 +182,48 @@ func (e Evaluater[T]) MonomialMulAssign(c T, d int, pOut Poly[T]) {
 			pOut.Coeffs[i] *= -c
 		} else {
 			pOut.Coeffs[i] *= c
+		}
+	}
+}
+
+// MonomialMulAddAssign multiplies c*X^d to p0 and adds it to pOut.
+// Assumes d >= 0.
+func (e Evaluater[T]) MonomialMulAddAssign(p0 Poly[T], c T, d int, pOut Poly[T]) {
+	// We can only consider d % 2*N, since X^2N = 1.
+	d %= 2 * e.degree
+
+	// If N <= d < 2N, X^d = X^N * X^(d-N) = -X^(d-N).
+	if d >= e.degree {
+		e.MonomialMulInPlace(p0, -c, d-e.degree, pOut)
+		return
+	}
+
+	for i := 0; i < e.degree; i++ {
+		if i < e.degree-d {
+			pOut.Coeffs[i+d] += c * p0.Coeffs[i]
+		} else {
+			pOut.Coeffs[i-(e.degree-d)] += -c * p0.Coeffs[i]
+		}
+	}
+}
+
+// MonomialMulSubAssign multiplies c*X^d to p0 and subtracts it from pOut.
+// Assumes d >= 0.
+func (e Evaluater[T]) MonomialMulSubAssign(p0 Poly[T], c T, d int, pOut Poly[T]) {
+	// We can only consider d % 2*N, since X^2N = 1.
+	d %= 2 * e.degree
+
+	// If N <= d < 2N, X^d = X^N * X^(d-N) = -X^(d-N).
+	if d >= e.degree {
+		e.MonomialMulInPlace(p0, -c, d-e.degree, pOut)
+		return
+	}
+
+	for i := 0; i < e.degree; i++ {
+		if i < e.degree-d {
+			pOut.Coeffs[i+d] -= c * p0.Coeffs[i]
+		} else {
+			pOut.Coeffs[i-(e.degree-d)] -= -c * p0.Coeffs[i]
 		}
 	}
 }
