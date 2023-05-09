@@ -35,7 +35,7 @@ func (sk GLWEKey[T]) ToLWEKey() LWEKey[T] {
 
 	lweKey := LWEKey[T]{Value: make([]T, glweDimension*degree)}
 	for i := 0; i < glweDimension; i++ {
-		copy(lweKey.Value[i*degree:], sk.Value[i].Coeffs)
+		copy(lweKey.Value[i*degree:(i+1)*degree], sk.Value[i].Coeffs)
 	}
 	return lweKey
 }

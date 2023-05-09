@@ -8,8 +8,28 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
+// Number represents Integer, Float, and Complex types.
+type Number interface {
+	constraints.Integer | constraints.Float | constraints.Complex
+}
+
+// Integer represents the Integer type.
+type Integer interface {
+	constraints.Integer
+}
+
+// Unsigned represents the unsigned Integer type.
+type Unsigned interface {
+	constraints.Unsigned
+}
+
+// Real represents the Integer and Float type.
+type Real interface {
+	constraints.Integer | constraints.Float
+}
+
 // Abs returns the absolute value of x.
-func Abs[T constraints.Integer](x T) T {
+func Abs[T Real](x T) T {
 	if x < 0 {
 		return -x
 	}
@@ -17,7 +37,7 @@ func Abs[T constraints.Integer](x T) T {
 }
 
 // MaxT returns the maximum possible value of type T in uint64.
-func MaxT[T constraints.Integer]() uint64 {
+func MaxT[T Integer]() uint64 {
 	var z T
 	switch any(z).(type) {
 	case int:
@@ -47,7 +67,7 @@ func MaxT[T constraints.Integer]() uint64 {
 }
 
 // SizeT returns the bits required to express value of type T in int.
-func SizeT[T constraints.Integer]() int {
+func SizeT[T Integer]() int {
 	var z T
 	switch any(z).(type) {
 	case int, uint, uintptr:
@@ -65,7 +85,7 @@ func SizeT[T constraints.Integer]() int {
 }
 
 // MinT returns the minimum possible value of type T in int64.
-func MinT[T constraints.Integer]() int64 {
+func MinT[T Integer]() int64 {
 	var z T
 	switch any(z).(type) {
 	case int:
@@ -82,31 +102,47 @@ func MinT[T constraints.Integer]() int64 {
 	return 0
 }
 
-// IsSigned returns if type T is a signed integer type.
-func IsSigned[T constraints.Integer]() bool {
+// IsSigned returns if type T is a signed type.
+func IsSigned[T Real]() bool {
 	var z T
 	return z-1 < 0
 }
 
 // FromFloat64 casts a float64 value to T, wrapping around.
 // If float64 is not valid (NaN, Inf), it returns 0.
-func FromFloat64[T constraints.Integer](f float64) T {
+func FromFloat64[T Integer](f float64) T {
 	if math.IsNaN(f) || math.IsInf(f, 0) {
 		return 0
 	}
 
-	return T(math.Round(f))
+	if IsSigned[T]() {
+		// No Problem!
+		return T(math.Round(f))
+	} else {
+		// If T is unsigned,
+		// we have to manually wrap negative value.
+		if math.Signbit(f) {
+			// If f < 0, we cast -f, then wrap it around.
+			res := T(math.Round(-f))
+			res = T(MaxT[T]()) - res
+			res += 1
+			return res
+		} else {
+			// If f > 0, No problem!
+			return T(math.Round(f))
+		}
+	}
 }
 
 // IsPowerOfTwo returns whether x is a power of two.
 // If x <= 0, it always returns false.
-func IsPowerOfTwo[T constraints.Integer](x T) bool {
+func IsPowerOfTwo[T Integer](x T) bool {
 	return (x > 0) && (x&(x-1)) == 0
 }
 
 // Log2 returns floor(log2(x)).
 // If x == 0, it returns 0.
-func Log2[T constraints.Integer](x T) int {
+func Log2[T Integer](x T) int {
 	if x == 0 {
 		return 0
 	}
@@ -114,7 +150,7 @@ func Log2[T constraints.Integer](x T) int {
 }
 
 // RoundRatio returns round(x/y).
-func RoundRatio[T constraints.Integer](x, y T) T {
+func RoundRatio[T Integer](x, y T) T {
 	ratio := x / y
 	if 2*(x%y) >= y {
 		ratio += 1
@@ -125,7 +161,7 @@ func RoundRatio[T constraints.Integer](x, y T) T {
 // RoundRatioBits is a bit-optimzed version of RoundRatio: it computes round(x/2^bits).
 //   - If bits == 0, then it returns x.
 //   - If bits < 0, it panics.
-func RoundRatioBits[T constraints.Integer](x T, bits int) T {
+func RoundRatioBits[T Integer](x T, bits int) T {
 	if bits == 0 {
 		return x
 	}
@@ -140,39 +176,18 @@ func RoundRatioBits[T constraints.Integer](x T, bits int) T {
 
 // ClosestMultiple returns the closest multiple of x respect to y
 // It is same as round(x/y) * y.
-func ClosestMultiple[T constraints.Integer](x, y T) T {
+func ClosestMultiple[T Integer](x, y T) T {
 	return RoundRatio(x, y) * y
 }
 
 // ClosestMultipleBits returns the closest multiple of x respect to 2^bits.
 // It is same as round(x/2^bits) * 2^bits.
-func ClosestMultipleBits[T constraints.Integer](x T, bits int) T {
+func ClosestMultipleBits[T Integer](x T, bits int) T {
 	return RoundRatioBits(x, bits) << bits
 }
 
-// Gcd returns the GCD(Greatest Common Divisor) of x and y.
-//   - If x = y = 0, Gcd returns 0.
-//   - If x = 0 and y != 0, Gcd returns |y|.
-//   - If x != 0 and y = 0, Gcd returns |x|.
-func Gcd[T constraints.Integer](x, y T) T {
-	switch {
-	case x == 0 && y == 0:
-		return 0
-	case x == 0 && y != 0:
-		return Abs(y)
-	case x != 0 && y == 0:
-		return Abs(x)
-	}
-
-	x, y = Abs(x), Abs(y)
-	for y > 0 {
-		x, y = y, x%y
-	}
-	return x
-}
-
 // Min returns the smaller value between x and y.
-func Min[T constraints.Integer](x, y T) T {
+func Min[T Real](x, y T) T {
 	if x < y {
 		return x
 	}
@@ -180,9 +195,43 @@ func Min[T constraints.Integer](x, y T) T {
 }
 
 // Max returns the larger value between x and y.
-func Max[T constraints.Integer](x, y T) T {
+func Max[T Real](x, y T) T {
 	if x > y {
 		return x
 	}
 	return y
+}
+
+// MaxN returns the largest number of x.
+// If x is empty, it returns the zero value of T.
+func MaxN[T Real](x ...T) T {
+	var max T
+	if len(x) == 0 {
+		return max
+	}
+
+	max = x[0]
+	for _, v := range x {
+		if v > max {
+			max = v
+		}
+	}
+	return max
+}
+
+// MaxN returns the smallest number of x.
+// If x is empty, it returns the zero value of T.
+func MinN[T Real](x ...T) T {
+	var min T
+	if len(x) == 0 {
+		return min
+	}
+
+	min = x[0]
+	for _, v := range x {
+		if v < min {
+			min = v
+		}
+	}
+	return min
 }

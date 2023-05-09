@@ -21,17 +21,15 @@ type Evaluater[T Tint] struct {
 	polyEvaluater poly.Evaluater[T]
 
 	evaluationKey EvaluationKey[T]
-
-	// buffKeySwitchVec holds decomposedMask * ksk values.
-	bufffKeySwitchVec []T
 }
 
 // NewEvaluater creates a new Evaluater based on parameters.
+// This does not copy evaluation keys, since they are large.
 func NewEvaluater[T Tint](params Parameters[T], evkey EvaluationKey[T]) Evaluater[T] {
 	evaluater := NewEvaluaterWithoutKey(params)
 	evaluater.evaluationKey = EvaluationKey[T]{
-		BootstrappingKey: evkey.BootstrappingKey.Copy(),
-		KeySwitchingKey:  evkey.KeySwitchingKey.Copy(),
+		BootstrappingKey: evkey.BootstrappingKey,
+		KeySwitchingKey:  evkey.KeySwitchingKey,
 	}
 
 	return evaluater
@@ -42,10 +40,9 @@ func NewEvaluater[T Tint](params Parameters[T], evkey EvaluationKey[T]) Evaluate
 // You can supply evaluation key later by using SetEvaluationKey().
 func NewEvaluaterWithoutKey[T Tint](params Parameters[T]) Evaluater[T] {
 	return Evaluater[T]{
-		Parameters:    params,
-		polyEvaluater: poly.NewEvaluater[T](params.polyDegree),
+		Parameters: params,
 
-		bufffKeySwitchVec: make([]T, params.lweDimension),
+		polyEvaluater: poly.NewEvaluater[T](params.polyDegree),
 	}
 }
 

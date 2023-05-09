@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var params = tfhe.ParamsMessage8Carry0
+var params = tfhe.ParamsMessage4Carry0.Compile()
 
 func TestEncrypter(t *testing.T) {
 	enc := tfhe.NewEncrypter(params)
@@ -29,18 +29,28 @@ func TestEncrypter(t *testing.T) {
 
 func TestEvaluater(t *testing.T) {
 	enc := tfhe.NewEncrypter(params)
+	encLarge := tfhe.NewEncrypterWithoutKey(params)
+	encLarge.SetLWEKey(enc.GLWEKey().ToLWEKey())
+
 	eval := tfhe.NewEvaluaterWithoutKey(params)
 	msgs := []int{1, 2, 4, 8}
 
 	t.Run("KeySwitch", func(t *testing.T) {
-		encOut := tfhe.NewEncrypter(params)
-		ksk := encOut.GenKeySwitchingKey(enc.LWEKey(), params.KeySwitchParameters())
+		ksk := enc.GenKeySwitchingKeyForBootstrapping()
 
 		for _, msg := range msgs {
-			ct := enc.Encrypt(msg)
+			ct := encLarge.Encrypt(msg)
 			ctOut := eval.KeySwitch(ct, ksk)
-			assert.Equal(t, msg, encOut.Decrypt(ctOut))
+			assert.Equal(t, msg, enc.Decrypt(ctOut))
 		}
+	})
+
+	t.Run("SampleExtract", func(t *testing.T) {
+		index := 0
+
+		glweCt := enc.EncryptPacked(msgs)
+		lweCt := eval.SampleExtract(glweCt, index)
+		assert.Equal(t, msgs[index], encLarge.Decrypt(lweCt))
 	})
 }
 

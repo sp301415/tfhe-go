@@ -14,7 +14,6 @@ var (
 		LWEStdDev:  0.000007069849454709433,
 		GLWEStdDev: 0.00000000000000029403601535432533,
 
-		Delta:          1 << (63 - 4 - 0),
 		MessageModulus: 1 << 4,
 		CarryModulus:   1 << 0,
 
@@ -26,7 +25,7 @@ var (
 			Base:  1 << 3,
 			Level: 5,
 		},
-	}.Compile()
+	}
 
 	// ParamsMessage8Carry0 ensures 8 bit of message space and 0 bit of carry space.
 	ParamsMessage8Carry0 = ParametersLiteral[uint64]{
@@ -37,7 +36,6 @@ var (
 		LWEStdDev:  0.0000000460803851108693,
 		GLWEStdDev: 0.0000000000000000002168404344971009,
 
-		Delta:          1 << (63 - 8 - 0),
 		MessageModulus: 1 << 8,
 		CarryModulus:   1 << 0,
 
@@ -49,7 +47,7 @@ var (
 			Base:  1 << 4,
 			Level: 5,
 		},
-	}.Compile()
+	}
 )
 
 // Tint represents the integer in the discretized torus.
@@ -195,9 +193,6 @@ type ParametersLiteral[T Tint] struct {
 	// GLWEStdDev is the standard deviation used for gaussian error sampling in GLWE encryption.
 	GLWEStdDev float64
 
-	// Delta is the scaling factor used for message encoding.
-	// The lower log(Delta) bits are reserved for errors.
-	Delta T
 	// MessageModulus is the largest message that could be encoded.
 	MessageModulus T
 	// CarryModulus is the size of the carry buffer.
@@ -223,13 +218,20 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("LWEStdDev smaller than zero")
 	case p.GLWEStdDev <= 0:
 		panic("GLWEStdDev smaller than zero")
-	case !num.IsPowerOfTwo(p.Delta):
-		panic("Delta not power of two")
 	case !num.IsPowerOfTwo(p.MessageModulus):
 		panic("MessageModulus not power of two")
 	case !num.IsPowerOfTwo(p.CarryModulus):
 		panic("CarryModulus not power of two")
 	}
+
+	// Set delta = scaling factor = (1 << (SizeT - 1) - messageModulusLog - carryModulusLog)
+	messageModulusLog := num.Log2(p.MessageModulus)
+	carryModulusLog := num.Log2(p.CarryModulus)
+	deltaLog := (num.SizeT[T]() - 1) - messageModulusLog - carryModulusLog
+	if deltaLog < 0 {
+		panic("message modulus and carry modulus too large")
+	}
+	delta := T(1 << deltaLog)
 
 	return Parameters[T]{
 		lweDimension:  p.LWEDimension,
@@ -239,12 +241,12 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		lweStdDev:  p.LWEStdDev,
 		glweStdDev: p.GLWEStdDev,
 
-		delta:             p.Delta,
-		deltaLog:          num.Log2(p.Delta),
+		delta:             delta,
+		deltaLog:          deltaLog,
 		messageModulus:    p.MessageModulus,
-		messageModulusLog: num.Log2(p.MessageModulus),
+		messageModulusLog: messageModulusLog,
 		carryModulus:      p.CarryModulus,
-		carryModulusLog:   num.Log2(p.CarryModulus),
+		carryModulusLog:   carryModulusLog,
 
 		pbsParameters:       p.PBSParameters.Compile(),
 		keyswitchParameters: p.KeySwitchParameters.Compile(),

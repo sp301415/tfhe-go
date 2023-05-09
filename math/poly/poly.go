@@ -11,18 +11,17 @@ package poly
 
 import (
 	"github.com/sp301415/tfhe/math/num"
-	"golang.org/x/exp/constraints"
 	"golang.org/x/exp/slices"
 )
 
 // Poly represents the polynomial modulo X^N + 1. N should be power of two.
-type Poly[T constraints.Integer] struct {
+type Poly[T num.Integer] struct {
 	Coeffs []T
 }
 
 // NewPoly creates a polynomial with degree N with empty coefficients.
 // N should be power of two. Otherwise, it panics.
-func New[T constraints.Integer](N int) Poly[T] {
+func New[T num.Integer](N int) Poly[T] {
 	if !num.IsPowerOfTwo(N) {
 		panic("degree not power of two")
 
@@ -32,7 +31,7 @@ func New[T constraints.Integer](N int) Poly[T] {
 
 // From creates a new polynomial from given coefficient slice.
 // This function has potential side effects, as it does not copy the slice.
-func From[T constraints.Integer](coeffs []T) Poly[T] {
+func From[T num.Integer](coeffs []T) Poly[T] {
 	if !num.IsPowerOfTwo(len(coeffs)) {
 		panic("degree not power of two")
 	}

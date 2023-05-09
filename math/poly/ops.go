@@ -139,14 +139,12 @@ func (e Evaluater[T]) ScalarMul(p0 Poly[T], c T) Poly[T] {
 
 // ScalarMulInPlace multplies c to p0 and writes it to pOut.
 func (e Evaluater[T]) ScalarMulInPlace(p0 Poly[T], c T, pOut Poly[T]) {
-	for i := 0; i < e.degree; i++ {
-		pOut.Coeffs[i] = c * p0.Coeffs[i]
-	}
+	vec.ScalarMulInPlace(p0.Coeffs, c, pOut.Coeffs)
 }
 
 // ScalarMulAssign multplies c to pOut.
 func (e Evaluater[T]) ScalarMulAssign(c T, pOut Poly[T]) {
-	e.ScalarMulInPlace(pOut, c, pOut)
+	vec.ScalarMulAssign(c, pOut.Coeffs)
 }
 
 // ScalarDiv divides c from p0 and returns the result.
@@ -166,4 +164,67 @@ func (e Evaluater[T]) ScalarDivInPlace(p0 Poly[T], c T, pOut Poly[T]) {
 // ScalarDivAssign divides c from pOut.
 func (e Evaluater[T]) ScalarDivAssign(c T, pOut Poly[T]) {
 	e.ScalarDivInPlace(pOut, c, pOut)
+}
+
+// MonomialMul multplies c*x^d to p0 and returns the result.
+// Panics if d < 0.
+func (e Evaluater[T]) MonomialMul(p0 Poly[T], c T, d int) Poly[T] {
+	p := New[T](e.degree)
+	e.MonomialMulInPlace(p0, c, d, p)
+	return p
+}
+
+// MonomialMulInPlace multplies c * X^d to p0 and writes it to pOut.
+// Panics if d < 0.
+func (e Evaluater[T]) MonomialMulInPlace(p0 Poly[T], c T, d int, pOut Poly[T]) {
+	if d < 0 {
+		panic("d smaller than zero")
+	}
+
+	// We can only consider d % 2*N, since X^2N = 1.
+	d %= 2 * e.degree
+
+	// If N <= d < 2N, X^d = X^N * X^(d-N) = -X^(d-N).
+	if d >= e.degree {
+		e.MonomialMulInPlace(p0, -c, d-e.degree, pOut)
+		return
+	}
+
+	copy(pOut.Coeffs[d:], p0.Coeffs)
+	copy(pOut.Coeffs[:d], p0.Coeffs[e.degree-d:])
+
+	for i := 0; i < e.degree; i++ {
+		if i < d {
+			pOut.Coeffs[i] *= -c
+		} else {
+			pOut.Coeffs[i] *= c
+		}
+	}
+}
+
+// MonomialMulAssign multplies c*x^d to pOut.
+// Panics if d < 0.
+func (e Evaluater[T]) MonomialMulAssign(c T, d int, pOut Poly[T]) {
+	if d < 0 {
+		panic("d smaller than zero")
+	}
+
+	// We can only consider d % 2*N, since X^2N = 1.
+	d %= 2 * e.degree
+
+	// If N <= d < 2N, X^d = X^N * X^(d-N) = -X^(d-N).
+	if d >= e.degree {
+		e.MonomialMulAssign(-c, d-e.degree, pOut)
+		return
+	}
+
+	vec.RotateAssign(pOut.Coeffs, d)
+
+	for i := 0; i < e.degree; i++ {
+		if i < d {
+			pOut.Coeffs[i] *= -c
+		} else {
+			pOut.Coeffs[i] *= c
+		}
+	}
 }

@@ -107,6 +107,34 @@ func (ksk KeySwitchingKey[T]) Copy() KeySwitchingKey[T] {
 	return KeySwitchingKey[T](GSWCiphertext[T](ksk).Copy())
 }
 
+// SampleExtract extracts LWE ciphertext of index i from GLWE ciphertext and returns it.
+// The output ciphertext has length GLWEDimension * PolyDegree + 1.
+func (e Evaluater[T]) SampleExtract(ct GLWECiphertext[T], index int) LWECiphertext[T] {
+	ctOut := LWECiphertext[T]{Value: make([]T, e.Parameters.glweDimension*e.Parameters.polyDegree+1)}
+	e.SampleExtractInPlace(ct, index, ctOut)
+	return ctOut
+}
+
+// SampleExtractInPlace extracts LWE ciphertext of index from GLWE ciphertext.
+// The output ciphertext should have length GLWEDimension * PolyDegree + 1.
+func (e Evaluater[T]) SampleExtractInPlace(ct GLWECiphertext[T], index int, ctOut LWECiphertext[T]) {
+	ctOut.Value[0] = ct.Value[0].Coeffs[index]
+
+	ctMask, ctOutMask := ct.Value[1:], ctOut.Value[1:]
+	for i := 0; i < e.Parameters.glweDimension; i++ {
+		start := i * e.Parameters.polyDegree
+		end := (i + 1) * e.Parameters.polyDegree
+
+		// Reverse polynomial coefficient of ctMask, and save it to ctOutMask
+		vec.ReverseInPlace(ctMask[i].Coeffs, ctOutMask[start:end])
+
+		// We rotate to right index + 1 times,
+		// and negate index+1 ~ PolyDegree values.
+		vec.RotateAssign(ctOutMask[start:end], index+1)
+		vec.NegAssign(ctOutMask[start+index+1 : end])
+	}
+}
+
 // KeySwitch switches key of ct, and returns a new ciphertext.
 func (e Evaluater[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchingKey[T]) LWECiphertext[T] {
 	ctOut := LWECiphertext[T]{Value: make([]T, ksk.OutputLWEDimension()+1)}
@@ -118,7 +146,7 @@ func (e Evaluater[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchingKey[T]) LWE
 func (e Evaluater[T]) KeySwitchInPlace(ct LWECiphertext[T], ksk KeySwitchingKey[T], ctOut LWECiphertext[T]) {
 	ctOut.Value[0] = ct.Value[0] // ct = (b, 0, ...)
 
-	for i := 0; i < ksk.InputLWEDimension(); i++ {
+	for i := 0; i < ksk.OutputLWEDimension(); i++ {
 		decomposedMask := e.Decompose(ct.Value[i+1], ksk.decompParams)
 		for j := 0; j < ksk.decompParams.level; j++ {
 			vec.ScalarMulSubAssign(ksk.Value[i].Value[j].Value, decomposedMask[j], ctOut.Value)

@@ -5,7 +5,6 @@ import (
 	"math/cmplx"
 
 	"github.com/sp301415/tfhe/math/num"
-	"golang.org/x/exp/constraints"
 	"gonum.org/v1/gonum/dsp/fourier"
 )
 
@@ -14,7 +13,7 @@ import (
 //   - Add(p0, p1) is equivalent to var p = p0 + p1
 //   - AddInPlace(p0, p1, pOut) is equivalent to pOut = p0 + p1
 //   - AddAssign(p0, pOut) is equivalent to pOut += p0
-type Evaluater[T constraints.Integer] struct {
+type Evaluater[T num.Integer] struct {
 	// degree is the degree of polynomial that this evaluater can handle.
 	degree int
 
@@ -32,7 +31,7 @@ type Evaluater[T constraints.Integer] struct {
 }
 
 // evaluationBuffer contains buffer values for Evaluater.
-type evaluationBuffer[T constraints.Integer] struct {
+type evaluationBuffer[T num.Integer] struct {
 	// fp0 holds the fourier polynomial of p0.
 	fp0 FourierPoly
 	// fp1 holds the fourier polynomial of p1.
@@ -47,7 +46,7 @@ type evaluationBuffer[T constraints.Integer] struct {
 
 // NewEvaluater creates a new Evaluater with degree N.
 // N should be power of two.
-func NewEvaluater[T constraints.Integer](N int) Evaluater[T] {
+func NewEvaluater[T num.Integer](N int) Evaluater[T] {
 	if !num.IsPowerOfTwo(N) {
 		panic("degree should be power of two")
 	}
@@ -73,7 +72,7 @@ func NewEvaluater[T constraints.Integer](N int) Evaluater[T] {
 }
 
 // newEvaluationBuffer allocates an empty evaluation buffer.
-func newEvaluationBuffer[T constraints.Integer](N int) evaluationBuffer[T] {
+func newEvaluationBuffer[T num.Integer](N int) evaluationBuffer[T] {
 	return evaluationBuffer[T]{
 		fp0:   NewFourierPoly(N),
 		fp1:   NewFourierPoly(N),

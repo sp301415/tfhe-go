@@ -56,13 +56,15 @@ func NewEncrypter[T Tint](params Parameters[T]) Encrypter[T] {
 // If you try to encrypt without keys, it will panic.
 // You can supply LWE or GLWE key later by using SetLWEKey() or SetGLWEKey().
 func NewEncrypterWithoutKey[T Tint](params Parameters[T]) Encrypter[T] {
+	// maxTf := math.Pow(2, float64(num.SizeT[T]()))
+	maxTf := 0.0
 	return Encrypter[T]{
 		Parameters: params,
 
 		uniformSampler: rand.UniformSampler[T]{},
 		binarySampler:  rand.BinarySampler[T]{},
-		lweSampler:     rand.GaussianSampler[T]{StdDev: params.lweStdDev * float64(num.MaxT[T]())},
-		glweSampler:    rand.GaussianSampler[T]{StdDev: params.glweStdDev * float64(num.MaxT[T]())},
+		lweSampler:     rand.GaussianSampler[T]{StdDev: params.lweStdDev * maxTf},
+		glweSampler:    rand.GaussianSampler[T]{StdDev: params.glweStdDev * maxTf},
 
 		polyEvaluater: poly.NewEvaluater[T](params.polyDegree),
 
@@ -128,21 +130,9 @@ func (e Encrypter[T]) EncodeLWE(message int) LWEPlaintext[T] {
 	return LWEPlaintext[T]{Value: (T(message) % e.Parameters.messageModulus) << e.Parameters.deltaLog}
 }
 
-// EncodeLWEDelta encodes an integer message with custom deltaLog.
-// It does not handle message modulus.
-func (e Encrypter[T]) EncodeLWEDelta(message int, delta T) LWEPlaintext[T] {
-	return LWEPlaintext[T]{Value: T(message) * delta}
-}
-
 // DecodeLWE deocdes the LWE plaintext into integer message.
 func (e Encrypter[T]) DecodeLWE(pt LWEPlaintext[T]) int {
 	return int(num.RoundRatioBits(pt.Value, e.Parameters.deltaLog) % e.Parameters.messageModulus)
-}
-
-// DecodeLWEDelta decodes an integer message with custom delta.
-// It does not handle message modulus.
-func (e Encrypter[T]) DecodeLWEDelta(pt LWEPlaintext[T], delta T) int {
-	return int(num.RoundRatio(pt.Value, delta))
 }
 
 // Encrypt encrypts an integer message to LWE ciphertext.
@@ -204,36 +194,12 @@ func (e Encrypter[T]) EncodeGLWE(messages []int) GLWEPlaintext[T] {
 	return pt
 }
 
-// EncodeGLWEDelta encodes up to Parameters.PolyDegree integer messages into one GLWE plaintext using custom delta.
-// It does not handle message modulus.
-//
-// If len(messages) < Parameters.PolyDegree, the leftovers are padded with zero.
-// If len(messages) > Parameters.PolyDegree, the leftovers are discarded.
-func (e Encrypter[T]) EncodeGLWEDelta(messages []int, delta T) GLWEPlaintext[T] {
-	pt := NewGLWEPlaintext(e.Parameters)
-	for i := 0; i < e.Parameters.polyDegree && i < len(messages); i++ {
-		pt.Value.Coeffs[i] = T(messages[i]) * delta
-	}
-	return pt
-}
-
 // DecodeGLWE decodes a GLWE plaintext to integer messages.
 // The returned messages are always of length Parameters.PolyDegree.
 func (e Encrypter[T]) DecodeGLWE(pt GLWEPlaintext[T]) []int {
 	messages := make([]int, e.Parameters.polyDegree)
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		messages[i] = int((num.RoundRatioBits(pt.Value.Coeffs[i], e.Parameters.deltaLog) % e.Parameters.messageModulus))
-	}
-	return messages
-}
-
-// DecodeGLWE decodes a GLWE plaintext to integer messages using custom delta.
-// The returned messages are always of length Parameters.PolyDegree.
-// It does not handle message modulus.
-func (e Encrypter[T]) DecodeGLWEDelta(pt GLWEPlaintext[T], delta T) []int {
-	messages := make([]int, e.Parameters.polyDegree)
-	for i := 0; i < e.Parameters.polyDegree; i++ {
-		messages[i] = int(num.RoundRatio(pt.Value.Coeffs[i], delta))
 	}
 	return messages
 }
