@@ -92,6 +92,8 @@ func newEvaluationBuffer[T num.Integer](N int) evaluaterBuffer[T] {
 func (e Evaluater[T]) ShallowCopy() Evaluater[T] {
 	return Evaluater[T]{
 		degree: e.degree,
+
+		buffer: newEvaluationBuffer[T](e.degree),
 	}
 }
 
