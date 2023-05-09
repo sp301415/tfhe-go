@@ -108,7 +108,8 @@ func IsSigned[T Real]() bool {
 	return z-1 < 0
 }
 
-// FromFloat64 casts a float64 value to T, wrapping around.
+// FromFloat64 casts a float64 value to T.
+// If f is larger than maximum possible value, it relies on Go's casting.
 // If float64 is not valid (NaN, Inf), it returns 0.
 func FromFloat64[T Integer](f float64) T {
 	if math.IsNaN(f) || math.IsInf(f, 0) {

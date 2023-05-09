@@ -7,7 +7,9 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
-// BinarySampler is a struct for sampling from binary distribution.
+// BinarySampler samples values from uniform binary distribution {0, 1}.
+//
+// Zero value of BinarySampler is useful.
 type BinarySampler[T constraints.Integer] struct {
 	buf [1]byte
 }

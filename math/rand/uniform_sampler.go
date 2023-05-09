@@ -9,7 +9,9 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
-// UniformSampler is a struct for sampling from uniform distribution.
+// UniformSampler samples values from uniform distribution.
+//
+// Zero value of UniformSampler is useful.
 type UniformSampler[T constraints.Integer] struct{}
 
 // Read implements the io.Reader interface.
