@@ -13,7 +13,7 @@ var res uint64 // Prevent compiler optimizations
 func BenchmarkRoundRatio(b *testing.B) {
 	sampleCount := 1024
 	samples := make([]uint64, sampleCount)
-	rand.UniformSampler[uint64]{}.SampleSlice(samples)
+	rand.UniformSampler[uint64]{}.SampleSliceAssign(samples)
 
 	logN := 15
 	N := uint64(1 << logN)

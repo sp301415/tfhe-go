@@ -5,6 +5,7 @@
 package rand
 
 import (
+	"crypto/rand"
 	"math"
 
 	"github.com/sp301415/tfhe/math/num"
@@ -13,40 +14,88 @@ import (
 )
 
 // GaussianSampler samples from Discrete Gaussian Distribution, centered around zero.
-// If StdDev <= 0, then it samples from the Normal Distribution with StdDev = 1.
 //
-// Zero value of GaussianSampler is useful.
-// To initialize a new GaussianSampler with standard deviation set, just do
-//
-//	sampler := GaussianSampler[uint64]{StdDev: 3.2}
+// See rand.UniformSampler for more details.
 type GaussianSampler[T constraints.Integer] struct {
-	StdDev float64
+	baseSampler UniformSampler[uint32]
 
-	uniformSampler UniformSampler[uint32]
+	StdDev float64
+}
+
+// NewGaussianSampler creates a new GaussianSampler.
+// The seed is sampled securely from crypto/rand,
+// so it may panic if read from crypto/rand fails.
+//
+// Also panics when stdDev <= 0.
+func NewGaussianSampler[T num.Integer](stdDev float64) GaussianSampler[T] {
+	// Sample 512-bit seed
+	seed := make([]byte, 64)
+	if _, err := rand.Read(seed); err != nil {
+		panic(err)
+	}
+
+	// This never panics, because the only case when NewXOF returns error
+	// is when key size is too large.
+	return NewGaussianSamplerWithSeed[T](seed, stdDev)
+}
+
+// NewGaussianSamplerWithSeed creates a new GaussianSampler, with user supplied seed.
+// Note that retreiving the seed after initialization is not possible.
+//
+// Panics when blake2b initialization fails.
+func NewGaussianSamplerWithSeed[T num.Integer](seed []byte, stdDev float64) GaussianSampler[T] {
+	if stdDev <= 0 {
+		panic("StdDev smaller than zero")
+	}
+
+	return GaussianSampler[T]{
+		baseSampler: NewUniformSamplerWithSeed[uint32](seed),
+
+		StdDev: stdDev,
+	}
+}
+
+// NewGaussianSamplerTorus is equivalent to NewGaussianSampler, but stdDev is scaled by 2^SizeT.
+func NewGaussianSamplerTorus[T num.Integer](stdDev float64) GaussianSampler[T] {
+	maxTf := math.Exp2(float64(num.SizeT[T]()))
+	return NewGaussianSampler[T](stdDev * maxTf)
+}
+
+// NewGaussianSamplerTorusWithSeed is equivalent to NewGaussianSamplerWithSeed, but stdDev is scaled by 2^SizeT.
+func NewGaussianSamplerTorusWithSeed[T num.Integer](seed []byte, stdDev float64) GaussianSampler[T] {
+	maxTf := math.Exp2(float64(num.SizeT[T]()))
+	return NewGaussianSamplerWithSeed[T](seed, stdDev*maxTf)
 }
 
 // Sample returns a number from discrete gaussian distribution.
 func (s GaussianSampler[T]) Sample() T {
-	sample := s.NormFloat64()
-
-	if s.StdDev <= 0 {
-		return num.FromFloat64[T](sample)
-	}
-	return num.FromFloat64[T](sample * s.StdDev)
+	return num.FromFloat64[T](s.NormFloat64() * s.StdDev)
 }
 
-// SampleSlice samples gaussian values to v.
-func (s GaussianSampler[T]) SampleSlice(v []T) {
+// SampleSliceAssign samples discrete gaussian values to v.
+func (s GaussianSampler[T]) SampleSliceAssign(v []T) {
 	for i := range v {
 		v[i] = s.Sample()
 	}
 }
 
-// SamplePoly samples a polynomial from gaussian distribution.
-func (s GaussianSampler[T]) SamplePoly(p poly.Poly[T]) {
-	for i := range p.Coeffs {
-		p.Coeffs[i] = s.Sample()
-	}
+// SampleSlice returns sampled discrete gaussian slice of length n.
+func (s GaussianSampler[T]) SampleSlice(n int) []T {
+	v := make([]T, n)
+	s.SampleSliceAssign(v)
+	return v
+}
+
+// SamplePolyAssign samples a polynomial from gaussian distribution.
+func (s GaussianSampler[T]) SamplePolyAssign(p poly.Poly[T]) {
+	s.SampleSliceAssign(p.Coeffs)
+}
+
+// SamplePoly returns sampled discrete gaussian polynomial of degree N.
+func (s GaussianSampler[T]) SamplePoly(N int) poly.Poly[T] {
+	p := poly.New[T](N)
+	s.SamplePolyAssign(p)
+	return p
 }
 
 // Most of the code below is taken from Go standard library.
@@ -118,12 +167,12 @@ func (r GaussianSampler[T]) NormFloat64() float64 {
 }
 
 func (r GaussianSampler[T]) uint32() uint32 {
-	return r.uniformSampler.Sample()
+	return r.baseSampler.Sample()
 }
 
 func (r GaussianSampler[T]) int63() int64 {
-	lo := int64(r.uniformSampler.Sample()) // 32 bits
-	hi := int64(r.uniformSampler.Sample()) // 32 bits
+	lo := int64(r.baseSampler.Sample()) // 32 bits
+	hi := int64(r.baseSampler.Sample()) // 32 bits
 
 	return ((hi >> 1) << 32) | lo
 

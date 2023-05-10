@@ -21,8 +21,8 @@ func prepareTestPoly[T num.Integer]() (p0, p1 poly.Poly[T]) {
 	p0 = poly.New[T](N)
 	p1 = poly.New[T](N)
 
-	sampler.SamplePoly(p0)
-	sampler.SamplePoly(p1)
+	sampler.SamplePolyAssign(p0)
+	sampler.SamplePolyAssign(p1)
 
 	return
 }

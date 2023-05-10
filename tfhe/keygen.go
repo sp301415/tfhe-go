@@ -9,7 +9,7 @@ import (
 // GenLWEKey samples a new LWE key.
 func (e Encrypter[T]) GenLWEKey() LWEKey[T] {
 	sk := NewLWEKey(e.Parameters)
-	e.binarySampler.SampleSlice(sk.Value)
+	e.binarySampler.SampleSliceAssign(sk.Value)
 	return sk
 }
 
@@ -17,7 +17,7 @@ func (e Encrypter[T]) GenLWEKey() LWEKey[T] {
 func (e Encrypter[T]) GenGLWEKey() GLWEKey[T] {
 	sk := NewGLWEKey(e.Parameters)
 	for i := 0; i < e.Parameters.glweDimension; i++ {
-		e.binarySampler.SamplePoly(sk.Value[i])
+		e.binarySampler.SamplePolyAssign(sk.Value[i])
 	}
 	return sk
 }
@@ -108,14 +108,13 @@ func (e Encrypter[T]) genBootstrappingKeyIndex(i int, bsk BootstrappingKey[T]) {
 			}
 		} else {
 			for k := 0; k < e.Parameters.pbsParameters.level; k++ {
-				e.buffer.GLWEPtForPBSKeyGen.Value.Coeffs[0] = -e.lweKey.Value[i] << e.Parameters.pbsParameters.ScaledBaseLog(k)
-				e.polyEvaluater.MulAssign(e.glweKey.Value[j-1], e.buffer.GLWEPtForPBSKeyGen.Value)
+				p := -(e.lweKey.Value[i] << e.Parameters.pbsParameters.ScaledBaseLog(k))
+				e.polyEvaluater.ScalarMulInPlace(e.glweKey.Value[j-1], p, e.buffer.GLWEPtForPBSKeyGen.Value)
 				e.EncryptGLWEInPlace(e.buffer.GLWEPtForPBSKeyGen, e.buffer.GLWECtForPBSKeyGen)
 				for l := 0; l < e.Parameters.glweDimension+1; l++ {
 					e.fourierTransformer.ToFourierPolyInPlace(e.buffer.GLWECtForPBSKeyGen.Value[l], bsk.Value[i][j][k].Value[l])
 				}
 			}
-
 		}
 	}
 }

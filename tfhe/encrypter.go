@@ -1,8 +1,6 @@
 package tfhe
 
 import (
-	"math"
-
 	"github.com/sp301415/tfhe/math/num"
 	"github.com/sp301415/tfhe/math/poly"
 	"github.com/sp301415/tfhe/math/rand"
@@ -59,15 +57,13 @@ func NewEncrypter[T Tint](params Parameters[T]) Encrypter[T] {
 // If you try to encrypt without keys, it will panic.
 // You can supply LWE or GLWE key later by using SetLWEKey() or SetGLWEKey().
 func NewEncrypterWithoutKey[T Tint](params Parameters[T]) Encrypter[T] {
-	maxTf := math.Pow(2, float64(num.SizeT[T]()))
-
 	return Encrypter[T]{
 		Parameters: params,
 
-		uniformSampler: rand.UniformSampler[T]{},
-		binarySampler:  rand.BinarySampler[T]{},
-		lweSampler:     rand.GaussianSampler[T]{StdDev: params.lweStdDev * maxTf},
-		glweSampler:    rand.GaussianSampler[T]{StdDev: params.glweStdDev * maxTf},
+		uniformSampler: rand.NewUniformSampler[T](),
+		binarySampler:  rand.NewBinarySampler[T](),
+		lweSampler:     rand.NewGaussianSamplerTorus[T](params.lweStdDev),
+		glweSampler:    rand.NewGaussianSamplerTorus[T](params.glweStdDev),
 
 		polyEvaluater:      poly.NewEvaluater[T](params.polyDegree),
 		fourierTransformer: poly.NewFourierTransformer[T](params.polyDegree),
@@ -92,10 +88,10 @@ func (e Encrypter[T]) ShallowCopy() Encrypter[T] {
 	return Encrypter[T]{
 		Parameters: e.Parameters,
 
-		uniformSampler: e.uniformSampler,
-		binarySampler:  e.binarySampler,
-		lweSampler:     e.lweSampler,
-		glweSampler:    e.glweSampler,
+		uniformSampler: rand.NewUniformSampler[T](),
+		binarySampler:  rand.NewBinarySampler[T](),
+		lweSampler:     rand.NewGaussianSamplerTorus[T](e.Parameters.lweStdDev),
+		glweSampler:    rand.NewGaussianSamplerTorus[T](e.Parameters.glweStdDev),
 
 		lweKey:      e.lweKey,
 		glweKey:     e.glweKey,
@@ -169,14 +165,14 @@ func (e Encrypter[T]) EncryptLWELarge(pt LWEPlaintext[T]) LWECiphertext[T] {
 // EncryptLWEInPlace encrypts pt and saves it to ct.
 func (e Encrypter[T]) EncryptLWEInPlace(pt LWEPlaintext[T], ct LWECiphertext[T]) {
 	// ct = (b = <a, s> + pt + e, a_1, ..., a_n)
-	e.uniformSampler.SampleSlice(ct.Value[1:])
+	e.uniformSampler.SampleSliceAssign(ct.Value[1:])
 	ct.Value[0] = vec.Dot(ct.Value[1:], e.lweKey.Value) + pt.Value + e.lweSampler.Sample()
 }
 
 // EncryptLWELargeInPlace encrypts pt and saves it to ct,  but using key derived from GLWE key.
 func (e Encrypter[T]) EncryptLWELargeInPlace(pt LWEPlaintext[T], ct LWECiphertext[T]) {
 	// ct = (b = <a, s> + pt + e, a_1, ..., a_n)
-	e.uniformSampler.SampleSlice(ct.Value[1:])
+	e.uniformSampler.SampleSliceAssign(ct.Value[1:])
 	ct.Value[0] = vec.Dot(ct.Value[1:], e.lweLargeKey.Value) + pt.Value + e.lweSampler.Sample()
 }
 
@@ -263,10 +259,10 @@ func (e Encrypter[T]) EncryptGLWE(pt GLWEPlaintext[T]) GLWECiphertext[T] {
 func (e Encrypter[T]) EncryptGLWEInPlace(pt GLWEPlaintext[T], ct GLWECiphertext[T]) {
 	// ct = (b = sum a*s + pt + e, a_1, ..., a_k)
 	for i := 0; i < e.Parameters.glweDimension; i++ {
-		e.uniformSampler.SamplePoly(ct.Value[i+1])
+		e.uniformSampler.SamplePolyAssign(ct.Value[i+1])
 	}
 
-	e.glweSampler.SamplePoly(ct.Value[0])
+	e.glweSampler.SamplePolyAssign(ct.Value[0])
 	e.polyEvaluater.AddAssign(pt.Value, ct.Value[0])
 	for i := 0; i < e.Parameters.glweDimension; i++ {
 		e.polyEvaluater.MulAddAssign(ct.Value[i+1], e.glweKey.Value[i], ct.Value[0])

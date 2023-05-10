@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var params = tfhe.ParamsMessage4Carry0.Compile()
+var params = tfhe.ParamsMessage8Carry0.Compile()
 
 func TestEncrypter(t *testing.T) {
 	enc := tfhe.NewEncrypter(params)
@@ -91,12 +91,12 @@ func BenchmarkKeyGen(b *testing.B) {
 	})
 	runtime.GC()
 
-	b.Run("BootstrappingKey", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			enc.GenBootstrappingKey()
-		}
-	})
-	runtime.GC()
+	// b.Run("BootstrappingKey", func(b *testing.B) {
+	// 	for i := 0; i < b.N; i++ {
+	// 		enc.GenBootstrappingKey()
+	// 	}
+	// })
+	// runtime.GC()
 
 	b.Run("BootstrappingKeyParallel", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
