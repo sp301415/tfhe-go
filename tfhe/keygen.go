@@ -4,6 +4,8 @@ import (
 	"math"
 	"runtime"
 	"sync"
+
+	"github.com/sp301415/tfhe/math/num"
 )
 
 // GenLWEKey samples a new LWE key.
@@ -71,7 +73,9 @@ func (e Encrypter[T]) GenBootstrappingKey() BootstrappingKey[T] {
 func (e Encrypter[T]) GenBootstrappingKeyParallel() BootstrappingKey[T] {
 	bsk := NewBootstrappingKey(e.Parameters, e.Parameters.pbsParameters)
 
-	chunkSize := runtime.NumCPU()
+	// LWEDimension is usually 500 ~ 1000,
+	// so we chunk it between min of NumCPU and sqrt(LWEDimension.)
+	chunkSize := num.Min(runtime.NumCPU(), int(math.Sqrt(float64(e.Parameters.lweDimension))))
 	chunkCount := int(math.Ceil(float64(e.Parameters.lweDimension) / float64(chunkSize)))
 
 	encrypters := make([]Encrypter[T], chunkCount)
@@ -136,7 +140,9 @@ func (e Encrypter[T]) GenKeySwitchingKey(skIn LWEKey[T], decompParams Decomposit
 func (e Encrypter[T]) GenKeySwitchingKeyParallel(skIn LWEKey[T], decompParams DecompositionParameters[T]) KeySwitchingKey[T] {
 	ksk := NewKeySwitchingKey(len(skIn.Value), len(e.lweKey.Value), decompParams)
 
-	chunkSize := runtime.NumCPU()
+	// LWEDimension is usually 500 ~ 1000,
+	// so we chunk it between min of NumCPU and sqrt(LWEDimension.)
+	chunkSize := num.Min(runtime.NumCPU(), int(math.Sqrt(float64(e.Parameters.lweDimension))))
 	chunkCount := int(math.Ceil(float64(len(skIn.Value)) / float64(chunkSize)))
 
 	encrypters := make([]Encrypter[T], chunkCount)

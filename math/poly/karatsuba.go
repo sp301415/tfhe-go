@@ -2,7 +2,6 @@ package poly
 
 import (
 	"github.com/sp301415/tfhe/math/num"
-	"github.com/sp301415/tfhe/math/vec"
 )
 
 const (
@@ -14,15 +13,15 @@ const (
 // karatsubaBuffer contains vuffer values for each karatsuba multiplication.
 type karatsubaBuffer[T num.Integer] struct {
 	// a0 = p0 + q0
-	a0 Poly[T]
+	a0 []T
 	// a1 = p1 + q1
-	a1 Poly[T]
+	a1 []T
 	// d0 = karatsuba(p0, q0)
-	d0 Poly[T]
+	d0 []T
 	// d1 = karatsuba(p1, q1)
-	d1 Poly[T]
+	d1 []T
 	// d2 = karatsuba(a0, a1)
-	d2 Poly[T]
+	d2 []T
 }
 
 // karatsubaTreeIndex returns the index of the buffer value
@@ -44,13 +43,12 @@ func newKaratsubaBuffer[T num.Integer](N int) []karatsubaBuffer[T] {
 			treeIdx := karatsubaTreeIndex(i, j)
 
 			// In depth i, karatsuba inputs have size N / 2^i
-			NN := N >> i
 			buff[treeIdx] = karatsubaBuffer[T]{
-				a0: New[T](NN / 2),
-				a1: New[T](NN / 2),
-				d0: New[T](NN),
-				d1: New[T](NN),
-				d2: New[T](NN),
+				a0: make([]T, N>>(i+1)),
+				a1: make([]T, N>>(i+1)),
+				d0: make([]T, N>>i),
+				d1: make([]T, N>>i),
+				d2: make([]T, N>>i),
 			}
 		}
 	}
@@ -70,15 +68,16 @@ func (e Evaluater[T]) mulInPlaceNaive(p0, p1, pOut Poly[T]) {
 // mulInPlaceKaratsuba multiplies two polynomials using recursive karatsuba multiplication,
 // taking O(N^1.58) time.
 func (e Evaluater[T]) mulInPlaceKaratsuba(p, q, pOut Poly[T]) {
+	// Implementation Note:
+	// Seems like using range-based loops are faster than regular loops.
+
 	N := e.degree
 	buff := e.buffer.karatsubaBuffer[0]
 
 	// p = p0 * X^N/2 + p1
-	p0 := From(p.Coeffs[:N/2])
-	p1 := From(p.Coeffs[N/2:])
+	p0, p1 := p.Coeffs[:N/2], p.Coeffs[N/2:]
 	// q = q0 * X^N/2 + q1
-	q0 := From(q.Coeffs[:N/2])
-	q1 := From(q.Coeffs[N/2:])
+	q0, q1 := q.Coeffs[:N/2], q.Coeffs[N/2:]
 
 	// d0 := p0 * q0
 	e.karatsuba(p0, q0, buff.d0, 1, 0)
@@ -86,34 +85,39 @@ func (e Evaluater[T]) mulInPlaceKaratsuba(p, q, pOut Poly[T]) {
 	e.karatsuba(p1, q1, buff.d1, 1, 1)
 
 	// a0 := p0 + p1
-	e.AddInPlace(p0, p1, buff.a0)
 	// a1 := q0 + q1
-	e.AddInPlace(q0, q1, buff.a1)
-	// d2 := (p0 + p1) * (q0 + q1) = p0*q0 + p0*q1 + p1*q0 + p1*q1 = (p0*q1 + p1*q0) + a0 + a1
+	for i := 0; i < N/2; i++ {
+		buff.a0[i] = p0[i] + p1[i]
+		buff.a1[i] = q0[i] + q1[i]
+	}
+
+	// d2 := (p0 + p1) * (q0 + q1) = p0*q0 + p0*q1 + p1*q0 + p1*q1 = (p0*q1 + p1*q0) + d0 + d1
 	e.karatsuba(buff.a0, buff.a1, buff.d2, 1, 2)
 
-	// d2 := d2 - a0 - a1 = p0*q1 + p1*q0
-	vec.SubAssign(buff.d0.Coeffs, buff.d2.Coeffs)
-	vec.SubAssign(buff.d1.Coeffs, buff.d2.Coeffs)
-
-	// pOut := d0 + d2*X^N/2 + d1*X^N
-	vec.CopyAssign(buff.d0.Coeffs, pOut.Coeffs[0:N])        // d0: 0 ~ N
-	vec.AddAssign(buff.d2.Coeffs[:N/2], pOut.Coeffs[N/2:N]) // d2: N/2 ~ N
-	vec.SubAssign(buff.d2.Coeffs[N/2:], pOut.Coeffs[:N/2])  // -d2: 0 ~ N/2
-	vec.SubAssign(buff.d1.Coeffs, pOut.Coeffs[0:N])         // -d1: 0 ~ N
+	// pOut := d0 + (d2 - d0 - d1)*X^N/2 + d1*X^N
+	for i := range pOut.Coeffs {
+		if i < N/2 {
+			pOut.Coeffs[i] = buff.d0[i] - (buff.d2[i+N/2] - buff.d0[i+N/2] - buff.d1[i+N/2]) - buff.d1[i] // d0 + (d2 - d0 - d1) - d1: 0 ~ N/2
+		} else {
+			pOut.Coeffs[i] = buff.d0[i] + (buff.d2[i-N/2] - buff.d0[i-N/2] - buff.d1[i-N/2]) - buff.d1[i] // d0 - (d2 - d0 - d1) + d1: N/2 ~ N
+		}
+	}
 }
 
 // karatsuba is a recursive subroutine of karatsuba algorithm.
-// Degree of pOut is assumbed to be twice of degree of p and q.
-func (e Evaluater[T]) karatsuba(p, q, pOut Poly[T], depth, index int) {
-	N := p.Degree()
+// length of pOut is assumed to be twice of length of p and q.
+func (e Evaluater[T]) karatsuba(p, q, pOut []T, depth, index int) {
+	N := len(p)
 
 	if N <= KaratsubaRecurseThreshold {
 		// Multiply naively
-		pOut.Clear()
-		for i := 0; i < N; i++ {
-			for j := 0; j < N; j++ {
-				pOut.Coeffs[i+j] += p.Coeffs[i] * q.Coeffs[j]
+		for i := range pOut {
+			pOut[i] = 0
+		}
+
+		for i, cp := range p {
+			for j, cq := range q {
+				pOut[i+j] += cp * cq
 			}
 		}
 		return
@@ -123,11 +127,9 @@ func (e Evaluater[T]) karatsuba(p, q, pOut Poly[T], depth, index int) {
 	buff := e.buffer.karatsubaBuffer[treeIdx]
 
 	// p = p0 * X^N/2 + p1
-	p0 := From(p.Coeffs[:N/2])
-	p1 := From(p.Coeffs[N/2:])
+	p0, p1 := p[:N/2], p[N/2:]
 	// q = q0 * X^N/2 + q1
-	q0 := From(q.Coeffs[:N/2])
-	q1 := From(q.Coeffs[N/2:])
+	q0, q1 := q[:N/2], q[N/2:]
 
 	// d0 := p0 * q0
 	e.karatsuba(p0, q0, buff.d0, depth+1, 3*index+0)
@@ -135,18 +137,27 @@ func (e Evaluater[T]) karatsuba(p, q, pOut Poly[T], depth, index int) {
 	e.karatsuba(p1, q1, buff.d1, depth+1, 3*index+1)
 
 	// a0 := p0 + p1
-	e.AddInPlace(p0, p1, buff.a0)
+	for i := range buff.a0 {
+		buff.a0[i] = p0[i] + p1[i]
+	}
 	// a1 := q0 + q1
-	e.AddInPlace(q0, q1, buff.a1)
-	// d2 := (p0 + p1) * (q0 + q1) = p0*q0 + p0*q1 + p1*q0 + p1*q1 = (p0*q1 + p1*q0) + a0 + a1
+	for i := range buff.a1 {
+		buff.a1[i] = q0[i] + q1[i]
+	}
+
+	// d2 := (p0 + p1) * (q0 + q1) = p0*q0 + p0*q1 + p1*q0 + p1*q1 = (p0*q1 + p1*q0) + d0 + d1
 	e.karatsuba(buff.a0, buff.a1, buff.d2, depth+1, 3*index+2)
 
-	// d2 := d2 - a0 - a1 = p0*q1 + p1*q0
-	vec.SubAssign(buff.d0.Coeffs, buff.d2.Coeffs)
-	vec.SubAssign(buff.d1.Coeffs, buff.d2.Coeffs)
-
-	// pOut := d0 + d2*X^N/2 + d1*X^N
-	vec.CopyAssign(buff.d0.Coeffs, pOut.Coeffs[0:N])      // d0: 0 ~ N
-	vec.CopyAssign(buff.d1.Coeffs, pOut.Coeffs[N:2*N])    // d1: N ~ 2N
-	vec.AddAssign(buff.d2.Coeffs, pOut.Coeffs[N/2:3*N/2]) // d2: N/2 ~ 3N/2
+	// pOut := d0 + (d2 - d0 - d1)*X^N/2 + d1*X^N
+	for i := range pOut {
+		if i < N {
+			pOut[i] = buff.d0[i] // d0: 0 ~ N
+		}
+		if N <= i {
+			pOut[i] = buff.d1[i-N] // d1: N ~ 2N
+		}
+		if N/2 <= i && i < 3*N/2 {
+			pOut[i] += buff.d2[i-N/2] - buff.d0[i-N/2] - buff.d1[i-N/2] // d2 -d0 - d1: N/2 ~ 3N/2
+		}
+	}
 }
