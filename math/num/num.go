@@ -107,30 +107,42 @@ func IsSigned[T Real]() bool {
 }
 
 // FromFloat64 casts a float64 value to T.
-// If f is larger than maximum possible value, it relies on Go's casting.
-// If float64 is not valid (NaN, Inf), it returns 0.
+// This is roughly equivalant to T(uint64(f)).
+//   - If f is NaN, it returns zero.
+//   - If f is +Inf, it returns MaxT.
+//   - If f is -Inf, it returns MinT.
 func FromFloat64[T Integer](f float64) T {
-	if math.IsNaN(f) || math.IsInf(f, 0) {
+	switch {
+	case f == 0 || math.IsNaN(f):
 		return 0
+	case math.IsInf(f, 1):
+		return T(MaxT[T]())
+	case math.IsInf(f, -1):
+		return T(MinT[T]())
 	}
 
-	if IsSigned[T]() {
-		// No Problem!
-		return T(math.Round(f))
+	bits := math.Float64bits(f)
+
+	mantissa := bits & ((1 << 52) - 1)         // 52 bits
+	exponent := (bits >> 52) & ((1 << 11) - 1) // 11 bits
+	exponent -= 1023                           // Bias Adjustment
+	sign := bits >> 63                         // 1 bit
+
+	var x uint64
+	m := mantissa + (1 << 52)     // mantissa is assumed to be 1.XXX form, so we add 1 << 52.
+	shift := int64(exponent) - 52 // We adjust shift amount, since mantissa is already shifted by 52 bits.
+	if shift >= 0 {
+		// shift is positive, shift left
+		x = m << shift
 	} else {
-		// If T is unsigned,
-		// we have to manually wrap negative value.
-		if math.Signbit(f) {
-			// If f < 0, we cast -f, then wrap it around.
-			res := T(math.Round(-f))
-			res = T(MaxT[T]()) - res
-			res += 1
-			return res
-		} else {
-			// If f > 0, No problem!
-			return T(math.Round(f))
-		}
+		// shift is negative, shift right
+		x = m >> (-shift)
 	}
+
+	if sign != 0 {
+		return -T(x)
+	}
+	return T(x)
 }
 
 // IsPowerOfTwo returns whether x is a power of two.

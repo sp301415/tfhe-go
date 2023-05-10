@@ -103,16 +103,16 @@ func (e Encrypter[T]) genBootstrappingKeyIndex(i int, bsk BootstrappingKey[T]) {
 				e.buffer.GLWEPtForPBSKeyGen.Value.Coeffs[0] = e.lweKey.Value[i] << e.Parameters.pbsParameters.ScaledBaseLog(k)
 				e.EncryptGLWEInPlace(e.buffer.GLWEPtForPBSKeyGen, e.buffer.GLWECtForPBSKeyGen)
 				for l := 0; l < e.Parameters.glweDimension+1; l++ {
-					e.fourierTransformer.ToFourierPolyInPlace(e.buffer.GLWECtForPBSKeyGen.Value[l], bsk.Value[i][j][k].Value[l])
+					e.FourierTransformer.ToFourierPolyInPlace(e.buffer.GLWECtForPBSKeyGen.Value[l], bsk.Value[i][j][k].Value[l])
 				}
 			}
 		} else {
 			for k := 0; k < e.Parameters.pbsParameters.level; k++ {
 				p := -(e.lweKey.Value[i] << e.Parameters.pbsParameters.ScaledBaseLog(k))
-				e.polyEvaluater.ScalarMulInPlace(e.glweKey.Value[j-1], p, e.buffer.GLWEPtForPBSKeyGen.Value)
+				e.PolyEvaluater.ScalarMulInPlace(e.glweKey.Value[j-1], p, e.buffer.GLWEPtForPBSKeyGen.Value)
 				e.EncryptGLWEInPlace(e.buffer.GLWEPtForPBSKeyGen, e.buffer.GLWECtForPBSKeyGen)
 				for l := 0; l < e.Parameters.glweDimension+1; l++ {
-					e.fourierTransformer.ToFourierPolyInPlace(e.buffer.GLWECtForPBSKeyGen.Value[l], bsk.Value[i][j][k].Value[l])
+					e.FourierTransformer.ToFourierPolyInPlace(e.buffer.GLWECtForPBSKeyGen.Value[l], bsk.Value[i][j][k].Value[l])
 				}
 			}
 		}

@@ -2,7 +2,6 @@ package tfhe
 
 import (
 	"github.com/sp301415/tfhe/math/num"
-	"github.com/sp301415/tfhe/math/vec"
 )
 
 var (
@@ -170,9 +169,8 @@ func (p DecompositionParameters[T]) Decompose(x T) []T {
 		carry >>= p.baseLog - 1
 		x += carry
 		res -= carry << p.baseLog
-		d[i] = res
+		d[len(d)-i-1] = res
 	}
-	vec.ReverseAssign(d)
 	return d
 }
 

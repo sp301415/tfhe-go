@@ -17,8 +17,8 @@ type Encrypter[T Tint] struct {
 	lweSampler     rand.GaussianSampler[T]
 	glweSampler    rand.GaussianSampler[T]
 
-	polyEvaluater      poly.Evaluater[T]
-	fourierTransformer poly.FourierTransformer[T]
+	PolyEvaluater      poly.Evaluater[T]
+	FourierTransformer poly.FourierTransformer[T]
 
 	lweKey  LWEKey[T]
 	glweKey GLWEKey[T]
@@ -65,8 +65,8 @@ func NewEncrypterWithoutKey[T Tint](params Parameters[T]) Encrypter[T] {
 		lweSampler:     rand.NewGaussianSamplerTorus[T](params.lweStdDev),
 		glweSampler:    rand.NewGaussianSamplerTorus[T](params.glweStdDev),
 
-		polyEvaluater:      poly.NewEvaluater[T](params.polyDegree),
-		fourierTransformer: poly.NewFourierTransformer[T](params.polyDegree),
+		PolyEvaluater:      poly.NewEvaluater[T](params.polyDegree),
+		FourierTransformer: poly.NewFourierTransformer[T](params.polyDegree),
 
 		buffer: newEncryptionBuffer(params),
 	}
@@ -97,8 +97,8 @@ func (e Encrypter[T]) ShallowCopy() Encrypter[T] {
 		glweKey:     e.glweKey,
 		lweLargeKey: e.lweLargeKey,
 
-		polyEvaluater:      e.polyEvaluater.ShallowCopy(),
-		fourierTransformer: e.fourierTransformer.ShallowCopy(),
+		PolyEvaluater:      e.PolyEvaluater.ShallowCopy(),
+		FourierTransformer: e.FourierTransformer.ShallowCopy(),
 
 		buffer: newEncryptionBuffer(e.Parameters),
 	}
@@ -263,21 +263,21 @@ func (e Encrypter[T]) EncryptGLWEInPlace(pt GLWEPlaintext[T], ct GLWECiphertext[
 	}
 
 	e.glweSampler.SamplePolyAssign(ct.Value[0])
-	e.polyEvaluater.AddAssign(pt.Value, ct.Value[0])
+	e.PolyEvaluater.AddAssign(pt.Value, ct.Value[0])
 	for i := 0; i < e.Parameters.glweDimension; i++ {
-		e.polyEvaluater.MulAddAssign(ct.Value[i+1], e.glweKey.Value[i], ct.Value[0])
+		e.PolyEvaluater.MulAddAssign(ct.Value[i+1], e.glweKey.Value[i], ct.Value[0])
 	}
 }
 
 // EncryptGLevInPlace encrypts GLWE plaintext to GLev ciphertexts.
 func (e Encrypter[T]) EncryptGLevInPlace(pt GLWEPlaintext[T], ct GLevCiphertext[T]) {
-	e.polyEvaluater.ScalarMulInPlace(pt.Value, ct.decompParams.FirstScaledBase(), e.buffer.GLWEPtForGLev.Value)
+	e.PolyEvaluater.ScalarMulInPlace(pt.Value, ct.decompParams.FirstScaledBase(), e.buffer.GLWEPtForGLev.Value)
 
 	for i := 0; i < ct.decompParams.level; i++ {
 		e.EncryptGLWEInPlace(e.buffer.GLWEPtForGLev, ct.Value[i])
 
 		if i < ct.decompParams.level-1 { // Skip last loop
-			e.polyEvaluater.ScalarDivAssign(ct.decompParams.base, e.buffer.GLWEPtForGLev.Value)
+			e.PolyEvaluater.ScalarDivAssign(ct.decompParams.base, e.buffer.GLWEPtForGLev.Value)
 		}
 	}
 }
@@ -300,7 +300,7 @@ func (e Encrypter[T]) DecryptGLWEInPlace(ct GLWECiphertext[T], pt GLWEPlaintext[
 	// pt = b - sum a*s
 	pt.Value.CopyFrom(ct.Value[0])
 	for i := 0; i < e.Parameters.glweDimension; i++ {
-		e.polyEvaluater.MulSubAssign(ct.Value[i+1], e.glweKey.Value[i], pt.Value)
+		e.PolyEvaluater.MulSubAssign(ct.Value[i+1], e.glweKey.Value[i], pt.Value)
 	}
 }
 
@@ -343,8 +343,8 @@ func (e Encrypter[T]) EncryptGGSWInPlace(pt GLWEPlaintext[T], ct GGSWCiphertext[
 		if i == 0 {
 			e.EncryptGLevInPlace(pt, ct.Value[i])
 		} else {
-			e.polyEvaluater.MulInPlace(pt.Value, e.glweKey.Value[i-1], e.buffer.GLWEPtForGGSW.Value)
-			e.polyEvaluater.NegAssign(e.buffer.GLWEPtForGGSW.Value)
+			e.PolyEvaluater.MulInPlace(pt.Value, e.glweKey.Value[i-1], e.buffer.GLWEPtForGGSW.Value)
+			e.PolyEvaluater.NegAssign(e.buffer.GLWEPtForGGSW.Value)
 			e.EncryptGLevInPlace(e.buffer.GLWEPtForGGSW, ct.Value[i])
 		}
 	}

@@ -18,7 +18,7 @@ type EvaluationKey[T Tint] struct {
 type Evaluater[T Tint] struct {
 	Parameters Parameters[T]
 
-	polyEvaluater poly.Evaluater[T]
+	PolyEvaluater poly.Evaluater[T]
 
 	evaluationKey EvaluationKey[T]
 }
@@ -42,7 +42,7 @@ func NewEvaluaterWithoutKey[T Tint](params Parameters[T]) Evaluater[T] {
 	return Evaluater[T]{
 		Parameters: params,
 
-		polyEvaluater: poly.NewEvaluater[T](params.polyDegree),
+		PolyEvaluater: poly.NewEvaluater[T](params.polyDegree),
 	}
 }
 
@@ -81,7 +81,7 @@ func (e Evaluater[T]) AddGLWE(ct0, ct1 GLWECiphertext[T]) GLWECiphertext[T] {
 // AddGLWEInPlace adds two GLWE ciphertexts ct0, ct1 and writes to ctOut.
 func (e Evaluater[T]) AddGLWEInPlace(ct0, ct1, ctOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.polyEvaluater.AddInPlace(ct0.Value[i], ct1.Value[i], ctOut.Value[i])
+		e.PolyEvaluater.AddInPlace(ct0.Value[i], ct1.Value[i], ctOut.Value[i])
 	}
 }
 
