@@ -137,7 +137,7 @@ func (e Encrypter[T]) GenKeySwitchingKeyParallel(skIn LWEKey[T], decompParams De
 	ksk := NewKeySwitchingKey(len(skIn.Value), len(e.lweKey.Value), decompParams)
 
 	chunkSize := runtime.NumCPU()
-	chunkCount := int(math.Ceil(float64(e.Parameters.lweDimension) / float64(chunkSize)))
+	chunkCount := int(math.Ceil(float64(len(skIn.Value)) / float64(chunkSize)))
 
 	encrypters := make([]Encrypter[T], chunkCount)
 	for i := 0; i < chunkCount; i++ {

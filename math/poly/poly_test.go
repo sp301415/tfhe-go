@@ -3,7 +3,6 @@ package poly_test
 import (
 	"testing"
 
-	"github.com/sp301415/tfhe/math/num"
 	"github.com/sp301415/tfhe/math/poly"
 	"github.com/sp301415/tfhe/math/rand"
 )
@@ -11,25 +10,16 @@ import (
 type T = uint64
 
 var (
-	N    = 1 << 16
+	N    = 1 << 15
 	pOut = poly.New[T](N)
 )
 
-func prepareTestPoly[T num.Integer]() (p0, p1 poly.Poly[T]) {
-	var sampler rand.UniformSampler[T]
-
-	p0 = poly.New[T](N)
-	p1 = poly.New[T](N)
-
-	sampler.SamplePolyAssign(p0)
-	sampler.SamplePolyAssign(p1)
-
-	return
-}
-
 func BenchmarkOperations(b *testing.B) {
+	sampler := rand.NewUniformSamplerWithSeed[T](nil)
+
 	eval := poly.NewEvaluater[T](N)
-	p0, p1 := prepareTestPoly[T]()
+	p0 := sampler.SamplePoly(N)
+	p1 := sampler.SamplePoly(N)
 
 	b.Run("Add", func(b *testing.B) {
 		eval.AddInPlace(p0, p1, pOut)

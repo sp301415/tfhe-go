@@ -11,6 +11,53 @@ const (
 	KaratsubaRecurseThreshold = 64
 )
 
+// karatsubaBuffer contains vuffer values for each karatsuba multiplication.
+type karatsubaBuffer[T num.Integer] struct {
+	// a0 = p0 + q0
+	a0 Poly[T]
+	// a1 = p1 + q1
+	a1 Poly[T]
+	// d0 = karatsuba(p0, q0)
+	d0 Poly[T]
+	// d1 = karatsuba(p1, q1)
+	d1 Poly[T]
+	// d2 = karatsuba(a0, a1)
+	d2 Poly[T]
+}
+
+// karatsubaTreeIndex returns the index of the buffer value
+// based on depth and index.
+func karatsubaTreeIndex(depth, index int) int {
+	return ((num.Pow(3, depth) - 1) / 2) + index
+}
+
+// newKaratsubaBuffer allocates a slice of karatsuba buffer.
+// Each value of the buffer can be accessed with karatsubaTreeIndex.
+func newKaratsubaBuffer[T num.Integer](N int) []karatsubaBuffer[T] {
+	// The full depth of the tree = log2(N / KaratsubaThreshold)
+	fullDepth := num.Log2(N / KaratsubaRecurseThreshold)
+	// Number of nodes = 3^0 + 3^1 + ... + 3^depth = (3^(depth+1) - 1) / 2
+	buff := make([]karatsubaBuffer[T], (num.Pow(3, fullDepth+1)-1)/2)
+
+	for i := 0; i < fullDepth; i++ {
+		for j := 0; j < num.Pow(3, i); j++ {
+			treeIdx := karatsubaTreeIndex(i, j)
+
+			// In depth i, karatsuba inputs have size N / 2^i
+			NN := N >> i
+			buff[treeIdx] = karatsubaBuffer[T]{
+				a0: New[T](NN / 2),
+				a1: New[T](NN / 2),
+				d0: New[T](NN),
+				d1: New[T](NN),
+				d2: New[T](NN),
+			}
+		}
+	}
+
+	return buff
+}
+
 // mulInPlaceNaive multiplies two polynomials using schoolbook method,
 // taking O(N^2) time.
 func (e Evaluater[T]) mulInPlaceNaive(p0, p1, pOut Poly[T]) {
@@ -72,7 +119,7 @@ func (e Evaluater[T]) karatsuba(p, q, pOut Poly[T], depth, index int) {
 		return
 	}
 
-	treeIdx := ((num.Pow(3, depth) - 1) / 2) + index
+	treeIdx := karatsubaTreeIndex(depth, index)
 	buff := e.buffer.karatsubaBuffer[treeIdx]
 
 	// p = p0 * X^N/2 + p1
