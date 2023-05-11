@@ -150,7 +150,7 @@ func (e Evaluater[T]) MonomialMulInPlace(p0 Poly[T], c T, d int, pOut Poly[T]) {
 		return
 	}
 
-	for i := 0; i < e.degree; i++ {
+	for i := range pOut.Coeffs {
 		//                   d
 		// |++++++++++++++|+++++| p0
 		// |-----|++++++++++++++| pOut
@@ -177,7 +177,7 @@ func (e Evaluater[T]) MonomialMulAssign(c T, d int, pOut Poly[T]) {
 
 	vec.RotateAssign(pOut.Coeffs, d)
 
-	for i := 0; i < e.degree; i++ {
+	for i := range pOut.Coeffs {
 		if i < d {
 			pOut.Coeffs[i] *= -c
 		} else {
@@ -198,7 +198,7 @@ func (e Evaluater[T]) MonomialMulAddAssign(p0 Poly[T], c T, d int, pOut Poly[T])
 		return
 	}
 
-	for i := 0; i < e.degree; i++ {
+	for i := range pOut.Coeffs {
 		if i < e.degree-d {
 			pOut.Coeffs[i+d] += c * p0.Coeffs[i]
 		} else {
@@ -219,7 +219,7 @@ func (e Evaluater[T]) MonomialMulSubAssign(p0 Poly[T], c T, d int, pOut Poly[T])
 		return
 	}
 
-	for i := 0; i < e.degree; i++ {
+	for i := range pOut.Coeffs {
 		if i < e.degree-d {
 			pOut.Coeffs[i+d] -= c * p0.Coeffs[i]
 		} else {

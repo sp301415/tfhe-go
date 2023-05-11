@@ -59,7 +59,7 @@ func Reverse[T any](v []T) []T {
 
 // ReverseInPlace reverses v and writes it to vOut.
 func ReverseInPlace[T any](v, vOut []T) {
-	for i := 0; i < len(vOut); i++ {
+	for i := range vOut {
 		vOut[len(vOut)-i-1] = v[i]
 	}
 }
@@ -112,14 +112,14 @@ func Add[T num.Number](v0, v1 []T) []T {
 
 // AddInPlace adds v0, v1 and writes it to vOut.
 func AddInPlace[T num.Number](v0, v1, vOut []T) {
-	for i := 0; i < len(vOut); i++ {
+	for i := range vOut {
 		vOut[i] = v0[i] + v1[i]
 	}
 }
 
 // AddAssign adds v0to vOut.
 func AddAssign[T num.Number](v0, vOut []T) {
-	for i := 0; i < len(vOut); i++ {
+	for i := range vOut {
 		vOut[i] += v0[i]
 	}
 }
@@ -133,14 +133,14 @@ func Sub[T num.Number](v0, v1 []T) []T {
 
 // SubInPlace subtracts v0, v1 and writes it to vOut.
 func SubInPlace[T num.Number](v0, v1, vOut []T) {
-	for i := 0; i < len(vOut); i++ {
+	for i := range vOut {
 		vOut[i] = v0[i] - v1[i]
 	}
 }
 
 // SubAssign subtracts v0 from vOut.
 func SubAssign[T num.Number](v0, vOut []T) {
-	for i := 0; i < len(vOut); i++ {
+	for i := range vOut {
 		vOut[i] -= v0[i]
 	}
 }
@@ -154,14 +154,14 @@ func Neg[T num.Number](v0 []T) []T {
 
 // NegInPlace negates v0 and writes it to vOut.
 func NegInPlace[T num.Number](v0, vOut []T) {
-	for i := 0; i < len(vOut); i++ {
+	for i := range vOut {
 		vOut[i] = -v0[i]
 	}
 }
 
 // NegAssign negates v0.
 func NegAssign[T num.Number](v0 []T) {
-	for i := 0; i < len(v0); i++ {
+	for i := range v0 {
 		v0[i] = -v0[i]
 	}
 }
@@ -175,7 +175,7 @@ func ScalarMul[T num.Number](v0 []T, c T) []T {
 
 // ScalarMulInPlace multplies c to v0 and writes it to vOut.
 func ScalarMulInPlace[T num.Number](v0 []T, c T, vOut []T) {
-	for i := 0; i < len(vOut); i++ {
+	for i := range vOut {
 		vOut[i] = c * v0[i]
 	}
 }
@@ -187,14 +187,14 @@ func ScalarMulAssign[T num.Number](c T, vOut []T) {
 
 // ScalarMulAddAssign multiplies c to v1 and adds to vOut.
 func ScalarMulAddAssign[T num.Number](v0 []T, c T, vOut []T) {
-	for i := 0; i < len(vOut); i++ {
+	for i := range vOut {
 		vOut[i] += c * v0[i]
 	}
 }
 
 // ScalarMulSubAssign multiplies c to v0 and subtracts from vOut.
 func ScalarMulSubAssign[T num.Number](v0 []T, c T, vOut []T) {
-	for i := 0; i < len(vOut); i++ {
+	for i := range vOut {
 		vOut[i] -= c * v0[i]
 	}
 }
@@ -208,28 +208,28 @@ func ElementWiseMul[T num.Number](v0 []T, v1 []T) []T {
 
 // ElementWiseMulInPlace multplies v0, v1 and writes it to vOut.
 func ElementWiseMulInPlace[T num.Number](v0 []T, v1 []T, vOut []T) {
-	for i := 0; i < len(vOut); i++ {
+	for i := range vOut {
 		vOut[i] = v0[i] * v1[i]
 	}
 }
 
 // ElementWiseMulAssign multplies v to vOut.
 func ElementWiseMulAssign[T num.Number](v []T, vOut []T) {
-	for i := 0; i < len(vOut); i++ {
+	for i := range vOut {
 		vOut[i] *= v[i]
 	}
 }
 
 // ElementWiseMulAddAssign multiplies v0, v1 and adds to vOut.
 func ElementWiseMulAddAssign[T num.Number](v0 []T, v1 []T, vOut []T) {
-	for i := 0; i < len(vOut); i++ {
+	for i := range vOut {
 		vOut[i] += v0[i] * v1[i]
 	}
 }
 
 // ElementWiseMulSubAssign multiplies v0, v1 and subtracts from vOut.
 func ElementWiseMulSubAssign[T num.Number](v0 []T, v1 []T, vOut []T) {
-	for i := 0; i < len(vOut); i++ {
+	for i := range vOut {
 		vOut[i] -= v0[i] * v1[i]
 	}
 }
