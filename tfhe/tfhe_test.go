@@ -83,6 +83,15 @@ func BenchmarkEncryption(b *testing.B) {
 	})
 }
 
+func BenchmarkKeySwitchingKeyGen(b *testing.B) {
+	enc := tfhe.NewEncrypter(benchParams)
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		enc.GenKeySwitchingKeyForBootstrappingParallel()
+	}
+}
+
 func BenchmarkBootstrappingKeyGen(b *testing.B) {
 	enc := tfhe.NewEncrypter(benchParams)
 	b.ResetTimer()

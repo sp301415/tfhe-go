@@ -64,7 +64,9 @@ func (e Encrypter[T]) GenEvaluationKeyParallel() EvaluationKey[T] {
 func (e Encrypter[T]) GenBootstrappingKey() BootstrappingKey[T] {
 	bsk := NewBootstrappingKey(e.Parameters, e.Parameters.pbsParameters)
 	for i := 0; i < e.Parameters.lweDimension; i++ {
-		e.genBootstrappingKeyIndex(i, bsk)
+		for j := 0; j < e.Parameters.glweDimension+1; j++ {
+			e.genBootstrappingKeyIndex(i, j, bsk)
+		}
 	}
 	return bsk
 }
@@ -74,22 +76,33 @@ func (e Encrypter[T]) GenBootstrappingKeyParallel() BootstrappingKey[T] {
 	bsk := NewBootstrappingKey(e.Parameters, e.Parameters.pbsParameters)
 
 	// LWEDimension is usually 500 ~ 1000,
-	// so we chunk it between min of NumCPU and sqrt(LWEDimension.)
-	chunkSize := num.Min(runtime.NumCPU(), int(math.Sqrt(float64(e.Parameters.lweDimension))))
-	chunkCount := int(math.Ceil(float64(e.Parameters.lweDimension) / float64(chunkSize)))
+	// and GLWEDimension is usually 1 ~ 5.
+	// so we chunk it between min of NumCPU and sqrt(LWEDimension * (GLWEDimension + 1)).
+	workSize := e.Parameters.lweDimension * (e.Parameters.glweDimension + 1)
+	chunkCount := num.Min(runtime.NumCPU(), int(math.Sqrt(float64(workSize))))
 
 	encrypters := make([]Encrypter[T], chunkCount)
 	for i := 0; i < chunkCount; i++ {
 		encrypters[i] = e.ShallowCopy()
 	}
 
+	ch := make(chan [2]int) // i, j
+	go func() {
+		defer close(ch)
+		for i := 0; i < e.Parameters.lweDimension; i++ {
+			for j := 0; j < e.Parameters.glweDimension+1; j++ {
+				ch <- [2]int{i, j}
+			}
+		}
+	}()
+
 	var wg sync.WaitGroup
+	wg.Add(chunkCount)
 	for i := 0; i < chunkCount; i++ {
-		wg.Add(1)
 		go func(chunkIdx int) {
 			defer wg.Done()
-			for i := chunkIdx * chunkSize; i < (chunkIdx+1)*chunkSize && i < e.Parameters.lweDimension; i++ {
-				encrypters[chunkIdx].genBootstrappingKeyIndex(i, bsk)
+			for ij := range ch {
+				encrypters[chunkIdx].genBootstrappingKeyIndex(ij[0], ij[1], bsk)
 			}
 		}(i)
 	}
@@ -98,29 +111,30 @@ func (e Encrypter[T]) GenBootstrappingKeyParallel() BootstrappingKey[T] {
 	return bsk
 }
 
-// genBootstrappingKeyIndex samples one index of bootstrapping key: GGSW(LWEKey_i).
-func (e Encrypter[T]) genBootstrappingKeyIndex(i int, bsk BootstrappingKey[T]) {
-	for j := 0; j < e.Parameters.glweDimension+1; j++ {
-		if j == 0 {
-			for k := 0; k < e.Parameters.pbsParameters.level; k++ {
-				e.buffer.GLWEPtForPBSKeyGen.Value.Clear()
-				e.buffer.GLWEPtForPBSKeyGen.Value.Coeffs[0] = e.lweKey.Value[i] << e.Parameters.pbsParameters.ScaledBaseLog(k)
-				e.EncryptGLWEInPlace(e.buffer.GLWEPtForPBSKeyGen, e.buffer.GLWECtForPBSKeyGen)
-				for l := 0; l < e.Parameters.glweDimension+1; l++ {
-					e.FourierTransformer.ToFourierPolyInPlace(e.buffer.GLWECtForPBSKeyGen.Value[l], bsk.Value[i][j][k].Value[l])
-				}
+// genBootstrappingKeyIndex samples one index of bootstrapping key: GGSW(LWEKey_i)_j,
+// where 0 <= i < LWEDimension and 0 <= j < GLWEDimension + 1
+// This is the minimum workload that can be executed in parallel.
+func (e Encrypter[T]) genBootstrappingKeyIndex(i, j int, bsk BootstrappingKey[T]) {
+	if j == 0 {
+		for k := 0; k < e.Parameters.pbsParameters.level; k++ {
+			e.buffer.GLWEPtForPBSKeyGen.Value.Clear()
+			e.buffer.GLWEPtForPBSKeyGen.Value.Coeffs[0] = e.lweKey.Value[i] << e.Parameters.pbsParameters.ScaledBaseLog(k)
+			e.EncryptGLWEInPlace(e.buffer.GLWEPtForPBSKeyGen, e.buffer.GLWECtForPBSKeyGen)
+			for l := 0; l < e.Parameters.glweDimension+1; l++ {
+				e.FourierTransformer.ToFourierPolyInPlace(e.buffer.GLWECtForPBSKeyGen.Value[l], bsk.Value[i][j][k].Value[l])
 			}
-		} else {
-			for k := 0; k < e.Parameters.pbsParameters.level; k++ {
-				p := -(e.lweKey.Value[i] << e.Parameters.pbsParameters.ScaledBaseLog(k))
-				e.PolyEvaluater.ScalarMulInPlace(e.glweKey.Value[j-1], p, e.buffer.GLWEPtForPBSKeyGen.Value)
-				e.EncryptGLWEInPlace(e.buffer.GLWEPtForPBSKeyGen, e.buffer.GLWECtForPBSKeyGen)
-				for l := 0; l < e.Parameters.glweDimension+1; l++ {
-					e.FourierTransformer.ToFourierPolyInPlace(e.buffer.GLWECtForPBSKeyGen.Value[l], bsk.Value[i][j][k].Value[l])
-				}
+		}
+	} else {
+		for k := 0; k < e.Parameters.pbsParameters.level; k++ {
+			p := -(e.lweKey.Value[i] << e.Parameters.pbsParameters.ScaledBaseLog(k))
+			e.PolyEvaluater.ScalarMulInPlace(e.glweKey.Value[j-1], p, e.buffer.GLWEPtForPBSKeyGen.Value)
+			e.EncryptGLWEInPlace(e.buffer.GLWEPtForPBSKeyGen, e.buffer.GLWECtForPBSKeyGen)
+			for l := 0; l < e.Parameters.glweDimension+1; l++ {
+				e.FourierTransformer.ToFourierPolyInPlace(e.buffer.GLWECtForPBSKeyGen.Value[l], bsk.Value[i][j][k].Value[l])
 			}
 		}
 	}
+
 }
 
 // GenKeySwitchingKey samples a new keyswitching key skIn -> e.LWEKey.
@@ -141,21 +155,28 @@ func (e Encrypter[T]) GenKeySwitchingKeyParallel(skIn LWEKey[T], decompParams De
 	ksk := NewKeySwitchingKey(len(skIn.Value), len(e.lweKey.Value), decompParams)
 
 	// LWEDimension is usually 500 ~ 1000,
-	// so we chunk it between min of NumCPU and sqrt(LWEDimension.)
-	chunkSize := num.Min(runtime.NumCPU(), int(math.Sqrt(float64(e.Parameters.lweDimension))))
-	chunkCount := int(math.Ceil(float64(len(skIn.Value)) / float64(chunkSize)))
+	// so we chunk it between min of NumCPU and sqrt(InputLWEDimension).
+	chunkCount := num.Min(runtime.NumCPU(), int(math.Sqrt(float64(ksk.InputLWEDimension()))))
 
 	encrypters := make([]Encrypter[T], chunkCount)
 	for i := 0; i < chunkCount; i++ {
 		encrypters[i] = e.ShallowCopy()
 	}
 
+	ch := make(chan int)
+	go func() {
+		defer close(ch)
+		for i := 0; i < ksk.InputLWEDimension(); i++ {
+			ch <- i
+		}
+	}()
+
 	var wg sync.WaitGroup
+	wg.Add(chunkCount)
 	for i := 0; i < chunkCount; i++ {
-		wg.Add(1)
 		go func(chunkIdx int) {
 			defer wg.Done()
-			for i := chunkIdx * chunkSize; i < (chunkIdx+1)*chunkSize && i < ksk.InputLWEDimension(); i++ {
+			for i := range ch {
 				encrypters[chunkIdx].EncryptLevInPlace(LWEPlaintext[T]{Value: skIn.Value[i]}, ksk.Value[i])
 			}
 		}(i)
