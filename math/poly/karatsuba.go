@@ -75,9 +75,11 @@ func (e Evaluater[T]) mulInPlaceKaratsuba(p, q, pOut Poly[T]) {
 	e.karatsuba(p1, q1, buff.d1, 1)
 
 	// a0 := p0 + p1
-	// a1 := q0 + q1
-	for i := 0; i < N/2; i++ {
+	for i := range buff.a0 {
 		buff.a0[i] = p0[i] + p1[i]
+	}
+	// a1 := q0 + q1
+	for i := range buff.a1 {
 		buff.a1[i] = q0[i] + q1[i]
 	}
 

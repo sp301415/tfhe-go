@@ -29,6 +29,13 @@ func (sk GLWEKey[T]) Copy() GLWEKey[T] {
 	return GLWEKey[T]{Value: skCopy}
 }
 
+// CopyFrom copies values from a key.
+func (sk *GLWEKey[T]) CopyFrom(skIn GLWEKey[T]) {
+	for i := range sk.Value {
+		sk.Value[i].CopyFrom(skIn.Value[i])
+	}
+}
+
 // ToLWEKey returns a new LWE secret key derived from the GLWE secret key.
 func (sk GLWEKey[T]) ToLWEKey() LWEKey[T] {
 	glweDimension := len(sk.Value)
@@ -57,6 +64,11 @@ func (pt GLWEPlaintext[T]) Copy() GLWEPlaintext[T] {
 	return GLWEPlaintext[T]{Value: pt.Value.Copy()}
 }
 
+// CopyFrom copies values from a plaintext.
+func (pt *GLWEPlaintext[T]) CopyFrom(ptIn GLWEPlaintext[T]) {
+	pt.Value.CopyFrom(ptIn.Value)
+}
+
 // GLWECiphertext represents an encrypted GLWE ciphertext.
 type GLWECiphertext[T Tint] struct {
 	// Value is ordered as [body, mask],
@@ -83,6 +95,13 @@ func (ct GLWECiphertext[T]) Copy() GLWECiphertext[T] {
 	return GLWECiphertext[T]{Value: ctCopy}
 }
 
+// CopyFrom copies values from a ciphertext.
+func (ct *GLWECiphertext[T]) CopyFrom(ctIn GLWECiphertext[T]) {
+	for i := range ct.Value {
+		ct.Value[i].CopyFrom(ctIn.Value[i])
+	}
+}
+
 // GLevCiphertext is a leveled GLWE ciphertext, decomposed according to DecompositionParameters.
 type GLevCiphertext[T Tint] struct {
 	// Value has length Level.
@@ -107,6 +126,14 @@ func (ct GLevCiphertext[T]) Copy() GLevCiphertext[T] {
 		ctCopy[i] = ct.Value[i].Copy()
 	}
 	return GLevCiphertext[T]{Value: ctCopy, decompParams: ct.decompParams}
+}
+
+// CopyFrom copies values from ciphertext.
+func (ct *GLevCiphertext[T]) CopyFrom(ctIn GLevCiphertext[T]) {
+	for i := range ct.Value {
+		ct.Value[i].CopyFrom(ctIn.Value[i])
+	}
+	ct.decompParams = ctIn.decompParams
 }
 
 // DecompositionParameters returns the decomposition parameters of the ciphertext.

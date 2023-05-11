@@ -43,7 +43,7 @@ func (p Poly[T]) Copy() Poly[T] {
 }
 
 // CopyFrom copies p0 to p.
-func (p Poly[T]) CopyFrom(p0 Poly[T]) {
+func (p *Poly[T]) CopyFrom(p0 Poly[T]) {
 	vec.CopyAssign(p0.Coeffs, p.Coeffs)
 }
 

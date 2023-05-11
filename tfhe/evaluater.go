@@ -2,6 +2,7 @@ package tfhe
 
 import (
 	"github.com/sp301415/tfhe/math/poly"
+	"github.com/sp301415/tfhe/math/vec"
 )
 
 // EvaluationKey is a public key for Evaluator,
@@ -30,6 +31,8 @@ type Evaluater[T Tint] struct {
 type evaluationBuffer[T Tint] struct {
 	// fourierGLWEOut holds the fourier transformed ctGLWEOut in ExternalProductFourier.
 	fourierGLWEOut FourierGLWECiphertext[T]
+	// glweCtForCMux holds ct1 - ct0 in CMux.
+	glweCtForCMux GLWECiphertext[T]
 }
 
 // NewEvaluater creates a new Evaluater based on parameters.
@@ -62,6 +65,7 @@ func NewEvaluaterWithoutKey[T Tint](params Parameters[T]) Evaluater[T] {
 func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 	return evaluationBuffer[T]{
 		fourierGLWEOut: NewFourierGLWECiphertext(params),
+		glweCtForCMux:  NewGLWECiphertext(params),
 	}
 }
 
@@ -89,14 +93,12 @@ func (e Evaluater[T]) AddLWE(ct0, ct1 LWECiphertext[T]) LWECiphertext[T] {
 
 // AddLWEInPlace adds two LWE ciphertexts ct0, ct1 and writes to ctOut.
 func (e Evaluater[T]) AddLWEInPlace(ct0, ct1, ctOut LWECiphertext[T]) {
-	for i := 0; i < e.Parameters.lweDimension+1; i++ {
-		ctOut.Value[i] = ct0.Value[i] + ct1.Value[i]
-	}
+	vec.AddInPlace(ct0.Value, ct1.Value, ctOut.Value)
 }
 
 // AddLWEAssign adds LWE ciphertext ct0 to ctOut.
 func (e Evaluater[T]) AddLWEAssign(ct0, ctOut LWECiphertext[T]) {
-	e.AddLWEInPlace(ct0, ctOut, ctOut)
+	vec.AddAssign(ct0.Value, ctOut.Value)
 }
 
 // AddGLWE adds two GLWE cipheretexts ct0, ct1 and returns the result.
@@ -115,7 +117,30 @@ func (e Evaluater[T]) AddGLWEInPlace(ct0, ct1, ctOut GLWECiphertext[T]) {
 
 // AddGLWEAssign adds GLWE ciphertext ct0 to ctOut.
 func (e Evaluater[T]) AddGLWEAssign(ct0, ctOut GLWECiphertext[T]) {
-	e.AddGLWEInPlace(ct0, ctOut, ctOut)
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.PolyEvaluater.AddAssign(ct0.Value[i], ctOut.Value[i])
+	}
+}
+
+// SubGLWE subtracts two GLWE cipheretexts ct0, ct1 and returns the result.
+func (e Evaluater[T]) SubGLWE(ct0, ct1 GLWECiphertext[T]) GLWECiphertext[T] {
+	ctOut := NewGLWECiphertext(e.Parameters)
+	e.SubGLWEInPlace(ct0, ct1, ctOut)
+	return ctOut
+}
+
+// SubGLWEInPlace subtracts two GLWE ciphertexts ct0, ct1 and writes to ctOut.
+func (e Evaluater[T]) SubGLWEInPlace(ct0, ct1, ctOut GLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.PolyEvaluater.SubInPlace(ct0.Value[i], ct1.Value[i], ctOut.Value[i])
+	}
+}
+
+// SubGLWEAssign subtracts GLWE ciphertext ct0 from ctOut.
+func (e Evaluater[T]) SubGLWEAssign(ct0, ctOut GLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.PolyEvaluater.SubAssign(ct0.Value[i], ctOut.Value[i])
+	}
 }
 
 // ScalarMulGLWE multiplies p to ct0 and returns the result.
@@ -134,7 +159,9 @@ func (e Evaluater[T]) ScalarMulGLWEInPlace(ct0 GLWECiphertext[T], p poly.Poly[T]
 
 // ScalarMulGLWEAssign multiplies p to ctOut.
 func (e Evaluater[T]) ScalarMulGLWEAssign(p poly.Poly[T], ctOut GLWECiphertext[T]) {
-	e.ScalarMulGLWEInPlace(ctOut, p, ctOut)
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.PolyEvaluater.MulAssign(p, ctOut.Value[i])
+	}
 }
 
 // ScalarMulAddGLWEAssign multiplies p to ct0 and adds to ctOut.

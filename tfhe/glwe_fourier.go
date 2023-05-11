@@ -28,6 +28,13 @@ func (ct FourierGLWECiphertext[T]) Copy() FourierGLWECiphertext[T] {
 	return FourierGLWECiphertext[T]{Value: ctCopy}
 }
 
+// CopyFrom copies values from a ciphertext.
+func (ct *FourierGLWECiphertext[T]) CopyFrom(ctIn FourierGLWECiphertext[T]) {
+	for i := range ct.Value {
+		ct.Value[i].CopyFrom(ctIn.Value[i])
+	}
+}
+
 // FourierGLevCiphertext is a leveled GLWE ciphertext in Fourier domain.
 type FourierGLevCiphertext[T Tint] struct {
 	// Value has length Level.
@@ -52,6 +59,14 @@ func (ct FourierGLevCiphertext[T]) Copy() FourierGLevCiphertext[T] {
 		ctCopy[i] = ct.Value[i].Copy()
 	}
 	return FourierGLevCiphertext[T]{Value: ctCopy, decompParams: ct.decompParams}
+}
+
+// CopyFrom copies values from a ciphertext.
+func (ct *FourierGLevCiphertext[T]) CopyFrom(ctIn FourierGLevCiphertext[T]) {
+	for i := range ct.Value {
+		ct.Value[i].CopyFrom(ctIn.Value[i])
+	}
+	ct.decompParams = ctIn.decompParams
 }
 
 // DecompositionParameters returns the decomposition parameters of the ciphertext.
@@ -83,6 +98,14 @@ func (ct FourierGGSWCiphertext[T]) Copy() FourierGGSWCiphertext[T] {
 		ctCopy[i] = ct.Value[i].Copy()
 	}
 	return FourierGGSWCiphertext[T]{Value: ctCopy, decompParams: ct.decompParams}
+}
+
+// CopyFrom copies values from a ciphertext.
+func (ct *FourierGGSWCiphertext[T]) CopyFrom(ctIn FourierGGSWCiphertext[T]) {
+	for i := range ct.Value {
+		ct.Value[i].CopyFrom(ctIn.Value[i])
+	}
+	ct.decompParams = ctIn.decompParams
 }
 
 // DecompositionParameters returns the decomposition parameters of the ciphertext.

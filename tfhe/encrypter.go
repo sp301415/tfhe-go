@@ -128,7 +128,7 @@ func (e *Encrypter[T]) SetGLWEKey(sk GLWEKey[T]) {
 }
 
 // EncodeLWE encodes an integer message to LWE plaintext.
-// Message will get wrapped around Parameters.MessageModulus.
+// Message will get wrapped around MessageModulus.
 func (e Encrypter[T]) EncodeLWE(message int) LWEPlaintext[T] {
 	return LWEPlaintext[T]{Value: (T(message) % e.Parameters.messageModulus) << e.Parameters.deltaLog}
 }
@@ -138,8 +138,8 @@ func (e Encrypter[T]) DecodeLWE(pt LWEPlaintext[T]) int {
 	return int(num.RoundRatioBits(pt.Value, e.Parameters.deltaLog) % e.Parameters.messageModulus)
 }
 
-// Encrypt encrypts an integer message to LWE ciphertext.
-// Message will get wrapped around Parameters.MessageModulus.
+// Encrypt encrypts an integer message to LWE ciphertext. This is the "default" form of encryption.
+// Message will get wrapped around MessageModulus.
 func (e Encrypter[T]) Encrypt(message int) LWECiphertext[T] {
 	return e.EncryptLWE(e.EncodeLWE(message))
 }
@@ -150,68 +150,68 @@ func (e Encrypter[T]) EncryptLarge(message int) LWECiphertext[T] {
 	return e.EncryptLWELarge(e.EncodeLWE(message))
 }
 
-// EncryptLWE encrypts a LWE plaintext to LWE ciphertext.
+// EncryptLWE encrypts LWE plaintext to LWE ciphertext.
 func (e Encrypter[T]) EncryptLWE(pt LWEPlaintext[T]) LWECiphertext[T] {
 	ct := NewLWECiphertext(e.Parameters)
 	e.EncryptLWEInPlace(pt, ct)
 	return ct
 }
 
-// EncryptLWELarge encrypts a LWE plaintext to LWE ciphertext, but using key derived from GLWE key.
+// EncryptLWELarge encrypts LWE plaintext to LWE ciphertext, but using key derived from GLWE key.
 func (e Encrypter[T]) EncryptLWELarge(pt LWEPlaintext[T]) LWECiphertext[T] {
 	ct := NewLargeLWECiphertext(e.Parameters)
 	e.EncryptLWELargeInPlace(pt, ct)
 	return ct
 }
 
-// EncryptLWEInPlace encrypts pt and saves it to ct.
+// EncryptLWEInPlace encrypts LWE plaintext and writes it to LWE ciphertext ct.
 func (e Encrypter[T]) EncryptLWEInPlace(pt LWEPlaintext[T], ct LWECiphertext[T]) {
 	// ct = (b = <a, s> + pt + e, a_1, ..., a_n)
 	e.uniformSampler.SampleSliceAssign(ct.Value[1:])
 	ct.Value[0] = vec.Dot(ct.Value[1:], e.lweKey.Value) + pt.Value + e.lweSampler.Sample()
 }
 
-// EncryptLWELargeInPlace encrypts pt and saves it to ct,  but using key derived from GLWE key.
+// EncryptLWELargeInPlace encrypts LWE plaintext and writes it to LWE ciphertext ct, but using key derived from GLWE key.
 func (e Encrypter[T]) EncryptLWELargeInPlace(pt LWEPlaintext[T], ct LWECiphertext[T]) {
 	// ct = (b = <a, s> + pt + e, a_1, ..., a_n)
 	e.uniformSampler.SampleSliceAssign(ct.Value[1:])
 	ct.Value[0] = vec.Dot(ct.Value[1:], e.lweLargeKey.Value) + pt.Value + e.lweSampler.Sample()
 }
 
-// EncryptLevInPlace encrypts a LWE plaintext to leveled LWE ciphertext.
+// EncryptLevInPlace encrypts LWE plaintext and writes it to Lev ciphertext ct.
 func (e Encrypter[T]) EncryptLevInPlace(pt LWEPlaintext[T], ct LevCiphertext[T]) {
 	for i := 0; i < ct.decompParams.level; i++ {
 		e.EncryptLWEInPlace(LWEPlaintext[T]{Value: pt.Value << ct.decompParams.ScaledBaseLog(i)}, ct.Value[i])
 	}
 }
 
-// Decrypt decrypts a LWE ciphertext to integer message.
-// Decrypt always succeeds, even though the decrypted value could be wrong.
+// Decrypt decrypts LWE ciphertext to integer message.
+// Decryption always succeeds, even though decrypted value could be wrong.
 func (e Encrypter[T]) Decrypt(ct LWECiphertext[T]) int {
 	return e.DecodeLWE(e.DecryptLWE(ct))
 }
 
-// DecryptLarge decrypts a LWE ciphertext to integer message, but using key derived from GLWE key.
-// Decrypt always succeeds, even though the decrypted value could be wrong.
+// DecryptLarge decrypts LWE ciphertext to integer message, but using key derived from GLWE key.
+// Decryption always succeeds, even though decrypted value could be wrong.
 func (e Encrypter[T]) DecryptLarge(ct LWECiphertext[T]) int {
 	return e.DecodeLWE(e.DecryptLWELarge(ct))
 }
 
-// DecryptLWE decrypts a LWE ciphertext to LWE plaintext.
+// DecryptLWE decrypts LWE ciphertext to LWE plaintext.
 func (e Encrypter[T]) DecryptLWE(ct LWECiphertext[T]) LWEPlaintext[T] {
 	// pt = b - <a, s>
 	pt := ct.Value[0] - vec.Dot(ct.Value[1:], e.lweKey.Value)
 	return LWEPlaintext[T]{Value: pt}
 }
 
-// DecryptLWELarge decrypts a LWE ciphertext to LWE plaintext, but using key derived from GLWE key.
+// DecryptLWELarge decrypts LWE ciphertext to LWE plaintext, but using key derived from GLWE key.
 func (e Encrypter[T]) DecryptLWELarge(ct LWECiphertext[T]) LWEPlaintext[T] {
 	// pt = b - <a, s>
 	pt := ct.Value[0] - vec.Dot(ct.Value[1:], e.lweLargeKey.Value)
 	return LWEPlaintext[T]{Value: pt}
 }
 
-// DecryptLevInPlace decrypts leveled LWE ciphertexts to LWE plaintext.
+// DecryptLevInPlace decrypts Lev ciphertext to LWE plaintext.
 func (e Encrypter[T]) DecryptLev(ct LevCiphertext[T]) LWEPlaintext[T] {
 	lweCt := ct.Value[ct.decompParams.level-1]
 	pt := e.DecryptLWE(lweCt)
@@ -220,8 +220,8 @@ func (e Encrypter[T]) DecryptLev(ct LevCiphertext[T]) LWEPlaintext[T] {
 
 // EncodeGLWE encodes up to Parameters.PolyDegree integer messages into one GLWE plaintext.
 //
-// If len(messages) < Parameters.PolyDegree, the leftovers are padded with zero.
-// If len(messages) > Parameters.PolyDegree, the leftovers are discarded.
+// If len(messages) < PolyDegree, the leftovers are padded with zero.
+// If len(messages) > PolyDegree, the leftovers are discarded.
 func (e Encrypter[T]) EncodeGLWE(messages []int) GLWEPlaintext[T] {
 	pt := NewGLWEPlaintext(e.Parameters)
 	for i := 0; i < e.Parameters.polyDegree && i < len(messages); i++ {
@@ -231,7 +231,7 @@ func (e Encrypter[T]) EncodeGLWE(messages []int) GLWEPlaintext[T] {
 }
 
 // DecodeGLWE decodes a GLWE plaintext to integer messages.
-// The returned messages are always of length Parameters.PolyDegree.
+// The returned messages are always of length PolyDegree.
 func (e Encrypter[T]) DecodeGLWE(pt GLWEPlaintext[T]) []int {
 	messages := make([]int, e.Parameters.polyDegree)
 	for i := 0; i < e.Parameters.polyDegree; i++ {
@@ -241,23 +241,21 @@ func (e Encrypter[T]) DecodeGLWE(pt GLWEPlaintext[T]) []int {
 }
 
 // EncryptPacked encrypts up to Parameters.PolyDegree integer messages into one GLWE ciphertext.
-// However, there are not much to do with GLWE ciphertext, so this is only useful
-// when you want to reduce communication costs.
 //
-// If len(messages) < Parameters.PolyDegree, the leftovers are padded with zero.
-// If len(messages) > Parameters.PolyDegree, the leftovers are discarded.
+// If len(messages) < PolyDegree, the leftovers are padded with zero.
+// If len(messages) > PolyDegree, the leftovers are discarded.
 func (e Encrypter[T]) EncryptPacked(messages []int) GLWECiphertext[T] {
 	return e.EncryptGLWE(e.EncodeGLWE(messages))
 }
 
-// EncryptGLWE encrypts a GLWE plaintext to GLWE ciphertext.
+// EncryptGLWE encrypts GLWE plaintext to GLWE ciphertext.
 func (e Encrypter[T]) EncryptGLWE(pt GLWEPlaintext[T]) GLWECiphertext[T] {
 	ct := NewGLWECiphertext(e.Parameters)
 	e.EncryptGLWEInPlace(pt, ct)
 	return ct
 }
 
-// EncryptGLWEInPlace encrypts pt and saves it to ct.
+// EncryptGLWEInPlace encrypts GLWE plaintext and writes it to GLWE ciphertext ct.
 func (e Encrypter[T]) EncryptGLWEInPlace(pt GLWEPlaintext[T], ct GLWECiphertext[T]) {
 	// ct = (b = sum a*s + pt + e, a_1, ..., a_k)
 	for i := 0; i < e.Parameters.glweDimension; i++ {
@@ -279,20 +277,20 @@ func (e Encrypter[T]) EncryptGLevInPlace(pt GLWEPlaintext[T], ct GLevCiphertext[
 	}
 }
 
-// DecryptPacked decrypts a GLWE ciphertext to integer messages.
-// Decrypt always succeeds, even though the decrypted value could be wrong.
+// DecryptPacked decrypts GLWE ciphertext to integer messages.
+// Decryption always succeeds, even though decrypted value could be wrong.
 func (e Encrypter[T]) DecryptPacked(ct GLWECiphertext[T]) []int {
 	return e.DecodeGLWE(e.DecryptGLWE(ct))
 }
 
-// DecryptGLWE decrypts a GLWE ciphertext to GLWE plaintext.
+// DecryptGLWE decrypts GLWE ciphertext to GLWE plaintext.
 func (e Encrypter[T]) DecryptGLWE(ct GLWECiphertext[T]) GLWEPlaintext[T] {
 	pt := NewGLWEPlaintext(e.Parameters)
 	e.DecryptGLWEInPlace(ct, pt)
 	return pt
 }
 
-// DecryptGLWEInPlace decrypts ct and saves it to pt.
+// DecryptGLWEInPlace decrypts GLWE ciphertext and writes it to GLWE plaintext pt.
 func (e Encrypter[T]) DecryptGLWEInPlace(ct GLWECiphertext[T], pt GLWEPlaintext[T]) {
 	// pt = b - sum a*s
 	pt.Value.CopyFrom(ct.Value[0])
@@ -301,7 +299,7 @@ func (e Encrypter[T]) DecryptGLWEInPlace(ct GLWECiphertext[T], pt GLWEPlaintext[
 	}
 }
 
-// DecryptGLevInPlace decrypts GLev ciphertexts to GLWE plaintext.
+// DecryptGLevInPlace decrypts GLev ciphertext to GLWE plaintext.
 func (e Encrypter[T]) DecryptGLevInPlace(ct GLevCiphertext[T], pt GLWEPlaintext[T]) {
 	glweCt := ct.Value[ct.decompParams.level-1] // Pick the last level, encrypting msg * Q / Base^Level
 	e.DecryptGLWEInPlace(glweCt, pt)
@@ -311,7 +309,21 @@ func (e Encrypter[T]) DecryptGLevInPlace(ct GLevCiphertext[T], pt GLWEPlaintext[
 	}
 }
 
-// EncryptGSWInPlace encrypts LWE plaintext to GSW ciphertexts.
+// EncryptForMul encrypts an integer message to GSW ciphertext, which is optimal for multiplication.
+// Message will get wrapped around MessageModulus.
+func (e Encrypter[T]) EncryptForMul(message int, decompParams DecompositionParameters[T]) GSWCiphertext[T] {
+	pt := LWEPlaintext[T]{Value: T(message) % e.Parameters.messageModulus}
+	return e.EncryptGSW(pt, decompParams)
+}
+
+// EncryptGSW encrypts LWE plaintext to GSW ciphertext.
+func (e Encrypter[T]) EncryptGSW(pt LWEPlaintext[T], decompParams DecompositionParameters[T]) GSWCiphertext[T] {
+	ct := NewGSWCiphertext(e.Parameters, decompParams)
+	e.EncryptGSWInPlace(pt, ct)
+	return ct
+}
+
+// EncryptGSWInPlace encrypts LWE plaintext and writes it to GSW ciphertext ct.
 func (e Encrypter[T]) EncryptGSWInPlace(pt LWEPlaintext[T], ct GSWCiphertext[T]) {
 	for i := 0; i < e.Parameters.lweDimension+1; i++ {
 		if i == 0 {
@@ -322,12 +334,18 @@ func (e Encrypter[T]) EncryptGSWInPlace(pt LWEPlaintext[T], ct GSWCiphertext[T])
 	}
 }
 
-// DecryptGSW decrypts a GSW ciphertext to messages.
+// DecryptForMul decrypts GSW ciphertext to integer message.
+// Decryption always succeeds, even though decrypted value could be wrong.
+func (e Encrypter[T]) DecryptForMul(ct GSWCiphertext[T]) int {
+	return int(e.DecryptGSW(ct).Value)
+}
+
+// DecryptGSW decrypts a GSW ciphertext to LWE plaintext.
 func (e Encrypter[T]) DecryptGSW(ct GSWCiphertext[T]) LWEPlaintext[T] {
 	return e.DecryptLev(ct.Value[0])
 }
 
-// EncryptGGSW encrypts GLWE plaintext to GGSW ciphertext and returns it.
+// EncryptGGSW encrypts GLWE plaintext to GGSW ciphertext.
 func (e Encrypter[T]) EncryptGGSW(pt GLWEPlaintext[T], decompParams DecompositionParameters[T]) GGSWCiphertext[T] {
 	ct := NewGGSWCiphertext(e.Parameters, decompParams)
 	e.EncryptGGSWInPlace(pt, ct)
@@ -359,7 +377,7 @@ func (e Encrypter[T]) DecryptGGSWInPlace(ct GGSWCiphertext[T], pt GLWEPlaintext[
 	e.DecryptGLevInPlace(ct.Value[0], pt)
 }
 
-// EncryptFourierGLWEInPlace encrypts GLWE plaintext to FourierGLWE ciphertext.
+// EncryptFourierGLWEInPlace encrypts GLWE plaintext and writes it to FourierGLWE ciphertext ct.
 func (e Encrypter[T]) EncryptFourierGLWEInPlace(pt GLWEPlaintext[T], ct FourierGLWECiphertext[T]) {
 	e.EncryptGLWEInPlace(pt, e.buffer.glweCtForFourier)
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
@@ -393,6 +411,24 @@ func (e Encrypter[T]) DecryptFourierGLevInPlace(ct FourierGLevCiphertext[T], pt 
 	}
 }
 
+// EncryptPackedForMul encrypts integer messages to FourierGLWE ciphertext, optimized for multiplication.
+//   - If len(messages) < PolyDegree, the leftovers are padded with zero.
+//   - If len(messages) > PolyDegree, the leftovers are discarded.
+func (e Encrypter[T]) EncryptPackedForMul(messages []int, decompParams DecompositionParameters[T]) FourierGGSWCiphertext[T] {
+	pt := NewGLWEPlaintext(e.Parameters)
+	for i := 0; i < e.Parameters.polyDegree && i < len(messages); i++ {
+		pt.Value.Coeffs[i] = T(messages[i]) % e.Parameters.messageModulus
+	}
+	return e.EncryptFourierGGSW(pt, decompParams)
+}
+
+// EncryptFourierGGSW encrypts GLWE plaintext to FourierGGSW ciphertext.
+func (e Encrypter[T]) EncryptFourierGGSW(pt GLWEPlaintext[T], decomopParams DecompositionParameters[T]) FourierGGSWCiphertext[T] {
+	ct := NewFourierGGSWCiphertext(e.Parameters, decomopParams)
+	e.EncryptFourierGGSWInPlace(pt, ct)
+	return ct
+}
+
 // EncryptFourierGGSWInPlace encrypts GLWE plaintext to FourierGGSW ciphertext.
 func (e Encrypter[T]) EncryptFourierGGSWInPlace(pt GLWEPlaintext[T], ct FourierGGSWCiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
@@ -404,6 +440,19 @@ func (e Encrypter[T]) EncryptFourierGGSWInPlace(pt GLWEPlaintext[T], ct FourierG
 			e.EncryptFourierGLevInPlace(e.buffer.glwePtForGGSW, ct.Value[i])
 		}
 	}
+}
+
+// DecryptPackedForMul decrypts FourierGGSW ciphertext to integer messages.
+// Decryption always succeeds, even though decrypted value could be wrong.
+func (e Encrypter[T]) DecryptPackedForMul(ct FourierGGSWCiphertext[T]) []int {
+	return vec.Cast[T, int](e.DecryptFourierGGSW(ct).Value.Coeffs)
+}
+
+// DecryptFourierGGSW decrypts FourierGGSW ciphertext to GLWE plaintext.
+func (e Encrypter[T]) DecryptFourierGGSW(ct FourierGGSWCiphertext[T]) GLWEPlaintext[T] {
+	pt := NewGLWEPlaintext(e.Parameters)
+	e.DecryptFourierGGSWInPlace(ct, pt)
+	return pt
 }
 
 // DecryptFourierGGSWInPlace decrypts a FourierGGSW ciphertext to GLWE plaintext.

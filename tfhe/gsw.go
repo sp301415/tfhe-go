@@ -27,6 +27,14 @@ func (ct GSWCiphertext[T]) Copy() GSWCiphertext[T] {
 	return GSWCiphertext[T]{Value: ctCopy, decompParams: ct.decompParams}
 }
 
+// CopyFrom copies values from a ciphertext.
+func (ct *GSWCiphertext[T]) CopyFrom(ctIn GSWCiphertext[T]) {
+	for i := range ct.Value {
+		ct.Value[i].CopyFrom(ctIn.Value[i])
+	}
+	ct.decompParams = ctIn.decompParams
+}
+
 // DecompositionParameters returns the decomposition parameters of the ciphertext.
 func (ct GSWCiphertext[T]) DecompositionParameters() DecompositionParameters[T] {
 	return ct.decompParams

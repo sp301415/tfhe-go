@@ -131,7 +131,7 @@ func (p FourierPoly) Copy() FourierPoly {
 }
 
 // CopyFrom copies p0 to p.
-func (p FourierPoly) CopyFrom(p0 FourierPoly) {
+func (p *FourierPoly) CopyFrom(p0 FourierPoly) {
 	vec.CopyAssign(p0.Coeffs, p.Coeffs)
 }
 

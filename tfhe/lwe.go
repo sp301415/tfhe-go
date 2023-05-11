@@ -18,15 +18,30 @@ func (sk LWEKey[T]) Copy() LWEKey[T] {
 	return LWEKey[T]{Value: vec.Copy(sk.Value)}
 }
 
+// CopyFrom copies values from a key.
+func (sk *LWEKey[T]) CopyFrom(skIn LWEKey[T]) {
+	vec.CopyAssign(skIn.Value, sk.Value)
+}
+
 // LWEPlaintext represents an encoded LWE plaintext.
 type LWEPlaintext[T Tint] struct {
 	// Value is a scalar.
 	Value T
 }
 
+// NewLWEPlaintext allocates an empty LWEPlaintext.
+func NewLWEPlaintext[T Tint](p Parameters[T]) LWEPlaintext[T] {
+	return LWEPlaintext[T]{}
+}
+
 // Copy returns a copy of the plaintext.
 func (pt LWEPlaintext[T]) Copy() LWEPlaintext[T] {
 	return LWEPlaintext[T]{Value: pt.Value}
+}
+
+// CopyFrom copies values from a plaintext.
+func (pt *LWEPlaintext[T]) CopyFrom(ptIn LWEPlaintext[T]) {
+	pt.Value = ptIn.Value
 }
 
 // LWECiphertext represents an encrypted LWE ciphertext.
@@ -55,6 +70,11 @@ func (ct LWECiphertext[T]) Copy() LWECiphertext[T] {
 	return LWECiphertext[T]{Value: vec.Copy(ct.Value)}
 }
 
+// CopyFrom copies values from a ciphertext.
+func (ct *LWECiphertext[T]) CopyFrom(ctIn LWECiphertext[T]) {
+	vec.CopyAssign(ctIn.Value, ct.Value)
+}
+
 // LevCiphertext is a leveled LWE ciphertext, decomposed according to DecompositionParameters.
 type LevCiphertext[T Tint] struct {
 	// Value has length Level.
@@ -79,6 +99,14 @@ func (ct LevCiphertext[T]) Copy() LevCiphertext[T] {
 		ctCopy[i] = ct.Value[i].Copy()
 	}
 	return LevCiphertext[T]{Value: ctCopy, decompParams: ct.decompParams}
+}
+
+// CopyFrom copies values from a ciphertext.
+func (ct *LevCiphertext[T]) CopyFrom(ctIn LevCiphertext[T]) {
+	for i := range ct.Value {
+		ct.Value[i].CopyFrom(ctIn.Value[i])
+	}
+	ct.decompParams = ctIn.decompParams
 }
 
 // DecompositionParameters returns the decomposition parameters of the ciphertext.
