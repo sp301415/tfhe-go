@@ -10,14 +10,14 @@ import (
 type T = uint64
 
 var (
-	N    = 1 << 15
+	N    = 1 << 10
 	pOut = poly.New[T](N)
+	eval = poly.NewEvaluater[T](N)
 )
 
 func BenchmarkOperations(b *testing.B) {
 	sampler := rand.NewUniformSamplerWithSeed[T](nil)
 
-	eval := poly.NewEvaluater[T](N)
 	p0 := sampler.SamplePoly(N)
 	p1 := sampler.SamplePoly(N)
 

@@ -33,12 +33,8 @@ type FourierTransformer[T num.Integer] struct {
 
 // fftBuffer contains buffer values for FourierTransformer.
 type fftBuffer[T num.Integer] struct {
-	// p0 holds the standard polynomial p0.
-	p0 Poly[T]
-	// p1 holds the standard polynomial p1.
-	p1 Poly[T]
-	// pOut holds the standard polynomial pOut.
-	pOut Poly[T]
+	// fp holds the fourier polynomial.
+	fp FourierPoly
 	// fpInv holds the InvFTT & Untwisted & Unfolded value of fp.
 	fpInv FourierPoly
 }
@@ -74,9 +70,7 @@ func NewFourierTransformer[T num.Integer](N int) FourierTransformer[T] {
 // newFFTBuffer allocates an empty fft buffer.
 func newfftBuffer[T num.Integer](N int) fftBuffer[T] {
 	return fftBuffer[T]{
-		p0:    New[T](N),
-		p1:    New[T](N),
-		pOut:  New[T](N),
+		fp:    NewFourierPoly(N),
 		fpInv: NewFourierPoly(N),
 	}
 }
@@ -141,6 +135,13 @@ func (p FourierPoly) CopyFrom(p0 FourierPoly) {
 	vec.CopyAssign(p0.Coeffs, p.Coeffs)
 }
 
+// Clear clears all the coefficients to zero.
+func (p FourierPoly) Clear() {
+	for i := range p.Coeffs {
+		p.Coeffs[i] = 0
+	}
+}
+
 // ToFourierPoly transforms Poly to FourierPoly and returns it.
 func (f FourierTransformer[T]) ToFourierPoly(p Poly[T]) FourierPoly {
 	fp := NewFourierPoly(f.degree)
@@ -154,7 +155,30 @@ func (f FourierTransformer[T]) ToFourierPolyInPlace(p Poly[T], fp FourierPoly) {
 
 	// Fold and Twist
 	for j := 0; j < N/2; j++ {
-		fp.Coeffs[j] = complex(float64(p.Coeffs[j]), float64(p.Coeffs[j+N/2])) * f.wj[j]
+		fp.Coeffs[j] = complex(num.ToWrappingFloat64(p.Coeffs[j]), num.ToWrappingFloat64(p.Coeffs[j+N/2])) * f.wj[j]
+	}
+
+	// FFT
+	f.fftHalf.Coefficients(fp.Coeffs, fp.Coeffs)
+}
+
+// ToScaledFourierPoly transforms Poly to FourierPoly and returns it.
+// Each coefficients are scaled by 1 / 2^sizeT.
+func (f FourierTransformer[T]) ToScaledFourierPoly(p Poly[T]) FourierPoly {
+	fp := NewFourierPoly(f.degree)
+	f.ToScaledFourierPolyInPlace(p, fp)
+	return fp
+}
+
+// ToScaledFourierPolyInPlace transforms Poly to FourierPoly.
+// Each coefficients are scaled by 1 / 2^sizeT.
+func (f FourierTransformer[T]) ToScaledFourierPolyInPlace(p Poly[T], fp FourierPoly) {
+	N := f.degree
+	scale := complex(math.Pow(2, -float64(num.SizeT[T]())), 0)
+
+	// Fold and Twist
+	for j := 0; j < N/2; j++ {
+		fp.Coeffs[j] = complex(num.ToWrappingFloat64(p.Coeffs[j]), num.ToWrappingFloat64(p.Coeffs[j+N/2])) * f.wj[j] * scale
 	}
 
 	// FFT
@@ -171,44 +195,192 @@ func (f FourierTransformer[T]) ToStandardPoly(fp FourierPoly) Poly[T] {
 // ToStandardPolyInPlace transforms FourierPoly to Poly.
 func (f FourierTransformer[T]) ToStandardPolyInPlace(fp FourierPoly, p Poly[T]) {
 	N := f.degree
+	NHalf := complex(float64(N/2), 0)
 
 	// InvFFT
 	f.fftHalf.Sequence(f.buffer.fpInv.Coeffs, fp.Coeffs)
 
 	// Untwist and Unfold
 	for j := 0; j < N/2; j++ {
-		f.buffer.fpInv.Coeffs[j] *= f.wjInv[j] / complex(float64(N/2), 0)
+		f.buffer.fpInv.Coeffs[j] *= f.wjInv[j] / NHalf
 		p.Coeffs[j] = num.FromFloat64[T](real(f.buffer.fpInv.Coeffs[j]))
 		p.Coeffs[j+N/2] = num.FromFloat64[T](imag(f.buffer.fpInv.Coeffs[j]))
 	}
 }
 
-// toStandardPolyAddInPlace transforms FourierPoly to Poly, and adds it to p.
-func (f FourierTransformer[T]) toStandardPolyAddInPlace(fp FourierPoly, p Poly[T]) {
+// ToScaledStandardPoly transforms FourierPoly to Poly and returns it.
+// Each coefficients are scaled by 2^sizeT.
+func (f FourierTransformer[T]) ToScaledStandardPoly(fp FourierPoly) Poly[T] {
+	p := New[T](f.degree)
+	f.ToScaledStandardPolyInPlace(fp, p)
+	return p
+}
+
+// ToScaledStandardPolyInPlace transforms FourierPoly to Poly.
+// Each coefficients are scaled by 2^sizeT.
+func (f FourierTransformer[T]) ToScaledStandardPolyInPlace(fp FourierPoly, p Poly[T]) {
 	N := f.degree
+	NHalf := complex(float64(N/2), 0)
+	scale := complex(math.Pow(2, float64(num.SizeT[T]())), 0)
 
 	// InvFFT
 	f.fftHalf.Sequence(f.buffer.fpInv.Coeffs, fp.Coeffs)
 
 	// Untwist and Unfold
 	for j := 0; j < N/2; j++ {
-		f.buffer.fpInv.Coeffs[j] *= f.wjInv[j] / complex(float64(N/2), 0)
-		p.Coeffs[j] += num.FromFloat64[T](real(f.buffer.fpInv.Coeffs[j]))
-		p.Coeffs[j+N/2] += num.FromFloat64[T](imag(f.buffer.fpInv.Coeffs[j]))
+		f.buffer.fpInv.Coeffs[j] *= f.wjInv[j] * scale / NHalf
+		p.Coeffs[j] = num.FromFloat64[T](real(f.buffer.fpInv.Coeffs[j]))
+		p.Coeffs[j+N/2] = num.FromFloat64[T](imag(f.buffer.fpInv.Coeffs[j]))
 	}
 }
 
-// ToStandardPolyAddInPlace transforms FourierPoly to Poly, and subtracts it from p.
-func (f FourierTransformer[T]) toStandardPolySubInPlace(fp FourierPoly, p Poly[T]) {
-	N := f.degree
+// Add adds fp0, fp1 and returns the result.
+func (f FourierTransformer[T]) Add(fp0, fp1 FourierPoly) FourierPoly {
+	fp := NewFourierPoly(f.degree)
+	f.AddInPlace(fp0, fp1, fp)
+	return fp
+}
 
-	// InvFFT
-	f.fftHalf.Sequence(f.buffer.fpInv.Coeffs, fp.Coeffs)
+// AddInPlace adds fp0, fp1 and writes it to fpOut.
+func (f FourierTransformer[T]) AddInPlace(fp0, fp1, fpOut FourierPoly) {
+	vec.AddInPlace(fp0.Coeffs, fp1.Coeffs, fpOut.Coeffs)
+}
 
-	// Untwist and Unfold
-	for j := 0; j < N/2; j++ {
-		f.buffer.fpInv.Coeffs[j] *= f.wjInv[j] / complex(float64(N/2), 0)
-		p.Coeffs[j] -= num.FromFloat64[T](real(f.buffer.fpInv.Coeffs[j]))
-		p.Coeffs[j+N/2] -= num.FromFloat64[T](imag(f.buffer.fpInv.Coeffs[j]))
+// AddAssign adds fp0 to ptOut.
+func (f FourierTransformer[T]) AddAssign(fp0, fpOut FourierPoly) {
+	vec.AddAssign(fp0.Coeffs, fpOut.Coeffs)
+}
+
+// Sub subtracts fp0, fp1 and returns the result.
+func (f FourierTransformer[T]) Sub(fp0, fp1 FourierPoly) FourierPoly {
+	fp := NewFourierPoly(f.degree)
+	f.SubInPlace(fp0, fp1, fp)
+	return fp
+}
+
+// SubInPlace subtracts fp0, fp1 and writes it to fpOut.
+func (f FourierTransformer[T]) SubInPlace(fp0, fp1, fpOut FourierPoly) {
+	vec.SubInPlace(fp0.Coeffs, fp1.Coeffs, fpOut.Coeffs)
+}
+
+// SubAssign subtracts fp0 from fpOut.
+func (f FourierTransformer[T]) SubAssign(fp0, fpOut FourierPoly) {
+	vec.SubAssign(fp0.Coeffs, fpOut.Coeffs)
+}
+
+// Neg negates fp0 and returns the result.
+func (f FourierTransformer[T]) Neg(fp0 FourierPoly) FourierPoly {
+	fp := NewFourierPoly(f.degree)
+	f.NegInPlace(fp0, fp)
+	return fp
+}
+
+// NegInPlace negates fp0 and writes it to fpOut.
+func (f FourierTransformer[T]) NegInPlace(fp0, fpOut FourierPoly) {
+	vec.NegInPlace(fp0.Coeffs, fpOut.Coeffs)
+}
+
+// NegAssign negates fp0.
+func (f FourierTransformer[T]) NegAssign(fp0 FourierPoly) {
+	vec.NegAssign(fp0.Coeffs)
+}
+
+// Mul multiplies fp0, fp1 and returns the result.
+func (f FourierTransformer[T]) Mul(fp0, fp1 FourierPoly) FourierPoly {
+	fp := NewFourierPoly(f.degree)
+	f.MulInPlace(fp0, fp1, fp)
+	return fp
+}
+
+// MulInPlace multiplies fp0, fp1 and writes it to fpOut.
+func (f FourierTransformer[T]) MulInPlace(fp0, fp1, fpOut FourierPoly) {
+	vec.ElementWiseMulInPlace(fp0.Coeffs, fp1.Coeffs, fpOut.Coeffs)
+}
+
+// MulAssign multiplies fp0 to fpOut.
+func (f FourierTransformer[T]) MulAssign(fp0, fpOut FourierPoly) {
+	vec.ElementWiseMulAssign(fp0.Coeffs, fpOut.Coeffs)
+}
+
+// MulAddAssign multiplies fp0, fp1 and adds it to fpOut.
+func (f FourierTransformer[T]) MulAddAssign(fp0, fp1, fpOut FourierPoly) {
+	vec.ElementWiseMulAddAssign(fp0.Coeffs, fp1.Coeffs, fpOut.Coeffs)
+}
+
+// MulSubAssign multiplies fp0, fp1 and subtracts it from fpOut.
+func (f FourierTransformer[T]) MulSubAssign(fp0, fp1, fpOut FourierPoly) {
+	vec.ElementWiseMulSubAssign(fp0.Coeffs, fp1.Coeffs, fpOut.Coeffs)
+}
+
+// MulWithStandard multiplies fp0, p1 and returns the result.
+func (f FourierTransformer[T]) MulWithStandard(fp0, p1 FourierPoly) FourierPoly {
+	fp := NewFourierPoly(f.degree)
+	f.MulInPlace(fp0, p1, fp)
+	return fp
+}
+
+// MulWithStandardInPlace multiplies fp0, p1 and writes it to fpOut.
+func (f FourierTransformer[T]) MulWithStandardInPlace(fp0 FourierPoly, p1 Poly[T], fpOut FourierPoly) {
+	f.ToFourierPolyInPlace(p1, f.buffer.fp)
+
+	vec.ElementWiseMulInPlace(fp0.Coeffs, f.buffer.fp.Coeffs, fpOut.Coeffs)
+}
+
+// MulWithStandardAssign multiplies p0 to fpOut.
+func (f FourierTransformer[T]) MulWithStandardAssign(p0 Poly[T], fpOut FourierPoly) {
+	f.ToFourierPolyInPlace(p0, f.buffer.fp)
+
+	vec.ElementWiseMulAssign(f.buffer.fp.Coeffs, fpOut.Coeffs)
+}
+
+// MulWithStandardAddAssign multiplies fp0, p1 and adds it to fpOut.
+func (f FourierTransformer[T]) MulWithStandardAddAssign(fp0 FourierPoly, p1 Poly[T], fpOut FourierPoly) {
+	f.ToFourierPolyInPlace(p1, f.buffer.fp)
+
+	vec.ElementWiseMulAddAssign(fp0.Coeffs, f.buffer.fp.Coeffs, fpOut.Coeffs)
+}
+
+// MulSubAssign multiplies fp0, fp1 and subtracts it from fpOut.
+func (f FourierTransformer[T]) MulWithStandardSubAssign(fp0 FourierPoly, p1 Poly[T], fpOut FourierPoly) {
+	f.ToFourierPolyInPlace(p1, f.buffer.fp)
+
+	vec.ElementWiseMulSubAssign(fp0.Coeffs, f.buffer.fp.Coeffs, fpOut.Coeffs)
+}
+
+// ScalarMul multplies c to fp0 and returns the result.
+func (f FourierTransformer[T]) ScalarMul(fp0 FourierPoly, c float64) FourierPoly {
+	fp := NewFourierPoly(f.degree)
+	f.ScalarMulInPlace(fp0, c, fp)
+	return fp
+}
+
+// ScalarMulInPlace multplies c to fp0 and writes it to fpOut.
+func (f FourierTransformer[T]) ScalarMulInPlace(fp0 FourierPoly, c float64, fpOut FourierPoly) {
+	vec.ScalarMulInPlace(fp0.Coeffs, complex(c, 0), fpOut.Coeffs)
+}
+
+// ScalarMulAssign multplies c to fpOut.
+func (f FourierTransformer[T]) ScalarMulAssign(c float64, fpOut FourierPoly) {
+	vec.ScalarMulAssign(complex(c, 0), fpOut.Coeffs)
+}
+
+// ScalarDiv divides c from fp0 and returns the result.
+func (f FourierTransformer[T]) ScalarDiv(fp0 FourierPoly, c complex128) FourierPoly {
+	fp := NewFourierPoly(f.degree)
+	f.ScalarDivInPlace(fp0, c, fp)
+	return fp
+}
+
+// ScalarDivInPlace divides c from fp0 and writes it to fpOut.
+func (f FourierTransformer[T]) ScalarDivInPlace(fp0 FourierPoly, c complex128, fpOut FourierPoly) {
+	for i := 0; i < f.degree; i++ {
+		fpOut.Coeffs[i] = fp0.Coeffs[i] / c
+	}
+}
+
+// ScalarDivAssign divides c from fpOut.
+func (f FourierTransformer[T]) ScalarDivAssign(c float64, fpOut FourierPoly) {
+	for i := 0; i < f.degree; i++ {
+		fpOut.Coeffs[i] /= complex(c, 0)
 	}
 }

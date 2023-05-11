@@ -14,6 +14,30 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+// Extend returns the extended vector with length l.
+// The resulting vector shares the same space with v.
+// If len(v) > l, v gets truncated.
+func Extend[T any](v []T, l int) []T {
+	if len(v) > l {
+		return v[:l]
+	}
+	return append(v, make([]T, l-len(v))...)
+}
+
+// Equals returns if two vectors are equal.
+func Eqauls[T comparable](v0, v1 []T) bool {
+	if len(v0) != len(v1) {
+		return false
+	}
+
+	for i, v := range v0 {
+		if v1[i] != v {
+			return false
+		}
+	}
+	return true
+}
+
 // Rotate rotates v l times to the right, and returns it.
 // If l < 0, then it rotates the vector l times to the left.
 // If Abs(l) > len(s), it may panic.

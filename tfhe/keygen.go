@@ -112,26 +112,21 @@ func (e Encrypter[T]) GenBootstrappingKeyParallel() BootstrappingKey[T] {
 }
 
 // genBootstrappingKeyIndex samples one index of bootstrapping key: GGSW(LWEKey_i)_j,
-// where 0 <= i < LWEDimension and 0 <= j < GLWEDimension + 1
-// This is the minimum workload that can be executed in parallel.
+// where 0 <= i < LWEDimension and 0 <= j < GLWEDimension + 1.
+// This is the minimum workload that can be executed in parallel, and we abuse the fact that
+// Bootstrapping key only encrypts scalar values.
 func (e Encrypter[T]) genBootstrappingKeyIndex(i, j int, bsk BootstrappingKey[T]) {
 	if j == 0 {
 		for k := 0; k < e.Parameters.pbsParameters.level; k++ {
-			e.buffer.GLWEPtForPBSKeyGen.Value.Clear()
-			e.buffer.GLWEPtForPBSKeyGen.Value.Coeffs[0] = e.lweKey.Value[i] << e.Parameters.pbsParameters.ScaledBaseLog(k)
-			e.EncryptGLWEInPlace(e.buffer.GLWEPtForPBSKeyGen, e.buffer.GLWECtForPBSKeyGen)
-			for l := 0; l < e.Parameters.glweDimension+1; l++ {
-				e.FourierTransformer.ToFourierPolyInPlace(e.buffer.GLWECtForPBSKeyGen.Value[l], bsk.Value[i][j][k].Value[l])
-			}
+			e.buffer.glwePtForPBSKeyGen.Value.Clear()
+			e.buffer.glwePtForPBSKeyGen.Value.Coeffs[0] = e.lweKey.Value[i] << e.Parameters.pbsParameters.ScaledBaseLog(k)
+			e.EncryptFourierGLWEInPlace(e.buffer.glwePtForPBSKeyGen, bsk.Value[i].Value[j].Value[k])
 		}
 	} else {
 		for k := 0; k < e.Parameters.pbsParameters.level; k++ {
 			p := -(e.lweKey.Value[i] << e.Parameters.pbsParameters.ScaledBaseLog(k))
-			e.PolyEvaluater.ScalarMulInPlace(e.glweKey.Value[j-1], p, e.buffer.GLWEPtForPBSKeyGen.Value)
-			e.EncryptGLWEInPlace(e.buffer.GLWEPtForPBSKeyGen, e.buffer.GLWECtForPBSKeyGen)
-			for l := 0; l < e.Parameters.glweDimension+1; l++ {
-				e.FourierTransformer.ToFourierPolyInPlace(e.buffer.GLWECtForPBSKeyGen.Value[l], bsk.Value[i][j][k].Value[l])
-			}
+			e.PolyEvaluater.ScalarMulInPlace(e.glweKey.Value[j-1], p, e.buffer.glwePtForPBSKeyGen.Value)
+			e.EncryptFourierGLWEInPlace(e.buffer.glwePtForPBSKeyGen, bsk.Value[i].Value[j].Value[k])
 		}
 	}
 

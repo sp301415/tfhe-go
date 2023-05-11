@@ -120,7 +120,7 @@ func (e Evaluater[T]) ScalarDiv(p0 Poly[T], c T) Poly[T] {
 
 // ScalarDivInPlace divides c from p0 and writes it to pOut.
 func (e Evaluater[T]) ScalarDivInPlace(p0 Poly[T], c T, pOut Poly[T]) {
-	for i := 0; i < e.degree; i++ {
+	for i := range pOut.Coeffs {
 		pOut.Coeffs[i] = num.RoundRatio(p0.Coeffs[i], c)
 	}
 }

@@ -31,8 +31,3 @@ func (ct GSWCiphertext[T]) Copy() GSWCiphertext[T] {
 func (ct GSWCiphertext[T]) DecompositionParameters() DecompositionParameters[T] {
 	return ct.decompParams
 }
-
-// ToLev returns the last row, which is the Lev ciphertext of original message.
-func (ct GSWCiphertext[T]) ToLev() LevCiphertext[T] {
-	return ct.Value[ct.decompParams.level-1]
-}

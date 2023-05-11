@@ -137,12 +137,36 @@ func FromFloat64[T Integer](f float64) T {
 	} else {
 		// shift is negative, shift right
 		x = m >> (-shift)
+		x += (m >> (-shift - 1)) & 1 // Add carry
 	}
 
 	if sign != 0 {
 		return -T(x)
 	}
 	return T(x)
+}
+
+// ToWrappingFloat64 casts a T value to float64.
+// If T is unsigned, then it is first cast to signed value.
+func ToWrappingFloat64[T Integer](x T) float64 {
+	if IsSigned[T]() {
+		return float64(x)
+	}
+
+	var z T
+	switch any(z).(type) {
+	case uint, uintptr:
+		return float64(int(x))
+	case uint8:
+		return float64(int8(x))
+	case uint16:
+		return float64(int16(x))
+	case uint32:
+		return float64(int32(x))
+	case uint64:
+		return float64(int64(x))
+	}
+	return float64(x)
 }
 
 // IsPowerOfTwo returns whether x is a power of two.

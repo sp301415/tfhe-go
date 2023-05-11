@@ -30,12 +30,11 @@ func New[T num.Integer](N int) Poly[T] {
 }
 
 // From creates a new polynomial from given coefficient slice.
-// This function has potential side effects, as it does not copy the slice.
-func From[T num.Integer](coeffs []T) Poly[T] {
-	if !num.IsPowerOfTwo(len(coeffs)) {
-		panic("degree not power of two")
-	}
-	return Poly[T]{Coeffs: coeffs}
+// The given slice is copied, and extended to degree N.
+func From[T num.Integer](coeffs []T, N int) Poly[T] {
+	p := New[T](N)
+	vec.CopyAssign(coeffs, p.Coeffs)
+	return p
 }
 
 // Copy returns a copy of the polynomial.
@@ -59,4 +58,9 @@ func (p Poly[T]) Clear() {
 	for i := range p.Coeffs {
 		p.Coeffs[i] = 0
 	}
+}
+
+// Equals checks if p0 is equal with p.
+func (p Poly[T]) Equals(p0 Poly[T]) bool {
+	return vec.Eqauls(p.Coeffs, p0.Coeffs)
 }

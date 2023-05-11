@@ -30,15 +30,17 @@ type Encrypter[T Tint] struct {
 
 // encryptionBuffer contains buffer values for Encrypter.
 type encryptionBuffer[T Tint] struct {
-	// GLWEPtForGGSW holds GLWE plaintexts in GGSW encryption.
-	GLWEPtForGGSW GLWEPlaintext[T]
-	// GLWEPtForGLev holds GLWE plaintexts in GLev encryption.
-	GLWEPtForGLev GLWEPlaintext[T]
+	// glwePtForGGSW holds GLWE plaintexts in GGSW encryption.
+	glwePtForGGSW GLWEPlaintext[T]
+	// glwePtForGLev holds GLWE plaintexts in GLev encryption.
+	glwePtForGLev GLWEPlaintext[T]
 
 	// GLEWPtForPBSKeyGen holds GLWE plaintexts in bootstrapping key generation.
-	GLWEPtForPBSKeyGen GLWEPlaintext[T]
-	// GLWECtForPBSKeyGen holds GLWE ciphertexts in bootstrapping key generation.
-	GLWECtForPBSKeyGen GLWECiphertext[T]
+	glwePtForPBSKeyGen GLWEPlaintext[T]
+
+	// glweCtForFourier holds GLWE ciphertext before applying Fourier Transform
+	// in EncryptFourier and DecryptFourier.
+	glweCtForFourier GLWECiphertext[T]
 }
 
 // NewEncrypter returns a initialized Encrypter with given parameters.
@@ -75,10 +77,10 @@ func NewEncrypterWithoutKey[T Tint](params Parameters[T]) Encrypter[T] {
 // newEncryptionBuffer allocates an empty encryptionBuffer.
 func newEncryptionBuffer[T Tint](params Parameters[T]) encryptionBuffer[T] {
 	return encryptionBuffer[T]{
-		GLWEPtForGGSW:      NewGLWEPlaintext(params),
-		GLWEPtForGLev:      NewGLWEPlaintext(params),
-		GLWEPtForPBSKeyGen: NewGLWEPlaintext(params),
-		GLWECtForPBSKeyGen: NewGLWECiphertext(params),
+		glwePtForGGSW:      NewGLWEPlaintext(params),
+		glwePtForGLev:      NewGLWEPlaintext(params),
+		glwePtForPBSKeyGen: NewGLWEPlaintext(params),
+		glweCtForFourier:   NewGLWECiphertext(params),
 	}
 }
 
@@ -271,14 +273,9 @@ func (e Encrypter[T]) EncryptGLWEInPlace(pt GLWEPlaintext[T], ct GLWECiphertext[
 
 // EncryptGLevInPlace encrypts GLWE plaintext to GLev ciphertexts.
 func (e Encrypter[T]) EncryptGLevInPlace(pt GLWEPlaintext[T], ct GLevCiphertext[T]) {
-	e.PolyEvaluater.ScalarMulInPlace(pt.Value, ct.decompParams.FirstScaledBase(), e.buffer.GLWEPtForGLev.Value)
-
 	for i := 0; i < ct.decompParams.level; i++ {
-		e.EncryptGLWEInPlace(e.buffer.GLWEPtForGLev, ct.Value[i])
-
-		if i < ct.decompParams.level-1 { // Skip last loop
-			e.PolyEvaluater.ScalarDivAssign(ct.decompParams.base, e.buffer.GLWEPtForGLev.Value)
-		}
+		e.PolyEvaluater.ScalarMulInPlace(pt.Value, ct.decompParams.ScaledBase(i), e.buffer.glwePtForGLev.Value)
+		e.EncryptGLWEInPlace(e.buffer.glwePtForGLev, ct.Value[i])
 	}
 }
 
@@ -327,7 +324,7 @@ func (e Encrypter[T]) EncryptGSWInPlace(pt LWEPlaintext[T], ct GSWCiphertext[T])
 
 // DecryptGSW decrypts a GSW ciphertext to messages.
 func (e Encrypter[T]) DecryptGSW(ct GSWCiphertext[T]) LWEPlaintext[T] {
-	return e.DecryptLev(ct.ToLev())
+	return e.DecryptLev(ct.Value[0])
 }
 
 // EncryptGGSW encrypts GLWE plaintext to GGSW ciphertext and returns it.
@@ -343,9 +340,9 @@ func (e Encrypter[T]) EncryptGGSWInPlace(pt GLWEPlaintext[T], ct GGSWCiphertext[
 		if i == 0 {
 			e.EncryptGLevInPlace(pt, ct.Value[i])
 		} else {
-			e.PolyEvaluater.MulInPlace(pt.Value, e.glweKey.Value[i-1], e.buffer.GLWEPtForGGSW.Value)
-			e.PolyEvaluater.NegAssign(e.buffer.GLWEPtForGGSW.Value)
-			e.EncryptGLevInPlace(e.buffer.GLWEPtForGGSW, ct.Value[i])
+			e.PolyEvaluater.MulInPlace(pt.Value, e.glweKey.Value[i-1], e.buffer.glwePtForGGSW.Value)
+			e.PolyEvaluater.NegAssign(e.buffer.glwePtForGGSW.Value)
+			e.EncryptGLevInPlace(e.buffer.glwePtForGGSW, ct.Value[i])
 		}
 	}
 }
@@ -353,11 +350,63 @@ func (e Encrypter[T]) EncryptGGSWInPlace(pt GLWEPlaintext[T], ct GGSWCiphertext[
 // DecryptGGSW decrypts a GGSW ciphertext to GLWE plaintext and returns it.
 func (e Encrypter[T]) DecryptGGSW(ct GGSWCiphertext[T]) GLWEPlaintext[T] {
 	pt := NewGLWEPlaintext(e.Parameters)
-	e.DecryptGLevInPlace(ct.ToGLev(), pt)
+	e.DecryptGLevInPlace(ct.Value[0], pt)
 	return pt
 }
 
 // DecryptGGSWInPlace decrypts a GGSW ciphertext to GLWE plaintext.
 func (e Encrypter[T]) DecryptGGSWInPlace(ct GGSWCiphertext[T], pt GLWEPlaintext[T]) {
-	e.DecryptGLevInPlace(ct.ToGLev(), pt)
+	e.DecryptGLevInPlace(ct.Value[0], pt)
+}
+
+// EncryptFourierGLWEInPlace encrypts GLWE plaintext to FourierGLWE ciphertext.
+func (e Encrypter[T]) EncryptFourierGLWEInPlace(pt GLWEPlaintext[T], ct FourierGLWECiphertext[T]) {
+	e.EncryptGLWEInPlace(pt, e.buffer.glweCtForFourier)
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.FourierTransformer.ToScaledFourierPolyInPlace(e.buffer.glweCtForFourier.Value[i], ct.Value[i])
+	}
+}
+
+// DecryptFourierGLWEInPlace decrypts FourierGLWE ciphertext to GLWE plaintext.
+func (e Encrypter[T]) DecryptFourierGLWEInPlace(ct FourierGLWECiphertext[T], pt GLWEPlaintext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.FourierTransformer.ToScaledStandardPolyInPlace(ct.Value[i], e.buffer.glweCtForFourier.Value[i])
+	}
+	e.DecryptGLWEInPlace(e.buffer.glweCtForFourier, pt)
+}
+
+// EncryptFourierGLevInPlace encrypts GLWE plaintext to FourierGLev ciphertext.
+func (e Encrypter[T]) EncryptFourierGLevInPlace(pt GLWEPlaintext[T], ct FourierGLevCiphertext[T]) {
+	for i := 0; i < ct.decompParams.level; i++ {
+		e.PolyEvaluater.ScalarMulInPlace(pt.Value, ct.decompParams.ScaledBase(i), e.buffer.glwePtForGLev.Value)
+		e.EncryptFourierGLWEInPlace(e.buffer.glwePtForGLev, ct.Value[i])
+	}
+}
+
+// DecryptFourierGLevInPlace decrypts FourierGLev ciphertext to GLWE plaintext.
+func (e Encrypter[T]) DecryptFourierGLevInPlace(ct FourierGLevCiphertext[T], pt GLWEPlaintext[T]) {
+	fGLWECt := ct.Value[ct.decompParams.level-1] // Pick the last level, encrypting msg * Q / Base^Level
+	e.DecryptFourierGLWEInPlace(fGLWECt, pt)
+
+	for i := 0; i < e.Parameters.polyDegree; i++ {
+		pt.Value.Coeffs[i] = num.RoundRatioBits(pt.Value.Coeffs[i], ct.decompParams.LastScaledBaseLog())
+	}
+}
+
+// EncryptFourierGGSWInPlace encrypts GLWE plaintext to FourierGGSW ciphertext.
+func (e Encrypter[T]) EncryptFourierGGSWInPlace(pt GLWEPlaintext[T], ct FourierGGSWCiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		if i == 0 {
+			e.EncryptFourierGLevInPlace(pt, ct.Value[i])
+		} else {
+			e.PolyEvaluater.MulInPlace(pt.Value, e.glweKey.Value[i-1], e.buffer.glwePtForGGSW.Value)
+			e.PolyEvaluater.NegAssign(e.buffer.glwePtForGGSW.Value)
+			e.EncryptFourierGLevInPlace(e.buffer.glwePtForGGSW, ct.Value[i])
+		}
+	}
+}
+
+// DecryptFourierGGSWInPlace decrypts a FourierGGSW ciphertext to GLWE plaintext.
+func (e Encrypter[T]) DecryptFourierGGSWInPlace(ct FourierGGSWCiphertext[T], pt GLWEPlaintext[T]) {
+	e.DecryptFourierGLevInPlace(ct.Value[0], pt)
 }

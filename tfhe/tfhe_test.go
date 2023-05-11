@@ -3,6 +3,7 @@ package tfhe_test
 import (
 	"testing"
 
+	"github.com/sp301415/tfhe/math/poly"
 	"github.com/sp301415/tfhe/tfhe"
 	"github.com/stretchr/testify/assert"
 )
@@ -42,6 +43,19 @@ func TestEvaluater(t *testing.T) {
 
 	eval := tfhe.NewEvaluaterWithoutKey(testParams)
 	messages := []int{1, 2, 3, 4}
+
+	t.Run("ExternalProductFourier", func(t *testing.T) {
+		p := poly.From([]uint64{3}, testParams.PolyDegree())
+
+		ctGLWE := enc.EncryptPacked(messages)
+
+		ptGGSW := tfhe.GLWEPlaintext[uint64]{Value: p}
+		ctGGSW := tfhe.NewFourierGGSWCiphertext(testParams, testParams.KeySwitchParameters())
+		enc.EncryptFourierGGSWInPlace(ptGGSW, ctGGSW)
+
+		ctOut := eval.ExternalProductFourier(ctGGSW, ctGLWE)
+		assert.Equal(t, messages[0]*int(p.Coeffs[0]), enc.DecryptPacked(ctOut)[0])
+	})
 
 	t.Run("KeySwitch", func(t *testing.T) {
 		for _, msg := range messages {

@@ -13,11 +13,11 @@ type Evaluater[T num.Integer] struct {
 	// degree is the degree of polynomial that this evaluater can handle.
 	degree int
 
-	buffer evaluaterBuffer[T]
+	buffer evaluationBuffer[T]
 }
 
-// evaluaterBuffer contains buffer values for Evaluater.
-type evaluaterBuffer[T num.Integer] struct {
+// evaluationBuffer contains buffer values for Evaluater.
+type evaluationBuffer[T num.Integer] struct {
 	// karatsubaBuffer holds the intermediate buffers used in karatsuba multiplication.
 	// Each buffer can be indexed as ((3^depth - 1)/2) + index. (I know, right?)
 	karatsubaBuffer []karatsubaBuffer[T]
@@ -43,8 +43,8 @@ func NewEvaluater[T num.Integer](N int) Evaluater[T] {
 }
 
 // newEvaluationBuffer allocates an empty evaluation buffer.
-func newEvaluationBuffer[T num.Integer](N int) evaluaterBuffer[T] {
-	return evaluaterBuffer[T]{
+func newEvaluationBuffer[T num.Integer](N int) evaluationBuffer[T] {
+	return evaluationBuffer[T]{
 		karatsubaBuffer: newKaratsubaBuffer[T](N),
 
 		pOut: New[T](N),
