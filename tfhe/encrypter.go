@@ -1,9 +1,9 @@
 package tfhe
 
 import (
+	"github.com/sp301415/tfhe/math/csprng"
 	"github.com/sp301415/tfhe/math/num"
 	"github.com/sp301415/tfhe/math/poly"
-	"github.com/sp301415/tfhe/math/rand"
 	"github.com/sp301415/tfhe/math/vec"
 )
 
@@ -12,10 +12,10 @@ import (
 type Encrypter[T Tint] struct {
 	Parameters Parameters[T]
 
-	uniformSampler rand.UniformSampler[T]
-	binarySampler  rand.BinarySampler[T]
-	lweSampler     rand.GaussianSampler[T]
-	glweSampler    rand.GaussianSampler[T]
+	uniformSampler csprng.UniformSampler[T]
+	binarySampler  csprng.BinarySampler[T]
+	lweSampler     csprng.GaussianSampler[T]
+	glweSampler    csprng.GaussianSampler[T]
 
 	PolyEvaluater      poly.Evaluater[T]
 	FourierTransformer poly.FourierTransformer[T]
@@ -62,10 +62,10 @@ func NewEncrypterWithoutKey[T Tint](params Parameters[T]) Encrypter[T] {
 	return Encrypter[T]{
 		Parameters: params,
 
-		uniformSampler: rand.NewUniformSampler[T](),
-		binarySampler:  rand.NewBinarySampler[T](),
-		lweSampler:     rand.NewGaussianSamplerTorus[T](params.lweStdDev),
-		glweSampler:    rand.NewGaussianSamplerTorus[T](params.glweStdDev),
+		uniformSampler: csprng.NewUniformSampler[T](),
+		binarySampler:  csprng.NewBinarySampler[T](),
+		lweSampler:     csprng.NewGaussianSamplerTorus[T](params.lweStdDev),
+		glweSampler:    csprng.NewGaussianSamplerTorus[T](params.glweStdDev),
 
 		PolyEvaluater:      poly.NewEvaluater[T](params.polyDegree),
 		FourierTransformer: poly.NewFourierTransformer[T](params.polyDegree),
@@ -90,10 +90,10 @@ func (e Encrypter[T]) ShallowCopy() Encrypter[T] {
 	return Encrypter[T]{
 		Parameters: e.Parameters,
 
-		uniformSampler: rand.NewUniformSampler[T](),
-		binarySampler:  rand.NewBinarySampler[T](),
-		lweSampler:     rand.NewGaussianSamplerTorus[T](e.Parameters.lweStdDev),
-		glweSampler:    rand.NewGaussianSamplerTorus[T](e.Parameters.glweStdDev),
+		uniformSampler: csprng.NewUniformSampler[T](),
+		binarySampler:  csprng.NewBinarySampler[T](),
+		lweSampler:     csprng.NewGaussianSamplerTorus[T](e.Parameters.lweStdDev),
+		glweSampler:    csprng.NewGaussianSamplerTorus[T](e.Parameters.glweStdDev),
 
 		lweKey:      e.lweKey,
 		glweKey:     e.glweKey,

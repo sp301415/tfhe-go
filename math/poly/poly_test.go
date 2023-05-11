@@ -3,8 +3,8 @@ package poly_test
 import (
 	"testing"
 
+	"github.com/sp301415/tfhe/math/csprng"
 	"github.com/sp301415/tfhe/math/poly"
-	"github.com/sp301415/tfhe/math/rand"
 )
 
 type T = uint64
@@ -16,7 +16,7 @@ var (
 )
 
 func BenchmarkOperations(b *testing.B) {
-	sampler := rand.NewUniformSamplerWithSeed[T](nil)
+	sampler := csprng.NewUniformSamplerWithSeed[T](nil)
 
 	p0 := sampler.SamplePoly(N)
 	p1 := sampler.SamplePoly(N)

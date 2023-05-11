@@ -3,15 +3,15 @@ package num_test
 import (
 	"testing"
 
+	"github.com/sp301415/tfhe/math/csprng"
 	"github.com/sp301415/tfhe/math/num"
-	"github.com/sp301415/tfhe/math/rand"
 )
 
 var res uint64 // Prevent compiler optimizations
 
 // We benchmark some hot paths here
 func BenchmarkRoundRatio(b *testing.B) {
-	s := rand.NewUniformSamplerWithSeed[uint64](nil)
+	s := csprng.NewUniformSamplerWithSeed[uint64](nil)
 
 	sampleCount := 1024
 	samples := s.SampleSlice(sampleCount)
