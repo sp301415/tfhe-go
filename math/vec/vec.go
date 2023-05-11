@@ -25,17 +25,31 @@ func Extend[T any](v []T, l int) []T {
 }
 
 // Equals returns if two vectors are equal.
-func Eqauls[T comparable](v0, v1 []T) bool {
+func Equals[T comparable](v0, v1 []T) bool {
 	if len(v0) != len(v1) {
 		return false
 	}
 
-	for i, v := range v0 {
-		if v1[i] != v {
+	for i := range v0 {
+		if v0[i] != v1[i] {
 			return false
 		}
 	}
 	return true
+}
+
+// CastInPlace casts v of type []T1 to vOut of type []T2.
+func CastInPlace[T1, T2 num.Real](v []T1, vOut []T2) {
+	for i := range vOut {
+		vOut[i] = T2(v[i])
+	}
+}
+
+// Cast casts and returns vector v of type []T1 to []T2.
+func Cast[T1, T2 num.Real](v []T1) []T2 {
+	vOut := make([]T2, len(v))
+	CastInPlace(v, vOut)
+	return vOut
 }
 
 // Rotate rotates v l times to the right, and returns it.

@@ -62,5 +62,5 @@ func (p Poly[T]) Clear() {
 
 // Equals checks if p0 is equal with p.
 func (p Poly[T]) Equals(p0 Poly[T]) bool {
-	return vec.Eqauls(p.Coeffs, p0.Coeffs)
+	return vec.Equals(p.Coeffs, p0.Coeffs)
 }
