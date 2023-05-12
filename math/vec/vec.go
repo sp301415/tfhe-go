@@ -38,6 +38,13 @@ func Equals[T comparable](v0, v1 []T) bool {
 	return true
 }
 
+// Fill fills vector with x.
+func Fill[T any](v []T, x T) {
+	for i := range v {
+		v[i] = x
+	}
+}
+
 // CastInPlace casts v of type []T1 to vOut of type []T2.
 func CastInPlace[T1, T2 num.Real](v []T1, vOut []T2) {
 	for i := range vOut {

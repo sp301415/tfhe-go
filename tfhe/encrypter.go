@@ -7,8 +7,14 @@ import (
 	"github.com/sp301415/tfhe/math/vec"
 )
 
-// Encrypter encrypts and decrypts values.
-// This is meant to be a private struct.
+// Encrypter encrypts and decrypts TFHE plaintexts and ciphertexts.
+// This is meant to be a private-side structure.
+//
+// Evaluater uses fftw as backend, so manually freeing memory is needed.
+// Use defer clause after initialization:
+//
+//	enc := tfhe.NewEncrypter(params)
+//	defer enc.Free()
 type Encrypter[T Tint] struct {
 	Parameters Parameters[T]
 

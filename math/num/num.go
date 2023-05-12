@@ -106,44 +106,26 @@ func IsSigned[T Real]() bool {
 	return z-1 < 0
 }
 
-// FromFloat64 casts a float64 value to T.
-// This is roughly equivalant to T(uint64(f)).
-//   - If f is NaN, it returns zero.
-//   - If f is +Inf, it returns MaxT.
-//   - If f is -Inf, it returns MinT.
+// FromFloat64 wraps casts a float64 value to T.
 func FromFloat64[T Integer](f float64) T {
-	switch {
-	case f == 0 || math.IsNaN(f):
-		return 0
-	case math.IsInf(f, 1):
-		return T(MaxT[T]())
-	case math.IsInf(f, -1):
-		return T(MinT[T]())
-	}
-
 	bits := math.Float64bits(f)
 
-	mantissa := bits & ((1 << 52) - 1)         // 52 bits
-	exponent := (bits >> 52) & ((1 << 11) - 1) // 11 bits
-	exponent -= 1023                           // Bias Adjustment
-	sign := bits >> 63                         // 1 bit
+	m := (bits & (1<<52 - 1)) | (1 << 52) // 52 bits
+	e := int((bits >> 52) & (1<<11 - 1))  // 11 bits
+	e -= 1023 + 52                        // Bias Adjustment
+	sign := bits >> 63                    // 1 bit
 
-	var x uint64
-	m := mantissa + (1 << 52)     // mantissa is assumed to be 1.XXX form, so we add 1 << 52.
-	shift := int64(exponent) - 52 // We adjust shift amount, since mantissa is already shifted by 52 bits.
-	if shift >= 0 {
-		// shift is positive, shift left
-		x = m << shift
+	if e >= 0 {
+		m <<= e
 	} else {
-		// shift is negative, shift right
-		x = m >> (-shift)
-		x += (m >> (-shift - 1)) & 1 // Add carry
+		c := (m >> (-e - 1)) & 1
+		m = (m >> -e) + c
 	}
 
 	if sign != 0 {
-		return -T(x)
+		return -T(m)
 	}
-	return T(x)
+	return T(m)
 }
 
 // ToWrappingFloat64 casts a T value to float64.

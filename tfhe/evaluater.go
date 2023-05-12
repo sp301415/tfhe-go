@@ -16,6 +16,9 @@ type EvaluationKey[T Tint] struct {
 
 // Evaluater handles homomorphic operation of values.
 // This is meant to be public.
+//
+//	eval := tfhe.NewEvaluater(params, evkey)
+//	defer eval.Free()
 type Evaluater[T Tint] struct {
 	Parameters Parameters[T]
 
@@ -29,8 +32,8 @@ type Evaluater[T Tint] struct {
 
 // evaluationBuffer contains buffer values for Evaluater.
 type evaluationBuffer[T Tint] struct {
-	// fourierGLWEOut holds the fourier transformed ctGLWEOut in ExternalProductFourier.
-	fourierGLWEOut FourierGLWECiphertext[T]
+	// glweFourierCtOutForExtProd holds the fourier transformed ctGLWEOut in ExternalProductFourier.
+	glweFourierCtOutForExtProd FourierGLWECiphertext[T]
 	// glweCtForCMux holds ct1 - ct0 in CMux.
 	glweCtForCMux GLWECiphertext[T]
 }
@@ -64,8 +67,8 @@ func NewEvaluaterWithoutKey[T Tint](params Parameters[T]) Evaluater[T] {
 // newEvaluationBuffer allocates an empty evaluationBuffer.
 func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 	return evaluationBuffer[T]{
-		fourierGLWEOut: NewFourierGLWECiphertext(params),
-		glweCtForCMux:  NewGLWECiphertext(params),
+		glweFourierCtOutForExtProd: NewFourierGLWECiphertext(params),
+		glweCtForCMux:              NewGLWECiphertext(params),
 	}
 }
 

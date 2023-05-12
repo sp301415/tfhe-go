@@ -1,7 +1,6 @@
 package poly_test
 
 import (
-	"math/rand"
 	"testing"
 
 	"github.com/sp301415/tfhe/math/csprng"
@@ -54,25 +53,18 @@ func BenchmarkOperations(b *testing.B) {
 		}
 	})
 
-}
+	fp0 := fft.ToFourierPoly(p0)
+	fp1 := fft.ToFourierPoly(p1)
 
-func BenchmarkFFT(b *testing.B) {
-	p := sampler.SamplePoly(N)
-
-	b.Run("FFT", func(b *testing.B) {
+	b.Run("FourierMul", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			fft.ToScaledFourierPolyInPlace(p, fpOut)
+			fft.MulInPlace(fp0, fp1, fpOut)
 		}
 	})
 
-	fp := poly.NewFourierPoly(N)
-	for i := range fp.Coeffs {
-		fp.Coeffs[i] = complex(rand.Float64(), rand.Float64())
-	}
-
-	b.Run("InvFFT", func(b *testing.B) {
+	b.Run("FourierStandardMul", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			fft.ToScaledStandardPolyInPlace(fp, p)
+			fft.MulWithStandardInPlace(fp0, p1, fpOut)
 		}
 	})
 }

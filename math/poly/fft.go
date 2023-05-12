@@ -4,9 +4,9 @@ import (
 	"math"
 	"math/cmplx"
 
+	"github.com/cpmech/gosl/fun/fftw"
 	"github.com/sp301415/tfhe/math/num"
 	"github.com/sp301415/tfhe/math/vec"
-	"gonum.org/v1/gonum/dsp/fourier"
 )
 
 // FourierTransformer calculates algorithms related to FFT,
@@ -14,14 +14,20 @@ import (
 //
 // While FFT is much faster than Evaluater's karatsuba multiplication,
 // in TFHE it is used sparsely because of float64 precision.
+//
+// Evaluater uses fftw as backend, so manually freeing memory is needed.
+// Use defer clause after initialization:
+//
+//	fft := poly.NewFourierTransformer[T](N)
+//	defer fft.Free()
 type FourierTransformer[T num.Integer] struct {
 	// degree is the degree of polynomial that this transformer can handlf.
 	degree int
 
-	// fft holds gonum's fourier.FFT.
-	fft *fourier.FFT
-	// fftHalf holds gonum's fourier.CmplxFFT for N/2. Used for negacyclic convolution.
-	fftHalf *fourier.CmplxFFT
+	// fft holds fftw plan for FFT.
+	fft *fftw.Plan1d
+	// fftInv holds fftw plan for inverse FFT.
+	fftInv *fftw.Plan1d
 
 	// wj holds the precomputed values of w_2N^j where j = 0 ~ N.
 	wj []complex128
@@ -34,8 +40,10 @@ type FourierTransformer[T num.Integer] struct {
 // fftBuffer contains buffer values for FourierTransformer.
 type fftBuffer[T num.Integer] struct {
 	// fp holds the fourier polynomial.
+	// The coefficients of fp is referenced by fftw.
 	fp FourierPoly
 	// fpInv holds the InvFTT & Untwisted & Unfolded value of fp.
+	// The coefficients of fpInv is referenced by fftw.
 	fpInv FourierPoly
 }
 
@@ -54,16 +62,18 @@ func NewFourierTransformer[T num.Integer](N int) FourierTransformer[T] {
 		wjInv[j] = cmplx.Exp(-complex(0, e))
 	}
 
+	buffer := newfftBuffer[T](N)
+
 	return FourierTransformer[T]{
 		degree: N,
 
-		fft:     fourier.NewFFT(N),
-		fftHalf: fourier.NewCmplxFFT(N / 2),
+		fft:    fftw.NewPlan1d(buffer.fp.Coeffs, false, true),
+		fftInv: fftw.NewPlan1d(buffer.fpInv.Coeffs, true, true),
 
 		wj:    wj,
 		wjInv: wjInv,
 
-		buffer: newfftBuffer[T](N),
+		buffer: buffer,
 	}
 }
 
@@ -78,30 +88,25 @@ func newfftBuffer[T num.Integer](N int) fftBuffer[T] {
 // ShallowCopy returns a shallow copy of this FourierTransformer.
 // Returned FourierTransformer is safe for concurrent usf.
 func (f FourierTransformer[T]) ShallowCopy() FourierTransformer[T] {
+	buffer := newfftBuffer[T](f.degree)
+
 	return FourierTransformer[T]{
 		degree: f.degree,
 
-		fft:     fourier.NewFFT(f.degree),
-		fftHalf: fourier.NewCmplxFFT(f.degree / 2),
+		fft:    fftw.NewPlan1d(buffer.fp.Coeffs, false, true),
+		fftInv: fftw.NewPlan1d(buffer.fpInv.Coeffs, true, true),
 
 		wj:    f.wj,
 		wjInv: f.wjInv,
 
-		buffer: newfftBuffer[T](f.degree),
+		buffer: buffer,
 	}
 }
 
-// FFT calculates the Fourier Transform of src, and stores it to dst.
-func (f FourierTransformer[T]) FFT(src []float64, dst []complex128) {
-	f.fft.Coefficients(dst, src)
-}
-
-// InvFFT calculates the Inverse Fourier Transform of src, and stores it to dst.
-func (f FourierTransformer[T]) InvFFT(src []complex128, dst []float64) {
-	f.fft.Sequence(dst, src)
-	for i := range dst {
-		dst[i] /= float64(len(dst))
-	}
+// Free frees fftw values of FourierTransformer.
+func (f FourierTransformer[T]) Free() {
+	f.fft.Free()
+	f.fftInv.Free()
 }
 
 // FourierPoly is a polynomial with Fourier Transform already applied.
@@ -155,11 +160,12 @@ func (f FourierTransformer[T]) ToFourierPolyInPlace(p Poly[T], fp FourierPoly) {
 
 	// Fold and Twist
 	for j := 0; j < N/2; j++ {
-		fp.Coeffs[j] = complex(num.ToWrappingFloat64(p.Coeffs[j]), num.ToWrappingFloat64(p.Coeffs[j+N/2])) * f.wj[j]
+		f.buffer.fp.Coeffs[j] = complex(num.ToWrappingFloat64(p.Coeffs[j]), num.ToWrappingFloat64(p.Coeffs[j+N/2])) * f.wj[j]
 	}
 
 	// FFT
-	f.fftHalf.Coefficients(fp.Coeffs, fp.Coeffs)
+	f.fft.Execute()
+	fp.CopyFrom(f.buffer.fp)
 }
 
 // ToScaledFourierPoly transforms Poly to FourierPoly and returns it.
@@ -178,11 +184,12 @@ func (f FourierTransformer[T]) ToScaledFourierPolyInPlace(p Poly[T], fp FourierP
 
 	// Fold and Twist
 	for j := 0; j < N/2; j++ {
-		fp.Coeffs[j] = complex(num.ToWrappingFloat64(p.Coeffs[j]), num.ToWrappingFloat64(p.Coeffs[j+N/2])) * f.wj[j] * scale
+		f.buffer.fp.Coeffs[j] = complex(num.ToWrappingFloat64(p.Coeffs[j]), num.ToWrappingFloat64(p.Coeffs[j+N/2])) * f.wj[j] * scale
 	}
 
 	// FFT
-	f.fftHalf.Coefficients(fp.Coeffs, fp.Coeffs)
+	f.fft.Execute()
+	fp.CopyFrom(f.buffer.fp)
 }
 
 // ToStandardPoly transforms FourierPoly to Poly and returns it.
@@ -198,7 +205,8 @@ func (f FourierTransformer[T]) ToStandardPolyInPlace(fp FourierPoly, p Poly[T]) 
 	NHalf := complex(float64(N/2), 0)
 
 	// InvFFT
-	f.fftHalf.Sequence(f.buffer.fpInv.Coeffs, fp.Coeffs)
+	f.buffer.fpInv.CopyFrom(fp)
+	f.fftInv.Execute()
 
 	// Untwist and Unfold
 	for j := 0; j < N/2; j++ {
@@ -224,7 +232,8 @@ func (f FourierTransformer[T]) ToScaledStandardPolyInPlace(fp FourierPoly, p Pol
 	scale := complex(math.Pow(2, float64(num.SizeT[T]())), 0)
 
 	// InvFFT
-	f.fftHalf.Sequence(f.buffer.fpInv.Coeffs, fp.Coeffs)
+	f.buffer.fpInv.CopyFrom(fp)
+	f.fftInv.Execute()
 
 	// Untwist and Unfold
 	for j := 0; j < N/2; j++ {
