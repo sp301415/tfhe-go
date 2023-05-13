@@ -49,9 +49,17 @@ func newKaratsubaBuffer[T num.Integer](N int) []karatsubaBuffer[T] {
 // mulInPlaceNaive multiplies two polynomials using schoolbook method,
 // taking O(N^2) time.
 func (e Evaluater[T]) mulInPlaceNaive(p0, p1, pOut Poly[T]) {
+	N := e.degree
 	pOut.Clear()
-	for i := 0; i < e.degree; i++ {
-		e.MonomialMulAddAssign(p0, p1.Coeffs[i], i, pOut)
+
+	for i, c0 := range p0.Coeffs {
+		for j, c1 := range p1.Coeffs {
+			if i+j < N {
+				pOut.Coeffs[i+j] += c0 * c1
+			} else {
+				pOut.Coeffs[i+j-N] -= c0 * c1
+			}
+		}
 	}
 }
 

@@ -103,7 +103,7 @@ func (f FourierTransformer[T]) ShallowCopy() FourierTransformer[T] {
 	}
 }
 
-// Free frees fftw values of FourierTransformer.
+// Free frees internal fftw data.
 func (f FourierTransformer[T]) Free() {
 	f.fft.Free()
 	f.fftInv.Free()
@@ -349,7 +349,7 @@ func (f FourierTransformer[T]) MulWithStandardAddAssign(fp0 FourierPoly, p1 Poly
 	vec.ElementWiseMulAddAssign(fp0.Coeffs, f.buffer.fp.Coeffs, fpOut.Coeffs)
 }
 
-// MulSubAssign multiplies fp0, fp1 and subtracts it from fpOut.
+// MulWithStandardSubAssign multiplies fp0, p1 and subtracts it from fpOut.
 func (f FourierTransformer[T]) MulWithStandardSubAssign(fp0 FourierPoly, p1 Poly[T], fpOut FourierPoly) {
 	f.ToFourierPolyInPlace(p1, f.buffer.fp)
 
@@ -371,25 +371,4 @@ func (f FourierTransformer[T]) ScalarMulInPlace(fp0 FourierPoly, c float64, fpOu
 // ScalarMulAssign multplies c to fpOut.
 func (f FourierTransformer[T]) ScalarMulAssign(c float64, fpOut FourierPoly) {
 	vec.ScalarMulAssign(complex(c, 0), fpOut.Coeffs)
-}
-
-// ScalarDiv divides c from fp0 and returns the result.
-func (f FourierTransformer[T]) ScalarDiv(fp0 FourierPoly, c complex128) FourierPoly {
-	fp := NewFourierPoly(f.degree)
-	f.ScalarDivInPlace(fp0, c, fp)
-	return fp
-}
-
-// ScalarDivInPlace divides c from fp0 and writes it to fpOut.
-func (f FourierTransformer[T]) ScalarDivInPlace(fp0 FourierPoly, c complex128, fpOut FourierPoly) {
-	for i := 0; i < f.degree; i++ {
-		fpOut.Coeffs[i] = fp0.Coeffs[i] / c
-	}
-}
-
-// ScalarDivAssign divides c from fpOut.
-func (f FourierTransformer[T]) ScalarDivAssign(c float64, fpOut FourierPoly) {
-	for i := 0; i < f.degree; i++ {
-		fpOut.Coeffs[i] /= complex(c, 0)
-	}
 }

@@ -40,10 +40,8 @@ type encryptionBuffer[T Tint] struct {
 	glwePtForGGSW GLWEPlaintext[T]
 	// glwePtForGLev holds GLWE plaintexts in GLev encryption.
 	glwePtForGLev GLWEPlaintext[T]
-
 	// GLEWPtForPBSKeyGen holds GLWE plaintexts in bootstrapping key generation.
 	glwePtForPBSKeyGen GLWEPlaintext[T]
-
 	// glweCtForFourier holds GLWE ciphertext before applying Fourier Transform
 	// in EncryptFourier and DecryptFourier.
 	glweCtForFourier GLWECiphertext[T]
@@ -110,6 +108,11 @@ func (e Encrypter[T]) ShallowCopy() Encrypter[T] {
 
 		buffer: newEncryptionBuffer(e.Parameters),
 	}
+}
+
+// Free frees internal fftw data.
+func (e Encrypter[T]) Free() {
+	e.FourierTransformer.Free()
 }
 
 // LWEKey returns a copy of LWE key.

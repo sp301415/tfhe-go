@@ -116,19 +116,6 @@ func ReverseAssign[T any](v []T) {
 	}
 }
 
-// Chunk reslices the vector to subslices each of size chunkSize.
-func Chunk[T any](s []T, chunkSize int) [][]T {
-	chunkCount := num.RoundRatio(len(s), chunkSize)
-	result := make([][]T, chunkCount)
-
-	for i := 0; i < chunkCount-1; i++ {
-		result[i] = s[i*chunkSize : (i+1)*chunkSize]
-	}
-	result[chunkCount-1] = s[(chunkCount-1)*chunkSize:]
-
-	return result
-}
-
 // CopyAssign copies v0 to v1.
 func CopyAssign[T any](v0, v1 []T) {
 	copy(v1, v0)

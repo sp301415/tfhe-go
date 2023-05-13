@@ -3,14 +3,13 @@ package tfhe_test
 import (
 	"testing"
 
-	"github.com/sp301415/tfhe/math/poly"
 	"github.com/sp301415/tfhe/tfhe"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	testParams  = tfhe.ParamsMessage4Carry0.Compile()
-	benchParams = tfhe.ParamsMessage8Carry0.Compile()
+	testParams  = tfhe.ParamsUint4.Compile()
+	benchParams = tfhe.ParamsUint8.Compile()
 )
 
 func TestEncrypter(t *testing.T) {
@@ -39,28 +38,40 @@ func TestEncrypter(t *testing.T) {
 
 func TestEvaluater(t *testing.T) {
 	enc := tfhe.NewEncrypter(testParams)
-	ksk := enc.GenKeySwitchingKeyForBootstrappingParallel()
-
-	eval := tfhe.NewEvaluaterWithoutKey(testParams)
+	eval := tfhe.NewEvaluater(testParams, enc.GenEvaluationKeyParallel())
 	messages := []int{1, 2, 3, 4}
 
 	t.Run("ExternalProductFourier", func(t *testing.T) {
-		p := poly.From([]uint64{3}, testParams.PolyDegree())
-
 		ctGLWE := enc.EncryptPacked(messages)
-
-		ptGGSW := tfhe.GLWEPlaintext[uint64]{Value: p}
-		ctGGSW := tfhe.NewFourierGGSWCiphertext(testParams, testParams.KeySwitchParameters())
-		enc.EncryptFourierGGSWInPlace(ptGGSW, ctGGSW)
-
+		messages2 := []int{3}
+		ctGGSW := enc.EncryptPackedForMul(messages2, enc.Parameters.KeySwitchParameters())
 		ctOut := eval.ExternalProductFourier(ctGGSW, ctGLWE)
-		assert.Equal(t, messages[0]*int(p.Coeffs[0]), enc.DecryptPacked(ctOut)[0])
+
+		assert.Equal(t, messages[0]*messages2[0], enc.DecryptPacked(ctOut)[0])
+	})
+
+	t.Run("CMUX", func(t *testing.T) {
+		ctGLWE0 := enc.EncryptPacked([]int{messages[0]})
+		ctGLWE1 := enc.EncryptPacked([]int{messages[1]})
+		for i := 0; i <= 1; i++ {
+			ctGGSW := enc.EncryptPackedForMul([]int{i}, enc.Parameters.BootstrapParameters())
+			ctOut := eval.CMuxFourier(ctGGSW, ctGLWE0, ctGLWE1)
+
+			assert.Equal(t, messages[i], enc.DecryptPacked(ctOut)[0])
+		}
+	})
+
+	t.Run("BlindRotate", func(t *testing.T) {
+		ct := enc.Encrypt(messages[0])
+		f := func(x int) int { return 2 * x }
+		ctOut := eval.BlindRotateFunc(ct, f)
+		assert.Equal(t, f(messages[0]), enc.DecryptPacked(ctOut)[0])
 	})
 
 	t.Run("KeySwitch", func(t *testing.T) {
 		for _, msg := range messages {
 			ct := enc.EncryptLarge(msg)
-			ctOut := eval.KeySwitch(ct, ksk)
+			ctOut := eval.KeySwitchForBootstrap(ct)
 			assert.Equal(t, msg, enc.Decrypt(ctOut))
 		}
 	})

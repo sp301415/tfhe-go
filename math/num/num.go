@@ -118,12 +118,12 @@ func FromFloat64[T Integer](f float64) T {
 	if e >= 0 {
 		m <<= e
 	} else {
-		c := (m >> (-e - 1)) & 1
-		m = (m >> -e) + c
+		c := m & (1 << (-e - 1))
+		m = (m + c) >> -e
 	}
 
 	if sign != 0 {
-		return -T(m)
+		return T(-m)
 	}
 	return T(m)
 }
@@ -166,41 +166,24 @@ func Log2[T Integer](x T) int {
 	return int(bits.Len64(uint64(x))) - 1
 }
 
-// RoundRatio returns round(x/y).
-func RoundRatio[T Integer](x, y T) T {
-	ratio := x / y
-	if 2*(x%y) >= y {
-		ratio += 1
-	}
-	return ratio
-}
-
 // RoundRatioBits is a bit-optimzed version of RoundRatio: it computes round(x/2^bits).
 //   - If bits == 0, then it returns x.
 //   - If bits < 0, it panics.
 func RoundRatioBits[T Integer](x T, bits int) T {
-	if bits == 0 {
-		return x
-	}
-
-	// Compute the ratio
-	ratio := x >> bits
-	// Compute the first decimal: if it is 1, then we should round up
-	decimal := (x >> (bits - 1)) & 1
-	ratio += decimal // Equivalant to if decimal == 1 { ratio += 1 }
-	return ratio
-}
-
-// ClosestMultiple returns the closest multiple of x respect to y
-// It is same as round(x/y) * y.
-func ClosestMultiple[T Integer](x, y T) T {
-	return RoundRatio(x, y) * y
+	return ClosestMultipleBits(x, bits) >> bits
 }
 
 // ClosestMultipleBits returns the closest multiple of x respect to 2^bits.
 // It is same as round(x/2^bits) * 2^bits.
+//   - If bits == 0, then it returns x.
+//   - If bits < 0, it panics.
 func ClosestMultipleBits[T Integer](x T, bits int) T {
-	return RoundRatioBits(x, bits) << bits
+	if bits == 0 {
+		return x
+	}
+
+	carry := x & (1 << (bits - 1))
+	return x + carry<<1
 }
 
 // Min returns the smaller value between x and y.

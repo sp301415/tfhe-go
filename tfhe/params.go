@@ -81,7 +81,7 @@ func (p DecompositionParameters[T]) Level() int {
 	return p.level
 }
 
-// ScaledBase returns Q / Base^i for 0 <= i < Level.
+// ScaledBase returns Q / Base^(i+1) for 0 <= i < Level.
 // For the most common usages i = 0 and i = Level-1, use FirstScaledBase() and LastScaledBase().
 func (p DecompositionParameters[T]) ScaledBase(i int) T {
 	return T(1 << p.scaledBasesLog[i])
@@ -97,7 +97,7 @@ func (p DecompositionParameters[T]) LastScaledBase() T {
 	return p.ScaledBase(p.level - 1)
 }
 
-// ScaledBaseLog returns log(Q / Base^i) for 0 <= i < Level.
+// ScaledBaseLog returns log(Q / Base^(i+1)) for 0 <= i < Level.
 // For the most common usages i = 0 and i = Level-1, use FirstScaledBaseLog() and LastScaledBaseLog().
 func (p DecompositionParameters[T]) ScaledBaseLog(i int) int {
 	return p.scaledBasesLog[i]
@@ -185,11 +185,9 @@ type ParametersLiteral[T Tint] struct {
 
 	// MessageModulus is the largest message that could be encoded.
 	MessageModulus T
-	// CarryModulus is the size of the carry buffer.
-	CarryModulus T
 
-	// PBSParameters is the decomposition parameters for Programmable Bootstrapping.
-	PBSParameters DecompositionParametersLiteral[T]
+	// BootstrapParameters is the decomposition parameters for Programmable Bootstrapping.
+	BootstrapParameters DecompositionParametersLiteral[T]
 	// KeySwitchParameters is the decomposition parameters for KeySwitching.
 	KeySwitchParameters DecompositionParametersLiteral[T]
 }
@@ -210,14 +208,11 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("GLWEStdDev smaller than zero")
 	case !num.IsPowerOfTwo(p.MessageModulus):
 		panic("MessageModulus not power of two")
-	case !num.IsPowerOfTwo(p.CarryModulus):
-		panic("CarryModulus not power of two")
 	}
 
-	// Set delta = scaling factor = (1 << (SizeT - 1) - messageModulusLog - carryModulusLog)
+	// Set delta = scaling factor = (1 << (SizeT - 1) - messageModulusLog)
 	messageModulusLog := num.Log2(p.MessageModulus)
-	carryModulusLog := num.Log2(p.CarryModulus)
-	deltaLog := (num.SizeT[T]() - 1) - messageModulusLog - carryModulusLog
+	deltaLog := (num.SizeT[T]() - 1) - messageModulusLog
 	if deltaLog < 0 {
 		panic("message modulus and carry modulus too large")
 	}
@@ -235,10 +230,8 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		deltaLog:          deltaLog,
 		messageModulus:    p.MessageModulus,
 		messageModulusLog: messageModulusLog,
-		carryModulus:      p.CarryModulus,
-		carryModulusLog:   carryModulusLog,
 
-		pbsParameters:       p.PBSParameters.Compile(),
+		bootstrapParameters: p.BootstrapParameters.Compile(),
 		keyswitchParameters: p.KeySwitchParameters.Compile(),
 	}
 }
@@ -268,13 +261,9 @@ type Parameters[T Tint] struct {
 	messageModulus T
 	// MessageModulusLog equals log(MessageModulus).
 	messageModulusLog int
-	// CarryModulus is the size of the carry buffer.
-	carryModulus T
-	// CarryModulusLog equals log(CarryModulus).
-	carryModulusLog int
 
-	// pbsParameters is the decomposition parameters for Programmable Bootstrapping.
-	pbsParameters DecompositionParameters[T]
+	// bootstrapParameters is the decomposition parameters for Programmable Bootstrapping.
+	bootstrapParameters DecompositionParameters[T]
 	// keyswitchParameters is the decomposition parameters for KeySwitching.
 	keyswitchParameters DecompositionParameters[T]
 }
@@ -322,24 +311,14 @@ func (p Parameters[T]) MessageModulusLog() int {
 	return p.messageModulusLog
 }
 
-// CarryModulusLog equals log(CarryModulus).
-func (p Parameters[T]) CarryModulusLog() int {
-	return p.carryModulusLog
-}
-
 // MessageModulus is the largest message that could be encoded.
 func (p Parameters[T]) MessageModulus() T {
 	return p.messageModulus
 }
 
-// CarryModulus is the size of the carry buffer.
-func (p Parameters[T]) CarryModulus() T {
-	return p.carryModulus
-}
-
-// PBSParameters is the decomposition parameters for Programmable Bootstrapping.
-func (p Parameters[T]) PBSParameters() DecompositionParameters[T] {
-	return p.pbsParameters
+// BootstrapParameters is the decomposition parameters for Programmable Bootstrapping.
+func (p Parameters[T]) BootstrapParameters() DecompositionParameters[T] {
+	return p.bootstrapParameters
 }
 
 // KeySwitchParameters is the decomposition parameters for KeySwitching.

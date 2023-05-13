@@ -32,10 +32,21 @@ type Evaluater[T Tint] struct {
 
 // evaluationBuffer contains buffer values for Evaluater.
 type evaluationBuffer[T Tint] struct {
-	// glweFourierCtOutForExtProd holds the fourier transformed ctGLWEOut in ExternalProductFourier.
-	glweFourierCtOutForExtProd FourierGLWECiphertext[T]
-	// glweCtForCMux holds ct1 - ct0 in CMux.
-	glweCtForCMux GLWECiphertext[T]
+	// fourierCtOutForExtProd holds the fourier transformed ctGLWEOut in ExternalProductFourier.
+	fourierCtOutForExtProd FourierGLWECiphertext[T]
+	// ctSubForCMux holds ct1 - ct0 in CMux.
+	ctSubForCMux GLWECiphertext[T]
+	// rotatedCtForBlindRotate holds X^ai * ci in BlindRotate.
+	rotatedCtForBlindRotate GLWECiphertext[T]
+	// extProdOutForBlindRotate holds bsk[i]*(c - X^ai*c) in BlindRotate.
+	extProdOutForBlindRotate GLWECiphertext[T]
+
+	// idLUT is a LUT for identity map x -> x.
+	idLUT LookUpTable[T]
+	// mulLUT is a LUT for multiplication x -> x^2/4.
+	mulLUT LookUpTable[T]
+	// emptyLUT is an empty LUT, used for BlindRotateFunc.
+	emptyLUT LookUpTable[T]
 }
 
 // NewEvaluater creates a new Evaluater based on parameters.
@@ -67,8 +78,15 @@ func NewEvaluaterWithoutKey[T Tint](params Parameters[T]) Evaluater[T] {
 // newEvaluationBuffer allocates an empty evaluationBuffer.
 func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 	return evaluationBuffer[T]{
-		glweFourierCtOutForExtProd: NewFourierGLWECiphertext(params),
-		glweCtForCMux:              NewGLWECiphertext(params),
+		fourierCtOutForExtProd: NewFourierGLWECiphertext(params),
+		ctSubForCMux:           NewGLWECiphertext(params),
+
+		rotatedCtForBlindRotate:  NewGLWECiphertext(params),
+		extProdOutForBlindRotate: NewGLWECiphertext(params),
+
+		idLUT:    GenLookUpTable(params, func(x int) int { return x }),
+		mulLUT:   GenLookUpTable(params, func(x int) int { return x * x / 4 }),
+		emptyLUT: NewLookUpTable(params),
 	}
 }
 
@@ -85,6 +103,11 @@ func (e Evaluater[T]) ShallowCopy() Evaluater[T] {
 
 		buffer: newEvaluationBuffer(e.Parameters),
 	}
+}
+
+// Free frees internal fftw data.
+func (e Evaluater[T]) Free() {
+	e.FourierTransformer.Free()
 }
 
 // AddLWE adds two LWE cipheretexts ct0, ct1 and returns the result.
@@ -178,5 +201,53 @@ func (e Evaluater[T]) ScalarMulAddGLWEAssign(ct0 GLWECiphertext[T], p poly.Poly[
 func (e Evaluater[T]) ScalarMulSubGLWEAssign(ct0 GLWECiphertext[T], p poly.Poly[T], ctOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.PolyEvaluater.MulSubAssign(ct0.Value[i], p, ctOut.Value[i])
+	}
+}
+
+// MonomialMulGLWE multplies X^d to ct0 and returns the result.
+// Assumes d >= 0.
+func (e Evaluater[T]) MonomialMulGLWE(ct0 GLWECiphertext[T], d int) GLWECiphertext[T] {
+	ctOut := NewGLWECiphertext(e.Parameters)
+	e.MonomialMulInPlaceGLWE(ct0, d, ctOut)
+	return ctOut
+}
+
+// MonomialMulInPlaceGLWE multplies X^d to ct0 and writes it to ctOut.
+// Assumes d >= 0.
+func (e Evaluater[T]) MonomialMulInPlaceGLWE(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.PolyEvaluater.MonomialMulInPlace(ct0.Value[i], d, ctOut.Value[i])
+	}
+}
+
+// MonomialMulAssignGLWE multplies X^d to ctOut.
+// Assumes d >= 0.
+func (e Evaluater[T]) MonomialMulAssignGLWE(d int, ctOut GLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.PolyEvaluater.MonomialMulAssign(d, ctOut.Value[i])
+	}
+}
+
+// MonomialMulGLWE divides X^d from ct0 and returns the result.
+// Panics if d < 0.
+func (e Evaluater[T]) MonomialDivGLWE(ct0 GLWECiphertext[T], d int) GLWECiphertext[T] {
+	ctOut := NewGLWECiphertext(e.Parameters)
+	e.MonomialDivInPlaceGLWE(ct0, d, ctOut)
+	return ctOut
+}
+
+// MonomialDivInPlaceGLWE divides X^d from ct0 and writes it to ctOut.
+// Assumes d >= 0.
+func (e Evaluater[T]) MonomialDivInPlaceGLWE(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.PolyEvaluater.MonomialDivInPlace(ct0.Value[i], d, ctOut.Value[i])
+	}
+}
+
+// MonomialMulAssignGLWE divides X^d from ctOut.
+// Assumes d >= 0.
+func (e Evaluater[T]) MonomialDivAssignGLWE(d int, ctOut GLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.PolyEvaluater.MonomialDivAssign(d, ctOut.Value[i])
 	}
 }

@@ -43,7 +43,7 @@ func BenchmarkOperations(b *testing.B) {
 
 	b.Run("MonomialMul", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			eval.MonomialMulInPlace(p0, 512, 32, pOut)
+			eval.MonomialMulInPlace(p0, 32, pOut)
 		}
 	})
 

@@ -1,7 +1,6 @@
 package poly
 
 import (
-	"github.com/sp301415/tfhe/math/num"
 	"github.com/sp301415/tfhe/math/vec"
 )
 
@@ -111,119 +110,82 @@ func (e Evaluater[T]) ScalarMulAssign(c T, pOut Poly[T]) {
 	vec.ScalarMulAssign(c, pOut.Coeffs)
 }
 
-// ScalarDiv divides c from p0 and returns the result.
-func (e Evaluater[T]) ScalarDiv(p0 Poly[T], c T) Poly[T] {
+// MonomialMul multplies X^d to p0 and returns the result.
+// Assumes d >= 0.
+func (e Evaluater[T]) MonomialMul(p0 Poly[T], d int) Poly[T] {
 	p := New[T](e.degree)
-	e.ScalarDivInPlace(p0, c, p)
+	e.MonomialMulInPlace(p0, d, p)
 	return p
 }
 
-// ScalarDivInPlace divides c from p0 and writes it to pOut.
-func (e Evaluater[T]) ScalarDivInPlace(p0 Poly[T], c T, pOut Poly[T]) {
-	for i := range pOut.Coeffs {
-		pOut.Coeffs[i] = num.RoundRatio(p0.Coeffs[i], c)
+// MonomialMulInPlace multplies X^d to p0 and writes it to pOut.
+// Assumes d >= 0.
+func (e Evaluater[T]) MonomialMulInPlace(p0 Poly[T], d int, pOut Poly[T]) {
+	dd := d % e.degree
+	vec.RotateInPlace(p0.Coeffs, dd, pOut.Coeffs)
+
+	cycles := d / e.degree
+	if cycles%2 != 0 {
+		vec.NegAssign(pOut.Coeffs)
+	}
+
+	for i := 0; i < dd; i++ {
+		pOut.Coeffs[i] = -pOut.Coeffs[i]
 	}
 }
 
-// ScalarDivAssign divides c from pOut.
-func (e Evaluater[T]) ScalarDivAssign(c T, pOut Poly[T]) {
-	e.ScalarDivInPlace(pOut, c, pOut)
+// MonomialMulAssign multplies X^d to pOut.
+// Assumes d >= 0.
+func (e Evaluater[T]) MonomialMulAssign(d int, pOut Poly[T]) {
+	dd := d % e.degree
+	vec.RotateAssign(pOut.Coeffs, dd)
+
+	cycles := d / e.degree
+	if cycles%2 != 0 {
+		vec.NegAssign(pOut.Coeffs)
+	}
+
+	for i := 0; i < dd; i++ {
+		pOut.Coeffs[i] = -pOut.Coeffs[i]
+	}
 }
 
-// MonomialMul multplies c*x^d to p0 and returns the result.
+// MonomialMul divides X^d from p0 and returns the result.
 // Panics if d < 0.
-func (e Evaluater[T]) MonomialMul(p0 Poly[T], c T, d int) Poly[T] {
+func (e Evaluater[T]) MonomialDiv(p0 Poly[T], d int) Poly[T] {
 	p := New[T](e.degree)
-	e.MonomialMulInPlace(p0, c, d, p)
+	e.MonomialDivInPlace(p0, d, p)
 	return p
 }
 
-// MonomialMulInPlace multplies c * X^d to p0 and writes it to pOut.
+// MonomialDivInPlace divides X^d from p0 and writes it to pOut.
 // Assumes d >= 0.
-func (e Evaluater[T]) MonomialMulInPlace(p0 Poly[T], c T, d int, pOut Poly[T]) {
-	// We can only consider d % 2*N, since X^2N = 1.
-	d %= 2 * e.degree
+func (e Evaluater[T]) MonomialDivInPlace(p0 Poly[T], d int, pOut Poly[T]) {
+	dd := d % e.degree
+	vec.RotateInPlace(p0.Coeffs, -dd, pOut.Coeffs)
 
-	// If N <= d < 2N, X^d = X^N * X^(d-N) = -X^(d-N).
-	if d >= e.degree {
-		e.MonomialMulInPlace(p0, -c, d-e.degree, pOut)
-		return
+	cycles := d / e.degree
+	if cycles%2 != 0 {
+		vec.NegAssign(pOut.Coeffs)
 	}
 
-	for i := range pOut.Coeffs {
-		//                   d
-		// |++++++++++++++|+++++| p0
-		// |-----|++++++++++++++| pOut
-		//    d
-		if i < e.degree-d {
-			pOut.Coeffs[i+d] = c * p0.Coeffs[i]
-		} else {
-			pOut.Coeffs[i-(e.degree-d)] = -c * p0.Coeffs[i]
-		}
+	for i := e.degree - dd; i < e.degree; i++ {
+		pOut.Coeffs[i] = -pOut.Coeffs[i]
 	}
 }
 
-// MonomialMulAssign multplies c*x^d to pOut.
+// MonomialMulAssign divides X^d from pOut.
 // Assumes d >= 0.
-func (e Evaluater[T]) MonomialMulAssign(c T, d int, pOut Poly[T]) {
-	// We can only consider d % 2*N, since X^2N = 1.
-	d %= 2 * e.degree
+func (e Evaluater[T]) MonomialDivAssign(d int, pOut Poly[T]) {
+	dd := d % e.degree
+	vec.RotateAssign(pOut.Coeffs, -dd)
 
-	// If N <= d < 2N, X^d = X^N * X^(d-N) = -X^(d-N).
-	if d >= e.degree {
-		e.MonomialMulAssign(-c, d-e.degree, pOut)
-		return
+	cycles := d / e.degree
+	if cycles%2 != 0 {
+		vec.NegAssign(pOut.Coeffs)
 	}
 
-	vec.RotateAssign(pOut.Coeffs, d)
-
-	for i := range pOut.Coeffs {
-		if i < d {
-			pOut.Coeffs[i] *= -c
-		} else {
-			pOut.Coeffs[i] *= c
-		}
-	}
-}
-
-// MonomialMulAddAssign multiplies c*X^d to p0 and adds it to pOut.
-// Assumes d >= 0.
-func (e Evaluater[T]) MonomialMulAddAssign(p0 Poly[T], c T, d int, pOut Poly[T]) {
-	// We can only consider d % 2*N, since X^2N = 1.
-	d %= 2 * e.degree
-
-	// If N <= d < 2N, X^d = X^N * X^(d-N) = -X^(d-N).
-	if d >= e.degree {
-		e.MonomialMulInPlace(p0, -c, d-e.degree, pOut)
-		return
-	}
-
-	for i := range pOut.Coeffs {
-		if i < e.degree-d {
-			pOut.Coeffs[i+d] += c * p0.Coeffs[i]
-		} else {
-			pOut.Coeffs[i-(e.degree-d)] += -c * p0.Coeffs[i]
-		}
-	}
-}
-
-// MonomialMulSubAssign multiplies c*X^d to p0 and subtracts it from pOut.
-// Assumes d >= 0.
-func (e Evaluater[T]) MonomialMulSubAssign(p0 Poly[T], c T, d int, pOut Poly[T]) {
-	// We can only consider d % 2*N, since X^2N = 1.
-	d %= 2 * e.degree
-
-	// If N <= d < 2N, X^d = X^N * X^(d-N) = -X^(d-N).
-	if d >= e.degree {
-		e.MonomialMulInPlace(p0, -c, d-e.degree, pOut)
-		return
-	}
-
-	for i := range pOut.Coeffs {
-		if i < e.degree-d {
-			pOut.Coeffs[i+d] -= c * p0.Coeffs[i]
-		} else {
-			pOut.Coeffs[i-(e.degree-d)] -= -c * p0.Coeffs[i]
-		}
+	for i := e.degree - dd; i < e.degree; i++ {
+		pOut.Coeffs[i] = -pOut.Coeffs[i]
 	}
 }

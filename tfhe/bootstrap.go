@@ -1,71 +1,127 @@
 package tfhe
 
 import (
+	"github.com/sp301415/tfhe/math/num"
+	"github.com/sp301415/tfhe/math/poly"
 	"github.com/sp301415/tfhe/math/vec"
 )
 
-// BootstrappingKey is a key for bootstrapping.
-// Essentially, this is a GGSW encryption of LWE key with GLWE key.
-// However, FFT is already applied for fast external product.
-type BootstrappingKey[T Tint] struct {
-	// Value has length LWEDimension.
-	Value []FourierGGSWCiphertext[T]
+// LookUpTable is a trivially encrypted GLWE ciphertext that holds
+// the lookup table for function evaluations during programmable bootstrapping.
+type LookUpTable[T Tint] GLWECiphertext[T]
 
-	decompParams DecompositionParameters[T]
+// NewLookUpTable allocates an empty lookup table.
+func NewLookUpTable[T Tint](params Parameters[T]) LookUpTable[T] {
+	return LookUpTable[T](NewGLWECiphertext(params))
 }
 
-// NewBootstrappingKey allocates an empty BootstrappingKey.
-func NewBootstrappingKey[T Tint](params Parameters[T], decompParams DecompositionParameters[T]) BootstrappingKey[T] {
-	bsk := make([]FourierGGSWCiphertext[T], params.lweDimension)
-	for i := 0; i < params.lweDimension; i++ {
-		bsk[i] = NewFourierGGSWCiphertext(params, decompParams)
-	}
-	return BootstrappingKey[T]{Value: bsk, decompParams: decompParams}
+// GenLookUpTable generates a lookup table based on function f and returns it.
+func GenLookUpTable[T Tint](params Parameters[T], f func(int) int) LookUpTable[T] {
+	lutOut := NewLookUpTable(params)
+	GenLookUpTableInPlace(params, f, lutOut)
+	return lutOut
 }
 
-// Copy returns a copy of the key.
-func (bsk BootstrappingKey[T]) Copy() BootstrappingKey[T] {
-	bskCopy := make([]FourierGGSWCiphertext[T], len(bsk.Value))
-	for i := range bsk.Value {
-		bskCopy[i] = bsk.Value[i].Copy()
-	}
-	return BootstrappingKey[T]{Value: bskCopy, decompParams: bsk.decompParams}
-}
+// GenLookUpTableInPlace generates a lookup table based on function f and writes it to lutOut.
+func GenLookUpTableInPlace[T Tint](params Parameters[T], f func(int) int, lutOut LookUpTable[T]) {
+	// We calculate f(round(P*j/2N)), where P = messageModulus * 2 (We use 1-bit padding, remember?)
+	// For x := round(p*j/2N), observe that:
+	// x = 1 => j = N/p ~ 3N/p
+	// x = 2 => j = 3N/p ~ 5N/p
+	// ...
+	// The only exception is when x = 0. In this case,
+	// x = 0 => j = 0 ~ N/p and j = -N/p ~ 0.
+	// So we can rotate negacyclically for N/p.
 
-// DecompositionParameters returns the decomposition parameters of the key.
-func (bsk BootstrappingKey[T]) DecompositionParameters() DecompositionParameters[T] {
-	return bsk.decompParams
-}
-
-// KeySwitchingKey is a LWE keyswitching key from GLWE secret key to LWE secret key.
-// Essentially, this is a GSW encryption of GLWE key with LWE key.
-type KeySwitchingKey[T Tint] GSWCiphertext[T]
-
-// NewKeySwitchingKey allocates an empty KeySwitchingKey.
-func NewKeySwitchingKey[T Tint](inputDimension, outputDimension int, decompParams DecompositionParameters[T]) KeySwitchingKey[T] {
-	kswKey := make([]LevCiphertext[T], inputDimension)
-	for i := 0; i < inputDimension; i++ {
-		kswKey[i] = LevCiphertext[T]{Value: make([]LWECiphertext[T], decompParams.level), decompParams: decompParams}
-		for j := 0; j < decompParams.level; j++ {
-			kswKey[i].Value[j] = LWECiphertext[T]{Value: make([]T, outputDimension+1)}
+	boxSize := params.polyDegree >> params.messageModulusLog // 2N/P
+	for x := 0; x < int(params.messageModulus); x++ {
+		for i := x * boxSize; i < (x+1)*boxSize; i++ {
+			lutOut.Value[0].Coeffs[i] = T(f(x)) << params.deltaLog
 		}
 	}
-	return KeySwitchingKey[T]{Value: kswKey, decompParams: decompParams}
+
+	// rotate left negacycically.
+	for i := 0; i < boxSize/2; i++ {
+		lutOut.Value[0].Coeffs[i] = -lutOut.Value[0].Coeffs[i]
+	}
+	vec.RotateAssign(lutOut.Value[0].Coeffs, -boxSize/2)
 }
 
-// InputLWEDimension returns the input LWEDimension of this key.
-func (ksk KeySwitchingKey[T]) InputLWEDimension() int {
-	return len(ksk.Value)
+// Copy returns a copy of the LUT.
+func (lut LookUpTable[T]) Copy() LookUpTable[T] {
+	lutCopy := make([]poly.Poly[T], len(lut.Value))
+	for i := range lutCopy {
+		lutCopy[i] = lut.Value[i].Copy()
+	}
+	return LookUpTable[T]{Value: lutCopy}
 }
 
-// OutputLWEDimension returns the output LWEDimension of this key.
-func (ksk KeySwitchingKey[T]) OutputLWEDimension() int {
-	return len(ksk.Value[0].Value[0].Value) - 1
+// CopyFrom copies values from a LUT.
+func (lut *LookUpTable[T]) CopyFrom(lutIn LookUpTable[T]) {
+	for i := range lut.Value {
+		lut.Value[i].CopyFrom(lut.Value[i])
+	}
 }
 
-// Copy returns a copy of the key.
-func (ksk KeySwitchingKey[T]) Copy() KeySwitchingKey[T] {
-	return KeySwitchingKey[T](GSWCiphertext[T](ksk).Copy())
+// GenLookUpTable is equivalent with calling package-level GenLookUpTable with Evaluater's parameters.
+func (e Evaluater[T]) GenLookUpTable(f func(int) int) LookUpTable[T] {
+	return GenLookUpTable(e.Parameters, f)
+}
+
+// GenLookUpTableInPlace is equivalent with calling package-level GenLookUpTableInPlace with Evaluater's parameters.
+func (e Evaluater[T]) GenLookUpTableInPlace(f func(int) int, lutOut LookUpTable[T]) {
+	GenLookUpTableInPlace(e.Parameters, f, lutOut)
+}
+
+// genLookUpTable genereates a lookup table based on evaluation values of f.
+// Note that only inputs between 0 and MessageModulus are encoded in the LUT.
+
+// Note that the encoded LUT only considers inputs between 0 and MessageModulus.
+// ModSwitch calculates round(2N * p / Q).
+func (e Evaluater[T]) ModSwitch(p T) int {
+	return int(num.RoundRatioBits(p, num.SizeT[T]()-(num.Log2(e.Parameters.polyDegree)+1)))
+}
+
+// BlindRotate calculates the blind rotation of LWE ciphertext using identity LUT and returns it.
+func (e Evaluater[T]) BlindRotate(ct LWECiphertext[T]) GLWECiphertext[T] {
+	return e.BlindRotateLUT(ct, e.buffer.idLUT)
+}
+
+// BlindRotateInPlace calculates the blind rotation of LWE ciphertext using identity LUT and writes it to ctOut.
+func (e Evaluater[T]) BlindRotateInPlace(ct LWECiphertext[T], ctOut GLWECiphertext[T]) {
+	e.BlindRotateLUTInPlace(ct, e.buffer.idLUT, ctOut)
+}
+
+// BlindRotateFunc calculates the blind rotation of LWE ciphertext with respect to function and returns it.
+func (e Evaluater[T]) BlindRotateFunc(ct LWECiphertext[T], f func(int) int) GLWECiphertext[T] {
+	e.GenLookUpTableInPlace(f, e.buffer.emptyLUT)
+	return e.BlindRotateLUT(ct, e.buffer.emptyLUT)
+}
+
+// BlindRotateFuncInPlace calculates the blind rotation of LWE ciphertext with respect to function and writes it to ctOut.
+func (e Evaluater[T]) BlindRotateFuncInPlace(ct LWECiphertext[T], f func(int) int, ctOut GLWECiphertext[T]) {
+	e.GenLookUpTableInPlace(f, e.buffer.emptyLUT)
+	e.BlindRotateLUTInPlace(ct, e.buffer.emptyLUT, ctOut)
+}
+
+// BlindRotateFunc calculates the blind rotation of LWE ciphertext with respect to LUT.
+func (e Evaluater[T]) BlindRotateLUT(ct LWECiphertext[T], lut LookUpTable[T]) GLWECiphertext[T] {
+	ctOut := NewGLWECiphertext(e.Parameters)
+	e.BlindRotateLUTInPlace(ct, lut, ctOut)
+	return ctOut
+}
+
+// BlindRotateLUTInPlace calculates the blind rotation of LWE ciphertext with respect to LUT.
+func (e Evaluater[T]) BlindRotateLUTInPlace(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
+	// c = X^-b * LUT
+	e.MonomialDivInPlaceGLWE(GLWECiphertext[T](lut), e.ModSwitch(ct.Value[0]), ctOut)
+
+	// c <- CMUX(bsk[i], c, X^ai * c)
+	for i := 0; i < e.Parameters.lweDimension; i++ {
+		e.MonomialMulInPlaceGLWE(ctOut, e.ModSwitch(ct.Value[i+1]), e.buffer.rotatedCtForBlindRotate)
+		e.CMuxFourierInPlace(e.evaluationKey.BootstrappingKey.Value[i], ctOut, e.buffer.rotatedCtForBlindRotate, e.buffer.extProdOutForBlindRotate)
+		ctOut.CopyFrom(e.buffer.extProdOutForBlindRotate)
+	}
 }
 
 // SampleExtract extracts LWE ciphertext of index i from GLWE ciphertext and returns it.

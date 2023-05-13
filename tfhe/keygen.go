@@ -36,25 +36,9 @@ func (e Encrypter[T]) GenEvaluationKey() EvaluationKey[T] {
 
 // GenEvaluationKey samples a new evaluation key for bootstrapping in parallel.
 func (e Encrypter[T]) GenEvaluationKeyParallel() EvaluationKey[T] {
-	var bsk BootstrappingKey[T]
-	var ksk KeySwitchingKey[T]
-
-	var wg sync.WaitGroup
-	wg.Add(2)
-	go func() {
-		defer wg.Done()
-		bsk = e.GenBootstrappingKeyParallel()
-	}()
-	go func() {
-		defer wg.Done()
-		ksk = e.GenKeySwitchingKeyForBootstrappingParallel()
-	}()
-
-	wg.Wait()
-
 	return EvaluationKey[T]{
-		BootstrappingKey: bsk,
-		KeySwitchingKey:  ksk,
+		BootstrappingKey: e.GenBootstrappingKeyParallel(),
+		KeySwitchingKey:  e.GenKeySwitchingKeyForBootstrappingParallel(),
 	}
 }
 
@@ -62,18 +46,19 @@ func (e Encrypter[T]) GenEvaluationKeyParallel() EvaluationKey[T] {
 // This may take a long time, depending on the parameters.
 // Consider using GenBootstrappingKeyParallel.
 func (e Encrypter[T]) GenBootstrappingKey() BootstrappingKey[T] {
-	bsk := NewBootstrappingKey(e.Parameters, e.Parameters.pbsParameters)
+	bsk := NewBootstrappingKey(e.Parameters, e.Parameters.bootstrapParameters)
+
+	e.buffer.glwePtForPBSKeyGen.Value.Clear()
 	for i := 0; i < e.Parameters.lweDimension; i++ {
-		for j := 0; j < e.Parameters.glweDimension+1; j++ {
-			e.genBootstrappingKeyIndex(i, j, bsk)
-		}
+		e.buffer.glwePtForPBSKeyGen.Value.Coeffs[0] = e.lweKey.Value[i]
+		e.EncryptFourierGGSWInPlace(e.buffer.glwePtForPBSKeyGen, bsk.Value[i])
 	}
 	return bsk
 }
 
 // GenBootstrappingKeyParallel samples a new bootstrapping key in parallel.
 func (e Encrypter[T]) GenBootstrappingKeyParallel() BootstrappingKey[T] {
-	bsk := NewBootstrappingKey(e.Parameters, e.Parameters.pbsParameters)
+	bsk := NewBootstrappingKey(e.Parameters, e.Parameters.bootstrapParameters)
 
 	// LWEDimension is usually 500 ~ 1000,
 	// and GLWEDimension is usually 1 ~ 5.
@@ -117,14 +102,14 @@ func (e Encrypter[T]) GenBootstrappingKeyParallel() BootstrappingKey[T] {
 // Bootstrapping key only encrypts scalar values.
 func (e Encrypter[T]) genBootstrappingKeyIndex(i, j int, bsk BootstrappingKey[T]) {
 	if j == 0 {
-		for k := 0; k < e.Parameters.pbsParameters.level; k++ {
-			e.buffer.glwePtForPBSKeyGen.Value.Clear()
-			e.buffer.glwePtForPBSKeyGen.Value.Coeffs[0] = e.lweKey.Value[i] << e.Parameters.pbsParameters.ScaledBaseLog(k)
+		e.buffer.glwePtForPBSKeyGen.Value.Clear()
+		for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
+			e.buffer.glwePtForPBSKeyGen.Value.Coeffs[0] = e.lweKey.Value[i] << e.Parameters.bootstrapParameters.ScaledBaseLog(k)
 			e.EncryptFourierGLWEInPlace(e.buffer.glwePtForPBSKeyGen, bsk.Value[i].Value[j].Value[k])
 		}
 	} else {
-		for k := 0; k < e.Parameters.pbsParameters.level; k++ {
-			p := -(e.lweKey.Value[i] << e.Parameters.pbsParameters.ScaledBaseLog(k))
+		for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
+			p := -(e.lweKey.Value[i] << e.Parameters.bootstrapParameters.ScaledBaseLog(k))
 			e.PolyEvaluater.ScalarMulInPlace(e.glweKey.Value[j-1], p, e.buffer.glwePtForPBSKeyGen.Value)
 			e.EncryptFourierGLWEInPlace(e.buffer.glwePtForPBSKeyGen, bsk.Value[i].Value[j].Value[k])
 		}

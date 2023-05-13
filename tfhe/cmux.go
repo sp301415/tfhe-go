@@ -103,16 +103,16 @@ func (e Evaluater[T]) ExternalProductFourierInPlace(ctFourierGGSW FourierGGSWCip
 		for j := 0; j < ctFourierGGSW.decompParams.level; j++ {
 			for k := 0; k < e.Parameters.glweDimension+1; k++ {
 				if i == 0 && j == 0 {
-					e.FourierTransformer.MulWithStandardInPlace(ctFourierGGSW.Value[i].Value[j].Value[k], buffDecomposed[j], e.buffer.glweFourierCtOutForExtProd.Value[k])
+					e.FourierTransformer.MulWithStandardInPlace(ctFourierGGSW.Value[i].Value[j].Value[k], buffDecomposed[j], e.buffer.fourierCtOutForExtProd.Value[k])
 				} else {
-					e.FourierTransformer.MulWithStandardAddAssign(ctFourierGGSW.Value[i].Value[j].Value[k], buffDecomposed[j], e.buffer.glweFourierCtOutForExtProd.Value[k])
+					e.FourierTransformer.MulWithStandardAddAssign(ctFourierGGSW.Value[i].Value[j].Value[k], buffDecomposed[j], e.buffer.fourierCtOutForExtProd.Value[k])
 				}
 			}
 		}
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.ToScaledStandardPolyInPlace(e.buffer.glweFourierCtOutForExtProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierTransformer.ToScaledStandardPolyInPlace(e.buffer.fourierCtOutForExtProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
@@ -127,9 +127,9 @@ func (e Evaluater[T]) CMux(ctGGSW GGSWCiphertext[T], ct0, ct1 GLWECiphertext[T])
 // CMuxInPlace calculates the CMUX between ctGGSW, ct0 and ct1: so ctOut = ct0 + ctGGSW * (ct1 - ct0).
 // CMUX essentially acts as an if caluse; if ctGGSW = 0, ct0 is returned, and if ctGGSW = 1, ct1 is returned.
 func (e Evaluater[T]) CMuxInPlace(ctGGSW GGSWCiphertext[T], ct0, ct1, ctOut GLWECiphertext[T]) {
-	e.SubGLWEInPlace(ct1, ct0, e.buffer.glweCtForCMux)              // buff = ct1 - ct0
-	e.ExternalProductInPlace(ctGGSW, e.buffer.glweCtForCMux, ctOut) // ctOut = ctGGSW * (ct1 - ct0)
-	e.AddGLWEAssign(ct0, ctOut)                                     // ctOut = ct0 + ctGGSW * (ct1 - ct0)
+	e.SubGLWEInPlace(ct1, ct0, e.buffer.ctSubForCMux)              // buff = ct1 - ct0
+	e.ExternalProductInPlace(ctGGSW, e.buffer.ctSubForCMux, ctOut) // ctOut = ctGGSW * (ct1 - ct0)
+	e.AddGLWEAssign(ct0, ctOut)                                    // ctOut = ct0 + ctGGSW * (ct1 - ct0)
 }
 
 // CMuxFourier calculates the CMUX between ctFourierGGSW, ct0 and ct1: so ctOut = ct0 + ctGGSW * (ct1 - ct0).
@@ -143,7 +143,7 @@ func (e Evaluater[T]) CMuxFourier(ctFourierGGSW FourierGGSWCiphertext[T], ct0, c
 // CMuxFourierInPlace calculates the CMUX between ctFourierGGSW, ct0 and ct1: so ctOut = ct0 + ctGGSW * (ct1 - ct0).
 // CMUX essentially acts as an if caluse; if ctGGSW = 0, ct0 is returned, and if ctGGSW = 1, ct1 is returned.
 func (e Evaluater[T]) CMuxFourierInPlace(ctFourierGGSW FourierGGSWCiphertext[T], ct0, ct1, ctOut GLWECiphertext[T]) {
-	e.SubGLWEInPlace(ct1, ct0, e.buffer.glweCtForCMux)                            // buff = ct1 - ct0
-	e.ExternalProductFourierInPlace(ctFourierGGSW, e.buffer.glweCtForCMux, ctOut) // ctOut = ctGGSW * (ct1 - ct0)
-	e.AddGLWEAssign(ct0, ctOut)                                                   // ctOut = ct0 + ctGGSW * (ct1 - ct0)
+	e.SubGLWEInPlace(ct1, ct0, e.buffer.ctSubForCMux)                            // buff = ct1 - ct0
+	e.ExternalProductFourierInPlace(ctFourierGGSW, e.buffer.ctSubForCMux, ctOut) // ctOut = ctGGSW * (ct1 - ct0)
+	e.AddGLWEAssign(ct0, ctOut)                                                  // ctOut = ct0 + ctGGSW * (ct1 - ct0)
 }
