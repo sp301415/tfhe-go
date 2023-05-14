@@ -124,7 +124,7 @@ func (p DecompositionParameters[T]) Decompose(x T) []T {
 // DecomposeInPlace decomposes x and writes it to d.
 // Length of d should be Level.
 func (p DecompositionParameters[T]) DecomposeInPlace(x T, d []T) {
-	x = num.RoundRatioBits(x, p.LastScaledBaseLog())
+	x = num.RoundRatioBits(x, p.scaledBasesLog[p.level-1])
 	for i := range d {
 		res := x & (p.base - 1)
 		x >>= p.baseLog
@@ -151,7 +151,7 @@ func (p DecompositionParameters[T]) DecomposePoly(x poly.Poly[T]) []poly.Poly[T]
 // Length of d should be Level, each polynomial having same degree as x.
 func (p DecompositionParameters[T]) DecomposePolyInPlace(x poly.Poly[T], d []poly.Poly[T]) {
 	for i := range x.Coeffs {
-		c := num.RoundRatioBits(x.Coeffs[i], p.LastScaledBaseLog())
+		c := num.RoundRatioBits(x.Coeffs[i], p.scaledBasesLog[p.level-1])
 		for j := range d {
 			res := c & (p.base - 1)
 			c >>= p.baseLog
