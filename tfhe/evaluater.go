@@ -7,10 +7,10 @@ import (
 // EvaluationKey is a public key for Evaluator,
 // which consists of Bootstrapping Key and KeySwitching Key.
 type EvaluationKey[T Tint] struct {
-	// BootstrappingKey is a bootstrapping key.
-	BootstrappingKey BootstrappingKey[T]
-	// KeySwitchingKey is a keyswithcing key switching GLWE secret key -> LWE secret key.
-	KeySwitchingKey KeySwitchingKey[T]
+	// BootstrapKey is a bootstrapping key.
+	BootstrapKey BootstrapKey[T]
+	// KeySwitchKey is a keyswithcing key switching GLWE secret key -> LWE secret key.
+	KeySwitchKey KeySwitchKey[T]
 }
 
 // Evaluater handles homomorphic operation of values.
@@ -46,6 +46,11 @@ type evaluationBuffer[T Tint] struct {
 	// rotatedCtForBlindRotate holds X^ai * ci in BlindRotate.
 	rotatedCtForBlindRotate GLWECiphertext[T]
 
+	// blindRotatedCtForBootstrap holds the blind rotated GLWE ciphertext for bootstrapping.
+	blindRotatedCtForBootstrap GLWECiphertext[T]
+	// sampleExtractedCtForBootstrap holds the sample extracted LWE large ciphertext for bootstrapping.
+	sampleExtractedCtForBootstrap LWECiphertext[T]
+
 	// idLUT is a LUT for identity map x -> x.
 	idLUT LookUpTable[T]
 	// mulLUT is a LUT for multiplication x -> x^2/4.
@@ -59,8 +64,8 @@ type evaluationBuffer[T Tint] struct {
 func NewEvaluater[T Tint](params Parameters[T], evkey EvaluationKey[T]) Evaluater[T] {
 	evaluater := NewEvaluaterWithoutKey(params)
 	evaluater.evaluationKey = EvaluationKey[T]{
-		BootstrappingKey: evkey.BootstrappingKey,
-		KeySwitchingKey:  evkey.KeySwitchingKey,
+		BootstrapKey: evkey.BootstrapKey,
+		KeySwitchKey: evkey.KeySwitchKey,
 	}
 
 	return evaluater
@@ -94,6 +99,9 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 		ctSubForCMux:           NewGLWECiphertext(params),
 
 		rotatedCtForBlindRotate: NewGLWECiphertext(params),
+
+		blindRotatedCtForBootstrap:    NewGLWECiphertext(params),
+		sampleExtractedCtForBootstrap: NewLargeLWECiphertext(params),
 
 		idLUT:    genLookUpTable(params, func(x int) int { return x }),
 		mulLUT:   genLookUpTable(params, func(x int) int { return x * x / 4 }),

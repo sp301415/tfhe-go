@@ -29,24 +29,24 @@ func (e Encrypter[T]) GenGLWEKey() GLWEKey[T] {
 // Consider using GenEvaluationKeyParallel.
 func (e Encrypter[T]) GenEvaluationKey() EvaluationKey[T] {
 	return EvaluationKey[T]{
-		BootstrappingKey: e.GenBootstrappingKey(),
-		KeySwitchingKey:  e.GenKeySwitchingKeyForBootstrapping(),
+		BootstrapKey: e.GenBootstrapKey(),
+		KeySwitchKey: e.GenKeySwitchKeyForBootstrap(),
 	}
 }
 
 // GenEvaluationKey samples a new evaluation key for bootstrapping in parallel.
 func (e Encrypter[T]) GenEvaluationKeyParallel() EvaluationKey[T] {
 	return EvaluationKey[T]{
-		BootstrappingKey: e.GenBootstrappingKeyParallel(),
-		KeySwitchingKey:  e.GenKeySwitchingKeyForBootstrappingParallel(),
+		BootstrapKey: e.GenBootstrapKeyParallel(),
+		KeySwitchKey: e.GenKeySwitchKeyForBootstrapParallel(),
 	}
 }
 
-// GenBootstrappingKey samples a new bootstrapping key.
+// GenBootstrapKey samples a new bootstrapping key.
 // This may take a long time, depending on the parameters.
 // Consider using GenBootstrappingKeyParallel.
-func (e Encrypter[T]) GenBootstrappingKey() BootstrappingKey[T] {
-	bsk := NewBootstrappingKey(e.Parameters, e.Parameters.bootstrapParameters)
+func (e Encrypter[T]) GenBootstrapKey() BootstrapKey[T] {
+	bsk := NewBootstrapKey(e.Parameters, e.Parameters.bootstrapParameters)
 
 	e.buffer.glwePtForPBSKeyGen.Value.Clear()
 	for i := 0; i < e.Parameters.lweDimension; i++ {
@@ -56,9 +56,9 @@ func (e Encrypter[T]) GenBootstrappingKey() BootstrappingKey[T] {
 	return bsk
 }
 
-// GenBootstrappingKeyParallel samples a new bootstrapping key in parallel.
-func (e Encrypter[T]) GenBootstrappingKeyParallel() BootstrappingKey[T] {
-	bsk := NewBootstrappingKey(e.Parameters, e.Parameters.bootstrapParameters)
+// GenBootstrapKeyParallel samples a new bootstrapping key in parallel.
+func (e Encrypter[T]) GenBootstrapKeyParallel() BootstrapKey[T] {
+	bsk := NewBootstrapKey(e.Parameters, e.Parameters.bootstrapParameters)
 
 	// LWEDimension is usually 500 ~ 1000,
 	// and GLWEDimension is usually 1 ~ 5.
@@ -87,7 +87,7 @@ func (e Encrypter[T]) GenBootstrappingKeyParallel() BootstrappingKey[T] {
 		go func(chunkIdx int) {
 			defer wg.Done()
 			for ij := range ch {
-				encrypters[chunkIdx].genBootstrappingKeyIndex(ij[0], ij[1], bsk)
+				encrypters[chunkIdx].genBootstrapKeyIndex(ij[0], ij[1], bsk)
 			}
 		}(i)
 	}
@@ -96,11 +96,11 @@ func (e Encrypter[T]) GenBootstrappingKeyParallel() BootstrappingKey[T] {
 	return bsk
 }
 
-// genBootstrappingKeyIndex samples one index of bootstrapping key: GGSW(LWEKey_i)_j,
+// genBootstrapKeyIndex samples one index of bootstrapping key: GGSW(LWEKey_i)_j,
 // where 0 <= i < LWEDimension and 0 <= j < GLWEDimension + 1.
 // This is the minimum workload that can be executed in parallel, and we abuse the fact that
 // Bootstrapping key only encrypts scalar values.
-func (e Encrypter[T]) genBootstrappingKeyIndex(i, j int, bsk BootstrappingKey[T]) {
+func (e Encrypter[T]) genBootstrapKeyIndex(i, j int, bsk BootstrapKey[T]) {
 	if j == 0 {
 		e.buffer.glwePtForPBSKeyGen.Value.Clear()
 		for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
@@ -117,11 +117,11 @@ func (e Encrypter[T]) genBootstrappingKeyIndex(i, j int, bsk BootstrappingKey[T]
 
 }
 
-// GenKeySwitchingKey samples a new keyswitching key skIn -> e.LWEKey.
+// GenKeySwitchKey samples a new keyswitching key skIn -> e.LWEKey.
 // This may take a long time, depending on the parameters.
 // Consider using GenKeySwitchingKeyParallel.
-func (e Encrypter[T]) GenKeySwitchingKey(skIn LWEKey[T], decompParams DecompositionParameters[T]) KeySwitchingKey[T] {
-	ksk := NewKeySwitchingKey(len(skIn.Value), len(e.lweKey.Value), decompParams)
+func (e Encrypter[T]) GenKeySwitchKey(skIn LWEKey[T], decompParams DecompositionParameters[T]) KeySwitchKey[T] {
+	ksk := NewKeySwitchKey(len(skIn.Value), len(e.lweKey.Value), decompParams)
 
 	for i := 0; i < ksk.InputLWEDimension(); i++ {
 		e.EncryptLevInPlace(LWEPlaintext[T]{Value: skIn.Value[i]}, ksk.Value[i])
@@ -130,9 +130,9 @@ func (e Encrypter[T]) GenKeySwitchingKey(skIn LWEKey[T], decompParams Decomposit
 	return ksk
 }
 
-// GenKeySwitchingKeyParallel samples a new keyswitching key skIn -> e.LWEKey in parallel.
-func (e Encrypter[T]) GenKeySwitchingKeyParallel(skIn LWEKey[T], decompParams DecompositionParameters[T]) KeySwitchingKey[T] {
-	ksk := NewKeySwitchingKey(len(skIn.Value), len(e.lweKey.Value), decompParams)
+// GenKeySwitchKeyParallel samples a new keyswitching key skIn -> e.LWEKey in parallel.
+func (e Encrypter[T]) GenKeySwitchKeyParallel(skIn LWEKey[T], decompParams DecompositionParameters[T]) KeySwitchKey[T] {
+	ksk := NewKeySwitchKey(len(skIn.Value), len(e.lweKey.Value), decompParams)
 
 	// LWEDimension is usually 500 ~ 1000,
 	// so we chunk it between min of NumCPU and sqrt(InputLWEDimension).
@@ -166,16 +166,16 @@ func (e Encrypter[T]) GenKeySwitchingKeyParallel(skIn LWEKey[T], decompParams De
 	return ksk
 }
 
-// GenKeySwitchingKeyForBootstrapping samples a new keyswitching key LWELargeKey -> LWEKey,
+// GenKeySwitchKeyForBootstrap samples a new keyswitching key LWELargeKey -> LWEKey,
 // used for bootstrapping.
 // This may take a long time, depending on the parameters.
 // Consider using GenKeySwitchingKeyForBootstrappingParallel.
-func (e Encrypter[T]) GenKeySwitchingKeyForBootstrapping() KeySwitchingKey[T] {
-	return e.GenKeySwitchingKey(e.lweLargeKey, e.Parameters.keyswitchParameters)
+func (e Encrypter[T]) GenKeySwitchKeyForBootstrap() KeySwitchKey[T] {
+	return e.GenKeySwitchKey(e.lweLargeKey, e.Parameters.keyswitchParameters)
 }
 
-// GenKeySwitchingKeyForBootstrappingParallel samples a new keyswitching key LWELargeKey -> LWEKey in parallel,
+// GenKeySwitchKeyForBootstrapParallel samples a new keyswitching key LWELargeKey -> LWEKey in parallel,
 // used for bootstrapping.
-func (e Encrypter[T]) GenKeySwitchingKeyForBootstrappingParallel() KeySwitchingKey[T] {
-	return e.GenKeySwitchingKeyParallel(e.lweLargeKey, e.Parameters.keyswitchParameters)
+func (e Encrypter[T]) GenKeySwitchKeyForBootstrapParallel() KeySwitchKey[T] {
+	return e.GenKeySwitchKeyParallel(e.lweLargeKey, e.Parameters.keyswitchParameters)
 }

@@ -73,8 +73,59 @@ func (e Evaluater[T]) GenLookUpTableInPlace(f func(int) int, lutOut LookUpTable[
 	genLookUpTableInPlace(e.Parameters, f, lutOut)
 }
 
-// genLookUpTable genereates a lookup table based on evaluation values of f.
-// Note that only inputs between 0 and MessageModulus are encoded in the LUT.
+// Bootstrap returns a bootstrapped LWE ciphertext.
+func (e Evaluater[T]) Bootstrap(ct LWECiphertext[T]) LWECiphertext[T] {
+	return e.BootstrapLUT(ct, e.buffer.idLUT)
+}
+
+// BootstrapInPlace bootstraps LWE ciphertext and writes it to ctOut.
+func (e Evaluater[T]) BootstrapInPlace(ct, ctOut LWECiphertext[T]) {
+	e.BootstrapLUTInPlace(ct, e.buffer.idLUT, ctOut)
+}
+
+// BootstrapAssign bootstraps LWE cipehrtext and overwrites it.
+func (e Evaluater[T]) BootstrapAssign(ct LWECiphertext[T]) {
+	e.BootstrapLUTAssign(ct, e.buffer.idLUT)
+}
+
+// BootstrapFunc returns a bootstrapped LWE ciphertext with resepect to given function.
+func (e Evaluater[T]) BootstrapFunc(ct LWECiphertext[T], f func(int) int) LWECiphertext[T] {
+	e.GenLookUpTableInPlace(f, e.buffer.emptyLUT)
+	return e.BootstrapLUT(ct, e.buffer.emptyLUT)
+}
+
+// BootstrapFuncInPlace bootstraps LWE ciphertext with resepect to given function and writes it to ctOut.
+func (e Evaluater[T]) BootstrapFuncInPlace(ct LWECiphertext[T], f func(int) int, ctOut LWECiphertext[T]) {
+	e.GenLookUpTableInPlace(f, e.buffer.emptyLUT)
+	e.BootstrapLUTInPlace(ct, e.buffer.emptyLUT, ctOut)
+}
+
+// BootstrapFuncAssign bootstraps LWE cipehrtext with resepect to given function and overwrites it.
+func (e Evaluater[T]) BootstrapFuncAssign(ct LWECiphertext[T], f func(int) int) {
+	e.GenLookUpTableInPlace(f, e.buffer.emptyLUT)
+	e.BootstrapLUTAssign(ct, e.buffer.emptyLUT)
+}
+
+// BootstrapLUT returns a bootstrapped LWE ciphertext with respect to given LUT.
+func (e Evaluater[T]) BootstrapLUT(ct LWECiphertext[T], lut LookUpTable[T]) LWECiphertext[T] {
+	ctOut := NewLWECiphertext(e.Parameters)
+	e.BootstrapLUTInPlace(ct, lut, ctOut)
+	return ctOut
+}
+
+// BootstrapLUTInPlace bootstraps LWE ciphertext with respect to given LUT and writes it to ctOut.
+func (e Evaluater[T]) BootstrapLUTInPlace(ct LWECiphertext[T], lut LookUpTable[T], ctOut LWECiphertext[T]) {
+	e.BlindRotateInPlace(ct, lut, e.buffer.blindRotatedCtForBootstrap)
+	e.SampleExtractInPlace(e.buffer.blindRotatedCtForBootstrap, 0, e.buffer.sampleExtractedCtForBootstrap)
+	e.KeySwitchForBootstrapInPlace(e.buffer.sampleExtractedCtForBootstrap, ctOut)
+}
+
+// BootstrapLUTAssign bootstraps LWE cipehrtext with respect to given LUT and overwrites it.
+func (e Evaluater[T]) BootstrapLUTAssign(ct LWECiphertext[T], lut LookUpTable[T]) {
+	e.BlindRotateInPlace(ct, lut, e.buffer.blindRotatedCtForBootstrap)
+	e.SampleExtractInPlace(e.buffer.blindRotatedCtForBootstrap, 0, e.buffer.sampleExtractedCtForBootstrap)
+	e.KeySwitchForBootstrapInPlace(e.buffer.sampleExtractedCtForBootstrap, ct)
+}
 
 // Note that the encoded LUT only considers inputs between 0 and MessageModulus.
 // ModSwitch calculates round(2N * p / Q).
@@ -97,7 +148,7 @@ func (e Evaluater[T]) BlindRotateInPlace(ct LWECiphertext[T], lut LookUpTable[T]
 	// c <- CMUX(bsk[i], c, X^ai * c)
 	for i := 0; i < e.Parameters.lweDimension; i++ {
 		e.MonomialMulGLWEInPlace(ctOut, e.ModSwitch(ct.Value[i+1]), e.buffer.rotatedCtForBlindRotate)
-		e.CMuxFourierAssign(e.evaluationKey.BootstrappingKey.Value[i], ctOut, e.buffer.rotatedCtForBlindRotate)
+		e.CMuxFourierAssign(e.evaluationKey.BootstrapKey.Value[i], ctOut, e.buffer.rotatedCtForBlindRotate)
 	}
 }
 
@@ -130,14 +181,14 @@ func (e Evaluater[T]) SampleExtractInPlace(ct GLWECiphertext[T], index int, ctOu
 }
 
 // KeySwitch switches key of ct, and returns a new ciphertext.
-func (e Evaluater[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchingKey[T]) LWECiphertext[T] {
+func (e Evaluater[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchKey[T]) LWECiphertext[T] {
 	ctOut := LWECiphertext[T]{Value: make([]T, ksk.OutputLWEDimension()+1)}
 	e.KeySwitchInPlace(ct, ksk, ctOut)
 	return ctOut
 }
 
 // KeySwitchInPlace switches key of ct, and saves it to ctOut.
-func (e Evaluater[T]) KeySwitchInPlace(ct LWECiphertext[T], ksk KeySwitchingKey[T], ctOut LWECiphertext[T]) {
+func (e Evaluater[T]) KeySwitchInPlace(ct LWECiphertext[T], ksk KeySwitchKey[T], ctOut LWECiphertext[T]) {
 	ctOut.Value[0] = ct.Value[0] // ct = (b, 0, ...)
 
 	for i := 0; i < ksk.InputLWEDimension(); i++ {
@@ -151,11 +202,11 @@ func (e Evaluater[T]) KeySwitchInPlace(ct LWECiphertext[T], ksk KeySwitchingKey[
 // KeySwitchForBootstrap performs the keyswitching using evaulater's bootstrapping key.
 // Input ciphertext should be length GLWEDimension + 1, and output ciphertext will be length LWEDimension + 1.
 func (e Evaluater[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[T] {
-	return e.KeySwitch(ct, e.evaluationKey.KeySwitchingKey)
+	return e.KeySwitch(ct, e.evaluationKey.KeySwitchKey)
 }
 
 // KeySwitchForBootstrapInPlace performs the keyswitching using evaulater's bootstrapping key.
 // Input ciphertext should be length GLWEDimension + 1, and output ciphertext should be length LWEDimension + 1.
 func (e Evaluater[T]) KeySwitchForBootstrapInPlace(ct, ctOut LWECiphertext[T]) {
-	e.KeySwitchInPlace(ct, e.evaluationKey.KeySwitchingKey, ctOut)
+	e.KeySwitchInPlace(ct, e.evaluationKey.KeySwitchKey, ctOut)
 }

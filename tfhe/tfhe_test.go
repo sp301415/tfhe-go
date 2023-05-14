@@ -99,6 +99,16 @@ func TestEvaluater(t *testing.T) {
 			assert.Equal(t, m, testEncrypter.DecryptLarge(ctOut))
 		}
 	})
+
+	t.Run("BootstrapFunc", func(t *testing.T) {
+		f := func(x int) int { return 2 * x }
+
+		for _, m := range messages {
+			ct := testEncrypter.Encrypt(m)
+			ctOut := testEvaluater.BootstrapFunc(ct, f)
+			assert.Equal(t, f(m), testEncrypter.Decrypt(ctOut))
+		}
+	})
 }
 
 func BenchmarkEvaluationKeyGen(b *testing.B) {
@@ -107,13 +117,12 @@ func BenchmarkEvaluationKeyGen(b *testing.B) {
 	}
 }
 
-func BenchmarkBlindRotate(b *testing.B) {
-	lut := benchEvaluater.GenLookUpTable(func(i int) int { return i })
+func BenchmarkBootstrap(b *testing.B) {
 	ct := benchEncrypter.Encrypt(3)
-	ctOut := tfhe.NewGLWECiphertext(benchParams)
+	ctOut := tfhe.NewLWECiphertext(benchParams)
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		benchEvaluater.BlindRotateInPlace(ct, lut, ctOut)
+		benchEvaluater.BootstrapInPlace(ct, ctOut)
 	}
 }
