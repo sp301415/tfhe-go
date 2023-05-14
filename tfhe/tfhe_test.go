@@ -109,6 +109,15 @@ func TestEvaluater(t *testing.T) {
 			assert.Equal(t, f(m), testEncrypter.Decrypt(ctOut))
 		}
 	})
+
+	t.Run("LWEMul", func(t *testing.T) {
+		ct0 := testEncrypter.Encrypt(messages[0])
+		ct1 := testEncrypter.Encrypt(messages[1])
+
+		ctOut := testEvaluater.MulLWE(ct0, ct1)
+
+		assert.Equal(t, messages[0]*messages[1], testEncrypter.Decrypt(ctOut))
+	})
 }
 
 func BenchmarkEvaluationKeyGen(b *testing.B) {

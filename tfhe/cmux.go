@@ -2,7 +2,6 @@ package tfhe
 
 import (
 	"github.com/sp301415/tfhe/math/poly"
-	"github.com/sp301415/tfhe/math/vec"
 )
 
 // Decompose decomposes x with respect to decompParams.
@@ -38,11 +37,25 @@ func (e *Evaluater[T]) decomposedPolyBuffer(decompParams DecompositionParameters
 	}
 
 	oldLen := len(e.buffer.decomposedPoly)
-	e.buffer.decomposedPoly = vec.Extend(e.buffer.decomposedPoly, decompParams.level-oldLen)
+	e.buffer.decomposedPoly = append(e.buffer.decomposedPoly, make([]poly.Poly[T], decompParams.level-oldLen)...)
 	for i := oldLen; i < decompParams.level; i++ {
 		e.buffer.decomposedPoly[i] = poly.New[T](e.Parameters.polyDegree)
 	}
+
 	return e.buffer.decomposedPoly
+}
+
+// decomposedVecBuffer returns the decomposedVec buffer of Evaluater.
+// if len(decomposedVec) >= Level, it returns the subslice of the buffer.
+// otherwise, it extends the buffer of the Evaluater and returns it.
+func (e *Evaluater[T]) decomposedVecBuffer(decompParams DecompositionParameters[T]) []T {
+	if len(e.buffer.decomposedVec) >= decompParams.level {
+		return e.buffer.decomposedVec[:decompParams.level]
+	}
+
+	oldLen := len(e.buffer.decomposedVec)
+	e.buffer.decomposedVec = append(e.buffer.decomposedVec, make([]T, decompParams.level-oldLen)...)
+	return e.buffer.decomposedVec
 }
 
 // ToStandardGGSWInPlace transforms FourierGGSW ciphertext to GGSW ciphertext.

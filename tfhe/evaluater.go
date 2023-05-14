@@ -38,6 +38,9 @@ type evaluationBuffer[T Tint] struct {
 	// decomposedPoly holds the decomposed polynomial.
 	// Initially has length MaxBufferDecomposedLevel.
 	decomposedPoly []poly.Poly[T]
+	// decomposedVec holds the decomposed scalar.
+	// Initially has length MaxBufferDecomposedLevel.
+	decomposedVec []T
 
 	// fourierCtOutForExtProd holds the fourier transformed ctGLWEOut in ExternalProductFourier.
 	fourierCtOutForExtProd FourierGLWECiphertext[T]
@@ -50,6 +53,11 @@ type evaluationBuffer[T Tint] struct {
 	blindRotatedCtForBootstrap GLWECiphertext[T]
 	// sampleExtractedCtForBootstrap holds the sample extracted LWE large ciphertext for bootstrapping.
 	sampleExtractedCtForBootstrap LWECiphertext[T]
+
+	// addLWECtForMul holds ct0 + ct1 for LWE multiplication.
+	addLWECtForMul LWECiphertext[T]
+	// subLWECtForMul holds ct0 - ct1 for LWE multiplication.
+	subLWECtForMul LWECiphertext[T]
 
 	// idLUT is a LUT for identity map x -> x.
 	idLUT LookUpTable[T]
@@ -94,6 +102,7 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 
 	return evaluationBuffer[T]{
 		decomposedPoly: decomposedPoly,
+		decomposedVec:  make([]T, MaxBufferDecomposedLevel),
 
 		fourierCtOutForExtProd: NewFourierGLWECiphertext(params),
 		ctSubForCMux:           NewGLWECiphertext(params),
@@ -103,8 +112,11 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 		blindRotatedCtForBootstrap:    NewGLWECiphertext(params),
 		sampleExtractedCtForBootstrap: NewLargeLWECiphertext(params),
 
+		addLWECtForMul: NewLWECiphertext(params),
+		subLWECtForMul: NewLWECiphertext(params),
+
 		idLUT:    genLookUpTable(params, func(x int) int { return x }),
-		mulLUT:   genLookUpTable(params, func(x int) int { return x * x / 4 }),
+		mulLUT:   genLookUpTable(params, func(x int) int { return (x * x) / 4 }),
 		emptyLUT: NewLookUpTable(params),
 	}
 }

@@ -189,14 +189,20 @@ func (e Evaluater[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchKey[T]) LWECip
 
 // KeySwitchInPlace switches key of ct, and saves it to ctOut.
 func (e Evaluater[T]) KeySwitchInPlace(ct LWECiphertext[T], ksk KeySwitchKey[T], ctOut LWECiphertext[T]) {
-	ctOut.Value[0] = ct.Value[0] // ct = (b, 0, ...)
+	buffDecomposed := e.decomposedVecBuffer(ksk.decompParams)
 
 	for i := 0; i < ksk.InputLWEDimension(); i++ {
-		decomposedMask := e.Decompose(ct.Value[i+1], ksk.decompParams)
+		e.DecomposeInPlace(ct.Value[i+1], buffDecomposed, ksk.decompParams)
 		for j := 0; j < ksk.decompParams.level; j++ {
-			vec.ScalarMulSubAssign(ksk.Value[i].Value[j].Value, decomposedMask[j], ctOut.Value)
+			if i == 0 && j == 0 {
+				vec.ScalarMulInPlace(ksk.Value[i].Value[j].Value, -buffDecomposed[j], ctOut.Value)
+			} else {
+				vec.ScalarMulSubAssign(ksk.Value[i].Value[j].Value, buffDecomposed[j], ctOut.Value)
+			}
 		}
 	}
+
+	ctOut.Value[0] += ct.Value[0]
 }
 
 // KeySwitchForBootstrap performs the keyswitching using evaulater's bootstrapping key.

@@ -1,6 +1,8 @@
 package tfhe
 
-import "github.com/sp301415/tfhe/math/poly"
+import (
+	"github.com/sp301415/tfhe/math/poly"
+)
 
 // AddGLWE adds two GLWE cipheretexts ct0, ct1 and returns the result.
 func (e Evaluater[T]) AddGLWE(ct0, ct1 GLWECiphertext[T]) GLWECiphertext[T] {
@@ -41,6 +43,48 @@ func (e Evaluater[T]) SubGLWEInPlace(ct0, ct1, ctOut GLWECiphertext[T]) {
 func (e Evaluater[T]) SubGLWEAssign(ct0, ctOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.PolyEvaluater.SubAssign(ct0.Value[i], ctOut.Value[i])
+	}
+}
+
+// NegGLWE negates ct0 and returns the result.
+func (e Evaluater[T]) NegGLWE(ct0 GLWECiphertext[T]) GLWECiphertext[T] {
+	ctOut := NewGLWECiphertext(e.Parameters)
+	e.NegGLWEInPlace(ct0, ctOut)
+	return ctOut
+}
+
+// NegGLWEInPlace negates ct0 and writes it to ctOut.
+func (e Evaluater[T]) NegGLWEInPlace(ct0, ctOut GLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.PolyEvaluater.NegInPlace(ct0.Value[i], ctOut.Value[i])
+	}
+}
+
+// NegGLWEAssign negates ct0.
+func (e Evaluater[T]) NegGLWEAssign(ct0 GLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.PolyEvaluater.NegAssign(ct0.Value[i])
+	}
+}
+
+// ScalarMulGLWE multplies c to ct0 and returns the result.
+func (e Evaluater[T]) ScalarMulGLWE(ct0 GLWECiphertext[T], c T) GLWECiphertext[T] {
+	ctOut := NewGLWECiphertext(e.Parameters)
+	e.ScalarMulGLWEInPlace(ct0, c, ctOut)
+	return ctOut
+}
+
+// ScalarMulGLWEInPlace multplies c to ct0 and writes it to ctOut.
+func (e Evaluater[T]) ScalarMulGLWEInPlace(ct0 GLWECiphertext[T], c T, ctOut GLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.PolyEvaluater.ScalarMulInPlace(ct0.Value[i], c, ctOut.Value[i])
+	}
+}
+
+// ScalarMulGLWEAssign multplies c to ctOut.
+func (e Evaluater[T]) ScalarMulGLWEAssign(c T, ctOut GLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.PolyEvaluater.ScalarMulAssign(c, ctOut.Value[i])
 	}
 }
 
