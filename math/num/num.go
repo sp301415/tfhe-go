@@ -108,24 +108,7 @@ func IsSigned[T Real]() bool {
 
 // FromFloat64 wraps casts a float64 value to T.
 func FromFloat64[T Integer](f float64) T {
-	bits := math.Float64bits(f)
-
-	m := (bits & (1<<52 - 1)) | (1 << 52) // 52 bits
-	e := int((bits >> 52) & (1<<11 - 1))  // 11 bits
-	e -= 1023 + 52                        // Bias Adjustment
-	sign := bits >> 63                    // 1 bit
-
-	if e >= 0 {
-		m <<= e
-	} else {
-		c := m & (1 << (-e - 1))
-		m = (m + c) >> -e
-	}
-
-	if sign != 0 {
-		return T(-m)
-	}
-	return T(m)
+	return T(math.Round(f))
 }
 
 // ToWrappingFloat64 casts a T value to float64.

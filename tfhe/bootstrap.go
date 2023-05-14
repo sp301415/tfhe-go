@@ -15,15 +15,15 @@ func NewLookUpTable[T Tint](params Parameters[T]) LookUpTable[T] {
 	return LookUpTable[T](NewGLWECiphertext(params))
 }
 
-// GenLookUpTable generates a lookup table based on function f and returns it.
-func GenLookUpTable[T Tint](params Parameters[T], f func(int) int) LookUpTable[T] {
+// genLookUpTable generates a lookup table based on function f and returns it.
+func genLookUpTable[T Tint](params Parameters[T], f func(int) int) LookUpTable[T] {
 	lutOut := NewLookUpTable(params)
-	GenLookUpTableInPlace(params, f, lutOut)
+	genLookUpTableInPlace(params, f, lutOut)
 	return lutOut
 }
 
-// GenLookUpTableInPlace generates a lookup table based on function f and writes it to lutOut.
-func GenLookUpTableInPlace[T Tint](params Parameters[T], f func(int) int, lutOut LookUpTable[T]) {
+// genLookUpTableInPlace generates a lookup table based on function f and writes it to lutOut.
+func genLookUpTableInPlace[T Tint](params Parameters[T], f func(int) int, lutOut LookUpTable[T]) {
 	// We calculate f(round(P*j/2N)), where P = messageModulus * 2 (We use 1-bit padding, remember?)
 	// For x := round(p*j/2N), observe that:
 	// x = 1 => j = N/p ~ 3N/p
@@ -65,12 +65,12 @@ func (lut *LookUpTable[T]) CopyFrom(lutIn LookUpTable[T]) {
 
 // GenLookUpTable is equivalent with calling package-level GenLookUpTable with Evaluater's parameters.
 func (e Evaluater[T]) GenLookUpTable(f func(int) int) LookUpTable[T] {
-	return GenLookUpTable(e.Parameters, f)
+	return genLookUpTable(e.Parameters, f)
 }
 
 // GenLookUpTableInPlace is equivalent with calling package-level GenLookUpTableInPlace with Evaluater's parameters.
 func (e Evaluater[T]) GenLookUpTableInPlace(f func(int) int, lutOut LookUpTable[T]) {
-	GenLookUpTableInPlace(e.Parameters, f, lutOut)
+	genLookUpTableInPlace(e.Parameters, f, lutOut)
 }
 
 // genLookUpTable genereates a lookup table based on evaluation values of f.
@@ -82,45 +82,22 @@ func (e Evaluater[T]) ModSwitch(p T) int {
 	return int(num.RoundRatioBits(p, num.SizeT[T]()-(num.Log2(e.Parameters.polyDegree)+1)))
 }
 
-// BlindRotate calculates the blind rotation of LWE ciphertext using identity LUT and returns it.
-func (e Evaluater[T]) BlindRotate(ct LWECiphertext[T]) GLWECiphertext[T] {
-	return e.BlindRotateLUT(ct, e.buffer.idLUT)
-}
-
-// BlindRotateInPlace calculates the blind rotation of LWE ciphertext using identity LUT and writes it to ctOut.
-func (e Evaluater[T]) BlindRotateInPlace(ct LWECiphertext[T], ctOut GLWECiphertext[T]) {
-	e.BlindRotateLUTInPlace(ct, e.buffer.idLUT, ctOut)
-}
-
-// BlindRotateFunc calculates the blind rotation of LWE ciphertext with respect to function and returns it.
-func (e Evaluater[T]) BlindRotateFunc(ct LWECiphertext[T], f func(int) int) GLWECiphertext[T] {
-	e.GenLookUpTableInPlace(f, e.buffer.emptyLUT)
-	return e.BlindRotateLUT(ct, e.buffer.emptyLUT)
-}
-
-// BlindRotateFuncInPlace calculates the blind rotation of LWE ciphertext with respect to function and writes it to ctOut.
-func (e Evaluater[T]) BlindRotateFuncInPlace(ct LWECiphertext[T], f func(int) int, ctOut GLWECiphertext[T]) {
-	e.GenLookUpTableInPlace(f, e.buffer.emptyLUT)
-	e.BlindRotateLUTInPlace(ct, e.buffer.emptyLUT, ctOut)
-}
-
-// BlindRotateFunc calculates the blind rotation of LWE ciphertext with respect to LUT.
-func (e Evaluater[T]) BlindRotateLUT(ct LWECiphertext[T], lut LookUpTable[T]) GLWECiphertext[T] {
+// BlindRotate calculates the blind rotation of LWE ciphertext with respect to LUT.
+func (e Evaluater[T]) BlindRotate(ct LWECiphertext[T], lut LookUpTable[T]) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
-	e.BlindRotateLUTInPlace(ct, lut, ctOut)
+	e.BlindRotateInPlace(ct, lut, ctOut)
 	return ctOut
 }
 
-// BlindRotateLUTInPlace calculates the blind rotation of LWE ciphertext with respect to LUT.
-func (e Evaluater[T]) BlindRotateLUTInPlace(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
+// BlindRotateInPlace calculates the blind rotation of LWE ciphertext with respect to LUT.
+func (e Evaluater[T]) BlindRotateInPlace(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
 	// c = X^-b * LUT
-	e.MonomialDivInPlaceGLWE(GLWECiphertext[T](lut), e.ModSwitch(ct.Value[0]), ctOut)
+	e.MonomialDivGLWEInPlace(GLWECiphertext[T](lut), e.ModSwitch(ct.Value[0]), ctOut)
 
 	// c <- CMUX(bsk[i], c, X^ai * c)
 	for i := 0; i < e.Parameters.lweDimension; i++ {
-		e.MonomialMulInPlaceGLWE(ctOut, e.ModSwitch(ct.Value[i+1]), e.buffer.rotatedCtForBlindRotate)
-		e.CMuxFourierInPlace(e.evaluationKey.BootstrappingKey.Value[i], ctOut, e.buffer.rotatedCtForBlindRotate, e.buffer.extProdOutForBlindRotate)
-		ctOut.CopyFrom(e.buffer.extProdOutForBlindRotate)
+		e.MonomialMulGLWEInPlace(ctOut, e.ModSwitch(ct.Value[i+1]), e.buffer.rotatedCtForBlindRotate)
+		e.CMuxFourierAssign(e.evaluationKey.BootstrappingKey.Value[i], ctOut, e.buffer.rotatedCtForBlindRotate)
 	}
 }
 

@@ -64,7 +64,7 @@ func BenchmarkOperations(b *testing.B) {
 
 	b.Run("FourierStandardMul", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			fft.MulWithStandardInPlace(fp0, p1, fpOut)
+			fft.PolyMulInPlace(fp0, p1, fpOut)
 		}
 	})
 }
