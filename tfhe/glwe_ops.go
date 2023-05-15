@@ -88,6 +88,20 @@ func (e Evaluater[T]) ScalarMulGLWEAssign(c T, ctOut GLWECiphertext[T]) {
 	}
 }
 
+// ScalarMulAddGLWEAssign multplies c to ct0 and adds to ctOut.
+func (e Evaluater[T]) ScalarMulAddGLWEAssign(ct0 GLWECiphertext[T], c T, ctOut GLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.PolyEvaluater.ScalarMulAddAssign(ct0.Value[i], c, ctOut.Value[i])
+	}
+}
+
+// ScalarMulGLWEAssign multplies c to ctOut.
+func (e Evaluater[T]) ScalarMulSubGLWEAssign(ct0 GLWECiphertext[T], c T, ctOut GLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.PolyEvaluater.ScalarMulSubAssign(ct0.Value[i], c, ctOut.Value[i])
+	}
+}
+
 // PolyMulGLWE multiplies p to ct0 and returns the result.
 func (e Evaluater[T]) PolyMulGLWE(ct0 GLWECiphertext[T], p poly.Poly[T]) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
@@ -117,7 +131,7 @@ func (e Evaluater[T]) PolyMulAddGLWEAssign(ct0 GLWECiphertext[T], p poly.Poly[T]
 }
 
 // ScalarMulAddGLWEAssign multiplies p to ct0 and subtracts from ctOut.
-func (e Evaluater[T]) PolyMujlSubGLWEAssign(ct0 GLWECiphertext[T], p poly.Poly[T], ctOut GLWECiphertext[T]) {
+func (e Evaluater[T]) PolyMulSubGLWEAssign(ct0 GLWECiphertext[T], p poly.Poly[T], ctOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.PolyEvaluater.MulSubAssign(ct0.Value[i], p, ctOut.Value[i])
 	}

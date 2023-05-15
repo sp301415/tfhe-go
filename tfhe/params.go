@@ -190,6 +190,8 @@ type ParametersLiteral[T Tint] struct {
 	BootstrapParameters DecompositionParametersLiteral[T]
 	// KeySwitchParameters is the decomposition parameters for KeySwitching.
 	KeySwitchParameters DecompositionParametersLiteral[T]
+	// PrivateFunctionalKeySwitchParams is the decomposition parameters for Private Functional KeySwitching.
+	PrivateFunctionalKeySwitchingParams DecompositionParametersLiteral[T]
 }
 
 // Compile transforms ParametersLiteral to read-only Parameters.
@@ -231,8 +233,9 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		messageModulus:    p.MessageModulus,
 		messageModulusLog: messageModulusLog,
 
-		bootstrapParameters: p.BootstrapParameters.Compile(),
-		keyswitchParameters: p.KeySwitchParameters.Compile(),
+		bootstrapParameters:                     p.BootstrapParameters.Compile(),
+		keyswitchParameters:                     p.KeySwitchParameters.Compile(),
+		privateFunctionalKeySwitchingParameters: p.PrivateFunctionalKeySwitchingParams.Compile(),
 	}
 }
 
@@ -266,12 +269,20 @@ type Parameters[T Tint] struct {
 	bootstrapParameters DecompositionParameters[T]
 	// keyswitchParameters is the decomposition parameters for KeySwitching.
 	keyswitchParameters DecompositionParameters[T]
+	// privateFunctionalKeySwitchParams is the decomposition parameters for Private Functional KeySwitching.
+	privateFunctionalKeySwitchingParameters DecompositionParameters[T]
 }
 
 // LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
 // Length of LWE secret key is LWEDimension, and the length of LWE ciphertext is LWEDimension+1.
 func (p Parameters[T]) LWEDimension() int {
 	return p.lweDimension
+}
+
+// LargeLWEDimension is the dimension of LWE cipehrtext after Sample Extraction.
+// Equal to PolyDegree * GLWEDimension.
+func (p Parameters[T]) LargeLWEDimension() int {
+	return p.polyDegree * p.glweDimension
 }
 
 // GLWEDimension is the dimension of GLWE lattice used. Usually this is denoted by k.
@@ -324,4 +335,9 @@ func (p Parameters[T]) BootstrapParameters() DecompositionParameters[T] {
 // KeySwitchParameters is the decomposition parameters for KeySwitching.
 func (p Parameters[T]) KeySwitchParameters() DecompositionParameters[T] {
 	return p.keyswitchParameters
+}
+
+// PrivateFunctionalKeySwitchParameters is the decomposition parameters for Private Functional KeySwitching.
+func (p Parameters[T]) PrivateFunctionalKeySwitchParameters() DecompositionParameters[T] {
+	return p.privateFunctionalKeySwitchingParameters
 }

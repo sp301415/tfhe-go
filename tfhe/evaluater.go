@@ -4,15 +4,6 @@ import (
 	"github.com/sp301415/tfhe/math/poly"
 )
 
-// EvaluationKey is a public key for Evaluator,
-// which consists of Bootstrapping Key and KeySwitching Key.
-type EvaluationKey[T Tint] struct {
-	// BootstrapKey is a bootstrapping key.
-	BootstrapKey BootstrapKey[T]
-	// KeySwitchKey is a keyswithcing key switching GLWE secret key -> LWE secret key.
-	KeySwitchKey KeySwitchKey[T]
-}
-
 // Evaluater handles homomorphic operation of values.
 // This is meant to be public.
 //

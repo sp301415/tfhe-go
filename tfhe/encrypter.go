@@ -40,7 +40,7 @@ type encryptionBuffer[T Tint] struct {
 	glwePtForGGSW GLWEPlaintext[T]
 	// glwePtForGLev holds GLWE plaintexts in GLev encryption.
 	glwePtForGLev GLWEPlaintext[T]
-	// GLEWPtForPBSKeyGen holds GLWE plaintexts in bootstrapping key generation.
+	// glwePtForPBSKeyGen holds GLWE plaintexts in bootstrapping key generation.
 	glwePtForPBSKeyGen GLWEPlaintext[T]
 	// glweCtForFourier holds GLWE ciphertext before applying Fourier Transform
 	// in EncryptFourier and DecryptFourier.

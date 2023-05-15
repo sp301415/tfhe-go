@@ -46,7 +46,7 @@ func (e Encrypter[T]) GenEvaluationKeyParallel() EvaluationKey[T] {
 // This may take a long time, depending on the parameters.
 // Consider using GenBootstrappingKeyParallel.
 func (e Encrypter[T]) GenBootstrapKey() BootstrapKey[T] {
-	bsk := NewBootstrapKey(e.Parameters, e.Parameters.bootstrapParameters)
+	bsk := NewBootstrapKey(e.Parameters)
 
 	e.buffer.glwePtForPBSKeyGen.Value.Clear()
 	for i := 0; i < e.Parameters.lweDimension; i++ {
@@ -58,7 +58,7 @@ func (e Encrypter[T]) GenBootstrapKey() BootstrapKey[T] {
 
 // GenBootstrapKeyParallel samples a new bootstrapping key in parallel.
 func (e Encrypter[T]) GenBootstrapKeyParallel() BootstrapKey[T] {
-	bsk := NewBootstrapKey(e.Parameters, e.Parameters.bootstrapParameters)
+	bsk := NewBootstrapKey(e.Parameters)
 
 	// LWEDimension is usually 500 ~ 1000,
 	// and GLWEDimension is usually 1 ~ 5.
@@ -99,22 +99,15 @@ func (e Encrypter[T]) GenBootstrapKeyParallel() BootstrapKey[T] {
 // genBootstrapKeyIndex samples one index of bootstrapping key: GGSW(LWEKey_i)_j,
 // where 0 <= i < LWEDimension and 0 <= j < GLWEDimension + 1.
 // This is the minimum workload that can be executed in parallel, and we abuse the fact that
-// Bootstrapping key only encrypts scalar values.
+// bootstrapping key only encrypts scalar values.
 func (e Encrypter[T]) genBootstrapKeyIndex(i, j int, bsk BootstrapKey[T]) {
 	if j == 0 {
 		e.buffer.glwePtForPBSKeyGen.Value.Clear()
-		for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
-			e.buffer.glwePtForPBSKeyGen.Value.Coeffs[0] = e.lweKey.Value[i] << e.Parameters.bootstrapParameters.ScaledBaseLog(k)
-			e.EncryptFourierGLWEInPlace(e.buffer.glwePtForPBSKeyGen, bsk.Value[i].Value[j].Value[k])
-		}
+		e.buffer.glwePtForPBSKeyGen.Value.Coeffs[0] = e.lweKey.Value[i]
 	} else {
-		for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
-			p := -(e.lweKey.Value[i] << e.Parameters.bootstrapParameters.ScaledBaseLog(k))
-			e.PolyEvaluater.ScalarMulInPlace(e.glweKey.Value[j-1], p, e.buffer.glwePtForPBSKeyGen.Value)
-			e.EncryptFourierGLWEInPlace(e.buffer.glwePtForPBSKeyGen, bsk.Value[i].Value[j].Value[k])
-		}
+		e.PolyEvaluater.ScalarMulInPlace(e.glweKey.Value[j-1], -e.lweKey.Value[i], e.buffer.glwePtForPBSKeyGen.Value)
 	}
-
+	e.EncryptFourierGLevInPlace(e.buffer.glwePtForPBSKeyGen, bsk.Value[i].Value[j])
 }
 
 // GenKeySwitchKey samples a new keyswitching key skIn -> e.LWEKey.

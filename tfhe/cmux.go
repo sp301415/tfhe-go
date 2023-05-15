@@ -64,7 +64,6 @@ func (e Evaluater[T]) ToStandardGGSWInPlace(ctIn FourierGGSWCiphertext[T], ctOut
 		for j := 0; j < ctIn.decompParams.level; j++ {
 			for k := 0; k < e.Parameters.glweDimension+1; k++ {
 				e.FourierTransformer.ToScaledStandardPolyInPlace(ctIn.Value[i].Value[j].Value[k], ctOut.Value[i].Value[j].Value[k])
-
 			}
 		}
 	}
@@ -98,12 +97,10 @@ func (e Evaluater[T]) ExternalProductInPlace(ctGGSW GGSWCiphertext[T], ctGLWE, c
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.DecomposePolyInplace(ctGLWE.Value[i], buffDecomposed, ctGGSW.decompParams)
 		for j := 0; j < ctGGSW.decompParams.level; j++ {
-			for k := 0; k < e.Parameters.glweDimension+1; k++ {
-				if i == 0 && j == 0 {
-					e.PolyEvaluater.MulInPlace(ctGGSW.Value[i].Value[j].Value[k], buffDecomposed[j], ctGLWEOut.Value[k])
-				} else {
-					e.PolyEvaluater.MulAddAssign(ctGGSW.Value[i].Value[j].Value[k], buffDecomposed[j], ctGLWEOut.Value[k])
-				}
+			if i == 0 && j == 0 {
+				e.PolyMulGLWEInPlace(ctGGSW.Value[i].Value[j], buffDecomposed[j], ctGLWEOut)
+			} else {
+				e.PolyMulAddGLWEAssign(ctGGSW.Value[i].Value[j], buffDecomposed[j], ctGLWEOut)
 			}
 		}
 	}
@@ -117,12 +114,10 @@ func (e Evaluater[T]) ExternalProductAssign(ctGGSW GGSWCiphertext[T], ctGLWE GLW
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.DecomposePolyInplace(ctGLWE.Value[i], buffDecomposed, ctGGSW.decompParams)
 		for j := 0; j < ctGGSW.decompParams.level; j++ {
-			for k := 0; k < e.Parameters.glweDimension+1; k++ {
-				if i == 0 && j == 0 {
-					e.PolyEvaluater.MulInPlace(ctGGSW.Value[i].Value[j].Value[k], buffDecomposed[j], ctGLWE.Value[k])
-				} else {
-					e.PolyEvaluater.MulAddAssign(ctGGSW.Value[i].Value[j].Value[k], buffDecomposed[j], ctGLWE.Value[k])
-				}
+			if i == 0 && j == 0 {
+				e.PolyMulGLWEInPlace(ctGGSW.Value[i].Value[j], buffDecomposed[j], ctGLWE)
+			} else {
+				e.PolyMulAddGLWEAssign(ctGGSW.Value[i].Value[j], buffDecomposed[j], ctGLWE)
 			}
 		}
 	}
@@ -136,10 +131,7 @@ func (e Evaluater[T]) ExternalProductAddAssign(ctGGSW GGSWCiphertext[T], ctGLWE,
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.DecomposePolyInplace(ctGLWE.Value[i], buffDecomposed, ctGGSW.decompParams)
 		for j := 0; j < ctGGSW.decompParams.level; j++ {
-			for k := 0; k < e.Parameters.glweDimension+1; k++ {
-				e.PolyEvaluater.MulAddAssign(ctGGSW.Value[i].Value[j].Value[k], buffDecomposed[j], ctGLWEOut.Value[k])
-
-			}
+			e.PolyMulAddGLWEAssign(ctGGSW.Value[i].Value[j], buffDecomposed[j], ctGLWEOut)
 		}
 	}
 }
@@ -152,9 +144,7 @@ func (e Evaluater[T]) ExternalProductSubAssign(ctGGSW GGSWCiphertext[T], ctGLWE,
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.DecomposePolyInplace(ctGLWE.Value[i], buffDecomposed, ctGGSW.decompParams)
 		for j := 0; j < ctGGSW.decompParams.level; j++ {
-			for k := 0; k < e.Parameters.glweDimension+1; k++ {
-				e.PolyEvaluater.MulSubAssign(ctGGSW.Value[i].Value[j].Value[k], buffDecomposed[j], ctGLWEOut.Value[k])
-			}
+			e.PolyMulSubGLWEAssign(ctGGSW.Value[i].Value[j], buffDecomposed[j], ctGLWEOut)
 		}
 	}
 }

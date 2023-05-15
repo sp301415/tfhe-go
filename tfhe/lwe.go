@@ -62,7 +62,7 @@ func NewLWECiphertext[T Tint](params Parameters[T]) LWECiphertext[T] {
 // NewLargeLWECiphertext allocates an empty LWECiphertext,
 // but with dimension GLWEDimension * PolyDegree + 1.
 func NewLargeLWECiphertext[T Tint](params Parameters[T]) LWECiphertext[T] {
-	return LWECiphertext[T]{Value: make([]T, params.glweDimension*params.polyDegree+1)}
+	return LWECiphertext[T]{Value: make([]T, params.LargeLWEDimension()+1)}
 }
 
 // Copy returns a copy of the ciphertext.

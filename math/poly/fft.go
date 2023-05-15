@@ -151,6 +151,29 @@ func (p FourierPoly) Clear() {
 	}
 }
 
+// toScaledFloat64 returns x as float64.
+func (f FourierTransformer[T]) toFloat64(x T) float64 {
+	var z T
+	switch any(z).(type) {
+	case uint, uintptr:
+		return float64(int(x))
+	case uint8:
+		return float64(int8(x))
+	case uint16:
+		return float64(int16(x))
+	case uint32:
+		return float64(int32(x))
+	case uint64:
+		return float64(int64(x))
+	}
+	return float64(x)
+}
+
+// toScaledFloat64 returns scaled x as float64.
+func (f FourierTransformer[T]) toScaledFloat64(x T) float64 {
+	return f.toFloat64(x) / f.maxT
+}
+
 // ToFourierPoly transforms Poly to FourierPoly and returns it.
 func (f FourierTransformer[T]) ToFourierPoly(p Poly[T]) FourierPoly {
 	fp := NewFourierPoly(f.degree)
@@ -164,7 +187,7 @@ func (f FourierTransformer[T]) ToFourierPolyInPlace(p Poly[T], fp FourierPoly) {
 
 	// Fold and Twist
 	for j := 0; j < N/2; j++ {
-		f.buffer.fp.Coeffs[j] = complex(num.ToWrappingFloat64(p.Coeffs[j]), num.ToWrappingFloat64(p.Coeffs[j+N/2])) * f.wj[j]
+		f.buffer.fp.Coeffs[j] = complex(f.toFloat64(p.Coeffs[j]), f.toFloat64(p.Coeffs[j+N/2])) * f.wj[j]
 	}
 
 	// FFT
@@ -184,11 +207,10 @@ func (f FourierTransformer[T]) ToScaledFourierPoly(p Poly[T]) FourierPoly {
 // Each coefficients are scaled by 1 / 2^sizeT.
 func (f FourierTransformer[T]) ToScaledFourierPolyInPlace(p Poly[T], fp FourierPoly) {
 	N := f.degree
-	scale := complex(math.Pow(2, -float64(num.SizeT[T]())), 0)
 
 	// Fold and Twist
 	for j := 0; j < N/2; j++ {
-		f.buffer.fp.Coeffs[j] = complex(num.ToWrappingFloat64(p.Coeffs[j]), num.ToWrappingFloat64(p.Coeffs[j+N/2])) * f.wj[j] * scale
+		f.buffer.fp.Coeffs[j] = complex(f.toScaledFloat64(p.Coeffs[j]), f.toScaledFloat64(p.Coeffs[j+N/2])) * f.wj[j]
 	}
 
 	// FFT
@@ -215,12 +237,12 @@ func (f FourierTransformer[T]) ToStandardPolyInPlace(fp FourierPoly, p Poly[T]) 
 	// Untwist and Unfold
 	for j := 0; j < N/2; j++ {
 		f.buffer.fpInv.Coeffs[j] *= f.wjInv[j]
-		p.Coeffs[j] = num.FromFloat64[T](real(f.buffer.fpInv.Coeffs[j]) / NHalf)
-		p.Coeffs[j+N/2] = num.FromFloat64[T](imag(f.buffer.fpInv.Coeffs[j]) / NHalf)
+		p.Coeffs[j] = T(math.Round(real(f.buffer.fpInv.Coeffs[j]) / NHalf))
+		p.Coeffs[j+N/2] = T(math.Round(imag(f.buffer.fpInv.Coeffs[j]) / NHalf))
 	}
 }
 
-// fromScaledFloat64 returns T value from float64 value.
+// fromScaledFloat64 returns T value from scaled float64 value.
 func (f FourierTransformer[T]) fromScaledFloat64(x float64) T {
 	fr := x - math.Round(x)
 	fr *= f.maxT

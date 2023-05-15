@@ -36,7 +36,7 @@ func genLookUpTableInPlace[T Tint](params Parameters[T], f func(int) int, lutOut
 	boxSize := params.polyDegree >> params.messageModulusLog // 2N/P
 	for x := 0; x < int(params.messageModulus); x++ {
 		for i := x * boxSize; i < (x+1)*boxSize; i++ {
-			lutOut.Value[0].Coeffs[i] = T(f(x)) << params.deltaLog
+			lutOut.Value[0].Coeffs[i] = (T(f(x)) % params.messageModulus) << params.deltaLog
 		}
 	}
 
@@ -63,12 +63,14 @@ func (lut *LookUpTable[T]) CopyFrom(lutIn LookUpTable[T]) {
 	}
 }
 
-// GenLookUpTable is equivalent with calling package-level GenLookUpTable with Evaluater's parameters.
+// GenLookUpTable generates a lookup table based on function f and returns it.
+// Inputs and Outputs of f is cut by MessageModulus.
 func (e Evaluater[T]) GenLookUpTable(f func(int) int) LookUpTable[T] {
 	return genLookUpTable(e.Parameters, f)
 }
 
-// GenLookUpTableInPlace is equivalent with calling package-level GenLookUpTableInPlace with Evaluater's parameters.
+// GenLookUpTableInPlace generates a lookup table based on function f and writes it to lutOut.
+// Inputs and Outputs of f is cut by MessageModulus.
 func (e Evaluater[T]) GenLookUpTableInPlace(f func(int) int, lutOut LookUpTable[T]) {
 	genLookUpTableInPlace(e.Parameters, f, lutOut)
 }

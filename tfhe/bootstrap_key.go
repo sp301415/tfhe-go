@@ -1,5 +1,14 @@
 package tfhe
 
+// EvaluationKey is a public key for Evaluator,
+// which consists of Bootstrapping Key and KeySwitching Key.
+type EvaluationKey[T Tint] struct {
+	// BootstrapKey is a bootstrapping key.
+	BootstrapKey BootstrapKey[T]
+	// KeySwitchKey is a keyswithcing key switching GLWE secret key -> LWE secret key.
+	KeySwitchKey KeySwitchKey[T]
+}
+
 // BootstrapKey is a key for bootstrapping.
 // Essentially, this is a GGSW encryption of LWE key with GLWE key.
 // However, FFT is already applied for fast external product.
@@ -11,12 +20,12 @@ type BootstrapKey[T Tint] struct {
 }
 
 // NewBootstrapKey allocates an empty BootstrappingKey.
-func NewBootstrapKey[T Tint](params Parameters[T], decompParams DecompositionParameters[T]) BootstrapKey[T] {
+func NewBootstrapKey[T Tint](params Parameters[T]) BootstrapKey[T] {
 	bsk := make([]FourierGGSWCiphertext[T], params.lweDimension)
 	for i := 0; i < params.lweDimension; i++ {
-		bsk[i] = NewFourierGGSWCiphertext(params, decompParams)
+		bsk[i] = NewFourierGGSWCiphertext(params, params.bootstrapParameters)
 	}
-	return BootstrapKey[T]{Value: bsk, decompParams: decompParams}
+	return BootstrapKey[T]{Value: bsk, decompParams: params.bootstrapParameters}
 }
 
 // Copy returns a copy of the key.

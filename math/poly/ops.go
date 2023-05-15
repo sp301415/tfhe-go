@@ -110,6 +110,16 @@ func (e Evaluater[T]) ScalarMulAssign(c T, pOut Poly[T]) {
 	vec.ScalarMulAssign(c, pOut.Coeffs)
 }
 
+// ScalarMulAddAssign multplies c to p0 and adds it to pOut.
+func (e Evaluater[T]) ScalarMulAddAssign(p0 Poly[T], c T, pOut Poly[T]) {
+	vec.ScalarMulAddAssign(p0.Coeffs, c, pOut.Coeffs)
+}
+
+// ScalarMulAssign multplies c to p0 and subtracts it from pOut.
+func (e Evaluater[T]) ScalarMulSubAssign(p0 Poly[T], c T, pOut Poly[T]) {
+	vec.ScalarMulSubAssign(p0.Coeffs, c, pOut.Coeffs)
+}
+
 // MonomialMul multplies X^d to p0 and returns the result.
 // Assumes d >= 0.
 func (e Evaluater[T]) MonomialMul(p0 Poly[T], d int) Poly[T] {

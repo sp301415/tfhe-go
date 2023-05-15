@@ -69,7 +69,7 @@ func NewGaussianSamplerTorusWithSeed[T num.Integer](seed []byte, stdDev float64)
 
 // Sample returns a number from discrete gaussian distribution.
 func (s GaussianSampler[T]) Sample() T {
-	return num.FromFloat64[T](s.NormFloat64() * s.StdDev)
+	return T(math.Round(s.NormFloat64() * s.StdDev))
 }
 
 // SampleSliceAssign samples discrete gaussian values to v.
