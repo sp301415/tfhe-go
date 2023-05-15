@@ -33,10 +33,13 @@ func genLookUpTableInPlace[T Tint](params Parameters[T], f func(int) int, lutOut
 	// x = 0 => j = 0 ~ N/p and j = -N/p ~ 0.
 	// So we can rotate negacyclically for N/p.
 
-	boxSize := params.polyDegree >> params.messageModulusLog // 2N/P
-	for x := 0; x < int(params.messageModulus); x++ {
+	precLog := params.messageModulusLog + params.carryModulusLog
+	prec := T(1 << precLog)
+	boxSize := params.polyDegree >> precLog // 2N/P
+	for x := 0; x < 1<<precLog; x++ {
+		fx := (T(f(x)) % prec) << params.deltaLog
 		for i := x * boxSize; i < (x+1)*boxSize; i++ {
-			lutOut.Value[0].Coeffs[i] = (T(f(x)) % params.messageModulus) << params.deltaLog
+			lutOut.Value[0].Coeffs[i] = fx
 		}
 	}
 

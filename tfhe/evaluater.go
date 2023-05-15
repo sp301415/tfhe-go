@@ -49,11 +49,11 @@ type evaluationBuffer[T Tint] struct {
 	addLWECtForMul LWECiphertext[T]
 	// subLWECtForMul holds ct0 - ct1 for LWE multiplication.
 	subLWECtForMul LWECiphertext[T]
+	// twoLWECtForOps holds ct0 || ct1 for carry-based operations.
+	twoLWECtForOps LWECiphertext[T]
 
 	// idLUT is a LUT for identity map x -> x.
 	idLUT LookUpTable[T]
-	// mulLUT is a LUT for multiplication x -> x^2/4.
-	mulLUT LookUpTable[T]
 	// emptyLUT is an empty LUT, used for BlindRotateFunc.
 	emptyLUT LookUpTable[T]
 }
@@ -105,9 +105,9 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 
 		addLWECtForMul: NewLWECiphertext(params),
 		subLWECtForMul: NewLWECiphertext(params),
+		twoLWECtForOps: NewLWECiphertext(params),
 
 		idLUT:    genLookUpTable(params, func(x int) int { return x }),
-		mulLUT:   genLookUpTable(params, func(x int) int { return (x * x) / 4 }),
 		emptyLUT: NewLookUpTable(params),
 	}
 }

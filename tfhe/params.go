@@ -183,8 +183,12 @@ type ParametersLiteral[T Tint] struct {
 	// GLWEStdDev is the standard deviation used for gaussian error sampling in GLWE encryption.
 	GLWEStdDev float64
 
-	// MessageModulus is the largest message that could be encoded.
+	// MessageModulus is the modulus of the encoded message.
 	MessageModulus T
+	// CarryModulus is the modulus of the carry.
+	CarryModulus T
+	// Delta is the scaling factor Q/P.
+	Delta T
 
 	// BootstrapParameters is the decomposition parameters for Programmable Bootstrapping.
 	BootstrapParameters DecompositionParametersLiteral[T]
@@ -206,17 +210,21 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("LWEStdDev smaller than zero")
 	case p.GLWEStdDev <= 0:
 		panic("GLWEStdDev smaller than zero")
+	case !num.IsPowerOfTwo(p.Delta):
+		panic("Delta not power of two")
 	case !num.IsPowerOfTwo(p.MessageModulus):
 		panic("MessageModulus not power of two")
+	case !num.IsPowerOfTwo(p.CarryModulus):
+		panic("CarryModulus not power of two")
 	}
 
-	// Set delta = scaling factor = (1 << (SizeT - 1) - messageModulusLog)
+	deltaLog := num.Log2(p.Delta)
 	messageModulusLog := num.Log2(p.MessageModulus)
-	deltaLog := (num.SizeT[T]() - 1) - messageModulusLog
-	if deltaLog < 0 {
-		panic("message modulus and carry modulus too large")
+	carryModulusLog := num.Log2(p.CarryModulus)
+
+	if deltaLog+messageModulusLog+carryModulusLog > num.SizeT[T]() {
+		panic("Moduli too large")
 	}
-	delta := T(1 << deltaLog)
 
 	return Parameters[T]{
 		lweDimension:  p.LWEDimension,
@@ -226,10 +234,12 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		lweStdDev:  p.LWEStdDev,
 		glweStdDev: p.GLWEStdDev,
 
-		delta:             delta,
+		delta:             p.Delta,
 		deltaLog:          deltaLog,
 		messageModulus:    p.MessageModulus,
 		messageModulusLog: messageModulusLog,
+		carryModulus:      p.CarryModulus,
+		carryModulusLog:   carryModulusLog,
 
 		bootstrapParameters: p.BootstrapParameters.Compile(),
 		keyswitchParameters: p.KeySwitchParameters.Compile(),
@@ -257,10 +267,14 @@ type Parameters[T Tint] struct {
 	delta T
 	// DeltaLog equals log(Delta).
 	deltaLog int
-	// MessageModulus is the largest message that could be encoded.
+	// MessageModulus is the modulus of the encoded message.
 	messageModulus T
 	// MessageModulusLog equals log(MessageModulus).
 	messageModulusLog int
+	// carryModulus is the modulus of the carry.
+	carryModulus T
+	// carryModulusLog eqauls log(CarryModulus).
+	carryModulusLog int
 
 	// bootstrapParameters is the decomposition parameters for Programmable Bootstrapping.
 	bootstrapParameters DecompositionParameters[T]
@@ -312,14 +326,24 @@ func (p Parameters[T]) DeltaLog() int {
 	return p.deltaLog
 }
 
+// MessageModulus is the modulus of the encoded message.
+func (p Parameters[T]) MessageModulus() T {
+	return p.messageModulus
+}
+
 // MessageModulusLog equals log(MessageModulus).
 func (p Parameters[T]) MessageModulusLog() int {
 	return p.messageModulusLog
 }
 
-// MessageModulus is the largest message that could be encoded.
-func (p Parameters[T]) MessageModulus() T {
-	return p.messageModulus
+// CarryModulus is the modulus of the carry.
+func (p Parameters[T]) CarryModulus() T {
+	return p.carryModulus
+}
+
+// CarryModulusLog equals log(CarryModulus).
+func (p Parameters[T]) CarryModulusLog() int {
+	return p.carryModulusLog
 }
 
 // BootstrapParameters is the decomposition parameters for Programmable Bootstrapping.

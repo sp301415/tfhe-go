@@ -1,8 +1,8 @@
 package tfhe
 
 var (
-	// ParamsUint2 ensures 2 bits of message precision.
-	ParamsUint2 = ParametersLiteral[uint64]{
+	// ParamsUint2Carry0 ensures 2 bits of message precision.
+	ParamsUint2Carry0 = ParametersLiteral[uint64]{
 		LWEDimension:  656,
 		GLWEDimension: 2,
 		PolyDegree:    512,
@@ -11,6 +11,8 @@ var (
 		GLWEStdDev: 0.00000004053919869756513,
 
 		MessageModulus: 1 << 2,
+		CarryModulus:   1 << 0,
+		Delta:          1 << (63 - 2),
 
 		BootstrapParameters: DecompositionParametersLiteral[uint64]{
 			Base:  1 << 8,
@@ -22,8 +24,8 @@ var (
 		},
 	}
 
-	// ParamsUint3 ensures 3 bits of message precision.
-	ParamsUint3 = ParametersLiteral[uint64]{
+	// ParamsUint3Carry0 ensures 3 bits of message precision.
+	ParamsUint3Carry0 = ParametersLiteral[uint64]{
 		LWEDimension:  742,
 		GLWEDimension: 2,
 		PolyDegree:    1024,
@@ -32,6 +34,8 @@ var (
 		GLWEStdDev: 0.00000000000000029403601535432533,
 
 		MessageModulus: 1 << 3,
+		CarryModulus:   1 << 0,
+		Delta:          1 << (63 - 3),
 
 		BootstrapParameters: DecompositionParametersLiteral[uint64]{
 			Base:  1 << 23,
@@ -43,8 +47,8 @@ var (
 		},
 	}
 
-	// ParamsUint4 ensures 4 bits of message precision.
-	ParamsUint4 = ParametersLiteral[uint64]{
+	// ParamsUint2Carry2 ensures 2 bits of message precision and 2 bits of carry space.
+	ParamsUint2Carry2 = ParametersLiteral[uint64]{
 		LWEDimension:  742,
 		GLWEDimension: 1,
 		PolyDegree:    2048,
@@ -52,7 +56,9 @@ var (
 		LWEStdDev:  0.000007069849454709433,
 		GLWEStdDev: 0.00000000000000029403601535432533,
 
-		MessageModulus: 1 << 4,
+		MessageModulus: 1 << 2,
+		CarryModulus:   1 << 2,
+		Delta:          1 << (63 - 4),
 
 		BootstrapParameters: DecompositionParametersLiteral[uint64]{
 			Base:  1 << 23,
@@ -64,8 +70,31 @@ var (
 		},
 	}
 
-	// ParamsUint5 ensures 5 bits of message precision.
-	ParamsUint5 = ParametersLiteral[uint64]{
+	// ParamsUint4Carry0 ensures 4 bits of message precision.
+	ParamsUint4Carry0 = ParametersLiteral[uint64]{
+		LWEDimension:  742,
+		GLWEDimension: 1,
+		PolyDegree:    2048,
+
+		LWEStdDev:  0.000007069849454709433,
+		GLWEStdDev: 0.00000000000000029403601535432533,
+
+		MessageModulus: 1 << 4,
+		CarryModulus:   1 << 0,
+		Delta:          1 << (63 - 4),
+
+		BootstrapParameters: DecompositionParametersLiteral[uint64]{
+			Base:  1 << 23,
+			Level: 1,
+		},
+		KeySwitchParameters: DecompositionParametersLiteral[uint64]{
+			Base:  1 << 3,
+			Level: 5,
+		},
+	}
+
+	// ParamsUint5Carry0 ensures 5 bits of message precision.
+	ParamsUint5Carry0 = ParametersLiteral[uint64]{
 		LWEDimension:  807,
 		GLWEDimension: 1,
 		PolyDegree:    4096,
@@ -74,6 +103,8 @@ var (
 		GLWEStdDev: 0.0000000000000000002168404344971009,
 
 		MessageModulus: 1 << 5,
+		CarryModulus:   1 << 0,
+		Delta:          1 << (63 - 5),
 
 		BootstrapParameters: DecompositionParametersLiteral[uint64]{
 			Base:  1 << 22,
@@ -85,8 +116,8 @@ var (
 		},
 	}
 
-	// ParamsUint6 ensures 5 bits of message precision.
-	ParamsUint6 = ParametersLiteral[uint64]{
+	// ParamsUint6Carry0 ensures 5 bits of message precision.
+	ParamsUint6Carry0 = ParametersLiteral[uint64]{
 		LWEDimension:  915,
 		GLWEDimension: 1,
 		PolyDegree:    8192,
@@ -95,6 +126,8 @@ var (
 		GLWEStdDev: 0.0000000000000000002168404344971009,
 
 		MessageModulus: 1 << 6,
+		CarryModulus:   1 << 0,
+		Delta:          1 << (63 - 6),
 
 		BootstrapParameters: DecompositionParametersLiteral[uint64]{
 			Base:  1 << 22,
@@ -106,7 +139,7 @@ var (
 		},
 	}
 
-	ParamsUint7 = ParametersLiteral[uint64]{
+	ParamsUint7Carry0 = ParametersLiteral[uint64]{
 		LWEDimension:  930,
 		GLWEDimension: 1,
 		PolyDegree:    16384,
@@ -115,6 +148,8 @@ var (
 		GLWEStdDev: 0.0000000000000000002168404344971009,
 
 		MessageModulus: 1 << 7,
+		CarryModulus:   1 << 0,
+		Delta:          1 << (63 - 7),
 
 		BootstrapParameters: DecompositionParametersLiteral[uint64]{
 			Base:  1 << 15,
@@ -126,8 +161,8 @@ var (
 		},
 	}
 
-	// ParamsUint8 ensures 8 bits of message precision.
-	ParamsUint8 = ParametersLiteral[uint64]{
+	// ParamsUint8Carry0 ensures 8 bits of message precision.
+	ParamsUint8Carry0 = ParametersLiteral[uint64]{
 		LWEDimension:  1017,
 		GLWEDimension: 1,
 		PolyDegree:    32768,
@@ -136,6 +171,8 @@ var (
 		GLWEStdDev: 0.0000000000000000002168404344971009,
 
 		MessageModulus: 1 << 8,
+		CarryModulus:   1 << 0,
+		Delta:          1 << (63 - 8),
 
 		BootstrapParameters: DecompositionParametersLiteral[uint64]{
 			Base:  1 << 15,
