@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	testParams  = tfhe.ParamsUint4.Compile()
-	benchParams = tfhe.ParamsUint4.Compile()
+	testParams  = tfhe.ParamsUint3.Compile()
+	benchParams = tfhe.ParamsUint6.Compile()
 
 	testEncrypter = tfhe.NewEncrypter(testParams)
 	testEvaluater = tfhe.NewEvaluater(testParams, testEncrypter.GenEvaluationKeyParallel())
@@ -20,7 +20,7 @@ var (
 )
 
 func TestEncrypter(t *testing.T) {
-	messages := []int{2, 4, 8}
+	messages := []int{1, 2, 3}
 
 	t.Run("LWE", func(t *testing.T) {
 		for _, m := range messages {
@@ -43,12 +43,12 @@ func TestEncrypter(t *testing.T) {
 }
 
 func TestEvaluater(t *testing.T) {
-	messages := []int{1, 2, 3, 4}
+	messages := []int{1, 2, 3}
 
 	t.Run("ExternalProductFourier", func(t *testing.T) {
 		ct := testEncrypter.EncryptPacked(messages)
 
-		mul := 3
+		mul := 2
 		ctMul := testEncrypter.EncryptPackedForMul([]int{mul}, testParams.KeySwitchParameters())
 
 		ctOut := testEvaluater.ExternalProductFourier(ctMul, ct)

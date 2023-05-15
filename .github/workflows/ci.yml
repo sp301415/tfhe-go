@@ -1,0 +1,25 @@
+name: CI Tests
+on:
+  push:
+
+jobs:
+  tests:
+    name: Run Go ${{ matrix.go }} Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: [ '1.18', '1.19', '1.20' ]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install FFTW
+        run: sudo apt install -y fftw3
+
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Run Tests
+        run: go test ./tfhe/ -timeout=0
