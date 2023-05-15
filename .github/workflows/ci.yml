@@ -13,13 +13,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install FFTW
-        run: sudo apt install -y fftw3
-
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go }}
+
+      - name: Install FFTW
+        run: sudo apt install -y libfftw3-dev
 
       - name: Run Tests
         run: go test ./tfhe/ -timeout=0
