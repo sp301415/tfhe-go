@@ -6,9 +6,6 @@ Some of the implementations are taken from the excellent [TFHE-rs](https://githu
 
 This library was not audited or reviewed by security experts, so I do not recommend this library for any real-world production uses.
 
-## Roadmap
-- [ ] Binary TFHE (tfheb)
-- [ ] Integer TFHE (tfhe)
 
 ## Notes
 TFHE-go uses [gosl/fun/fftw](https://github.com/cpmech/gosl) as FFT backend, so FFTW has to be installed in your system. You can set the include path using `CGO_` enviornment variables. For example, Homebrew in Apple Silicon installs libraries in `/opt/homebrew` by default, so you need to set
@@ -16,6 +13,66 @@ TFHE-go uses [gosl/fun/fftw](https://github.com/cpmech/gosl) as FFT backend, so 
 export CGO_CFLAGS="-I/opt/homebrew/include"
 export CGO_LDFLAGS="-L/opt/homebrew/lib"
 ```
+
+## Examples
+### Encryption
+```go
+params := tfhe.ParamsUint4Carry0.Compile()   // Parameters should be compiled before use.
+decompParams := params.KeySwitchParameters() // Decomposition Parameters
+
+enc := tfhe.NewEncrypter(params) // Set up Encrypter.
+defer enc.Free()                 // Cleanup internal FFTW values.
+
+ctLWE := enc.Encrypt(4)
+ctGLWE := enc.EncryptPacked([]int{1, 2, 3, 4})
+ctGGSW := enc.EncryptPackedForMul([]int{1, 2, 3, 4}, decompParams)
+
+// Decrypt Everything!
+fmt.Println(enc.Decrypt(ctLWE))                  // 4
+fmt.Println(enc.DecryptPacked(ctGLWE)[:4])       // [1, 2, 3, 4]
+fmt.Println(enc.DecryptPackedForMul(ctGGSW)[:4]) // [1, 2, 3, 4]
+```
+
+### CMUX
+```go
+params := tfhe.ParamsUint4Carry0.Compile()
+decompParams := params.KeySwitchParameters()
+
+enc := tfhe.NewEncrypter(params)
+defer enc.Free()
+
+ct0 := enc.EncryptPacked([]int{2})
+ct1 := enc.EncryptPacked([]int{5})
+ctFlag := enc.EncryptPackedForMul([]int{1}, decompParams)
+
+eval := tfhe.NewEvaluaterWithoutKey(params)
+defer eval.Free()
+
+ctOut := eval.CMuxFourier(ctFlag, ct0, ct1)
+fmt.Println(enc.DecryptPacked(ctOut)[0]) // 5
+```
+
+### Programmable Bootstrapping
+```go
+params := tfhe.ParamsUint4Carry0.Compile()
+
+enc := tfhe.NewEncrypter(params)
+defer enc.Free()
+
+ct := enc.Encrypt(3)
+evalKey := enc.GenEvaluationKeyParallel()
+
+eval := tfhe.NewEvaluater(params, evalKey)
+defer eval.Free()
+
+ctOut := eval.BootstrapFunc(ct, func(x int) int { return 2*x + 1 })
+fmt.Println(enc.Decrypt(ctOut)) // 7 = 2*3+1
+```
+
+## Roadmap
+- [ ] Binary TFHE (tfheb)
+- [x] Integer TFHE (tfhe)
+- [ ] Multi-Key TFHE (mktfhe)
 
 ## References
 - TFHE: Fast Fully Homomorphic Encryption over the Torus (https://eprint.iacr.org/2018/421)
