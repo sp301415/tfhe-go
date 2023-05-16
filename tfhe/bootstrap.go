@@ -15,41 +15,6 @@ func NewLookUpTable[T Tint](params Parameters[T]) LookUpTable[T] {
 	return LookUpTable[T](NewGLWECiphertext(params))
 }
 
-// genLookUpTable generates a lookup table based on function f and returns it.
-func genLookUpTable[T Tint](params Parameters[T], f func(int) int) LookUpTable[T] {
-	lutOut := NewLookUpTable(params)
-	genLookUpTableInPlace(params, f, lutOut)
-	return lutOut
-}
-
-// genLookUpTableInPlace generates a lookup table based on function f and writes it to lutOut.
-func genLookUpTableInPlace[T Tint](params Parameters[T], f func(int) int, lutOut LookUpTable[T]) {
-	// We calculate f(round(P*j/2N)), where P = messageModulus * 2 (We use 1-bit padding, remember?)
-	// For x := round(p*j/2N), observe that:
-	// x = 1 => j = N/p ~ 3N/p
-	// x = 2 => j = 3N/p ~ 5N/p
-	// ...
-	// The only exception is when x = 0. In this case,
-	// x = 0 => j = 0 ~ N/p and j = -N/p ~ 0.
-	// So we can rotate negacyclically for N/p.
-
-	precLog := params.messageModulusLog + params.carryModulusLog
-	prec := T(1 << precLog)
-	boxSize := params.polyDegree >> precLog // 2N/P
-	for x := 0; x < 1<<precLog; x++ {
-		fx := (T(f(x)) % prec) << params.deltaLog
-		for i := x * boxSize; i < (x+1)*boxSize; i++ {
-			lutOut.Value[0].Coeffs[i] = fx
-		}
-	}
-
-	// rotate left negacycically.
-	for i := 0; i < boxSize/2; i++ {
-		lutOut.Value[0].Coeffs[i] = -lutOut.Value[0].Coeffs[i]
-	}
-	vec.RotateAssign(lutOut.Value[0].Coeffs, -boxSize/2)
-}
-
 // Copy returns a copy of the LUT.
 func (lut LookUpTable[T]) Copy() LookUpTable[T] {
 	lutCopy := make([]poly.Poly[T], len(lut.Value))
@@ -66,10 +31,39 @@ func (lut *LookUpTable[T]) CopyFrom(lutIn LookUpTable[T]) {
 	}
 }
 
+// genLookUpTableInPlace generates a lookup table based on function f and writes it to lutOut.
+// Inputs and Outputs of f is cut by MessageModulus.
+func genLookUpTableInPlace[T Tint](params Parameters[T], f func(int) int, lutOut LookUpTable[T]) {
+	// We calculate f(round(P*j/2N)), where P = messageModulus * 2 (We use 1-bit padding, remember?)
+	// For x := round(p*j/2N), observe that:
+	// x = 1 => j = N/p ~ 3N/p
+	// x = 2 => j = 3N/p ~ 5N/p
+	// ...
+	// The only exception is when x = 0. In this case,
+	// x = 0 => j = 0 ~ N/p and j = -N/p ~ 0.
+	// So we can rotate negacyclically for N/p.
+
+	boxSize := params.polyDegree >> params.messageModulusLog // 2N/P
+	for x := 0; x < int(params.messageModulus); x++ {
+		fx := (T(f(x)) % params.messageModulus) << params.deltaLog
+		for i := x * boxSize; i < (x+1)*boxSize; i++ {
+			lutOut.Value[0].Coeffs[i] = fx
+		}
+	}
+
+	// rotate left negacycically.
+	for i := 0; i < boxSize/2; i++ {
+		lutOut.Value[0].Coeffs[i] = -lutOut.Value[0].Coeffs[i]
+	}
+	vec.RotateAssign(lutOut.Value[0].Coeffs, -boxSize/2)
+}
+
 // GenLookUpTable generates a lookup table based on function f and returns it.
 // Inputs and Outputs of f is cut by MessageModulus.
 func (e Evaluater[T]) GenLookUpTable(f func(int) int) LookUpTable[T] {
-	return genLookUpTable(e.Parameters, f)
+	lutOut := NewLookUpTable(e.Parameters)
+	e.GenLookUpTableInPlace(f, lutOut)
+	return lutOut
 }
 
 // GenLookUpTableInPlace generates a lookup table based on function f and writes it to lutOut.

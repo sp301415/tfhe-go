@@ -52,8 +52,10 @@ type evaluationBuffer[T Tint] struct {
 	// twoLWECtForOps holds ct0 || ct1 for carry-based operations.
 	twoLWECtForOps LWECiphertext[T]
 
-	// idLUT is a LUT for identity map x -> x.
+	// idLUT is a LUT of identity function f: x -> x.
 	idLUT LookUpTable[T]
+	// mulLUT is a LUT of multiplication function f: x -> x^2/4.
+	mulLUT LookUpTable[T]
 	// emptyLUT is an empty LUT, used for BlindRotateFunc.
 	emptyLUT LookUpTable[T]
 }
@@ -91,6 +93,19 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 		decomposedPoly[i] = poly.New[T](params.polyDegree)
 	}
 
+	idLUT := NewLookUpTable(params)
+	genLookUpTableInPlace(params, func(x int) int { return x }, idLUT)
+
+	mulLUT := NewLookUpTable(params)
+	genLookUpTableInPlace(params, func(x int) int {
+		mod := int(params.messageModulus)
+		x %= mod
+		if x > mod/2 {
+			x = mod - x
+		}
+		return x * x / 4
+	}, mulLUT)
+
 	return evaluationBuffer[T]{
 		decomposedPoly: decomposedPoly,
 		decomposedVec:  make([]T, MaxBufferDecomposedLevel),
@@ -107,7 +122,8 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 		subLWECtForMul: NewLWECiphertext(params),
 		twoLWECtForOps: NewLWECiphertext(params),
 
-		idLUT:    genLookUpTable(params, func(x int) int { return x }),
+		idLUT:    idLUT,
+		mulLUT:   mulLUT,
 		emptyLUT: NewLookUpTable(params),
 	}
 }

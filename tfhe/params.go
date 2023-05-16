@@ -185,8 +185,6 @@ type ParametersLiteral[T Tint] struct {
 
 	// MessageModulus is the modulus of the encoded message.
 	MessageModulus T
-	// CarryModulus is the modulus of the carry.
-	CarryModulus T
 	// Delta is the scaling factor Q/P.
 	Delta T
 
@@ -214,15 +212,12 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("Delta not power of two")
 	case !num.IsPowerOfTwo(p.MessageModulus):
 		panic("MessageModulus not power of two")
-	case !num.IsPowerOfTwo(p.CarryModulus):
-		panic("CarryModulus not power of two")
 	}
 
 	deltaLog := num.Log2(p.Delta)
 	messageModulusLog := num.Log2(p.MessageModulus)
-	carryModulusLog := num.Log2(p.CarryModulus)
 
-	if deltaLog+messageModulusLog+carryModulusLog > num.SizeT[T]() {
+	if deltaLog+messageModulusLog > num.SizeT[T]() {
 		panic("Moduli too large")
 	}
 
@@ -238,8 +233,6 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		deltaLog:          deltaLog,
 		messageModulus:    p.MessageModulus,
 		messageModulusLog: messageModulusLog,
-		carryModulus:      p.CarryModulus,
-		carryModulusLog:   carryModulusLog,
 
 		bootstrapParameters: p.BootstrapParameters.Compile(),
 		keyswitchParameters: p.KeySwitchParameters.Compile(),
@@ -272,9 +265,6 @@ type Parameters[T Tint] struct {
 	// MessageModulusLog equals log(MessageModulus).
 	messageModulusLog int
 	// carryModulus is the modulus of the carry.
-	carryModulus T
-	// carryModulusLog eqauls log(CarryModulus).
-	carryModulusLog int
 
 	// bootstrapParameters is the decomposition parameters for Programmable Bootstrapping.
 	bootstrapParameters DecompositionParameters[T]
@@ -334,16 +324,6 @@ func (p Parameters[T]) MessageModulus() T {
 // MessageModulusLog equals log(MessageModulus).
 func (p Parameters[T]) MessageModulusLog() int {
 	return p.messageModulusLog
-}
-
-// CarryModulus is the modulus of the carry.
-func (p Parameters[T]) CarryModulus() T {
-	return p.carryModulus
-}
-
-// CarryModulusLog equals log(CarryModulus).
-func (p Parameters[T]) CarryModulusLog() int {
-	return p.carryModulusLog
 }
 
 // BootstrapParameters is the decomposition parameters for Programmable Bootstrapping.
