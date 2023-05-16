@@ -128,8 +128,7 @@ func (p DecompositionParameters[T]) DecomposeInPlace(x T, d []T) {
 	for i := range d {
 		res := x & (p.base - 1)
 		x >>= p.baseLog
-		carry := ((res - 1) | x) & res
-		carry >>= p.baseLog - 1
+		carry := res >> (p.baseLog - 1)
 		x += carry
 		res -= carry << p.baseLog
 		d[p.level-i-1] = res
@@ -155,8 +154,7 @@ func (p DecompositionParameters[T]) DecomposePolyInPlace(x poly.Poly[T], d []pol
 		for j := range d {
 			res := c & (p.base - 1)
 			c >>= p.baseLog
-			carry := ((res - 1) | c) & res
-			carry >>= p.baseLog - 1
+			carry := res >> (p.baseLog - 1)
 			c += carry
 			res -= carry << p.baseLog
 			d[p.level-j-1].Coeffs[i] = res
