@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	testParams  = tfhe.ParamsUint3Carry0.Compile()
-	benchParams = tfhe.ParamsUint6Carry0.Compile()
+	testParams  = tfhe.ParamsUint3.Compile()
+	benchParams = tfhe.ParamsUint6.Compile()
 
 	testEncrypter = tfhe.NewEncrypter(testParams)
 	testEvaluater = tfhe.NewEvaluater(testParams, testEncrypter.GenEvaluationKeyParallel())

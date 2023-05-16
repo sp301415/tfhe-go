@@ -1,8 +1,8 @@
 package tfhe
 
 var (
-	// ParamsUint2Carry0 ensures 2 bits of message precision.
-	ParamsUint2Carry0 = ParametersLiteral[uint64]{
+	// ParamsUint2 ensures 2 bits of message precision.
+	ParamsUint2 = ParametersLiteral[uint64]{
 		LWEDimension:  656,
 		GLWEDimension: 2,
 		PolyDegree:    512,
@@ -23,8 +23,8 @@ var (
 		},
 	}
 
-	// ParamsUint3Carry0 ensures 3 bits of message precision.
-	ParamsUint3Carry0 = ParametersLiteral[uint64]{
+	// ParamsUint3 ensures 3 bits of message precision.
+	ParamsUint3 = ParametersLiteral[uint64]{
 		LWEDimension:  742,
 		GLWEDimension: 2,
 		PolyDegree:    1024,
@@ -45,8 +45,8 @@ var (
 		},
 	}
 
-	// ParamsUint4Carry0 ensures 4 bits of message precision.
-	ParamsUint4Carry0 = ParametersLiteral[uint64]{
+	// ParamsUint4 ensures 4 bits of message precision.
+	ParamsUint4 = ParametersLiteral[uint64]{
 		LWEDimension:  742,
 		GLWEDimension: 1,
 		PolyDegree:    2048,
@@ -67,8 +67,8 @@ var (
 		},
 	}
 
-	// ParamsUint5Carry0 ensures 5 bits of message precision.
-	ParamsUint5Carry0 = ParametersLiteral[uint64]{
+	// ParamsUint5 ensures 5 bits of message precision.
+	ParamsUint5 = ParametersLiteral[uint64]{
 		LWEDimension:  807,
 		GLWEDimension: 1,
 		PolyDegree:    4096,
@@ -89,8 +89,8 @@ var (
 		},
 	}
 
-	// ParamsUint6Carry0 ensures 5 bits of message precision.
-	ParamsUint6Carry0 = ParametersLiteral[uint64]{
+	// ParamsUint6 ensures 5 bits of message precision.
+	ParamsUint6 = ParametersLiteral[uint64]{
 		LWEDimension:  915,
 		GLWEDimension: 1,
 		PolyDegree:    8192,
@@ -111,7 +111,7 @@ var (
 		},
 	}
 
-	ParamsUint7Carry0 = ParametersLiteral[uint64]{
+	ParamsUint7 = ParametersLiteral[uint64]{
 		LWEDimension:  930,
 		GLWEDimension: 1,
 		PolyDegree:    16384,
@@ -132,8 +132,8 @@ var (
 		},
 	}
 
-	// ParamsUint8Carry0 ensures 8 bits of message precision.
-	ParamsUint8Carry0 = ParametersLiteral[uint64]{
+	// ParamsUint8 ensures 8 bits of message precision.
+	ParamsUint8 = ParametersLiteral[uint64]{
 		LWEDimension:  1017,
 		GLWEDimension: 1,
 		PolyDegree:    32768,

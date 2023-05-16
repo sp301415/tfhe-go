@@ -9,7 +9,7 @@ This library was not audited or reviewed by security experts, so I do not recomm
 
 ## Notes
 TFHE-go uses [gosl/fun/fftw](https://github.com/cpmech/gosl) as FFT backend, so FFTW has to be installed in your system. You can set the include path using `CGO_` enviornment variables. For example, Homebrew in Apple Silicon installs libraries in `/opt/homebrew` by default, so you need to set
-```
+```bash
 export CGO_CFLAGS="-I/opt/homebrew/include"
 export CGO_LDFLAGS="-L/opt/homebrew/lib"
 ```
@@ -69,10 +69,13 @@ ctOut := eval.BootstrapFunc(ct, func(x int) int { return 2*x + 1 })
 fmt.Println(enc.Decrypt(ctOut)) // 7 = 2*3+1
 ```
 
-## Roadmap
-- [x] Binary TFHE (tfheb)
-- [x] Integer TFHE (tfhe)
-- [ ] Multi-Key TFHE (mktfhe)
+## Benchmarks
+All results were measured from Apple M1. `ParamsBoolean` and `ParamsUint6` are used.
+|Operations|Time|
+|----------|----|
+|Bootstrapping Key Generation (Parallel)|2.804s ± 1%|
+|Programmable Bootstrapping|273.0m ± 0%|
+|Gate Bootstrapping|37.93m ± 0%|
 
 ## References
 - TFHE: Fast Fully Homomorphic Encryption over the Torus (https://eprint.iacr.org/2018/421)
