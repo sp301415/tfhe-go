@@ -8,20 +8,43 @@ import (
 	"github.com/sp301415/tfhe/math/num"
 )
 
-// GenLWEKey samples a new LWE key.
-func (e Encrypter[T]) GenLWEKey() LWEKey[T] {
-	sk := NewLWEKey(e.Parameters)
-	e.binarySampler.SampleSliceAssign(sk.Value)
-	return sk
+// SecretKey is a struct consisted of LWE key and GLWE key.
+type SecretKey[T Tint] struct {
+	LWEKey  LWEKey[T]
+	GLWEKey GLWEKey[T]
 }
 
-// GenGLWEKey samples a new GLWE key.
-func (e Encrypter[T]) GenGLWEKey() GLWEKey[T] {
-	sk := NewGLWEKey(e.Parameters)
+// GenSecretKey samples a new LWE and GLWE key.
+func (e Encrypter[T]) GenSecretKey() SecretKey[T] {
+	lsk := NewLWEKey(e.Parameters)
+	gsk := NewGLWEKey(e.Parameters)
+
+	e.binarySampler.SampleSliceAssign(lsk.Value)
 	for i := 0; i < e.Parameters.glweDimension; i++ {
-		e.binarySampler.SamplePolyAssign(sk.Value[i])
+		e.binarySampler.SamplePolyAssign(gsk.Value[i])
 	}
-	return sk
+
+	return SecretKey[T]{
+		LWEKey:  lsk,
+		GLWEKey: gsk,
+	}
+}
+
+// SetSecretKey sets the secret key of Encrypter to sk.
+// This does not copy values.
+func (e *Encrypter[T]) SetSecretKey(sk SecretKey[T]) {
+	e.lweKey = sk.LWEKey
+	e.glweKey = sk.GLWEKey
+	e.lweLargeKey = sk.GLWEKey.ToLWEKey()
+}
+
+// SecretKey returns the secret key of Encrypter.
+// This does not copy values.
+func (e Encrypter[T]) SecretKey() SecretKey[T] {
+	return SecretKey[T]{
+		LWEKey:  e.lweKey,
+		GLWEKey: e.glweKey,
+	}
 }
 
 // GenEvaluationKey samples a new evaluation key for bootstrapping.

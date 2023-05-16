@@ -4,8 +4,11 @@ import (
 	"github.com/sp301415/tfhe/math/poly"
 )
 
-// Evaluater handles homomorphic operation of values.
-// This is meant to be public.
+// Evaluater evaluates homomorphic operations on ciphertexts.
+// This is meant to be public for everyone.
+//
+// Evaluater uses fftw as backend, so manually freeing memory is needed.
+// Use defer clause after initialization:
 //
 //	eval := tfhe.NewEvaluater(params, evkey)
 //	defer eval.Free()

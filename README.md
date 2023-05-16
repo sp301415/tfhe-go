@@ -70,7 +70,7 @@ fmt.Println(enc.Decrypt(ctOut)) // 7 = 2*3+1
 ```
 
 ## Roadmap
-- [ ] Binary TFHE (tfheb)
+- [x] Binary TFHE (tfheb)
 - [x] Integer TFHE (tfhe)
 - [ ] Multi-Key TFHE (mktfhe)
 

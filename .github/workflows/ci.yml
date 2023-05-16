@@ -22,4 +22,6 @@ jobs:
         run: sudo apt install -y libfftw3-dev
 
       - name: Run Tests
-        run: go test ./tfhe/ -timeout=0
+        run: |
+          go test ./tfhe/ -v -timeout=0
+          go test ./tfheb/ -v -timeout=0

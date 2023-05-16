@@ -8,9 +8,9 @@ import (
 )
 
 // Encrypter encrypts and decrypts TFHE plaintexts and ciphertexts.
-// This is meant to be a private-side structure.
+// This is meant to be a private only for clients.
 //
-// Evaluater uses fftw as backend, so manually freeing memory is needed.
+// Encrypter uses fftw as backend, so manually freeing memory is needed.
 // Use defer clause after initialization:
 //
 //	enc := tfhe.NewEncrypter(params)
@@ -52,9 +52,7 @@ type encryptionBuffer[T Tint] struct {
 func NewEncrypter[T Tint](params Parameters[T]) Encrypter[T] {
 	encrypter := NewEncrypterWithoutKey(params)
 
-	encrypter.lweKey = encrypter.GenLWEKey()
-	encrypter.glweKey = encrypter.GenGLWEKey()
-	encrypter.lweLargeKey = encrypter.glweKey.ToLWEKey()
+	encrypter.SetSecretKey(encrypter.GenSecretKey())
 
 	return encrypter
 }
@@ -113,27 +111,6 @@ func (e Encrypter[T]) ShallowCopy() Encrypter[T] {
 // Free frees internal fftw data.
 func (e Encrypter[T]) Free() {
 	e.FourierTransformer.Free()
-}
-
-// LWEKey returns a copy of LWE key.
-func (e Encrypter[T]) LWEKey() LWEKey[T] {
-	return e.lweKey.Copy()
-}
-
-// GLWEKey returns a copy of GLWE key.
-func (e Encrypter[T]) GLWEKey() GLWEKey[T] {
-	return e.glweKey.Copy()
-}
-
-// SetLWEKey sets the LWE key to copy of sk.
-func (e *Encrypter[T]) SetLWEKey(sk LWEKey[T]) {
-	e.lweKey = sk.Copy()
-}
-
-// SetGLWEKey sets the GLWE key to copy of sk.
-func (e *Encrypter[T]) SetGLWEKey(sk GLWEKey[T]) {
-	e.glweKey = sk.Copy()
-	e.lweLargeKey = sk.ToLWEKey()
 }
 
 // EncodeLWE encodes an integer message to LWE plaintext.
