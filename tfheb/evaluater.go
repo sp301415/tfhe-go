@@ -12,7 +12,7 @@ import (
 // Evaluater uses fftw as backend, so manually freeing memory is needed.
 // Use defer clause after initialization:
 //
-//	eval := tfhe.NewEvaluater(params, evkey)
+//	eval := tfheb.NewEvaluater(params, evkey)
 //	defer eval.Free()
 type Evaluater struct {
 	tfhe.Evaluater[uint32]

@@ -57,3 +57,14 @@ func TestEvaluater(t *testing.T) {
 		}
 	})
 }
+
+func BenchmarkGateBootstrap(b *testing.B) {
+	ct0 := enc.Encrypt(1)
+	ct1 := enc.Encrypt(1)
+	ctOut := tfhe.NewLWECiphertext(testParams)
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		eval.ANDInPlace(ct0, ct1, ctOut)
+	}
+}
