@@ -125,7 +125,11 @@ func Log2[T Integer](x T) int {
 //   - If bits == 0, then it returns x.
 //   - If bits < 0, it panics.
 func RoundRatioBits[T Integer](x T, bits int) T {
-	return ClosestMultipleBits(x, bits) >> bits
+	if bits == 0 {
+		return x
+	}
+	carry := x & (1 << (bits - 1))
+	return (x + carry<<1) >> bits
 }
 
 // ClosestMultipleBits returns the closest multiple of x respect to 2^bits.
@@ -133,12 +137,7 @@ func RoundRatioBits[T Integer](x T, bits int) T {
 //   - If bits == 0, then it returns x.
 //   - If bits < 0, it panics.
 func ClosestMultipleBits[T Integer](x T, bits int) T {
-	if bits == 0 {
-		return x
-	}
-
-	carry := x & (1 << (bits - 1))
-	return x + carry<<1
+	return RoundRatioBits(x, bits) << bits
 }
 
 // Min returns the smaller value between x and y.
