@@ -1,31 +1,61 @@
 package tfhe
 
 import (
+	"github.com/sp301415/tfhe/math/num"
 	"github.com/sp301415/tfhe/math/poly"
 )
 
 // Decompose decomposes x with respect to decompParams.
 // Equivalent to decompParams.Decompose().
 func (e Evaluater[T]) Decompose(x T, decompParams DecompositionParameters[T]) []T {
-	return decompParams.Decompose(x)
+	decomposed := make([]T, decompParams.level)
+	e.DecomposeInPlace(x, decomposed, decompParams)
+	return decomposed
 }
 
 // DecomposeInplace decomposes x with respect to decompParams.
 // Equivalent to decompParams.DecomposeInPlace().
 func (e Evaluater[T]) DecomposeInPlace(x T, d []T, decompParams DecompositionParameters[T]) {
-	decompParams.DecomposeInPlace(x, d)
+	u := num.RoundRatioBits(x, decompParams.scaledBasesLog[decompParams.level-1])
+	for i := decompParams.level - 1; i >= 0; i-- {
+		res := u & (decompParams.base - 1)
+		u >>= decompParams.baseLog
+
+		carry := res >> (decompParams.baseLog - 1)
+		u += carry
+
+		res -= carry << decompParams.baseLog
+		d[i] = res
+	}
 }
 
 // DecomposePoly decomposes x with respect to decompParams.
 // Equivalant to decompParams.DecomposePoly().
 func (e Evaluater[T]) DecomposePoly(x poly.Poly[T], decompParams DecompositionParameters[T]) []poly.Poly[T] {
-	return decompParams.DecomposePoly(x)
+	decomposed := make([]poly.Poly[T], decompParams.level)
+	for i := 0; i < decompParams.level; i++ {
+		decomposed[i] = poly.New[T](e.Parameters.polyDegree)
+	}
+	e.DecomposePolyInplace(x, decomposed, decompParams)
+	return decomposed
 }
 
 // DecomposePolyInPlace decomposes x with respect to decompParams.
 // Equivalant to decompParams.DecomposePolyInPlace().
 func (e Evaluater[T]) DecomposePolyInplace(x poly.Poly[T], d []poly.Poly[T], decompParams DecompositionParameters[T]) {
-	decompParams.DecomposePolyInPlace(x, d)
+	for i := 0; i < e.Parameters.polyDegree; i++ {
+		c := num.RoundRatioBits(x.Coeffs[i], decompParams.scaledBasesLog[decompParams.level-1])
+		for j := decompParams.level - 1; j >= 0; j-- {
+			res := c & (decompParams.base - 1)
+			c >>= decompParams.baseLog
+
+			carry := res >> (decompParams.baseLog - 1)
+			c += carry
+
+			res -= carry << decompParams.baseLog
+			d[j].Coeffs[i] = res
+		}
+	}
 }
 
 // decomposedPolyBuffer returns the decomposedPoly buffer of Evaluater.

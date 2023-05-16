@@ -189,30 +189,3 @@ func MinN[T Real](x ...T) T {
 	}
 	return min
 }
-
-// Pow returns x^y. Panics if y < 0.
-func Pow[T Integer](x, y T) T {
-	// Common cases
-	switch {
-	case y < 0:
-		panic("negative exponent")
-	case x == 0:
-		return 0
-	case y == 0:
-		return 1
-	case x == 1:
-		return 1
-	case x == 2:
-		return 1 << y
-	}
-
-	var r T = 1
-	for y > 0 {
-		if y&1 == 1 {
-			r *= x
-		}
-		x *= x
-		y >>= 1
-	}
-	return r
-}

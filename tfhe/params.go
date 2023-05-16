@@ -2,7 +2,6 @@ package tfhe
 
 import (
 	"github.com/sp301415/tfhe/math/num"
-	"github.com/sp301415/tfhe/math/poly"
 )
 
 // Tint represents the integer in the discretized torus.
@@ -113,55 +112,6 @@ func (p DecompositionParameters[T]) LastScaledBaseLog() int {
 	return p.ScaledBaseLog(p.level - 1)
 }
 
-// Decompose decomposes x.
-// This function calculates d_i, where x = sum_{i=1}^level d_i * (Q / Base^i).
-func (p DecompositionParameters[T]) Decompose(x T) []T {
-	d := make([]T, p.level)
-	p.DecomposeInPlace(x, d)
-	return d
-}
-
-// DecomposeInPlace decomposes x and writes it to d.
-// Length of d should be Level.
-func (p DecompositionParameters[T]) DecomposeInPlace(x T, d []T) {
-	x = num.RoundRatioBits(x, p.scaledBasesLog[p.level-1])
-	for i := range d {
-		res := x & (p.base - 1)
-		x >>= p.baseLog
-		carry := res >> (p.baseLog - 1)
-		x += carry
-		res -= carry << p.baseLog
-		d[p.level-i-1] = res
-	}
-}
-
-// DecomposePoly decomposes polynomial x.
-// This function calculates polynomials d_i, where x = sum_{i=1}^level d_i * (Q / Base^i).
-func (p DecompositionParameters[T]) DecomposePoly(x poly.Poly[T]) []poly.Poly[T] {
-	d := make([]poly.Poly[T], p.level)
-	for i := range d {
-		d[i] = poly.New[T](x.Degree())
-	}
-	p.DecomposePolyInPlace(x, d)
-	return d
-}
-
-// DecomposePolyInPlace decomposes polynomial x, and writes it to d.
-// Length of d should be Level, each polynomial having same degree as x.
-func (p DecompositionParameters[T]) DecomposePolyInPlace(x poly.Poly[T], d []poly.Poly[T]) {
-	for i := range x.Coeffs {
-		c := num.RoundRatioBits(x.Coeffs[i], p.scaledBasesLog[p.level-1])
-		for j := range d {
-			res := c & (p.base - 1)
-			c >>= p.baseLog
-			carry := res >> (p.baseLog - 1)
-			c += carry
-			res -= carry << p.baseLog
-			d[p.level-j-1].Coeffs[i] = res
-		}
-	}
-}
-
 // ParametersLiteral is a structure for binary TFHE parameters.
 //
 // Unless you are a cryptographic expert, DO NOT set these by yourself;
@@ -206,6 +156,8 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("LWEStdDev smaller than zero")
 	case p.GLWEStdDev <= 0:
 		panic("GLWEStdDev smaller than zero")
+	case !num.IsPowerOfTwo(p.PolyDegree):
+		panic("PolyDegree not power of two")
 	case !num.IsPowerOfTwo(p.Delta):
 		panic("Delta not power of two")
 	case !num.IsPowerOfTwo(p.MessageModulus):
@@ -262,7 +214,6 @@ type Parameters[T Tint] struct {
 	messageModulus T
 	// MessageModulusLog equals log(MessageModulus).
 	messageModulusLog int
-	// carryModulus is the modulus of the carry.
 
 	// bootstrapParameters is the decomposition parameters for Programmable Bootstrapping.
 	bootstrapParameters DecompositionParameters[T]
