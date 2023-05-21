@@ -8,7 +8,7 @@ type LWEKey[T Tint] struct {
 	Value []T
 }
 
-// NewLWEKey allocates an empty LWESecretKey.
+// NewLWEKey allocates an empty LWEKey.
 func NewLWEKey[T Tint](params Parameters[T]) LWEKey[T] {
 	return LWEKey[T]{Value: make([]T, params.lweDimension)}
 }
@@ -30,7 +30,7 @@ type LWEPlaintext[T Tint] struct {
 }
 
 // NewLWEPlaintext allocates an empty LWEPlaintext.
-func NewLWEPlaintext[T Tint](p Parameters[T]) LWEPlaintext[T] {
+func NewLWEPlaintext[T Tint]() LWEPlaintext[T] {
 	return LWEPlaintext[T]{}
 }
 
@@ -111,5 +111,45 @@ func (ct *LevCiphertext[T]) CopyFrom(ctIn LevCiphertext[T]) {
 
 // DecompositionParameters returns the decomposition parameters of the ciphertext.
 func (ct LevCiphertext[T]) DecompositionParameters() DecompositionParameters[T] {
+	return ct.decompParams
+}
+
+// GSWCiphertext represents an encrypted GSW ciphertext,
+// which is a LWEDimension+1 collection of Lev ciphertexts.
+type GSWCiphertext[T Tint] struct {
+	// Value has length LWEDimension + 1.
+	Value []LevCiphertext[T]
+
+	decompParams DecompositionParameters[T]
+}
+
+// NewGSWCiphertext allocates an empty GSW ciphertext.
+func NewGSWCiphertext[T Tint](params Parameters[T], decompParams DecompositionParameters[T]) GSWCiphertext[T] {
+	ct := make([]LevCiphertext[T], params.lweDimension+1)
+	for i := 0; i < params.lweDimension+1; i++ {
+		ct[i] = NewLevCiphertext(params, decompParams)
+	}
+	return GSWCiphertext[T]{Value: ct, decompParams: decompParams}
+}
+
+// Copy returns a copy of the ciphertext.
+func (ct GSWCiphertext[T]) Copy() GSWCiphertext[T] {
+	ctCopy := make([]LevCiphertext[T], len(ct.Value))
+	for i := range ct.Value {
+		ctCopy[i] = ct.Value[i].Copy()
+	}
+	return GSWCiphertext[T]{Value: ctCopy, decompParams: ct.decompParams}
+}
+
+// CopyFrom copies values from a ciphertext.
+func (ct *GSWCiphertext[T]) CopyFrom(ctIn GSWCiphertext[T]) {
+	for i := range ct.Value {
+		ct.Value[i].CopyFrom(ctIn.Value[i])
+	}
+	ct.decompParams = ctIn.decompParams
+}
+
+// DecompositionParameters returns the decomposition parameters of the ciphertext.
+func (ct GSWCiphertext[T]) DecompositionParameters() DecompositionParameters[T] {
 	return ct.decompParams
 }
