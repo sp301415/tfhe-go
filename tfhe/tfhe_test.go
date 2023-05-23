@@ -25,38 +25,38 @@ func TestEncrypter(t *testing.T) {
 
 	t.Run("LWE", func(t *testing.T) {
 		for _, m := range messages {
-			ct := testEncrypter.EncryptLWEInt(m)
-			assert.Equal(t, m, testEncrypter.DecryptLWEInt(ct))
+			ct := testEncrypter.EncryptLWE(m)
+			assert.Equal(t, m, testEncrypter.DecryptLWE(ct))
 		}
 	})
 
 	t.Run("Lev", func(t *testing.T) {
 		for _, m := range messages {
-			ct := testEncrypter.EncryptLevInt(m, decompParams)
-			assert.Equal(t, m, testEncrypter.DecryptLevInt(ct))
+			ct := testEncrypter.EncryptLev(m, decompParams)
+			assert.Equal(t, m, testEncrypter.DecryptLev(ct))
 		}
 	})
 
 	t.Run("GSW", func(t *testing.T) {
 		for _, m := range messages {
-			ct := testEncrypter.EncryptGSWInt(m, decompParams)
-			assert.Equal(t, m, testEncrypter.DecryptGSWInt(ct))
+			ct := testEncrypter.EncryptGSW(m, decompParams)
+			assert.Equal(t, m, testEncrypter.DecryptGSW(ct))
 		}
 	})
 
 	t.Run("GLWE", func(t *testing.T) {
-		ct := testEncrypter.EncryptGLWEInts(messages)
-		assert.Equal(t, messages, testEncrypter.DecryptGLWEInts(ct)[:len(messages)])
+		ct := testEncrypter.EncryptGLWE(messages)
+		assert.Equal(t, messages, testEncrypter.DecryptGLWE(ct)[:len(messages)])
 	})
 
 	t.Run("GLev", func(t *testing.T) {
-		ct := testEncrypter.EncryptGLevInts(messages, decompParams)
-		assert.Equal(t, messages, testEncrypter.DecryptGLevInts(ct)[:len(messages)])
+		ct := testEncrypter.EncryptGLev(messages, decompParams)
+		assert.Equal(t, messages, testEncrypter.DecryptGLev(ct)[:len(messages)])
 	})
 
 	t.Run("GGSW", func(t *testing.T) {
-		ct := testEncrypter.EncryptGGSWInts(messages, decompParams)
-		assert.Equal(t, messages, testEncrypter.DecryptGGSWInts(ct)[:len(messages)])
+		ct := testEncrypter.EncryptGGSW(messages, decompParams)
+		assert.Equal(t, messages, testEncrypter.DecryptGGSW(ct)[:len(messages)])
 	})
 }
 
@@ -64,16 +64,15 @@ func TestEvaluater(t *testing.T) {
 	messages := []int{1, 2, 3}
 
 	t.Run("ExternalProductFourier", func(t *testing.T) {
-		ct := testEncrypter.EncryptGLWEInts(messages)
+		ct := testEncrypter.EncryptGLWE(messages)
 
 		mul := 2
-		ctMulStandard := testEncrypter.EncryptGGSWInts([]int{mul}, testParams.KeySwitchParameters())
-		ctMul := testEncrypter.ToFourierGGSWCiphertext(ctMulStandard)
+		ctMul := testEncrypter.EncryptFourierGGSW([]int{mul}, testParams.KeySwitchParameters())
 
 		ctOut := testEvaluater.ExternalProductFourier(ctMul, ct)
 
 		for i, m := range messages {
-			assert.Equal(t, mul*m, testEncrypter.DecryptGLWEInts(ctOut)[i])
+			assert.Equal(t, mul*m, testEncrypter.DecryptGLWE(ctOut)[i])
 		}
 	})
 
@@ -81,14 +80,13 @@ func TestEvaluater(t *testing.T) {
 		messagesPool := [][]int{messages, vec.Reverse(messages)}
 
 		for _, i := range []int{0, 1} {
-			ct0 := testEncrypter.EncryptGLWEInts(messagesPool[0])
-			ct1 := testEncrypter.EncryptGLWEInts(messagesPool[1])
-			ctGGSW := testEncrypter.EncryptGGSWInts([]int{i}, testParams.BootstrapParameters())
-			ctGGSWF := testEncrypter.ToFourierGGSWCiphertext(ctGGSW)
+			ct0 := testEncrypter.EncryptGLWE(messagesPool[0])
+			ct1 := testEncrypter.EncryptGLWE(messagesPool[1])
+			ctGGSW := testEncrypter.EncryptFourierGGSW([]int{i}, testParams.BootstrapParameters())
 
-			ctOut := testEvaluater.CMuxFourier(ctGGSWF, ct0, ct1)
+			ctOut := testEvaluater.CMuxFourier(ctGGSW, ct0, ct1)
 
-			assert.Equal(t, messagesPool[i], testEncrypter.DecryptGLWEInts(ctOut)[:len(messages)])
+			assert.Equal(t, messagesPool[i], testEncrypter.DecryptGLWE(ctOut)[:len(messages)])
 		}
 	})
 
@@ -96,19 +94,19 @@ func TestEvaluater(t *testing.T) {
 		f := func(x int) int { return 2 * x }
 
 		for _, m := range messages {
-			ct := testEncrypter.EncryptLWEInt(m)
+			ct := testEncrypter.EncryptLWE(m)
 			ctOut := testEvaluater.BootstrapFunc(ct, f)
-			assert.Equal(t, f(m), testEncrypter.DecryptLWEInt(ctOut))
+			assert.Equal(t, f(m), testEncrypter.DecryptLWE(ctOut))
 		}
 	})
 
 	t.Run("LWEMul", func(t *testing.T) {
-		ct0 := testEncrypter.EncryptLWEInt(messages[0])
-		ct1 := testEncrypter.EncryptLWEInt(messages[1])
+		ct0 := testEncrypter.EncryptLWE(messages[0])
+		ct1 := testEncrypter.EncryptLWE(messages[1])
 
 		ctOut := testEvaluater.MulLWE(ct0, ct1)
 
-		assert.Equal(t, messages[0]*messages[1], testEncrypter.DecryptLWEInt(ctOut))
+		assert.Equal(t, messages[0]*messages[1], testEncrypter.DecryptLWE(ctOut))
 	})
 }
 
@@ -119,7 +117,7 @@ func BenchmarkEvaluationKeyGen(b *testing.B) {
 }
 
 func BenchmarkBootstrap(b *testing.B) {
-	ct := benchEncrypter.EncryptLWEInt(3)
+	ct := benchEncrypter.EncryptLWE(3)
 	ctOut := tfhe.NewLWECiphertext(benchParams)
 	b.ResetTimer()
 

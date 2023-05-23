@@ -18,19 +18,16 @@ export CGO_LDFLAGS="-L/opt/homebrew/lib"
 ### Encryption
 ```go
 params := tfhe.ParamsUint4.Compile()   // Parameters should be compiled before use.
-decompParams := params.KeySwitchParameters() // Decomposition Parameters
 
 enc := tfhe.NewEncrypter(params) // Set up Encrypter.
 defer enc.Free()                 // Cleanup internal FFTW values.
 
-ctLWE := enc.Encrypt(4)
-ctGLWE := enc.EncryptPacked([]int{1, 2, 3, 4})
-ctGGSW := enc.EncryptPackedForMul([]int{1, 2, 3, 4}, decompParams)
+ctLWE := enc.EncryptLWE(4)
+ctGLWE := enc.EncryptGLWE([]int{1, 2, 3, 4})
 
 // Decrypt Everything!
-fmt.Println(enc.Decrypt(ctLWE))                  // 4
-fmt.Println(enc.DecryptPacked(ctGLWE)[:4])       // [1, 2, 3, 4]
-fmt.Println(enc.DecryptPackedForMul(ctGGSW)[:4]) // [1, 2, 3, 4]
+fmt.Println(enc.DecryptLWE(ctLWE))       // 4
+fmt.Println(enc.DecryptGLWE(ctGLWE)[:4]) // [1, 2, 3, 4]
 ```
 
 ### CMUX
@@ -41,9 +38,9 @@ decompParams := params.KeySwitchParameters()
 enc := tfhe.NewEncrypter(params)
 defer enc.Free()
 
-ct0 := enc.EncryptPacked([]int{2})
-ct1 := enc.EncryptPacked([]int{5})
-ctFlag := enc.EncryptPackedForMul([]int{1}, decompParams)
+ct0 := enc.EncryptGLWE([]int{2})
+ct1 := enc.EncryptGLWE([]int{5})
+ctFlag := enc.EncryptFourierGGSW([]int{1}, decompParams)
 
 eval := tfhe.NewEvaluaterWithoutKey(params)
 defer eval.Free()

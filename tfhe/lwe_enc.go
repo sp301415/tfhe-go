@@ -41,13 +41,13 @@ func (e Encrypter[T]) DecodeLWECustom(pt LWEPlaintext[T], messageModulus, delta 
 	return int(decoded)
 }
 
-// EncryptLWEInt encodes and encrypts integer message to LWE ciphertext.
-func (e Encrypter[T]) EncryptLWEInt(message int) LWECiphertext[T] {
-	return e.EncryptLWE(e.EncodeLWE(message))
+// EncryptLWE encodes and encrypts integer message to LWE ciphertext.
+func (e Encrypter[T]) EncryptLWE(message int) LWECiphertext[T] {
+	return e.EncryptLWEPlaintext(e.EncodeLWE(message))
 }
 
-// EncryptLWE encrypts LWE plaintext to LWE ciphertext.
-func (e Encrypter[T]) EncryptLWE(pt LWEPlaintext[T]) LWECiphertext[T] {
+// EncryptLWEPlaintext encrypts LWE plaintext to LWE ciphertext.
+func (e Encrypter[T]) EncryptLWEPlaintext(pt LWEPlaintext[T]) LWECiphertext[T] {
 	ctOut := NewLWECiphertext(e.Parameters)
 	e.EncryptLWEInPlace(pt, ctOut)
 	return ctOut
@@ -66,25 +66,25 @@ func (e Encrypter[T]) EncryptLWEAssign(ct LWECiphertext[T]) {
 	ct.Value[0] += vec.Dot(ct.Value[1:], e.lweKey.Value) + e.lweSampler.Sample()
 }
 
-// DecryptLWEInt decrypts and decodes LWE ciphertext to integer message.
-func (e Encrypter[T]) DecryptLWEInt(ct LWECiphertext[T]) int {
-	return e.DecodeLWE(e.DecryptLWE(ct))
+// DecryptLWE decrypts and decodes LWE ciphertext to integer message.
+func (e Encrypter[T]) DecryptLWE(ct LWECiphertext[T]) int {
+	return e.DecodeLWE(e.DecryptLWEPlaintext(ct))
 }
 
-// DecryptLWE decrypts LWE ciphertext to LWE plaintext.
-func (e Encrypter[T]) DecryptLWE(ct LWECiphertext[T]) LWEPlaintext[T] {
+// DecryptLWEPlaintext decrypts LWE ciphertext to LWE plaintext.
+func (e Encrypter[T]) DecryptLWEPlaintext(ct LWECiphertext[T]) LWEPlaintext[T] {
 	pt := ct.Value[0] - vec.Dot(ct.Value[1:], e.lweKey.Value)
 	return LWEPlaintext[T]{Value: pt}
 }
 
-// EncryptLevInt encrypts integer message to Lev ciphertext.
-func (e Encrypter[T]) EncryptLevInt(message int, decompParams DecompositionParameters[T]) LevCiphertext[T] {
+// EncryptLev encrypts integer message to Lev ciphertext.
+func (e Encrypter[T]) EncryptLev(message int, decompParams DecompositionParameters[T]) LevCiphertext[T] {
 	pt := LWEPlaintext[T]{Value: T(message) % e.Parameters.messageModulus}
-	return e.EncryptLev(pt, decompParams)
+	return e.EncryptLevPlaintext(pt, decompParams)
 }
 
-// EncryptLev encrypts LWE plaintext to Lev ciphertext.
-func (e Encrypter[T]) EncryptLev(pt LWEPlaintext[T], decompParams DecompositionParameters[T]) LevCiphertext[T] {
+// EncryptLevPlaintext encrypts LWE plaintext to Lev ciphertext.
+func (e Encrypter[T]) EncryptLevPlaintext(pt LWEPlaintext[T], decompParams DecompositionParameters[T]) LevCiphertext[T] {
 	ctOut := NewLevCiphertext(e.Parameters, decompParams)
 	e.EncryptLevInPlace(pt, ctOut)
 	return ctOut
@@ -98,26 +98,26 @@ func (e Encrypter[T]) EncryptLevInPlace(pt LWEPlaintext[T], ctOut LevCiphertext[
 	}
 }
 
-// DecryptLevInt decrypts Lev ciphertext to integer message.
-func (e Encrypter[T]) DecryptLevInt(ct LevCiphertext[T]) int {
-	pt := e.DecryptLev(ct)
+// DecryptLev decrypts Lev ciphertext to integer message.
+func (e Encrypter[T]) DecryptLev(ct LevCiphertext[T]) int {
+	pt := e.DecryptLevPlaintext(ct)
 	return int(num.RoundRatioBits(pt.Value, ct.decompParams.LastScaledBaseLog()) % e.Parameters.messageModulus)
 }
 
-// DecryptLev decrypts Lev ciphertext to LWE plaintext.
-func (e Encrypter[T]) DecryptLev(ct LevCiphertext[T]) LWEPlaintext[T] {
+// DecryptLevPlaintext decrypts Lev ciphertext to LWE plaintext.
+func (e Encrypter[T]) DecryptLevPlaintext(ct LevCiphertext[T]) LWEPlaintext[T] {
 	ctLastLevel := ct.Value[ct.decompParams.level-1]
-	return e.DecryptLWE(ctLastLevel)
+	return e.DecryptLWEPlaintext(ctLastLevel)
 }
 
-// EncryptGSWInt encrypts integer message to GSW ciphertext.
-func (e Encrypter[T]) EncryptGSWInt(message int, decompParams DecompositionParameters[T]) GSWCiphertext[T] {
+// EncryptGSW encrypts integer message to GSW ciphertext.
+func (e Encrypter[T]) EncryptGSW(message int, decompParams DecompositionParameters[T]) GSWCiphertext[T] {
 	pt := LWEPlaintext[T]{Value: T(message) % e.Parameters.messageModulus}
-	return e.EncryptGSW(pt, decompParams)
+	return e.EncryptGSWPlaintext(pt, decompParams)
 }
 
-// EncryptGSW encrypts LWE plaintext to GSW ciphertext.
-func (e Encrypter[T]) EncryptGSW(pt LWEPlaintext[T], decompParams DecompositionParameters[T]) GSWCiphertext[T] {
+// EncryptGSWPlaintext encrypts LWE plaintext to GSW ciphertext.
+func (e Encrypter[T]) EncryptGSWPlaintext(pt LWEPlaintext[T], decompParams DecompositionParameters[T]) GSWCiphertext[T] {
 	ctOut := NewGSWCiphertext(e.Parameters, decompParams)
 	e.EncryptGSWInPlace(pt, ctOut)
 	return ctOut
@@ -135,12 +135,12 @@ func (e Encrypter[T]) EncryptGSWInPlace(pt LWEPlaintext[T], ctOut GSWCiphertext[
 	}
 }
 
-// DecryptGSWInt decrypts GSW ciphertext to integer message.
-func (e Encrypter[T]) DecryptGSWInt(ct GSWCiphertext[T]) int {
-	return e.DecryptLevInt(ct.Value[0])
+// DecryptGSW decrypts GSW ciphertext to integer message.
+func (e Encrypter[T]) DecryptGSW(ct GSWCiphertext[T]) int {
+	return e.DecryptLev(ct.Value[0])
 }
 
-// DecryptGSW decrypts GSW ciphertext to LWE plaintext.
-func (e Encrypter[T]) DecryptGSW(ct GSWCiphertext[T]) LWEPlaintext[T] {
-	return e.DecryptLev(ct.Value[0])
+// DecryptGSWPlaintext decrypts GSW ciphertext to LWE plaintext.
+func (e Encrypter[T]) DecryptGSWPlaintext(ct GSWCiphertext[T]) LWEPlaintext[T] {
+	return e.DecryptLevPlaintext(ct.Value[0])
 }

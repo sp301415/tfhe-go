@@ -63,13 +63,13 @@ func (e Encrypter[T]) DecodeGLWECustom(pt GLWEPlaintext[T], messageModulus, delt
 	return messages
 }
 
-// EncryptGLWEInts encodes and encrypts integer messages to GLWE ciphertext.
-func (e Encrypter[T]) EncryptGLWEInts(messages []int) GLWECiphertext[T] {
-	return e.EncryptGLWE(e.EncodeGLWE(messages))
+// EncryptGLWE encodes and encrypts integer messages to GLWE ciphertext.
+func (e Encrypter[T]) EncryptGLWE(messages []int) GLWECiphertext[T] {
+	return e.EncryptGLWEPlaintext(e.EncodeGLWE(messages))
 }
 
-// EncryptGLWE encrypts GLWE plaintext to GLWE ciphertext.
-func (e Encrypter[T]) EncryptGLWE(pt GLWEPlaintext[T]) GLWECiphertext[T] {
+// EncryptGLWEPlaintext encrypts GLWE plaintext to GLWE ciphertext.
+func (e Encrypter[T]) EncryptGLWEPlaintext(pt GLWEPlaintext[T]) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
 	e.EncryptGLWEInPlace(pt, ctOut)
 	return ctOut
@@ -93,13 +93,13 @@ func (e Encrypter[T]) EncryptGLWEAssign(ct GLWECiphertext[T]) {
 	}
 }
 
-// DecryptGLWEInts decrypts and decodes GLWE ciphertext to integer message.
-func (e Encrypter[T]) DecryptGLWEInts(ct GLWECiphertext[T]) []int {
-	return e.DecodeGLWE(e.DecryptGLWE(ct))
+// DecryptGLWE decrypts and decodes GLWE ciphertext to integer message.
+func (e Encrypter[T]) DecryptGLWE(ct GLWECiphertext[T]) []int {
+	return e.DecodeGLWE(e.DecryptGLWEPlaintext(ct))
 }
 
-// DecryptGLWE decrypts GLWE ciphertext to GLWE plaintext.
-func (e Encrypter[T]) DecryptGLWE(ct GLWECiphertext[T]) GLWEPlaintext[T] {
+// DecryptGLWEPlaintext decrypts GLWE ciphertext to GLWE plaintext.
+func (e Encrypter[T]) DecryptGLWEPlaintext(ct GLWECiphertext[T]) GLWEPlaintext[T] {
 	ptOut := NewGLWEPlaintext(e.Parameters)
 	e.DecryptGLWEInPlace(ct, ptOut)
 	return ptOut
@@ -113,17 +113,17 @@ func (e Encrypter[T]) DecryptGLWEInPlace(ct GLWECiphertext[T], ptOut GLWEPlainte
 	}
 }
 
-// EncryptGLevInts encrypts integer message to GLev ciphertext.
-func (e Encrypter[T]) EncryptGLevInts(messages []int, decompParams DecompositionParameters[T]) GLevCiphertext[T] {
+// EncryptGLev encrypts integer message to GLev ciphertext.
+func (e Encrypter[T]) EncryptGLev(messages []int, decompParams DecompositionParameters[T]) GLevCiphertext[T] {
 	pt := NewGLWEPlaintext(e.Parameters)
 	for i := 0; i < e.Parameters.polyDegree && i < len(messages); i++ {
 		pt.Value.Coeffs[i] = T(messages[i]) % e.Parameters.messageModulus
 	}
-	return e.EncryptGLev(pt, decompParams)
+	return e.EncryptGLevPlaintext(pt, decompParams)
 }
 
-// EncryptGLev encrypts GLWE plaintext to GLev ciphertext.
-func (e Encrypter[T]) EncryptGLev(pt GLWEPlaintext[T], decompParams DecompositionParameters[T]) GLevCiphertext[T] {
+// EncryptGLevPlaintext encrypts GLWE plaintext to GLev ciphertext.
+func (e Encrypter[T]) EncryptGLevPlaintext(pt GLWEPlaintext[T], decompParams DecompositionParameters[T]) GLevCiphertext[T] {
 	ctOut := NewGLevCiphertext(e.Parameters, decompParams)
 	e.EncryptGLevInPlace(pt, ctOut)
 	return ctOut
@@ -138,8 +138,8 @@ func (e Encrypter[T]) EncryptGLevInPlace(pt GLWEPlaintext[T], ctOut GLevCipherte
 }
 
 // DecryptGLevInt decrypts GLev ciphertext to integer message.
-func (e Encrypter[T]) DecryptGLevInts(ct GLevCiphertext[T]) []int {
-	pt := e.DecryptGLev(ct)
+func (e Encrypter[T]) DecryptGLev(ct GLevCiphertext[T]) []int {
+	pt := e.DecryptGLevPlaintext(ct)
 	messages := make([]int, e.Parameters.polyDegree)
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		messages[i] = int(num.RoundRatioBits(pt.Value.Coeffs[i], ct.decompParams.LastScaledBaseLog()) % e.Parameters.messageModulus)
@@ -147,8 +147,8 @@ func (e Encrypter[T]) DecryptGLevInts(ct GLevCiphertext[T]) []int {
 	return messages
 }
 
-// DecryptGLev decrypts GLev ciphertext to GLWE plaintext.
-func (e Encrypter[T]) DecryptGLev(ct GLevCiphertext[T]) GLWEPlaintext[T] {
+// DecryptGLevPlaintext decrypts GLev ciphertext to GLWE plaintext.
+func (e Encrypter[T]) DecryptGLevPlaintext(ct GLevCiphertext[T]) GLWEPlaintext[T] {
 	ptOut := NewGLWEPlaintext(e.Parameters)
 	e.DecryptGLevInPlace(ct, ptOut)
 	return ptOut
@@ -161,16 +161,16 @@ func (e Encrypter[T]) DecryptGLevInPlace(ct GLevCiphertext[T], ptOut GLWEPlainte
 }
 
 // EncryptGGSWInt encrypts integer message to GGSW ciphertext.
-func (e Encrypter[T]) EncryptGGSWInts(messages []int, decompParams DecompositionParameters[T]) GGSWCiphertext[T] {
+func (e Encrypter[T]) EncryptGGSW(messages []int, decompParams DecompositionParameters[T]) GGSWCiphertext[T] {
 	pt := NewGLWEPlaintext(e.Parameters)
 	for i := 0; i < e.Parameters.polyDegree && i < len(messages); i++ {
 		pt.Value.Coeffs[i] = T(messages[i]) % e.Parameters.messageModulus
 	}
-	return e.EncryptGGSW(pt, decompParams)
+	return e.EncryptGGSWPlaintext(pt, decompParams)
 }
 
-// EncryptGGSW encrypts GLWE plaintext to GGSW ciphertext.
-func (e Encrypter[T]) EncryptGGSW(pt GLWEPlaintext[T], decompParams DecompositionParameters[T]) GGSWCiphertext[T] {
+// EncryptGGSWPlaintext encrypts GLWE plaintext to GGSW ciphertext.
+func (e Encrypter[T]) EncryptGGSWPlaintext(pt GLWEPlaintext[T], decompParams DecompositionParameters[T]) GGSWCiphertext[T] {
 	ctOut := NewGGSWCiphertext(e.Parameters, decompParams)
 	e.EncryptGGSWInPlace(pt, ctOut)
 	return ctOut
@@ -178,29 +178,24 @@ func (e Encrypter[T]) EncryptGGSW(pt GLWEPlaintext[T], decompParams Decompositio
 
 // EncryptGGSWInPlace encrypts GLWE plaintext to GGSW ciphertext, and writes it to ctOut.
 func (e Encrypter[T]) EncryptGGSWInPlace(pt GLWEPlaintext[T], ctOut GGSWCiphertext[T]) {
-	// Use ctOut.Value[0].Value[0].Value[0] as buffer.
-	// This will be overriden in the end, by GLev encryption of pt.
-	buf := ctOut.Value[0].Value[0].Value[0]
-
+	e.EncryptGLevInPlace(pt, ctOut.Value[0])
 	for i := 1; i < e.Parameters.glweDimension+1; i++ {
-		e.PolyEvaluater.MulInPlace(e.glweKey.Value[i-1], pt.Value, buf)
+		e.PolyEvaluater.MulInPlace(e.glweKey.Value[i-1], pt.Value, e.buffer.ptForGGSW)
 		for j := 0; j < ctOut.decompParams.level; j++ {
-			e.PolyEvaluater.ScalarMulInPlace(buf, -ctOut.decompParams.ScaledBase(j), ctOut.Value[i].Value[j].Value[0])
+			e.PolyEvaluater.ScalarMulInPlace(e.buffer.ptForGGSW, -ctOut.decompParams.ScaledBase(j), ctOut.Value[i].Value[j].Value[0])
 			e.EncryptGLWEAssign(ctOut.Value[i].Value[j])
 		}
 	}
-
-	e.EncryptGLevInPlace(pt, ctOut.Value[0])
 }
 
 // DecryptGGSWInt decrypts GGSW ciphertext to integer message.
-func (e Encrypter[T]) DecryptGGSWInts(ct GGSWCiphertext[T]) []int {
-	return e.DecryptGLevInts(ct.Value[0])
+func (e Encrypter[T]) DecryptGGSW(ct GGSWCiphertext[T]) []int {
+	return e.DecryptGLev(ct.Value[0])
 }
 
-// DecryptGGSW decrypts GGSW ciphertext to GLWE plaintext.
-func (e Encrypter[T]) DecryptGGSW(ct GGSWCiphertext[T]) GLWEPlaintext[T] {
-	return e.DecryptGLev(ct.Value[0])
+// DecryptGGSWPlaintext decrypts GGSW ciphertext to GLWE plaintext.
+func (e Encrypter[T]) DecryptGGSWPlaintext(ct GGSWCiphertext[T]) GLWEPlaintext[T] {
+	return e.DecryptGLevPlaintext(ct.Value[0])
 }
 
 // DecryptGGSWInPlace decrypts GGSW ciphertext to GLWE plaintext and writes it to ptOut.
