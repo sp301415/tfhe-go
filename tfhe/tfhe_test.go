@@ -58,6 +58,21 @@ func TestEncrypter(t *testing.T) {
 		ct := testEncrypter.EncryptGGSW(messages, decompParams)
 		assert.Equal(t, messages, testEncrypter.DecryptGGSW(ct)[:len(messages)])
 	})
+
+	t.Run("FourierGLWE", func(t *testing.T) {
+		ct := testEncrypter.EncryptFourierGLWE(messages)
+		assert.Equal(t, messages, testEncrypter.DecryptFourierGLWE(ct)[:len(messages)])
+	})
+
+	t.Run("FourierGLev", func(t *testing.T) {
+		ct := testEncrypter.EncryptFourierGLev(messages, decompParams)
+		assert.Equal(t, messages, testEncrypter.DecryptFourierGLev(ct)[:len(messages)])
+	})
+
+	t.Run("FourierGGSW", func(t *testing.T) {
+		ct := testEncrypter.EncryptFourierGGSW(messages, decompParams)
+		assert.Equal(t, messages, testEncrypter.DecryptFourierGGSW(ct)[:len(messages)])
+	})
 }
 
 func TestEvaluater(t *testing.T) {
