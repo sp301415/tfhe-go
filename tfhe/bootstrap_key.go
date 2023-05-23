@@ -3,9 +3,9 @@ package tfhe
 // EvaluationKey is a public key for Evaluator,
 // which consists of Bootstrapping Key and KeySwitching Key.
 type EvaluationKey[T Tint] struct {
-	// BootstrapKey is a bootstrapping key.
+	// BootstrapKey is a bootstrap key.
 	BootstrapKey BootstrapKey[T]
-	// KeySwitchKey is a keyswithcing key switching GLWE secret key -> LWE secret key.
+	// KeySwitchKey is a keyswitch key switching GLWE secret key -> LWE secret key.
 	KeySwitchKey KeySwitchKey[T]
 }
 
@@ -48,7 +48,7 @@ func (bsk BootstrapKey[T]) DecompositionParameters() DecompositionParameters[T] 
 	return bsk.decompParams
 }
 
-// KeySwitchKey is a LWE keyswitching key from GLWE secret key to LWE secret key.
+// KeySwitchKey is a LWE keyswitch key from GLWE secret key to LWE secret key.
 // Essentially, this is a GSW encryption of GLWE key with LWE key.
 type KeySwitchKey[T Tint] GSWCiphertext[T]
 

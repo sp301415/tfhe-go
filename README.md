@@ -1,6 +1,6 @@
 # TFHE-go
 
-TFHE-go is a Go implementation of TFHE[[CGGI16](https://eprint.iacr.org/2018/421)] Scheme. The structure of this library is similar to another great Go-based FHE library, [Lattigo](https://github.com/tuneinsight/lattigo).
+TFHE-go is a Go implementation of TFHE[[CGGI16](https://eprint.iacr.org/2016/870)] Scheme. The structure of this library is similar to another great Go-based FHE library, [Lattigo](https://github.com/tuneinsight/lattigo).
 
 Some of the implementations are taken from the excellent [TFHE-rs](https://github.com/zama-ai/tfhe-rs), developed by Zama. The goal is to implement most of the functionalities that TFHE-rs provides, with readable code and minimal performance overhead.
 
@@ -79,3 +79,5 @@ All results were measured from Apple M1. `ParamsBoolean` and `ParamsUint6` are u
 - Guide to Fully Homomorphic Encryption over the Discretized Torus (https://eprint.iacr.org/2021/1402)
 - Fast and Error-Free Negacyclic Integer Convolution using Extended Fourier Transform (https://eprint.iacr.org/2021/480)
 - Parameter Optimization & Larger Precision for (T)FHE (https://eprint.iacr.org/2022/704)
+- Improving TFHE: faster packed homomorphic operations and efficient circuit bootstrapping (https://eprint.iacr.org/2017/430)
+- MOSFHET: Optimized Software for FHE over the Torus (https://eprint.iacr.org/2022/515)

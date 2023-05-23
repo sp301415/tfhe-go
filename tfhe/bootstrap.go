@@ -189,9 +189,9 @@ func (e Evaluater[T]) KeySwitchInPlace(ct LWECiphertext[T], ksk KeySwitchKey[T],
 		e.DecomposeInPlace(ct.Value[i+1], buffDecomposed, ksk.decompParams)
 		for j := 0; j < ksk.decompParams.level; j++ {
 			if i == 0 && j == 0 {
-				vec.ScalarMulInPlace(ksk.Value[i].Value[j].Value, -buffDecomposed[j], ctOut.Value)
+				e.ScalarMulLWEInPlace(ksk.Value[i].Value[j], -buffDecomposed[j], ctOut)
 			} else {
-				vec.ScalarMulSubAssign(ksk.Value[i].Value[j].Value, buffDecomposed[j], ctOut.Value)
+				e.ScalarMulSubLWEAssign(ksk.Value[i].Value[j], buffDecomposed[j], ctOut)
 			}
 		}
 	}
@@ -199,13 +199,13 @@ func (e Evaluater[T]) KeySwitchInPlace(ct LWECiphertext[T], ksk KeySwitchKey[T],
 	ctOut.Value[0] += ct.Value[0]
 }
 
-// KeySwitchForBootstrap performs the keyswitching using evaulater's bootstrapping key.
+// KeySwitchForBootstrap performs the keyswitching using evaulater's bootstrap key.
 // Input ciphertext should be length GLWEDimension + 1, and output ciphertext will be length LWEDimension + 1.
 func (e Evaluater[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[T] {
 	return e.KeySwitch(ct, e.evaluationKey.KeySwitchKey)
 }
 
-// KeySwitchForBootstrapInPlace performs the keyswitching using evaulater's bootstrapping key.
+// KeySwitchForBootstrapInPlace performs the keyswitching using evaulater's bootstrap key.
 // Input ciphertext should be length GLWEDimension + 1, and output ciphertext should be length LWEDimension + 1.
 func (e Evaluater[T]) KeySwitchForBootstrapInPlace(ct, ctOut LWECiphertext[T]) {
 	e.KeySwitchInPlace(ct, e.evaluationKey.KeySwitchKey, ctOut)

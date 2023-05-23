@@ -103,7 +103,7 @@ func (e Encrypter[T]) GenBootstrapKeyParallel() BootstrapKey[T] {
 	return bsk
 }
 
-// GenKeySwitchKey samples a new keyswitching key skIn -> e.LWEKey.
+// GenKeySwitchKey samples a new keyswitch key skIn -> e.LWEKey.
 //
 // This can take a long time.
 // Use GenKeySwitchKeyParallel for better key generation performance.
@@ -120,7 +120,7 @@ func (e Encrypter[T]) GenKeySwitchKey(skIn LWEKey[T], decompParams Decomposition
 	return ksk
 }
 
-// GenKeySwitchKeyParallel samples a new keyswitching key skIn -> e.LWEKey in parallel.
+// GenKeySwitchKeyParallel samples a new keyswitch key skIn -> e.LWEKey in parallel.
 func (e Encrypter[T]) GenKeySwitchKeyParallel(skIn LWEKey[T], decompParams DecompositionParameters[T]) KeySwitchKey[T] {
 	ksk := NewKeySwitchKey(len(skIn.Value), len(e.lweKey.Value), decompParams)
 
@@ -161,7 +161,7 @@ func (e Encrypter[T]) GenKeySwitchKeyParallel(skIn LWEKey[T], decompParams Decom
 	return ksk
 }
 
-// GenKeySwitchKeyForBootstrap samples a new keyswitching key LWELargeKey -> LWEKey,
+// GenKeySwitchKeyForBootstrap samples a new keyswitch key LWELargeKey -> LWEKey,
 // used for bootstrapping.
 //
 // This can take a long time.
@@ -170,7 +170,7 @@ func (e Encrypter[T]) GenKeySwitchKeyForBootstrap() KeySwitchKey[T] {
 	return e.GenKeySwitchKey(e.glweKey.ToLWEKey(), e.Parameters.keyswitchParameters)
 }
 
-// GenKeySwitchKeyForBootstrapParallel samples a new keyswitching key LWELargeKey -> LWEKey in parallel,
+// GenKeySwitchKeyForBootstrapParallel samples a new keyswitch key LWELargeKey -> LWEKey in parallel,
 // used for bootstrapping.
 func (e Encrypter[T]) GenKeySwitchKeyForBootstrapParallel() KeySwitchKey[T] {
 	return e.GenKeySwitchKeyParallel(e.glweKey.ToLWEKey(), e.Parameters.keyswitchParameters)

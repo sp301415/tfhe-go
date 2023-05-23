@@ -174,12 +174,10 @@ func (e Evaluater[T]) ExternalProductFourierInPlace(ctFourierGGSW FourierGGSWCip
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.DecomposePolyInplace(ctGLWE.Value[i], buffDecomposed, ctFourierGGSW.decompParams)
 		for j := 0; j < ctFourierGGSW.decompParams.level; j++ {
-			for k := 0; k < e.Parameters.glweDimension+1; k++ {
-				if i == 0 && j == 0 {
-					e.FourierTransformer.PolyMulInPlace(ctFourierGGSW.Value[i].Value[j].Value[k], buffDecomposed[j], e.buffer.fourierCtOutForExtProd.Value[k])
-				} else {
-					e.FourierTransformer.PolyMulAddAssign(ctFourierGGSW.Value[i].Value[j].Value[k], buffDecomposed[j], e.buffer.fourierCtOutForExtProd.Value[k])
-				}
+			if i == 0 && j == 0 {
+				e.PolyMulFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtOutForExtProd)
+			} else {
+				e.PolyMulAddFourierGLWEAssign(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtOutForExtProd)
 			}
 		}
 	}
@@ -197,12 +195,10 @@ func (e Evaluater[T]) ExternalProductFourierAssign(ctFourierGGSW FourierGGSWCiph
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.DecomposePolyInplace(ctGLWE.Value[i], buffDecomposed, ctFourierGGSW.decompParams)
 		for j := 0; j < ctFourierGGSW.decompParams.level; j++ {
-			for k := 0; k < e.Parameters.glweDimension+1; k++ {
-				if i == 0 && j == 0 {
-					e.FourierTransformer.PolyMulInPlace(ctFourierGGSW.Value[i].Value[j].Value[k], buffDecomposed[j], e.buffer.fourierCtOutForExtProd.Value[k])
-				} else {
-					e.FourierTransformer.PolyMulAddAssign(ctFourierGGSW.Value[i].Value[j].Value[k], buffDecomposed[j], e.buffer.fourierCtOutForExtProd.Value[k])
-				}
+			if i == 0 && j == 0 {
+				e.PolyMulFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtOutForExtProd)
+			} else {
+				e.PolyMulAddFourierGLWEAssign(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtOutForExtProd)
 			}
 		}
 	}
@@ -220,12 +216,10 @@ func (e Evaluater[T]) ExternalProductFourierAddAssign(ctFourierGGSW FourierGGSWC
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.DecomposePolyInplace(ctGLWE.Value[i], buffDecomposed, ctFourierGGSW.decompParams)
 		for j := 0; j < ctFourierGGSW.decompParams.level; j++ {
-			for k := 0; k < e.Parameters.glweDimension+1; k++ {
-				if i == 0 && j == 0 {
-					e.FourierTransformer.PolyMulInPlace(ctFourierGGSW.Value[i].Value[j].Value[k], buffDecomposed[j], e.buffer.fourierCtOutForExtProd.Value[k])
-				} else {
-					e.FourierTransformer.PolyMulAddAssign(ctFourierGGSW.Value[i].Value[j].Value[k], buffDecomposed[j], e.buffer.fourierCtOutForExtProd.Value[k])
-				}
+			if i == 0 && j == 0 {
+				e.PolyMulFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtOutForExtProd)
+			} else {
+				e.PolyMulAddFourierGLWEAssign(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtOutForExtProd)
 			}
 		}
 	}
@@ -243,12 +237,10 @@ func (e Evaluater[T]) ExternalProductFourierSubAssign(ctFourierGGSW FourierGGSWC
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.DecomposePolyInplace(ctGLWE.Value[i], buffDecomposed, ctFourierGGSW.decompParams)
 		for j := 0; j < ctFourierGGSW.decompParams.level; j++ {
-			for k := 0; k < e.Parameters.glweDimension+1; k++ {
-				if i == 0 && j == 0 {
-					e.FourierTransformer.PolyMulInPlace(ctFourierGGSW.Value[i].Value[j].Value[k], buffDecomposed[j], e.buffer.fourierCtOutForExtProd.Value[k])
-				} else {
-					e.FourierTransformer.PolyMulAddAssign(ctFourierGGSW.Value[i].Value[j].Value[k], buffDecomposed[j], e.buffer.fourierCtOutForExtProd.Value[k])
-				}
+			if i == 0 && j == 0 {
+				e.PolyMulFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtOutForExtProd)
+			} else {
+				e.PolyMulAddFourierGLWEAssign(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtOutForExtProd)
 			}
 		}
 	}
