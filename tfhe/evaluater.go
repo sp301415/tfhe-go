@@ -48,19 +48,13 @@ type evaluationBuffer[T Tint] struct {
 	// sampleExtractedCtForBootstrap holds the sample extracted LWE large ciphertext for bootstrapping.
 	sampleExtractedCtForBootstrap LWECiphertext[T]
 
-	// addLWECtForMul holds ct0 + ct1 for LWE multiplication.
-	addLWECtForMul LWECiphertext[T]
-	// subLWECtForMul holds ct0 - ct1 for LWE multiplication.
-	subLWECtForMul LWECiphertext[T]
-	// twoLWECtForOps holds ct0 || ct1 for carry-based operations.
-	twoLWECtForOps LWECiphertext[T]
+	// addCtForLWEMul holds ct0 + ct1 for LWE multiplication.
+	addCtForLWEMul LWECiphertext[T]
+	// subCtForLWEMul holds ct0 - ct1 for LWE multiplication.
+	subCtForLWEMul LWECiphertext[T]
 
-	// idLUT is a LUT of identity function f: x -> x.
-	idLUT LookUpTable[T]
-	// mulLUT is a LUT of multiplication function f: x -> x^2/4.
-	mulLUT LookUpTable[T]
-	// emptyLUT is an empty LUT, used for BlindRotateFunc.
-	emptyLUT LookUpTable[T]
+	// lut is an empty lut, used for BlindRotateFunc.
+	lut LookUpTable[T]
 }
 
 // NewEvaluater creates a new Evaluater based on parameters.
@@ -96,19 +90,6 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 		decomposedPoly[i] = poly.New[T](params.polyDegree)
 	}
 
-	idLUT := NewLookUpTable(params)
-	genLookUpTableInPlace(params, func(x int) int { return x }, idLUT)
-
-	mulLUT := NewLookUpTable(params)
-	genLookUpTableInPlace(params, func(x int) int {
-		mod := int(params.messageModulus)
-		x %= mod
-		if x > mod/2 {
-			x = mod - x
-		}
-		return x * x / 4
-	}, mulLUT)
-
 	return evaluationBuffer[T]{
 		decomposedPoly: decomposedPoly,
 		decomposedVec:  make([]T, MaxBufferDecomposedLevel),
@@ -121,13 +102,10 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 		blindRotatedCtForBootstrap:    NewGLWECiphertext(params),
 		sampleExtractedCtForBootstrap: NewLargeLWECiphertext(params),
 
-		addLWECtForMul: NewLWECiphertext(params),
-		subLWECtForMul: NewLWECiphertext(params),
-		twoLWECtForOps: NewLWECiphertext(params),
+		addCtForLWEMul: NewLWECiphertext(params),
+		subCtForLWEMul: NewLWECiphertext(params),
 
-		idLUT:    idLUT,
-		mulLUT:   mulLUT,
-		emptyLUT: NewLookUpTable(params),
+		lut: NewLookUpTable(params),
 	}
 }
 

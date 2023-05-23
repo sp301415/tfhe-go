@@ -17,7 +17,7 @@ export CGO_LDFLAGS="-L/opt/homebrew/lib"
 ## Examples
 ### Encryption
 ```go
-params := tfhe.ParamsUint4Carry0.Compile()   // Parameters should be compiled before use.
+params := tfhe.ParamsUint4.Compile()   // Parameters should be compiled before use.
 decompParams := params.KeySwitchParameters() // Decomposition Parameters
 
 enc := tfhe.NewEncrypter(params) // Set up Encrypter.
@@ -35,7 +35,7 @@ fmt.Println(enc.DecryptPackedForMul(ctGGSW)[:4]) // [1, 2, 3, 4]
 
 ### CMUX
 ```go
-params := tfhe.ParamsUint4Carry0.Compile()
+params := tfhe.ParamsUint4.Compile()
 decompParams := params.KeySwitchParameters()
 
 enc := tfhe.NewEncrypter(params)
@@ -54,7 +54,7 @@ fmt.Println(enc.DecryptPacked(ctOut)[0]) // 5
 
 ### Programmable Bootstrapping
 ```go
-params := tfhe.ParamsUint4Carry0.Compile()
+params := tfhe.ParamsUint4.Compile()
 
 enc := tfhe.NewEncrypter(params)
 defer enc.Free()

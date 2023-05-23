@@ -21,24 +21,42 @@ var (
 
 func TestEncrypter(t *testing.T) {
 	messages := []int{1, 2, 3}
+	decompParams := testParams.KeySwitchParameters()
 
 	t.Run("LWE", func(t *testing.T) {
 		for _, m := range messages {
-			ct := testEncrypter.Encrypt(m)
-			assert.Equal(t, m, testEncrypter.Decrypt(ct))
+			ct := testEncrypter.EncryptLWEInt(m)
+			assert.Equal(t, m, testEncrypter.DecryptLWEInt(ct))
 		}
 	})
 
-	t.Run("LWELarge", func(t *testing.T) {
+	t.Run("Lev", func(t *testing.T) {
 		for _, m := range messages {
-			ct := testEncrypter.EncryptLarge(m)
-			assert.Equal(t, m, testEncrypter.DecryptLarge(ct))
+			ct := testEncrypter.EncryptLevInt(m, decompParams)
+			assert.Equal(t, m, testEncrypter.DecryptLevInt(ct))
+		}
+	})
+
+	t.Run("GSW", func(t *testing.T) {
+		for _, m := range messages {
+			ct := testEncrypter.EncryptGSWInt(m, decompParams)
+			assert.Equal(t, m, testEncrypter.DecryptGSWInt(ct))
 		}
 	})
 
 	t.Run("GLWE", func(t *testing.T) {
-		ct := testEncrypter.EncryptPacked(messages)
-		assert.Equal(t, messages, testEncrypter.DecryptPacked(ct)[:len(messages)])
+		ct := testEncrypter.EncryptGLWEInts(messages)
+		assert.Equal(t, messages, testEncrypter.DecryptGLWEInts(ct)[:len(messages)])
+	})
+
+	t.Run("GLev", func(t *testing.T) {
+		ct := testEncrypter.EncryptGLevInts(messages, decompParams)
+		assert.Equal(t, messages, testEncrypter.DecryptGLevInts(ct)[:len(messages)])
+	})
+
+	t.Run("GGSW", func(t *testing.T) {
+		ct := testEncrypter.EncryptGGSWInts(messages, decompParams)
+		assert.Equal(t, messages, testEncrypter.DecryptGGSWInts(ct)[:len(messages)])
 	})
 }
 
@@ -46,15 +64,16 @@ func TestEvaluater(t *testing.T) {
 	messages := []int{1, 2, 3}
 
 	t.Run("ExternalProductFourier", func(t *testing.T) {
-		ct := testEncrypter.EncryptPacked(messages)
+		ct := testEncrypter.EncryptGLWEInts(messages)
 
 		mul := 2
-		ctMul := testEncrypter.EncryptPackedForMul([]int{mul}, testParams.KeySwitchParameters())
+		ctMulStandard := testEncrypter.EncryptGGSWInts([]int{mul}, testParams.KeySwitchParameters())
+		ctMul := testEncrypter.ToFourierGGSWCiphertext(ctMulStandard)
 
 		ctOut := testEvaluater.ExternalProductFourier(ctMul, ct)
 
 		for i, m := range messages {
-			assert.Equal(t, mul*m, testEncrypter.DecryptPacked(ctOut)[i])
+			assert.Equal(t, mul*m, testEncrypter.DecryptGLWEInts(ctOut)[i])
 		}
 	})
 
@@ -62,41 +81,14 @@ func TestEvaluater(t *testing.T) {
 		messagesPool := [][]int{messages, vec.Reverse(messages)}
 
 		for _, i := range []int{0, 1} {
-			ct0 := testEncrypter.EncryptPacked(messagesPool[0])
-			ct1 := testEncrypter.EncryptPacked(messagesPool[1])
-			ctGGSW := testEncrypter.EncryptPackedForMul([]int{i}, testParams.BootstrapParameters())
+			ct0 := testEncrypter.EncryptGLWEInts(messagesPool[0])
+			ct1 := testEncrypter.EncryptGLWEInts(messagesPool[1])
+			ctGGSW := testEncrypter.EncryptGGSWInts([]int{i}, testParams.BootstrapParameters())
+			ctGGSWF := testEncrypter.ToFourierGGSWCiphertext(ctGGSW)
 
-			ctOut := testEvaluater.CMuxFourier(ctGGSW, ct0, ct1)
+			ctOut := testEvaluater.CMuxFourier(ctGGSWF, ct0, ct1)
 
-			assert.Equal(t, messagesPool[i], testEncrypter.DecryptPacked(ctOut)[:len(messages)])
-		}
-	})
-
-	t.Run("BlindRotate", func(t *testing.T) {
-		f := func(x int) int { return 2 * x }
-		lut := testEvaluater.GenLookUpTable(f)
-
-		for _, m := range messages {
-			ct := testEncrypter.Encrypt(m)
-			ctOut := testEvaluater.BlindRotate(ct, lut)
-			assert.Equal(t, f(m), testEncrypter.DecryptPacked(ctOut)[0])
-		}
-	})
-
-	t.Run("KeySwitch", func(t *testing.T) {
-		for _, m := range messages {
-			ct := testEncrypter.EncryptLarge(m)
-			ctOut := testEvaluater.KeySwitchForBootstrap(ct)
-			assert.Equal(t, m, testEncrypter.Decrypt(ctOut))
-		}
-	})
-
-	t.Run("SampleExtract", func(t *testing.T) {
-		ct := testEncrypter.EncryptPacked(messages)
-
-		for i, m := range messages {
-			ctOut := testEvaluater.SampleExtract(ct, i)
-			assert.Equal(t, m, testEncrypter.DecryptLarge(ctOut))
+			assert.Equal(t, messagesPool[i], testEncrypter.DecryptGLWEInts(ctOut)[:len(messages)])
 		}
 	})
 
@@ -104,19 +96,19 @@ func TestEvaluater(t *testing.T) {
 		f := func(x int) int { return 2 * x }
 
 		for _, m := range messages {
-			ct := testEncrypter.Encrypt(m)
+			ct := testEncrypter.EncryptLWEInt(m)
 			ctOut := testEvaluater.BootstrapFunc(ct, f)
-			assert.Equal(t, f(m), testEncrypter.Decrypt(ctOut))
+			assert.Equal(t, f(m), testEncrypter.DecryptLWEInt(ctOut))
 		}
 	})
 
 	t.Run("LWEMul", func(t *testing.T) {
-		ct0 := testEncrypter.Encrypt(messages[0])
-		ct1 := testEncrypter.Encrypt(messages[1])
+		ct0 := testEncrypter.EncryptLWEInt(messages[0])
+		ct1 := testEncrypter.EncryptLWEInt(messages[1])
 
 		ctOut := testEvaluater.MulLWE(ct0, ct1)
 
-		assert.Equal(t, messages[0]*messages[1], testEncrypter.Decrypt(ctOut))
+		assert.Equal(t, messages[0]*messages[1], testEncrypter.DecryptLWEInt(ctOut))
 	})
 }
 
@@ -127,7 +119,7 @@ func BenchmarkEvaluationKeyGen(b *testing.B) {
 }
 
 func BenchmarkBootstrap(b *testing.B) {
-	ct := benchEncrypter.Encrypt(3)
+	ct := benchEncrypter.EncryptLWEInt(3)
 	ctOut := tfhe.NewLWECiphertext(benchParams)
 	b.ResetTimer()
 

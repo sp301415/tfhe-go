@@ -121,6 +121,11 @@ func Log2[T Integer](x T) int {
 	return int(bits.Len64(uint64(x))) - 1
 }
 
+// RoundRatio computes round(x/y).
+func RoundRatio[T Integer](x, y T) T {
+	return T(math.Round(float64(x) / float64(y)))
+}
+
 // RoundRatioBits is a bit-optimzed version of RoundRatio: it computes round(x/2^bits).
 //   - If bits == 0, then it returns x.
 //   - If bits < 0, it panics.
@@ -128,8 +133,7 @@ func RoundRatioBits[T Integer](x T, bits int) T {
 	if bits == 0 {
 		return x
 	}
-	carry := x & (1 << (bits - 1))
-	return (x + carry<<1) >> bits
+	return (x >> bits) + ((x >> (bits - 1)) & 1)
 }
 
 // ClosestMultipleBits returns the closest multiple of x respect to 2^bits.
@@ -188,4 +192,9 @@ func MinN[T Real](x ...T) T {
 		}
 	}
 	return min
+}
+
+// Sqrt computes round(sqrt2(x)). Usually used for dividing even chunks for parallelism.
+func Sqrt[T Integer](x T) T {
+	return T(math.Round(math.Sqrt(float64(x))))
 }

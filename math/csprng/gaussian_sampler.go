@@ -91,6 +91,14 @@ func (s GaussianSampler[T]) SamplePolyAssign(p poly.Poly[T]) {
 	s.SampleSliceAssign(p.Coeffs)
 }
 
+// SamplePolyAddAssign samples a polynomial from gaussian distribution
+// and adds it to p.
+func (s GaussianSampler[T]) SamplePolyAddAssign(p poly.Poly[T]) {
+	for i := range p.Coeffs {
+		p.Coeffs[i] += s.Sample()
+	}
+}
+
 // SamplePoly returns sampled discrete gaussian polynomial of degree N.
 func (s GaussianSampler[T]) SamplePoly(N int) poly.Poly[T] {
 	p := poly.New[T](N)

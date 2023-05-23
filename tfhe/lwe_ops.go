@@ -103,13 +103,22 @@ func (e Evaluater[T]) MulLWE(ct0, ct1 LWECiphertext[T]) LWECiphertext[T] {
 // In TFHE-go, PBS approach is implemented:
 // Compute (x+y)^2/4 - (x-y)^2/4 using PBS x -> x^2/4.
 func (e Evaluater[T]) MulLWEInPlace(ct0, ct1, ctOut LWECiphertext[T]) {
-	e.AddLWEInPlace(ct0, ct1, e.buffer.addLWECtForMul)
-	e.SubLWEInPlace(ct0, ct1, e.buffer.subLWECtForMul)
+	e.AddLWEInPlace(ct0, ct1, e.buffer.addCtForLWEMul)
+	e.SubLWEInPlace(ct0, ct1, e.buffer.subCtForLWEMul)
 
-	e.BootstrapLUTAssign(e.buffer.addLWECtForMul, e.buffer.mulLUT)
-	e.BootstrapLUTAssign(e.buffer.subLWECtForMul, e.buffer.mulLUT)
+	e.GenLookUpTableInPlace(func(x int) int {
+		mod := int(e.Parameters.messageModulus)
+		x %= mod
+		if x > mod/2 {
+			x = mod - x
+		}
+		return x * x / 4
+	}, e.buffer.lut)
 
-	e.SubLWEInPlace(e.buffer.addLWECtForMul, e.buffer.subLWECtForMul, ctOut)
+	e.BootstrapLUTAssign(e.buffer.addCtForLWEMul, e.buffer.lut)
+	e.BootstrapLUTAssign(e.buffer.subCtForLWEMul, e.buffer.lut)
+
+	e.SubLWEInPlace(e.buffer.addCtForLWEMul, e.buffer.subCtForLWEMul, ctOut)
 }
 
 // MulLWEAssign multiplies ct0 to ct1.

@@ -31,9 +31,17 @@ func (lut *LookUpTable[T]) CopyFrom(lutIn LookUpTable[T]) {
 	}
 }
 
-// genLookUpTableInPlace generates a lookup table based on function f and writes it to lutOut.
+// GenLookUpTable generates a lookup table based on function f and returns it.
 // Inputs and Outputs of f is cut by MessageModulus.
-func genLookUpTableInPlace[T Tint](params Parameters[T], f func(int) int, lutOut LookUpTable[T]) {
+func (e Evaluater[T]) GenLookUpTable(f func(int) int) LookUpTable[T] {
+	lutOut := NewLookUpTable(e.Parameters)
+	e.GenLookUpTableInPlace(f, lutOut)
+	return lutOut
+}
+
+// GenLookUpTableInPlace generates a lookup table based on function f and writes it to lutOut.
+// Inputs and Outputs of f is cut by MessageModulus.
+func (e Evaluater[T]) GenLookUpTableInPlace(f func(int) int, lutOut LookUpTable[T]) {
 	// We calculate f(round(P*j/2N)), where P = messageModulus * 2 (We use 1-bit padding, remember?)
 	// For x := round(p*j/2N), observe that:
 	// x = 1 => j = N/p ~ 3N/p
@@ -43,9 +51,10 @@ func genLookUpTableInPlace[T Tint](params Parameters[T], f func(int) int, lutOut
 	// x = 0 => j = 0 ~ N/p and j = -N/p ~ 0.
 	// So we can rotate negacyclically for N/p.
 
-	boxSize := params.polyDegree >> params.messageModulusLog // 2N/P
-	for x := 0; x < int(params.messageModulus); x++ {
-		fx := (T(f(x)) % params.messageModulus) << params.deltaLog
+	intMessageMod := int(e.Parameters.messageModulus)
+	boxSize := e.Parameters.polyDegree / intMessageMod // 2N/P
+	for x := 0; x < intMessageMod; x++ {
+		fx := (T(f(x)) % e.Parameters.messageModulus) << e.Parameters.deltaLog
 		for i := x * boxSize; i < (x+1)*boxSize; i++ {
 			lutOut.Value[0].Coeffs[i] = fx
 		}
@@ -58,51 +67,37 @@ func genLookUpTableInPlace[T Tint](params Parameters[T], f func(int) int, lutOut
 	vec.RotateAssign(lutOut.Value[0].Coeffs, -boxSize/2)
 }
 
-// GenLookUpTable generates a lookup table based on function f and returns it.
-// Inputs and Outputs of f is cut by MessageModulus.
-func (e Evaluater[T]) GenLookUpTable(f func(int) int) LookUpTable[T] {
-	lutOut := NewLookUpTable(e.Parameters)
-	e.GenLookUpTableInPlace(f, lutOut)
-	return lutOut
-}
-
-// GenLookUpTableInPlace generates a lookup table based on function f and writes it to lutOut.
-// Inputs and Outputs of f is cut by MessageModulus.
-func (e Evaluater[T]) GenLookUpTableInPlace(f func(int) int, lutOut LookUpTable[T]) {
-	genLookUpTableInPlace(e.Parameters, f, lutOut)
-}
-
 // Bootstrap returns a bootstrapped LWE ciphertext.
 func (e Evaluater[T]) Bootstrap(ct LWECiphertext[T]) LWECiphertext[T] {
-	return e.BootstrapLUT(ct, e.buffer.idLUT)
+	return e.BootstrapFunc(ct, func(x int) int { return x })
 }
 
 // BootstrapInPlace bootstraps LWE ciphertext and writes it to ctOut.
 func (e Evaluater[T]) BootstrapInPlace(ct, ctOut LWECiphertext[T]) {
-	e.BootstrapLUTInPlace(ct, e.buffer.idLUT, ctOut)
+	e.BootstrapFuncInPlace(ct, func(x int) int { return x }, ctOut)
 }
 
 // BootstrapAssign bootstraps LWE cipehrtext and overwrites it.
 func (e Evaluater[T]) BootstrapAssign(ct LWECiphertext[T]) {
-	e.BootstrapLUTAssign(ct, e.buffer.idLUT)
+	e.BootstrapFuncAssign(ct, func(x int) int { return x })
 }
 
 // BootstrapFunc returns a bootstrapped LWE ciphertext with resepect to given function.
 func (e Evaluater[T]) BootstrapFunc(ct LWECiphertext[T], f func(int) int) LWECiphertext[T] {
-	e.GenLookUpTableInPlace(f, e.buffer.emptyLUT)
-	return e.BootstrapLUT(ct, e.buffer.emptyLUT)
+	e.GenLookUpTableInPlace(f, e.buffer.lut)
+	return e.BootstrapLUT(ct, e.buffer.lut)
 }
 
 // BootstrapFuncInPlace bootstraps LWE ciphertext with resepect to given function and writes it to ctOut.
 func (e Evaluater[T]) BootstrapFuncInPlace(ct LWECiphertext[T], f func(int) int, ctOut LWECiphertext[T]) {
-	e.GenLookUpTableInPlace(f, e.buffer.emptyLUT)
-	e.BootstrapLUTInPlace(ct, e.buffer.emptyLUT, ctOut)
+	e.GenLookUpTableInPlace(f, e.buffer.lut)
+	e.BootstrapLUTInPlace(ct, e.buffer.lut, ctOut)
 }
 
 // BootstrapFuncAssign bootstraps LWE cipehrtext with resepect to given function and overwrites it.
 func (e Evaluater[T]) BootstrapFuncAssign(ct LWECiphertext[T], f func(int) int) {
-	e.GenLookUpTableInPlace(f, e.buffer.emptyLUT)
-	e.BootstrapLUTAssign(ct, e.buffer.emptyLUT)
+	e.GenLookUpTableInPlace(f, e.buffer.lut)
+	e.BootstrapLUTAssign(ct, e.buffer.lut)
 }
 
 // BootstrapLUT returns a bootstrapped LWE ciphertext with respect to given LUT.

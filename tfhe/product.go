@@ -16,7 +16,8 @@ func (e Evaluater[T]) Decompose(x T, decompParams DecompositionParameters[T]) []
 // DecomposeInplace decomposes x with respect to decompParams.
 // Equivalent to decompParams.DecomposeInPlace().
 func (e Evaluater[T]) DecomposeInPlace(x T, d []T, decompParams DecompositionParameters[T]) {
-	u := num.RoundRatioBits(x, decompParams.scaledBasesLog[decompParams.level-1])
+	lastScaledBaseLog := decompParams.scaledBasesLog[decompParams.level-1]
+	u := num.ClosestMultipleBits(x, lastScaledBaseLog) >> lastScaledBaseLog
 	for i := decompParams.level - 1; i >= 0; i-- {
 		res := u & (decompParams.base - 1)
 		u >>= decompParams.baseLog
@@ -43,8 +44,9 @@ func (e Evaluater[T]) DecomposePoly(x poly.Poly[T], decompParams DecompositionPa
 // DecomposePolyInPlace decomposes x with respect to decompParams.
 // Equivalant to decompParams.DecomposePolyInPlace().
 func (e Evaluater[T]) DecomposePolyInplace(x poly.Poly[T], d []poly.Poly[T], decompParams DecompositionParameters[T]) {
+	lastScaledBaseLog := decompParams.scaledBasesLog[decompParams.level-1]
 	for i := 0; i < e.Parameters.polyDegree; i++ {
-		c := num.RoundRatioBits(x.Coeffs[i], decompParams.scaledBasesLog[decompParams.level-1])
+		c := num.ClosestMultipleBits(x.Coeffs[i], lastScaledBaseLog) >> lastScaledBaseLog
 		for j := decompParams.level - 1; j >= 0; j-- {
 			res := c & (decompParams.base - 1)
 			c >>= decompParams.baseLog
@@ -86,29 +88,6 @@ func (e *Evaluater[T]) decomposedVecBuffer(decompParams DecompositionParameters[
 	oldLen := len(e.buffer.decomposedVec)
 	e.buffer.decomposedVec = append(e.buffer.decomposedVec, make([]T, decompParams.level-oldLen)...)
 	return e.buffer.decomposedVec
-}
-
-// ToStandardGGSWInPlace transforms FourierGGSW ciphertext to GGSW ciphertext.
-func (e Evaluater[T]) ToStandardGGSWInPlace(ctIn FourierGGSWCiphertext[T], ctOut GGSWCiphertext[T]) {
-	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		for j := 0; j < ctIn.decompParams.level; j++ {
-			for k := 0; k < e.Parameters.glweDimension+1; k++ {
-				e.FourierTransformer.ToScaledStandardPolyInPlace(ctIn.Value[i].Value[j].Value[k], ctOut.Value[i].Value[j].Value[k])
-			}
-		}
-	}
-}
-
-// ToFourierGGSWInPlace transforms GGSW ciphertext to FourierGGSW ciphertext.
-func (e Evaluater[T]) ToFourierGGSWInPlace(ctIn GGSWCiphertext[T], ctOut FourierGGSWCiphertext[T]) {
-	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		for j := 0; j < ctIn.decompParams.level; j++ {
-			for k := 0; k < e.Parameters.glweDimension+1; k++ {
-				e.FourierTransformer.ToScaledFourierPolyInPlace(ctIn.Value[i].Value[j].Value[k], ctOut.Value[i].Value[j].Value[k])
-
-			}
-		}
-	}
 }
 
 // ExternalProduct calculates the external product between
