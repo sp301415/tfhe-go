@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/sp301415/tfhe/math/num"
-	"github.com/sp301415/tfhe/math/poly"
 )
 
 // GenEvaluationKey samples a new evaluation key for bootstrapping.
@@ -34,21 +33,18 @@ func (e Encrypter[T]) GenEvaluationKeyParallel() EvaluationKey[T] {
 func (e Encrypter[T]) GenBootstrapKey() BootstrapKey[T] {
 	bsk := NewBootstrapKey(e.Parameters)
 
-	bufPoly := poly.New[T](e.Parameters.polyDegree)
-	bufCt := NewGLWECiphertext(e.Parameters)
 	for i := 0; i < e.Parameters.lweDimension; i++ {
 		for j := 0; j < e.Parameters.glweDimension+1; j++ {
 			if j == 0 {
-				bufPoly.Clear()
-				bufPoly.Coeffs[0] = e.lweKey.Value[i]
+				e.buffer.ptForGGSW.Clear()
+				e.buffer.ptForGGSW.Coeffs[0] = e.lweKey.Value[i]
 			} else {
-				e.PolyEvaluater.ScalarMulInPlace(e.glweKey.Value[j-1], -e.lweKey.Value[i], bufPoly)
+				e.PolyEvaluater.ScalarMulInPlace(e.glweKey.Value[j-1], -e.lweKey.Value[i], e.buffer.ptForGGSW)
 			}
-
 			for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
-				e.PolyEvaluater.ScalarMulInPlace(bufPoly, e.Parameters.bootstrapParameters.ScaledBase(k), bufCt.Value[0])
-				e.EncryptGLWEAssign(bufCt)
-				e.ToFourierGLWECiphertextInPlace(bufCt, bsk.Value[i].Value[j].Value[k])
+				e.PolyEvaluater.ScalarMulInPlace(e.buffer.ptForGGSW, e.Parameters.bootstrapParameters.ScaledBase(k), e.buffer.standardCt.Value[0])
+				e.EncryptGLWEAssign(e.buffer.standardCt)
+				e.ToFourierGLWECiphertextInPlace(e.buffer.standardCt, bsk.Value[i].Value[j].Value[k])
 			}
 		}
 	}
@@ -85,22 +81,19 @@ func (e Encrypter[T]) GenBootstrapKeyParallel() BootstrapKey[T] {
 			defer wg.Done()
 			e := encrypterPool[chunkIdx]
 
-			bufPoly := poly.New[T](e.Parameters.polyDegree)
-			bufCt := NewGLWECiphertext(e.Parameters)
 			for job := range jobs {
 				i, j := job[0], job[1]
 
 				if j == 0 {
-					bufPoly.Clear()
-					bufPoly.Coeffs[0] = e.lweKey.Value[i]
+					e.buffer.ptForGGSW.Clear()
+					e.buffer.ptForGGSW.Coeffs[0] = e.lweKey.Value[i]
 				} else {
-					e.PolyEvaluater.ScalarMulInPlace(e.glweKey.Value[j-1], -e.lweKey.Value[i], bufPoly)
+					e.PolyEvaluater.ScalarMulInPlace(e.glweKey.Value[j-1], -e.lweKey.Value[i], e.buffer.ptForGGSW)
 				}
-
 				for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
-					e.PolyEvaluater.ScalarMulInPlace(bufPoly, e.Parameters.bootstrapParameters.ScaledBase(k), bufCt.Value[0])
-					e.EncryptGLWEAssign(bufCt)
-					e.ToFourierGLWECiphertextInPlace(bufCt, bsk.Value[i].Value[j].Value[k])
+					e.PolyEvaluater.ScalarMulInPlace(e.buffer.ptForGGSW, e.Parameters.bootstrapParameters.ScaledBase(k), e.buffer.standardCt.Value[0])
+					e.EncryptGLWEAssign(e.buffer.standardCt)
+					e.ToFourierGLWECiphertextInPlace(e.buffer.standardCt, bsk.Value[i].Value[j].Value[k])
 				}
 			}
 		}(i)
