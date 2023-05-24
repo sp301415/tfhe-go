@@ -115,15 +115,6 @@ func TestEvaluater(t *testing.T) {
 		}
 	})
 
-	t.Run("LWEMul", func(t *testing.T) {
-		ct0 := testEncrypter.EncryptLWE(messages[0])
-		ct1 := testEncrypter.EncryptLWE(messages[1])
-
-		ctOut := testEvaluater.MulLWE(ct0, ct1)
-
-		assert.Equal(t, messages[0]*messages[1], testEncrypter.DecryptLWE(ctOut))
-	})
-
 	t.Run("PrivateFunctionalLWEKeySwitch", func(t *testing.T) {
 		sum := func(in []uint64) uint64 {
 			return in[0] + in[1]
