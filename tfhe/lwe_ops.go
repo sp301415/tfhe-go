@@ -115,8 +115,8 @@ func (e Evaluater[T]) MulLWEInPlace(ct0, ct1, ctOut LWECiphertext[T]) {
 		return x * x / 4
 	}, e.buffer.lut)
 
-	e.BootstrapLUTAssign(e.buffer.addCtForLWEMul, e.buffer.lut)
-	e.BootstrapLUTAssign(e.buffer.subCtForLWEMul, e.buffer.lut)
+	e.BootstrapLUTAssign(e.buffer.lut, e.buffer.addCtForLWEMul)
+	e.BootstrapLUTAssign(e.buffer.lut, e.buffer.subCtForLWEMul)
 
 	e.SubLWEInPlace(e.buffer.addCtForLWEMul, e.buffer.subCtForLWEMul, ctOut)
 }

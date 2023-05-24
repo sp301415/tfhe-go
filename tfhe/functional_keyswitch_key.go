@@ -89,3 +89,71 @@ func (pfksk *PrivateFunctionalGLWEKeySwitchKey[T]) CopyFrom(pfkskIn PrivateFunct
 func (pfksk PrivateFunctionalGLWEKeySwitchKey[T]) InputCount() int {
 	return len(pfksk.Value)
 }
+
+// PublicFunctionalLWEKeySwitchKey is a keyswitch key for LWE public functional keyswitching.
+type PublicFunctionalLWEKeySwitchKey[T Tint] struct {
+	// Value has length LWEDimension.
+	Value []LevCiphertext[T]
+
+	decompParams DecompositionParameters[T]
+}
+
+// NewPublicFunctionalLWEKeySwitchKey allocates an empty PublicFunctionalLWEKeySwitchKey.
+func NewPublicFunctionalLWEKeySwitchKey[T Tint](params Parameters[T], decompParams DecompositionParameters[T]) PublicFunctionalLWEKeySwitchKey[T] {
+	pfksk := make([]LevCiphertext[T], params.lweDimension)
+	for i := 0; i < params.lweDimension; i++ {
+		pfksk[i] = NewLevCiphertext(params, decompParams)
+	}
+	return PublicFunctionalLWEKeySwitchKey[T]{Value: pfksk, decompParams: decompParams}
+}
+
+// Copy copies this key.
+func (pfksk PublicFunctionalLWEKeySwitchKey[T]) Copy() PublicFunctionalLWEKeySwitchKey[T] {
+	pfkskCopy := make([]LevCiphertext[T], len(pfksk.Value))
+	for i := range pfksk.Value {
+		pfkskCopy[i] = pfksk.Value[i].Copy()
+	}
+	return PublicFunctionalLWEKeySwitchKey[T]{Value: pfkskCopy, decompParams: pfksk.decompParams}
+}
+
+// CopyFrom copies values from key.
+func (pfksk *PublicFunctionalLWEKeySwitchKey[T]) CopyFrom(pfkskIn PublicFunctionalLWEKeySwitchKey[T]) {
+	for i := range pfksk.Value {
+		pfksk.Value[i].CopyFrom(pfkskIn.Value[i])
+	}
+	pfksk.decompParams = pfkskIn.decompParams
+}
+
+// PublicFunctionalGLWEKeySwitchKey is a keyswitch key for GLWE public functional keyswitching.
+type PublicFunctionalGLWEKeySwitchKey[T Tint] struct {
+	// Value has length LWEDimension.
+	Value []FourierGLevCiphertext[T]
+
+	decompParams DecompositionParameters[T]
+}
+
+// NewPublicFunctionalGLWEKeySwitchKey allocates an empty PublicFunctionalGLWEKeySwitchKey.
+func NewPublicFunctionalGLWEKeySwitchKey[T Tint](params Parameters[T], decompParams DecompositionParameters[T]) PublicFunctionalGLWEKeySwitchKey[T] {
+	pfksk := make([]FourierGLevCiphertext[T], params.lweDimension)
+	for i := 0; i < params.lweDimension; i++ {
+		pfksk[i] = NewFourierGLevCiphertext(params, decompParams)
+	}
+	return PublicFunctionalGLWEKeySwitchKey[T]{Value: pfksk, decompParams: decompParams}
+}
+
+// // Copy copies this key.
+// func (pfksk PublicFunctionalGLWEKeySwitchKey[T]) Copy() PublicFunctionalGLWEKeySwitchKey[T] {
+// 	pfkskCopy := make([]GLevCiphertext[T], len(pfksk.Value))
+// 	for i := range pfksk.Value {
+// 		pfkskCopy[i] = pfksk.Value[i].Copy()
+// 	}
+// 	return PublicFunctionalGLWEKeySwitchKey[T]{Value: pfkskCopy, decompParams: pfksk.decompParams}
+// }
+
+// // CopyFrom copies values from key.
+// func (pfksk *PublicFunctionalGLWEKeySwitchKey[T]) CopyFrom(pfkskIn PublicFunctionalGLWEKeySwitchKey[T]) {
+// 	for i := range pfksk.Value {
+// 		pfksk.Value[i].CopyFrom(pfkskIn.Value[i])
+// 	}
+// 	pfksk.decompParams = pfkskIn.decompParams
+// }

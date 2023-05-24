@@ -182,3 +182,128 @@ func (e Encrypter[T]) GenPrivateFunctionalGLWEKeySwitchKeyParallel(inputCount in
 
 	return pfksk
 }
+
+// GenPublicFunctionalLWEKeySwitchKey samples a new public functional keyswitch key
+// for LWE public keyswitching.
+//
+// This can take a long time.
+// Use GenPublicFunctionalLWEKeySwitchKeyParallel for better key generation performance.
+func (e Encrypter[T]) GenPublicFunctionalLWEKeySwitchKey(decompParams DecompositionParameters[T]) PublicFunctionalLWEKeySwitchKey[T] {
+	pfksk := NewPublicFunctionalLWEKeySwitchKey(e.Parameters, decompParams)
+
+	for i := 0; i < e.Parameters.lweDimension; i++ {
+		for j := 0; j < decompParams.level; j++ {
+			pfksk.Value[i].Value[j].Value[0] = e.lweKey.Value[i] << decompParams.ScaledBaseLog(j)
+			e.EncryptLWEAssign(pfksk.Value[i].Value[j])
+		}
+	}
+
+	return pfksk
+}
+
+// GenPublicFunctionalLWEKeySwitchKeyParallel samples a new public functional keyswitch key
+// for LWE public keyswitching in parallel.
+func (e Encrypter[T]) GenPublicFunctionalLWEKeySwitchKeyParallel(decompParams DecompositionParameters[T]) PublicFunctionalLWEKeySwitchKey[T] {
+	pfksk := NewPublicFunctionalLWEKeySwitchKey(e.Parameters, decompParams)
+
+	workSize := e.Parameters.lweDimension
+	chunkCount := num.Min(runtime.NumCPU(), num.Sqrt(workSize))
+
+	encrypterPool := make([]Encrypter[T], chunkCount)
+	for i := range encrypterPool {
+		encrypterPool[i] = e.ShallowCopy()
+	}
+
+	jobs := make(chan int)
+	go func() {
+		defer close(jobs)
+		for i := 0; i < e.Parameters.lweDimension; i++ {
+			jobs <- i
+
+		}
+	}()
+
+	var wg sync.WaitGroup
+	wg.Add(chunkCount)
+	for i := 0; i < chunkCount; i++ {
+		go func(chunkIdx int) {
+			defer wg.Done()
+			e := encrypterPool[chunkIdx]
+
+			for i := range jobs {
+				for j := 0; j < decompParams.level; j++ {
+					pfksk.Value[i].Value[j].Value[0] = e.lweKey.Value[i] << decompParams.ScaledBaseLog(j)
+					e.EncryptLWEAssign(pfksk.Value[i].Value[j])
+				}
+			}
+		}(i)
+	}
+	wg.Wait()
+
+	return pfksk
+}
+
+// GenPublicFunctionalGLWEKeySwitchKey samples a new public functional keyswitch key
+// for GLWE public keyswitching.
+//
+// This can take a long time.
+// Use GenPublicFunctionalGLWEKeySwitchKeyParallel for better key generation performance.
+func (e Encrypter[T]) GenPublicFunctionalGLWEKeySwitchKey(decompParams DecompositionParameters[T]) PublicFunctionalGLWEKeySwitchKey[T] {
+	pfksk := NewPublicFunctionalGLWEKeySwitchKey(e.Parameters, decompParams)
+
+	e.buffer.standardCt.Value[0].Clear()
+	for i := 0; i < e.Parameters.lweDimension; i++ {
+		for j := 0; j < decompParams.level; j++ {
+			e.buffer.standardCt.Value[0].Clear()
+			e.buffer.standardCt.Value[0].Coeffs[0] = e.lweKey.Value[i] << decompParams.ScaledBaseLog(j)
+			e.EncryptGLWEAssign(e.buffer.standardCt)
+			e.ToFourierGLWECiphertextInPlace(e.buffer.standardCt, pfksk.Value[i].Value[j])
+		}
+	}
+
+	return pfksk
+}
+
+// GenPublicFunctionalGLWEKeySwitchKeyParallel samples a new public functional keyswitch key
+// for GLWE public keyswitching in parallel.
+func (e Encrypter[T]) GenPublicFunctionalGLWEKeySwitchKeyParallel(decompParams DecompositionParameters[T]) PublicFunctionalGLWEKeySwitchKey[T] {
+	pfksk := NewPublicFunctionalGLWEKeySwitchKey(e.Parameters, decompParams)
+
+	workSize := e.Parameters.lweDimension
+	chunkCount := num.Min(runtime.NumCPU(), num.Sqrt(workSize))
+
+	encrypterPool := make([]Encrypter[T], chunkCount)
+	for i := range encrypterPool {
+		encrypterPool[i] = e.ShallowCopy()
+	}
+
+	jobs := make(chan int)
+	go func() {
+		defer close(jobs)
+		for i := 0; i < e.Parameters.lweDimension; i++ {
+			jobs <- i
+
+		}
+	}()
+
+	var wg sync.WaitGroup
+	wg.Add(chunkCount)
+	for i := 0; i < chunkCount; i++ {
+		go func(chunkIdx int) {
+			defer wg.Done()
+			e := encrypterPool[chunkIdx]
+
+			for i := range jobs {
+				for j := 0; j < decompParams.level; j++ {
+					e.buffer.standardCt.Value[0].Clear()
+					e.buffer.standardCt.Value[0].Coeffs[0] = e.lweKey.Value[i] << decompParams.ScaledBaseLog(j)
+					e.EncryptGLWEAssign(e.buffer.standardCt)
+					e.ToFourierGLWECiphertextInPlace(e.buffer.standardCt, pfksk.Value[i].Value[j])
+				}
+			}
+		}(i)
+	}
+	wg.Wait()
+
+	return pfksk
+}

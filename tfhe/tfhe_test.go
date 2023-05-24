@@ -3,7 +3,6 @@ package tfhe_test
 import (
 	"testing"
 
-	"github.com/sp301415/tfhe/math/poly"
 	"github.com/sp301415/tfhe/math/vec"
 	"github.com/sp301415/tfhe/tfhe"
 	"github.com/stretchr/testify/assert"
@@ -125,7 +124,7 @@ func TestEvaluater(t *testing.T) {
 		assert.Equal(t, messages[0]*messages[1], testEncrypter.DecryptLWE(ctOut))
 	})
 
-	t.Run("Private Functional LWE KeySwitching", func(t *testing.T) {
+	t.Run("PrivateFunctionalLWEKeySwitch", func(t *testing.T) {
 		sum := func(in []uint64) uint64 {
 			return in[0] + in[1]
 		}
@@ -138,19 +137,14 @@ func TestEvaluater(t *testing.T) {
 		assert.Equal(t, messages[0]+messages[1], testEncrypter.DecryptLWE(ctOut))
 	})
 
-	t.Run("Private Functional GLWE KeySwitching", func(t *testing.T) {
-		swap := func(in []uint64, out poly.Poly[uint64]) {
-			out.Clear()
-			out.Coeffs[0] = in[1]
-			out.Coeffs[1] = in[0]
-		}
-		pfksk := testEncrypter.GenPrivateFunctionalGLWEKeySwitchKeyParallel(2, swap, testParams.KeySwitchParameters())
+	t.Run("PublicFunctionalLWEKeySwitching", func(t *testing.T) {
+		pfksk := testEncrypter.GenPublicFunctionalGLWEKeySwitchKeyParallel(testParams.KeySwitchParameters())
 
 		ct0 := testEncrypter.EncryptLWE(messages[0])
 		ct1 := testEncrypter.EncryptLWE(messages[1])
-		ctOut := testEvaluater.PrivateFunctionalGLWEKeySwitch([]tfhe.LWECiphertext[uint64]{ct0, ct1}, pfksk)
+		ctOut := testEvaluater.PackingPublicFunctionalKeySwitch([]tfhe.LWECiphertext[uint64]{ct0, ct1}, pfksk)
 
-		assert.Equal(t, []int{messages[1], messages[0]}, testEncrypter.DecryptGLWE(ctOut)[:2])
+		assert.Equal(t, []int{messages[0], messages[1]}, testEncrypter.DecryptGLWE(ctOut)[:2])
 	})
 }
 

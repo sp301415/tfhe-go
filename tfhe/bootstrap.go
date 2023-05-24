@@ -43,13 +43,13 @@ func (e Evaluater[T]) GenLookUpTable(f func(int) int) LookUpTable[T] {
 // Inputs and Outputs of f is cut by MessageModulus.
 func (e Evaluater[T]) GenLookUpTableInPlace(f func(int) int, lutOut LookUpTable[T]) {
 	// We calculate f(round(P*j/2N)), where P = messageModulus * 2 (We use 1-bit padding, remember?)
-	// For x := round(p*j/2N), observe that:
-	// x = 1 => j = N/p ~ 3N/p
-	// x = 2 => j = 3N/p ~ 5N/p
+	// For x := round(P*j/2N), observe that:
+	// x = 1 => j = N/P ~ 3N/P
+	// x = 2 => j = 3N/P ~ 5N/P
 	// ...
 	// The only exception is when x = 0. In this case,
-	// x = 0 => j = 0 ~ N/p and j = -N/p ~ 0.
-	// So we can rotate negacyclically for N/p.
+	// x = 0 => j = 0 ~ N/P and j = -N/P ~ 0.
+	// So we can rotate negacyclically for N/P.
 
 	intMessageMod := int(e.Parameters.messageModulus)
 	boxSize := e.Parameters.polyDegree / intMessageMod // 2N/P
@@ -79,7 +79,7 @@ func (e Evaluater[T]) BootstrapInPlace(ct, ctOut LWECiphertext[T]) {
 
 // BootstrapAssign bootstraps LWE cipehrtext and overwrites it.
 func (e Evaluater[T]) BootstrapAssign(ct LWECiphertext[T]) {
-	e.BootstrapFuncAssign(ct, func(x int) int { return x })
+	e.BootstrapFuncAssign(func(x int) int { return x }, ct)
 }
 
 // BootstrapFunc returns a bootstrapped LWE ciphertext with resepect to given function.
@@ -95,9 +95,9 @@ func (e Evaluater[T]) BootstrapFuncInPlace(ct LWECiphertext[T], f func(int) int,
 }
 
 // BootstrapFuncAssign bootstraps LWE cipehrtext with resepect to given function and overwrites it.
-func (e Evaluater[T]) BootstrapFuncAssign(ct LWECiphertext[T], f func(int) int) {
+func (e Evaluater[T]) BootstrapFuncAssign(f func(int) int, ct LWECiphertext[T]) {
 	e.GenLookUpTableInPlace(f, e.buffer.lut)
-	e.BootstrapLUTAssign(ct, e.buffer.lut)
+	e.BootstrapLUTAssign(e.buffer.lut, ct)
 }
 
 // BootstrapLUT returns a bootstrapped LWE ciphertext with respect to given LUT.
@@ -115,7 +115,7 @@ func (e Evaluater[T]) BootstrapLUTInPlace(ct LWECiphertext[T], lut LookUpTable[T
 }
 
 // BootstrapLUTAssign bootstraps LWE cipehrtext with respect to given LUT and overwrites it.
-func (e Evaluater[T]) BootstrapLUTAssign(ct LWECiphertext[T], lut LookUpTable[T]) {
+func (e Evaluater[T]) BootstrapLUTAssign(lut LookUpTable[T], ct LWECiphertext[T]) {
 	e.BlindRotateInPlace(ct, lut, e.buffer.blindRotatedCtForBootstrap)
 	e.SampleExtractInPlace(e.buffer.blindRotatedCtForBootstrap, 0, e.buffer.sampleExtractedCtForBootstrap)
 	e.KeySwitchForBootstrapInPlace(e.buffer.sampleExtractedCtForBootstrap, ct)

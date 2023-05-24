@@ -75,6 +75,6 @@ func BenchmarkBooleanBootstrap(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		eval.BootstrapLUTAssign(ct, lut)
+		eval.BootstrapLUTAssign(lut, ct)
 	}
 }

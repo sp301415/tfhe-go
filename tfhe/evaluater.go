@@ -55,6 +55,11 @@ type evaluationBuffer[T Tint] struct {
 
 	// lut is an empty lut, used for BlindRotateFunc.
 	lut LookUpTable[T]
+
+	// outForPublicFunctionalKeySwitch holds the output value of f in GLWE public functional keyswitching.
+	outForPublicFunctionalKeySwitch poly.Poly[T]
+	// fourierCtForPublicFunctionalKeySwitch holds the accumulater value for GLWE public functional keyswitching.
+	fourierCtForPublicFunctionalKeySwitch FourierGLWECiphertext[T]
 }
 
 // NewEvaluater creates a new Evaluater based on parameters.
@@ -106,6 +111,9 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 		subCtForLWEMul: NewLWECiphertext(params),
 
 		lut: NewLookUpTable(params),
+
+		outForPublicFunctionalKeySwitch:       poly.New[T](params.polyDegree),
+		fourierCtForPublicFunctionalKeySwitch: NewFourierGLWECiphertext(params),
 	}
 }
 

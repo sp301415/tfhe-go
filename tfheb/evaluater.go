@@ -84,7 +84,7 @@ func (e Evaluater) ANDInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 	}
 
 	e.AddLWEInPlace(ct0, ct1, ctOut)
-	e.BootstrapFuncAssign(ctOut, f)
+	e.BootstrapFuncAssign(f, ctOut)
 }
 
 // NAND computes ct0 NAND ct1 and returns the result.
@@ -107,7 +107,7 @@ func (e Evaluater) NANDInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 	}
 
 	e.AddLWEInPlace(ct0, ct1, ctOut)
-	e.BootstrapFuncAssign(ctOut, f)
+	e.BootstrapFuncAssign(f, ctOut)
 }
 
 // OR computes ct0 OR ct1 and returns the result.
@@ -130,7 +130,7 @@ func (e Evaluater) ORInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 	}
 
 	e.AddLWEInPlace(ct0, ct1, ctOut)
-	e.BootstrapFuncAssign(ctOut, f)
+	e.BootstrapFuncAssign(f, ctOut)
 }
 
 // NOR computes ct0 AND ct1 and returns the result.
@@ -153,7 +153,7 @@ func (e Evaluater) NORInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 	}
 
 	e.AddLWEInPlace(ct0, ct1, ctOut)
-	e.BootstrapFuncAssign(ctOut, f)
+	e.BootstrapFuncAssign(f, ctOut)
 }
 
 // XOR computes ct0 AND ct1 and returns the result.
@@ -176,5 +176,5 @@ func (e Evaluater) XORInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 	}
 
 	e.AddLWEInPlace(ct0, ct1, ctOut)
-	e.BootstrapFuncAssign(ctOut, f)
+	e.BootstrapFuncAssign(f, ctOut)
 }
