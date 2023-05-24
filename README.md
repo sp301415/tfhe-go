@@ -17,7 +17,7 @@ export CGO_LDFLAGS="-L/opt/homebrew/lib"
 ## Examples
 ### Encryption
 ```go
-params := tfhe.ParamsUint4.Compile()   // Parameters should be compiled before use.
+params := tfhe.ParamsUint4.Compile() // Parameters should be compiled before use.
 
 enc := tfhe.NewEncrypter(params) // Set up Encrypter.
 defer enc.Free()                 // Cleanup internal FFTW values.
@@ -46,7 +46,7 @@ eval := tfhe.NewEvaluaterWithoutKey(params)
 defer eval.Free()
 
 ctOut := eval.CMuxFourier(ctFlag, ct0, ct1)
-fmt.Println(enc.DecryptPacked(ctOut)[0]) // 5
+fmt.Println(enc.DecryptGLWE(ctOut)[0]) // 5
 ```
 
 ### Programmable Bootstrapping
@@ -56,14 +56,14 @@ params := tfhe.ParamsUint4.Compile()
 enc := tfhe.NewEncrypter(params)
 defer enc.Free()
 
-ct := enc.Encrypt(3)
+ct := enc.EncryptLWE(3)
 evalKey := enc.GenEvaluationKeyParallel()
 
 eval := tfhe.NewEvaluater(params, evalKey)
 defer eval.Free()
 
 ctOut := eval.BootstrapFunc(ct, func(x int) int { return 2*x + 1 })
-fmt.Println(enc.Decrypt(ctOut)) // 7 = 2*3+1
+fmt.Println(enc.DecryptLWE(ctOut)) // 7 = 2*3+1
 ```
 
 ## Benchmarks
