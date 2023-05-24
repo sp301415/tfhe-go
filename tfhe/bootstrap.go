@@ -67,6 +67,34 @@ func (e Evaluater[T]) GenLookUpTableInPlace(f func(int) int, lutOut LookUpTable[
 	vec.RotateAssign(lutOut.Value[0].Coeffs, -boxSize/2)
 }
 
+// GenLookUpTableFullInPlace generates a lookup table based on function f and writes it to lutOut.
+// Input of f is cut by MessageModulus, but output of f is encoded as-is.
+func (e Evaluater[T]) GenLookUpTableFullInPlace(f func(int) T, lutOut LookUpTable[T]) {
+	// We calculate f(round(P*j/2N)), where P = messageModulus * 2 (We use 1-bit padding, remember?)
+	// For x := round(P*j/2N), observe that:
+	// x = 1 => j = N/P ~ 3N/P
+	// x = 2 => j = 3N/P ~ 5N/P
+	// ...
+	// The only exception is when x = 0. In this case,
+	// x = 0 => j = 0 ~ N/P and j = -N/P ~ 0.
+	// So we can rotate negacyclically for N/P.
+
+	intMessageMod := int(e.Parameters.messageModulus)
+	boxSize := e.Parameters.polyDegree / intMessageMod // 2N/P
+	for x := 0; x < intMessageMod; x++ {
+		fx := f(x)
+		for i := x * boxSize; i < (x+1)*boxSize; i++ {
+			lutOut.Value[0].Coeffs[i] = fx
+		}
+	}
+
+	// rotate left negacycically.
+	for i := 0; i < boxSize/2; i++ {
+		lutOut.Value[0].Coeffs[i] = -lutOut.Value[0].Coeffs[i]
+	}
+	vec.RotateAssign(lutOut.Value[0].Coeffs, -boxSize/2)
+}
+
 // Bootstrap returns a bootstrapped LWE ciphertext.
 func (e Evaluater[T]) Bootstrap(ct LWECiphertext[T]) LWECiphertext[T] {
 	return e.BootstrapFunc(ct, func(x int) int { return x })

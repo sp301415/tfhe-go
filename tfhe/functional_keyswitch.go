@@ -148,3 +148,21 @@ func (e Evaluater[T]) PackingPublicFunctionalKeySwitch(ctIn []LWECiphertext[T], 
 
 	return e.PublicFunctionalGLWEKeySwitch(ctIn, f, pfksk)
 }
+
+// CircuitBootstrap computes circuit bootstrapping.
+func (e Evaluater[T]) CircuitBootstrap(ct LWECiphertext[T], decompParams DecompositionParameters[T], cbsk CircuitBootstrapKey[T]) GGSWCiphertext[T] {
+	ctOut := NewGGSWCiphertext(e.Parameters, decompParams)
+	e.CircuitBootstrapInPlace(ct, cbsk, ctOut)
+	return ctOut
+}
+
+// CircuitBootstrapInPlace computes circuit bootstrapping and writes the result to ctOut.
+func (e Evaluater[T]) CircuitBootstrapInPlace(ct LWECiphertext[T], cbsk CircuitBootstrapKey[T], ctOut GGSWCiphertext[T]) {
+	for i := 0; i < ctOut.decompParams.level; i++ {
+		e.GenLookUpTableFullInPlace(func(x int) T { return T(x) << ctOut.decompParams.ScaledBaseLog(i) }, e.buffer.lut)
+		e.BootstrapLUTInPlace(ct, e.buffer.lut, e.buffer.levelCtForCircuitBootstrap)
+		for j := 0; j < e.Parameters.glweDimension+1; j++ {
+			e.PrivateFunctionalGLWEKeySwitchInPlace([]LWECiphertext[T]{e.buffer.levelCtForCircuitBootstrap}, cbsk.Value[j], ctOut.Value[j].Value[i])
+		}
+	}
+}

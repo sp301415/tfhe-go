@@ -307,3 +307,50 @@ func (e Encrypter[T]) GenPublicFunctionalGLWEKeySwitchKeyParallel(decompParams D
 
 	return pfksk
 }
+
+// GenCircuitBootstrapKey samples a new circuit bootstrap key.
+//
+// This can take a long time.
+// Use GenPublicFunctionalGLWEKeySwitchKeyParallel for better key generation performance.
+func (e Encrypter[T]) GenCircuitBootstrapKey(decompParams DecompositionParameters[T]) CircuitBootstrapKey[T] {
+	cbsk := CircuitBootstrapKey[T]{decompParams: decompParams}
+	cbsk.Value = make([]PrivateFunctionalGLWEKeySwitchKey[T], e.Parameters.glweDimension+1)
+
+	cbsk.Value[0] = e.GenPrivateFunctionalGLWEKeySwitchKey(1, func(t []T, p poly.Poly[T]) {
+		p.Clear()
+		p.Coeffs[0] = t[0]
+	}, decompParams)
+
+	for i := 1; i < e.Parameters.glweDimension+1; i++ {
+		cbsk.Value[i] = e.GenPrivateFunctionalGLWEKeySwitchKey(1, func(t []T, p poly.Poly[T]) {
+			k := e.glweKey.Value[i-1]
+			for i := 0; i < e.Parameters.polyDegree; i++ {
+				p.Coeffs[i] = -t[0] * k.Coeffs[i]
+			}
+		}, decompParams)
+	}
+
+	return cbsk
+}
+
+// GenCircuitBootstrapKeyParallel samples a new circuit bootstrap key in parallel.
+func (e Encrypter[T]) GenCircuitBootstrapKeyParallel(decompParams DecompositionParameters[T]) CircuitBootstrapKey[T] {
+	cbsk := CircuitBootstrapKey[T]{decompParams: decompParams}
+	cbsk.Value = make([]PrivateFunctionalGLWEKeySwitchKey[T], e.Parameters.glweDimension+1)
+
+	cbsk.Value[0] = e.GenPrivateFunctionalGLWEKeySwitchKeyParallel(1, func(t []T, p poly.Poly[T]) {
+		p.Clear()
+		p.Coeffs[0] = t[0]
+	}, decompParams)
+
+	for i := 1; i < e.Parameters.glweDimension+1; i++ {
+		cbsk.Value[i] = e.GenPrivateFunctionalGLWEKeySwitchKeyParallel(1, func(t []T, p poly.Poly[T]) {
+			k := e.glweKey.Value[i-1]
+			for i := 0; i < e.Parameters.polyDegree; i++ {
+				p.Coeffs[i] = -t[0] * k.Coeffs[i]
+			}
+		}, decompParams)
+	}
+
+	return cbsk
+}

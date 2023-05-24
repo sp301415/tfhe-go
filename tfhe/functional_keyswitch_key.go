@@ -141,19 +141,56 @@ func NewPublicFunctionalGLWEKeySwitchKey[T Tint](params Parameters[T], decompPar
 	return PublicFunctionalGLWEKeySwitchKey[T]{Value: pfksk, decompParams: decompParams}
 }
 
-// // Copy copies this key.
-// func (pfksk PublicFunctionalGLWEKeySwitchKey[T]) Copy() PublicFunctionalGLWEKeySwitchKey[T] {
-// 	pfkskCopy := make([]GLevCiphertext[T], len(pfksk.Value))
-// 	for i := range pfksk.Value {
-// 		pfkskCopy[i] = pfksk.Value[i].Copy()
-// 	}
-// 	return PublicFunctionalGLWEKeySwitchKey[T]{Value: pfkskCopy, decompParams: pfksk.decompParams}
-// }
+// Copy copies this key.
+func (pfksk PublicFunctionalGLWEKeySwitchKey[T]) Copy() PublicFunctionalGLWEKeySwitchKey[T] {
+	pfkskCopy := make([]FourierGLevCiphertext[T], len(pfksk.Value))
+	for i := range pfksk.Value {
+		pfkskCopy[i] = pfksk.Value[i].Copy()
+	}
+	return PublicFunctionalGLWEKeySwitchKey[T]{Value: pfkskCopy, decompParams: pfksk.decompParams}
+}
 
-// // CopyFrom copies values from key.
-// func (pfksk *PublicFunctionalGLWEKeySwitchKey[T]) CopyFrom(pfkskIn PublicFunctionalGLWEKeySwitchKey[T]) {
-// 	for i := range pfksk.Value {
-// 		pfksk.Value[i].CopyFrom(pfkskIn.Value[i])
-// 	}
-// 	pfksk.decompParams = pfkskIn.decompParams
-// }
+// CopyFrom copies values from key.
+func (pfksk *PublicFunctionalGLWEKeySwitchKey[T]) CopyFrom(pfkskIn PublicFunctionalGLWEKeySwitchKey[T]) {
+	for i := range pfksk.Value {
+		pfksk.Value[i].CopyFrom(pfkskIn.Value[i])
+	}
+	pfksk.decompParams = pfkskIn.decompParams
+}
+
+// CircuitBootstrapKey is a bootstrap key for circuit bootstrapping.
+// It is a collection of PrivateFunctionalGLWEKeySwitchKeys,
+// each encoding function f_i = -GLWEKey_i * x.
+type CircuitBootstrapKey[T Tint] struct {
+	// Value has length GLWEDimension + 1,
+	// each PrivateFunctionalGLWEKeySwitchKey having 1 inputCount.
+	Value []PrivateFunctionalGLWEKeySwitchKey[T]
+
+	decompParams DecompositionParameters[T]
+}
+
+// NewCircuitBootstrapKey allocates an empty CircuitBootstrapKey.
+func NewCircuitBootstrapKey[T Tint](params Parameters[T], decompParams DecompositionParameters[T]) CircuitBootstrapKey[T] {
+	cbsk := make([]PrivateFunctionalGLWEKeySwitchKey[T], params.glweDimension+1)
+	for i := 0; i < params.glweDimension+1; i++ {
+		cbsk[i] = NewPrivateFunctionalGLWEKeySwitchKey(params, 1, decompParams)
+	}
+	return CircuitBootstrapKey[T]{Value: cbsk, decompParams: decompParams}
+}
+
+// Copy copies this key.
+func (cbsk CircuitBootstrapKey[T]) Copy() CircuitBootstrapKey[T] {
+	cbskCopy := make([]PrivateFunctionalGLWEKeySwitchKey[T], len(cbsk.Value))
+	for i := range cbsk.Value {
+		cbskCopy[i] = cbsk.Value[i].Copy()
+	}
+	return CircuitBootstrapKey[T]{Value: cbskCopy, decompParams: cbsk.decompParams}
+}
+
+// CopyFrom copies values from key.
+func (cbsk *CircuitBootstrapKey[T]) CopyFrom(cbskIn CircuitBootstrapKey[T]) {
+	for i := range cbsk.Value {
+		cbsk.Value[i].CopyFrom(cbskIn.Value[i])
+	}
+	cbsk.decompParams = cbskIn.decompParams
+}

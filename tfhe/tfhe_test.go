@@ -1,6 +1,7 @@
 package tfhe_test
 
 import (
+	"math"
 	"testing"
 
 	"github.com/sp301415/tfhe/math/vec"
@@ -128,7 +129,7 @@ func TestEvaluater(t *testing.T) {
 		assert.Equal(t, messages[0]+messages[1], testEncrypter.DecryptLWE(ctOut))
 	})
 
-	t.Run("PublicFunctionalLWEKeySwitching", func(t *testing.T) {
+	t.Run("PublicFunctionalLWEKeySwitch", func(t *testing.T) {
 		pfksk := testEncrypter.GenPublicFunctionalGLWEKeySwitchKeyParallel(testParams.KeySwitchParameters())
 
 		ct0 := testEncrypter.EncryptLWE(messages[0])
@@ -136,6 +137,53 @@ func TestEvaluater(t *testing.T) {
 		ctOut := testEvaluater.PackingPublicFunctionalKeySwitch([]tfhe.LWECiphertext[uint64]{ct0, ct1}, pfksk)
 
 		assert.Equal(t, []int{messages[0], messages[1]}, testEncrypter.DecryptGLWE(ctOut)[:2])
+	})
+
+	t.Run("CircuitBootstrap", func(t *testing.T) {
+		cbsParams := tfhe.ParametersLiteral[uint64]{
+			LWEDimension:  10,
+			GLWEDimension: 2,
+			PolyDegree:    512,
+
+			LWEStdDev:  math.Exp2(-60),
+			GLWEStdDev: math.Exp2(-60),
+
+			MessageModulus: 1 << 3,
+			Delta:          1 << 60,
+
+			BootstrapParameters: tfhe.DecompositionParametersLiteral[uint64]{
+				Base:  1 << 15,
+				Level: 2,
+			},
+			KeySwitchParameters: tfhe.DecompositionParametersLiteral[uint64]{
+				Base:  1 << 15,
+				Level: 2,
+			},
+		}.Compile()
+
+		pfkskDecompParams := tfhe.DecompositionParametersLiteral[uint64]{
+			Base:  1 << 15,
+			Level: 2,
+		}.Compile()
+
+		cbsDecompParams := tfhe.DecompositionParametersLiteral[uint64]{
+			Base:  1 << 10,
+			Level: 1,
+		}.Compile()
+
+		enc := tfhe.NewEncrypter(cbsParams)
+		defer enc.Free()
+
+		eval := tfhe.NewEvaluater(cbsParams, enc.GenEvaluationKeyParallel())
+		defer eval.Free()
+
+		cbsk := enc.GenCircuitBootstrapKeyParallel(pfkskDecompParams)
+
+		for _, m := range messages {
+			ct := enc.EncryptLWE(m)
+			ctOut := eval.CircuitBootstrap(ct, cbsDecompParams, cbsk)
+			assert.Equal(t, m, enc.DecryptGGSW(ctOut)[0])
+		}
 	})
 }
 

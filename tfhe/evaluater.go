@@ -60,6 +60,9 @@ type evaluationBuffer[T Tint] struct {
 	outForPublicFunctionalKeySwitch poly.Poly[T]
 	// fourierCtForPublicFunctionalKeySwitch holds the accumulater value for GLWE public functional keyswitching.
 	fourierCtForPublicFunctionalKeySwitch FourierGLWECiphertext[T]
+
+	// levelCtForCircuitBootstrap holds a bootstrapped leveled ciphertext in Circuit Bootstrapping.
+	levelCtForCircuitBootstrap LWECiphertext[T]
 }
 
 // NewEvaluater creates a new Evaluater based on parameters.
@@ -114,6 +117,8 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 
 		outForPublicFunctionalKeySwitch:       poly.New[T](params.polyDegree),
 		fourierCtForPublicFunctionalKeySwitch: NewFourierGLWECiphertext(params),
+
+		levelCtForCircuitBootstrap: NewLWECiphertext(params),
 	}
 }
 
