@@ -127,12 +127,9 @@ func RoundRatio[T Integer](x, y T) T {
 }
 
 // RoundRatioBits is a bit-optimzed version of RoundRatio: it computes round(x/2^bits).
-//   - If bits == 0, then it returns x.
-//   - If bits < 0, it panics.
+//
+// If bits <= 0, it panics.
 func RoundRatioBits[T Integer](x T, bits int) T {
-	if bits == 0 {
-		return x
-	}
 	return (x >> bits) + ((x >> (bits - 1)) & 1)
 }
 
