@@ -48,11 +48,6 @@ type evaluationBuffer[T Tint] struct {
 	// sampleExtractedCtForBootstrap holds the sample extracted LWE large ciphertext for bootstrapping.
 	sampleExtractedCtForBootstrap LWECiphertext[T]
 
-	// addCtForLWEMul holds ct0 + ct1 for LWE multiplication.
-	addCtForLWEMul LWECiphertext[T]
-	// subCtForLWEMul holds ct0 - ct1 for LWE multiplication.
-	subCtForLWEMul LWECiphertext[T]
-
 	// lut is an empty lut, used for BlindRotateFunc.
 	lut LookUpTable[T]
 
@@ -109,9 +104,6 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 
 		blindRotatedCtForBootstrap:    NewGLWECiphertext(params),
 		sampleExtractedCtForBootstrap: NewLargeLWECiphertext(params),
-
-		addCtForLWEMul: NewLWECiphertext(params),
-		subCtForLWEMul: NewLWECiphertext(params),
 
 		lut: NewLookUpTable(params),
 
