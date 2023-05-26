@@ -11,7 +11,6 @@ var (
 		GLWEStdDev: 0.00000004053919869756513,
 
 		MessageModulus: 1 << 2,
-		Delta:          1 << (63 - 2),
 
 		BootstrapParameters: DecompositionParametersLiteral[uint64]{
 			Base:  1 << 8,
@@ -33,7 +32,6 @@ var (
 		GLWEStdDev: 0.00000000000000029403601535432533,
 
 		MessageModulus: 1 << 3,
-		Delta:          1 << (63 - 3),
 
 		BootstrapParameters: DecompositionParametersLiteral[uint64]{
 			Base:  1 << 23,
@@ -55,7 +53,6 @@ var (
 		GLWEStdDev: 0.00000000000000029403601535432533,
 
 		MessageModulus: 1 << 4,
-		Delta:          1 << (63 - 4),
 
 		BootstrapParameters: DecompositionParametersLiteral[uint64]{
 			Base:  1 << 23,
@@ -77,7 +74,6 @@ var (
 		GLWEStdDev: 0.0000000000000000002168404344971009,
 
 		MessageModulus: 1 << 5,
-		Delta:          1 << (63 - 5),
 
 		BootstrapParameters: DecompositionParametersLiteral[uint64]{
 			Base:  1 << 22,
@@ -99,7 +95,6 @@ var (
 		GLWEStdDev: 0.0000000000000000002168404344971009,
 
 		MessageModulus: 1 << 6,
-		Delta:          1 << (63 - 6),
 
 		BootstrapParameters: DecompositionParametersLiteral[uint64]{
 			Base:  1 << 22,
@@ -120,7 +115,6 @@ var (
 		GLWEStdDev: 0.0000000000000000002168404344971009,
 
 		MessageModulus: 1 << 7,
-		Delta:          1 << (63 - 7),
 
 		BootstrapParameters: DecompositionParametersLiteral[uint64]{
 			Base:  1 << 15,
@@ -142,7 +136,6 @@ var (
 		GLWEStdDev: 0.0000000000000000002168404344971009,
 
 		MessageModulus: 1 << 8,
-		Delta:          1 << (63 - 8),
 
 		BootstrapParameters: DecompositionParametersLiteral[uint64]{
 			Base:  1 << 15,

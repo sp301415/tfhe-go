@@ -149,7 +149,6 @@ func TestEvaluater(t *testing.T) {
 			GLWEStdDev: math.Exp2(-60),
 
 			MessageModulus: 1 << 3,
-			Delta:          1 << 60,
 
 			BootstrapParameters: tfhe.DecompositionParametersLiteral[uint64]{
 				Base:  1 << 15,

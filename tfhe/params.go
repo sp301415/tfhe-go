@@ -133,8 +133,6 @@ type ParametersLiteral[T Tint] struct {
 
 	// MessageModulus is the modulus of the encoded message.
 	MessageModulus T
-	// Delta is the scaling factor Q/P.
-	Delta T
 
 	// BootstrapParameters is the decomposition parameters for Programmable Bootstrapping.
 	BootstrapParameters DecompositionParametersLiteral[T]
@@ -158,18 +156,12 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("GLWEStdDev smaller than zero")
 	case !num.IsPowerOfTwo(p.PolyDegree):
 		panic("PolyDegree not power of two")
-	case !num.IsPowerOfTwo(p.Delta):
-		panic("Delta not power of two")
 	case !num.IsPowerOfTwo(p.MessageModulus):
 		panic("MessageModulus not power of two")
 	}
 
-	deltaLog := num.Log2(p.Delta)
 	messageModulusLog := num.Log2(p.MessageModulus)
-
-	if deltaLog+messageModulusLog > num.SizeT[T]() {
-		panic("Moduli too large")
-	}
+	deltaLog := num.SizeT[T]() - 1 - messageModulusLog
 
 	return Parameters[T]{
 		lweDimension:  p.LWEDimension,
@@ -179,7 +171,7 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		lweStdDev:  p.LWEStdDev,
 		glweStdDev: p.GLWEStdDev,
 
-		delta:             p.Delta,
+		delta:             1 << deltaLog,
 		deltaLog:          deltaLog,
 		messageModulus:    p.MessageModulus,
 		messageModulusLog: messageModulusLog,
@@ -205,15 +197,15 @@ type Parameters[T Tint] struct {
 	// GLWEStdDev is the standard deviation used for gaussian error sampling in GLWE encryption.
 	glweStdDev float64
 
+	// MessageModulus is the modulus of the encoded message.
+	messageModulus T
+	// MessageModulusLog equals log(MessageModulus).
+	messageModulusLog int
 	// Delta is the scaling factor used for message encoding.
 	// The lower log(Delta) bits are reserved for errors.
 	delta T
 	// DeltaLog equals log(Delta).
 	deltaLog int
-	// MessageModulus is the modulus of the encoded message.
-	messageModulus T
-	// MessageModulusLog equals log(MessageModulus).
-	messageModulusLog int
 
 	// bootstrapParameters is the decomposition parameters for Programmable Bootstrapping.
 	bootstrapParameters DecompositionParameters[T]

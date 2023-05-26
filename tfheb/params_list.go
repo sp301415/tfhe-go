@@ -13,7 +13,6 @@ var (
 		GLWEStdDev: 0.0000000000034525330484572114,
 
 		MessageModulus: 1 << 2,
-		Delta:          1 << 29,
 
 		BootstrapParameters: tfhe.DecompositionParametersLiteral[uint32]{
 			Base:  1 << 18,
@@ -35,7 +34,7 @@ var (
 		GLWEStdDev: 0.00000000000000029403601535432533,
 
 		MessageModulus: 1 << 2,
-		Delta:          1 << 29,
+
 		BootstrapParameters: tfhe.DecompositionParametersLiteral[uint32]{
 			Base:  1 << 23,
 			Level: 1,
