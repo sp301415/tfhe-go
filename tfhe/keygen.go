@@ -35,7 +35,7 @@ func NewSecretKey[T Tint](params Parameters[T]) SecretKey[T] {
 
 // GenSecretKey samples a new LWE key.
 func (e Encrypter[T]) GenSecretKey() SecretKey[T] {
-	sk := NewSecretKey[T](e.Parameters)
+	sk := NewSecretKey(e.Parameters)
 
 	// Sample LWE key from Block Binary Distribution
 	e.blockSampler.SampleSliceAssign(sk.LWELargeKey.Value[:e.Parameters.lweDimension])
