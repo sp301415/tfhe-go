@@ -164,13 +164,26 @@ func (e Evaluater[T]) BlindRotate(ct LWECiphertext[T], lut LookUpTable[T]) GLWEC
 
 // BlindRotateInPlace calculates the blind rotation of LWE ciphertext with respect to LUT.
 func (e Evaluater[T]) BlindRotateInPlace(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
+	buffDecomposed := e.decomposedPolyBuffer(e.Parameters.bootstrapParameters)
+
 	// c = X^-b * LUT
 	e.MonomialDivGLWEInPlace(GLWECiphertext[T](lut), e.ModSwitch(ct.Value[0]), ctOut)
 
-	// c <- CMUX(bsk[i], c, X^ai * c)
-	for i := 0; i < e.Parameters.lweDimension; i++ {
-		e.MonomialMulGLWEInPlace(ctOut, e.ModSwitch(ct.Value[i+1]), e.buffer.rotatedCtForBlindRotate)
-		e.CMuxFourierAssign(e.evaluationKey.BootstrapKey.Value[i], ctOut, e.buffer.rotatedCtForBlindRotate)
+	for i := 0; i < e.Parameters.BlockCount(); i++ {
+		// Decompose ctOut first
+		for j := 0; j < e.Parameters.glweDimension+1; j++ {
+			e.DecomposePolyInplace(ctOut.Value[j], buffDecomposed, e.Parameters.bootstrapParameters)
+			for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
+				e.FourierTransformer.ToFourierPolyInPlace(buffDecomposed[k], e.buffer.decompsedAcc[j][k])
+			}
+		}
+
+		for j := i * e.Parameters.blockSize; j < (i+1)*e.Parameters.blockSize; j++ {
+			e.ExternalProductFourierHoistedInPlace(e.evaluationKey.BootstrapKey.Value[j], e.buffer.decompsedAcc, e.buffer.localAcc)
+			e.SubGLWEAssign(e.buffer.localAcc, ctOut)
+			e.MonomialMulGLWEAssign(e.ModSwitch(ct.Value[j+1]), e.buffer.localAcc)
+			e.AddGLWEAssign(e.buffer.localAcc, ctOut)
+		}
 	}
 }
 
@@ -228,13 +241,19 @@ func (e Evaluater[T]) KeySwitchInPlace(ct LWECiphertext[T], ksk KeySwitchKey[T],
 }
 
 // KeySwitchForBootstrap performs the keyswitching using evaulater's bootstrap key.
-// Input ciphertext should be length GLWEDimension + 1, and output ciphertext will be length LWEDimension + 1.
+// Input ciphertext should be length LWELargeDimension + 1, and output ciphertext will be length LWEDimension + 1.
 func (e Evaluater[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[T] {
-	return e.KeySwitch(ct, e.evaluationKey.KeySwitchKey)
+	ctOut := NewLWECiphertext(e.Parameters)
+	e.KeySwitchForBootstrapInPlace(ct, ctOut)
+	return ctOut
 }
 
 // KeySwitchForBootstrapInPlace performs the keyswitching using evaulater's bootstrap key.
-// Input ciphertext should be length GLWEDimension + 1, and output ciphertext should be length LWEDimension + 1.
+// Input ciphertext should be length LWELargeDimension + 1, and output ciphertext should be length LWEDimension + 1.
 func (e Evaluater[T]) KeySwitchForBootstrapInPlace(ct, ctOut LWECiphertext[T]) {
-	e.KeySwitchInPlace(ct, e.evaluationKey.KeySwitchKey, ctOut)
+	e.buffer.ctLeftOver.Value[0] = 0
+	vec.CopyAssign(ct.Value[e.Parameters.lweDimension+1:], e.buffer.ctLeftOver.Value[1:])
+
+	e.KeySwitchInPlace(e.buffer.ctLeftOver, e.evaluationKey.KeySwitchKey, ctOut)
+	vec.AddAssign(ct.Value[:e.Parameters.lweDimension+1], ctOut.Value)
 }

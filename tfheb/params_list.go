@@ -5,12 +5,14 @@ import "github.com/sp301415/tfhe/tfhe"
 var (
 	// ParamsBoolean is a default parameter set for boolean TFHE.
 	ParamsBoolean = tfhe.ParametersLiteral[uint32]{
-		LWEDimension:  777,
+		LWEDimension:  776,
 		GLWEDimension: 3,
 		PolyDegree:    512,
 
 		LWEStdDev:  0.000003725679281679651,
 		GLWEStdDev: 0.0000000000034525330484572114,
+
+		BlockSize: 2,
 
 		MessageModulus: 1 << 2,
 
@@ -32,6 +34,8 @@ var (
 
 		LWEStdDev:  0.000001412290588219445,
 		GLWEStdDev: 0.00000000000000029403601535432533,
+
+		BlockSize: 2,
 
 		MessageModulus: 1 << 2,
 

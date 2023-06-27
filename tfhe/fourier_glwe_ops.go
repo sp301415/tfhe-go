@@ -93,9 +93,44 @@ func (e Evaluater[T]) PolyMulAddFourierGLWEAssign(ct0 FourierGLWECiphertext[T], 
 	}
 }
 
-// ScalarMulAddFourierGLWEAssign multiplies p to ct0 and subtracts from ctOut.
+// PolyMulAddFourierGLWEAssign multiplies p to ct0 and subtracts from ctOut.
 func (e Evaluater[T]) PolyMulSubFourierGLWEAssign(ct0 FourierGLWECiphertext[T], p poly.Poly[T], ctOut FourierGLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.FourierTransformer.PolyMulSubAssign(ct0.Value[i], p, ctOut.Value[i])
+	}
+}
+
+// FourierPolyMulFourierGLWE multiplies fp to ct0 and returns the result.
+func (e Evaluater[T]) FourierPolyMulFourierGLWE(ct0 FourierGLWECiphertext[T], fp poly.FourierPoly) FourierGLWECiphertext[T] {
+	ctOut := NewFourierGLWECiphertext(e.Parameters)
+	e.FourierPolyMulFourierGLWEInPlace(ct0, fp, ctOut)
+	return ctOut
+}
+
+// FourierPolyMulFourierGLWEInPlace multiplies fp to ct0 and writes to ctOut.
+func (e Evaluater[T]) FourierPolyMulFourierGLWEInPlace(ct0 FourierGLWECiphertext[T], fp poly.FourierPoly, ctOut FourierGLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.FourierTransformer.MulInPlace(ct0.Value[i], fp, ctOut.Value[i])
+	}
+}
+
+// FourierPolyMulFourierGLWEAssign multiplies fp to ctOut.
+func (e Evaluater[T]) FourierPolyMulFourierGLWEAssign(fp poly.FourierPoly, ctOut FourierGLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.FourierTransformer.MulAssign(fp, ctOut.Value[i])
+	}
+}
+
+// FourierPolyMulAddFourierGLWEAssign multiplies p to ct0 and adds to ctOut.
+func (e Evaluater[T]) FourierPolyMulAddFourierGLWEAssign(ct0 FourierGLWECiphertext[T], fp poly.FourierPoly, ctOut FourierGLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.FourierTransformer.MulAddAssign(ct0.Value[i], fp, ctOut.Value[i])
+	}
+}
+
+// FourierPolyMulAddFourierGLWEAssign multiplies p to ct0 and subtracts from ctOut.
+func (e Evaluater[T]) FourierPolyMulSubFourierGLWEAssign(ct0 FourierGLWECiphertext[T], fp poly.FourierPoly, ctOut FourierGLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.FourierTransformer.MulSubAssign(ct0.Value[i], fp, ctOut.Value[i])
 	}
 }

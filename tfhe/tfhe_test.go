@@ -147,6 +147,7 @@ func TestEvaluater(t *testing.T) {
 
 			LWEStdDev:  math.Exp2(-60),
 			GLWEStdDev: math.Exp2(-60),
+			BlockSize:  1,
 
 			MessageModulus: 1 << 3,
 

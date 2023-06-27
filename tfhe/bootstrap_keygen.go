@@ -37,9 +37,9 @@ func (e Encrypter[T]) GenBootstrapKey() BootstrapKey[T] {
 		for j := 0; j < e.Parameters.glweDimension+1; j++ {
 			if j == 0 {
 				e.buffer.ptForGGSW.Clear()
-				e.buffer.ptForGGSW.Coeffs[0] = e.lweKey.Value[i]
+				e.buffer.ptForGGSW.Coeffs[0] = e.key.LWEKey.Value[i]
 			} else {
-				e.PolyEvaluater.ScalarMulInPlace(e.glweKey.Value[j-1], -e.lweKey.Value[i], e.buffer.ptForGGSW)
+				e.PolyEvaluater.ScalarMulInPlace(e.key.GLWEKey.Value[j-1], -e.key.LWEKey.Value[i], e.buffer.ptForGGSW)
 			}
 			for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
 				e.PolyEvaluater.ScalarMulInPlace(e.buffer.ptForGGSW, e.Parameters.bootstrapParameters.ScaledBase(k), e.buffer.standardCt.Value[0])
@@ -86,9 +86,9 @@ func (e Encrypter[T]) GenBootstrapKeyParallel() BootstrapKey[T] {
 
 				if j == 0 {
 					e.buffer.ptForGGSW.Clear()
-					e.buffer.ptForGGSW.Coeffs[0] = e.lweKey.Value[i]
+					e.buffer.ptForGGSW.Coeffs[0] = e.key.LWEKey.Value[i]
 				} else {
-					e.PolyEvaluater.ScalarMulInPlace(e.glweKey.Value[j-1], -e.lweKey.Value[i], e.buffer.ptForGGSW)
+					e.PolyEvaluater.ScalarMulInPlace(e.key.GLWEKey.Value[j-1], -e.key.LWEKey.Value[i], e.buffer.ptForGGSW)
 				}
 				for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
 					e.PolyEvaluater.ScalarMulInPlace(e.buffer.ptForGGSW, e.Parameters.bootstrapParameters.ScaledBase(k), e.buffer.standardCt.Value[0])
@@ -103,12 +103,12 @@ func (e Encrypter[T]) GenBootstrapKeyParallel() BootstrapKey[T] {
 	return bsk
 }
 
-// GenKeySwitchKey samples a new keyswitch key skIn -> e.LWEKey.
+// GenKeySwitchKey samples a new keyswitch key skIn -> e.key.LWEKey.
 //
 // This can take a long time.
 // Use GenKeySwitchKeyParallel for better key generation performance.
 func (e Encrypter[T]) GenKeySwitchKey(skIn LWEKey[T], decompParams DecompositionParameters[T]) KeySwitchKey[T] {
-	ksk := NewKeySwitchKey(len(skIn.Value), len(e.lweKey.Value), decompParams)
+	ksk := NewKeySwitchKey(len(skIn.Value), len(e.key.LWEKey.Value), decompParams)
 
 	for i := 0; i < ksk.InputLWEDimension(); i++ {
 		for j := 0; j < decompParams.level; j++ {
@@ -120,9 +120,9 @@ func (e Encrypter[T]) GenKeySwitchKey(skIn LWEKey[T], decompParams Decomposition
 	return ksk
 }
 
-// GenKeySwitchKeyParallel samples a new keyswitch key skIn -> e.LWEKey in parallel.
+// GenKeySwitchKeyParallel samples a new keyswitch key skIn -> e.key.LWEKey in parallel.
 func (e Encrypter[T]) GenKeySwitchKeyParallel(skIn LWEKey[T], decompParams DecompositionParameters[T]) KeySwitchKey[T] {
-	ksk := NewKeySwitchKey(len(skIn.Value), len(e.lweKey.Value), decompParams)
+	ksk := NewKeySwitchKey(len(skIn.Value), len(e.key.LWEKey.Value), decompParams)
 
 	workSize := ksk.InputLWEDimension() * decompParams.level
 	chunkCount := num.Min(runtime.NumCPU(), num.Sqrt(workSize))
@@ -167,11 +167,13 @@ func (e Encrypter[T]) GenKeySwitchKeyParallel(skIn LWEKey[T], decompParams Decom
 // This can take a long time.
 // Use GenKeySwitchKeyForBootstrapParallel for better key generation performance.
 func (e Encrypter[T]) GenKeySwitchKeyForBootstrap() KeySwitchKey[T] {
-	return e.GenKeySwitchKey(e.glweKey.ToLWEKey(), e.Parameters.keyswitchParameters)
+	skIn := LWEKey[T]{Value: e.key.LWELargeKey.Value[e.Parameters.lweDimension:]}
+	return e.GenKeySwitchKey(skIn, e.Parameters.keyswitchParameters)
 }
 
 // GenKeySwitchKeyForBootstrapParallel samples a new keyswitch key LWELargeKey -> LWEKey in parallel,
 // used for bootstrapping.
 func (e Encrypter[T]) GenKeySwitchKeyForBootstrapParallel() KeySwitchKey[T] {
-	return e.GenKeySwitchKeyParallel(e.glweKey.ToLWEKey(), e.Parameters.keyswitchParameters)
+	skIn := LWEKey[T]{Value: e.key.LWELargeKey.Value[e.Parameters.lweDimension:]}
+	return e.GenKeySwitchKeyParallel(skIn, e.Parameters.keyswitchParameters)
 }

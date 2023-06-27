@@ -65,6 +65,23 @@ func (s UniformSampler[T]) Sample() T {
 	return T(buf)
 }
 
+// SampleRange uniformly samples a random integer from [a, b).
+func (s UniformSampler[T]) SampleRange(a, b T) T {
+	if a >= b {
+		panic("malformed range")
+	}
+
+	max := uint64(b - a)
+	randMax := num.MaxT[T]() - (num.MaxT[T]() % max)
+
+	for {
+		res := uint64(s.Sample())
+		if res <= randMax {
+			return T(res%max) + a
+		}
+	}
+}
+
 // SampleSliceAssign samples uniform values to v.
 func (s UniformSampler[T]) SampleSliceAssign(v []T) {
 	for i := range v {

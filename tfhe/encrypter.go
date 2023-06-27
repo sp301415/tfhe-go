@@ -18,14 +18,14 @@ type Encrypter[T Tint] struct {
 
 	uniformSampler csprng.UniformSampler[T]
 	binarySampler  csprng.BinarySampler[T]
+	blockSampler   csprng.BlockSampler[T]
 	lweSampler     csprng.GaussianSampler[T]
 	glweSampler    csprng.GaussianSampler[T]
 
 	PolyEvaluater      poly.Evaluater[T]
 	FourierTransformer poly.FourierTransformer[T]
 
-	lweKey  LWEKey[T]
-	glweKey GLWEKey[T]
+	key SecretKey[T]
 
 	buffer encryptionBuffer[T]
 }
@@ -43,21 +43,21 @@ type encryptionBuffer[T Tint] struct {
 func NewEncrypter[T Tint](params Parameters[T]) Encrypter[T] {
 	encrypter := NewEncrypterWithoutKey(params)
 
-	encrypter.SetLWEKey(encrypter.GenLWEKey())
-	encrypter.SetGLWEKey(encrypter.GenGLWEKey())
+	encrypter.SetSecretKey(encrypter.GenSecretKey())
 
 	return encrypter
 }
 
 // NewEncrypterWithoutKey returns a initialized Encrypter, but without key added.
 // If you try to encrypt without keys, it will panic.
-// You can supply LWE or GLWE key later by using SetLWEKey() or SetGLWEKey().
+// You can supply secret key later with SetSecretKey().
 func NewEncrypterWithoutKey[T Tint](params Parameters[T]) Encrypter[T] {
 	return Encrypter[T]{
 		Parameters: params,
 
 		uniformSampler: csprng.NewUniformSampler[T](),
 		binarySampler:  csprng.NewBinarySampler[T](),
+		blockSampler:   csprng.NewBlockSampler[T](params.blockSize),
 		lweSampler:     csprng.NewGaussianSamplerTorus[T](params.lweStdDev),
 		glweSampler:    csprng.NewGaussianSamplerTorus[T](params.glweStdDev),
 
@@ -87,8 +87,7 @@ func (e Encrypter[T]) ShallowCopy() Encrypter[T] {
 		lweSampler:     csprng.NewGaussianSamplerTorus[T](e.Parameters.lweStdDev),
 		glweSampler:    csprng.NewGaussianSamplerTorus[T](e.Parameters.glweStdDev),
 
-		lweKey:  e.lweKey,
-		glweKey: e.glweKey,
+		key: e.key,
 
 		PolyEvaluater:      e.PolyEvaluater.ShallowCopy(),
 		FourierTransformer: e.FourierTransformer.ShallowCopy(),
@@ -102,26 +101,8 @@ func (e Encrypter[T]) Free() {
 	e.FourierTransformer.Free()
 }
 
-// SetLWEKey sets the LWE key of Encrypter to sk.
+// SetLWEKey sets the secret key of Encrypter to sk.
 // This does not copy key.
-func (e *Encrypter[T]) SetLWEKey(sk LWEKey[T]) {
-	e.lweKey = sk
-}
-
-// SetGLWEKey sets the GLWE key of Encrypter to sk.
-// This does not copy key.
-func (e *Encrypter[T]) SetGLWEKey(sk GLWEKey[T]) {
-	e.glweKey = sk
-}
-
-// LWEKey returns LWE Key of Encrypter.
-// This does not copy key.
-func (e Encrypter[T]) LWEKey() LWEKey[T] {
-	return e.lweKey
-}
-
-// GLWEKey returns GLWE Key of Encrypter.
-// This does not copy key.
-func (e Encrypter[T]) GLWEKey() GLWEKey[T] {
-	return e.glweKey
+func (e *Encrypter[T]) SetSecretKey(sk SecretKey[T]) {
+	e.key = sk
 }

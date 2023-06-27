@@ -40,13 +40,22 @@ type evaluationBuffer[T Tint] struct {
 	fourierCtOutForExtProd FourierGLWECiphertext[T]
 	// ctSubForCMux holds ct1 - ct0 in CMux.
 	ctSubForCMux GLWECiphertext[T]
-	// rotatedCtForBlindRotate holds X^ai * ci in BlindRotate.
-	rotatedCtForBlindRotate GLWECiphertext[T]
+
+	// decomposedAcc holds the decomposed accumulator in Blind Rotation.
+	decompsedAcc [][]poly.FourierPoly
+	// localAcc holds the value of (ACC * BootstrapKey_i).
+	localAcc GLWECiphertext[T]
+
+	// keySwitchedCtLeftOver holds the keyswitched ctLeftOver.
+	keySwitchedCtLeftOver LWECiphertext[T]
 
 	// blindRotatedCtForBootstrap holds the blind rotated GLWE ciphertext for bootstrapping.
 	blindRotatedCtForBootstrap GLWECiphertext[T]
 	// sampleExtractedCtForBootstrap holds the sample extracted LWE large ciphertext for bootstrapping.
 	sampleExtractedCtForBootstrap LWECiphertext[T]
+
+	// ctLeftOver holds LargeLWEDimension - LWEDimension + 1 sized ciphertext from keyswitching.
+	ctLeftOver LWECiphertext[T]
 
 	// lut is an empty lut, used for BlindRotateFunc.
 	lut LookUpTable[T]
@@ -93,6 +102,14 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 		decomposedPoly[i] = poly.New[T](params.polyDegree)
 	}
 
+	decomposedAcc := make([][]poly.FourierPoly, params.glweDimension+1)
+	for i := range decomposedAcc {
+		decomposedAcc[i] = make([]poly.FourierPoly, params.bootstrapParameters.level)
+		for j := range decomposedAcc[i] {
+			decomposedAcc[i][j] = poly.NewFourierPoly(params.polyDegree)
+		}
+	}
+
 	return evaluationBuffer[T]{
 		decomposedPoly: decomposedPoly,
 		decomposedVec:  make([]T, MaxBufferDecomposedLevel),
@@ -100,10 +117,15 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 		fourierCtOutForExtProd: NewFourierGLWECiphertext(params),
 		ctSubForCMux:           NewGLWECiphertext(params),
 
-		rotatedCtForBlindRotate: NewGLWECiphertext(params),
+		decompsedAcc: decomposedAcc,
+		localAcc:     NewGLWECiphertext(params),
+
+		keySwitchedCtLeftOver: NewLWECiphertext(params),
 
 		blindRotatedCtForBootstrap:    NewGLWECiphertext(params),
 		sampleExtractedCtForBootstrap: NewLargeLWECiphertext(params),
+
+		ctLeftOver: LWECiphertext[T]{Value: make([]T, params.LargeLWEDimension()-params.lweDimension+1)},
 
 		lut: NewLookUpTable(params),
 

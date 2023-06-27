@@ -131,6 +131,9 @@ type ParametersLiteral[T Tint] struct {
 	// GLWEStdDev is the standard deviation used for gaussian error sampling in GLWE encryption.
 	GLWEStdDev float64
 
+	// BlockSize is the size of block to be used for LWE key sampling.
+	BlockSize int
+
 	// MessageModulus is the modulus of the encoded message.
 	MessageModulus T
 
@@ -154,6 +157,8 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("LWEStdDev smaller than zero")
 	case p.GLWEStdDev <= 0:
 		panic("GLWEStdDev smaller than zero")
+	case p.LWEDimension%p.BlockSize != 0:
+		panic("LWEDimension not multiple of BlockSize")
 	case !num.IsPowerOfTwo(p.PolyDegree):
 		panic("PolyDegree not power of two")
 	case !num.IsPowerOfTwo(p.MessageModulus):
@@ -170,6 +175,8 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 
 		lweStdDev:  p.LWEStdDev,
 		glweStdDev: p.GLWEStdDev,
+
+		blockSize: p.BlockSize,
 
 		delta:             1 << deltaLog,
 		deltaLog:          deltaLog,
@@ -196,6 +203,9 @@ type Parameters[T Tint] struct {
 	lweStdDev float64
 	// GLWEStdDev is the standard deviation used for gaussian error sampling in GLWE encryption.
 	glweStdDev float64
+
+	// BlockSize is the size of block to be used for LWE key sampling.
+	blockSize int
 
 	// MessageModulus is the modulus of the encoded message.
 	messageModulus T
@@ -244,6 +254,16 @@ func (p Parameters[T]) LWEStdDev() float64 {
 // GLWEStdDev is the standard deviation used for gaussian error sampling in GLWE encryption.
 func (p Parameters[T]) GLWEStdDev() float64 {
 	return p.glweStdDev
+}
+
+// BlockSize is the size of block to be used for LWE key sampling.
+func (p Parameters[T]) BlockSize() int {
+	return p.blockSize
+}
+
+// BlockCount is a number of blocks in LWE key. Equal to LWEDimension / BlockSize.
+func (p Parameters[T]) BlockCount() int {
+	return p.lweDimension / p.blockSize
 }
 
 // Delta is the scaling factor used for message encoding.

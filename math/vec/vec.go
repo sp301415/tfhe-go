@@ -1,4 +1,4 @@
-// Package vec implements vector operations action on slices.
+// Package vec implements vector operations acting on slices.
 //
 // Operations usually take three forms: for example,
 //   - Add(v0, v1) is equivalent to v := v0 + v1
@@ -139,7 +139,7 @@ func AddInPlace[T num.Number](v0, v1, vOut []T) {
 	}
 }
 
-// AddAssign adds v0to vOut.
+// AddAssign adds v0 to vOut.
 func AddAssign[T num.Number](v0, vOut []T) {
 	for i := range vOut {
 		vOut[i] += v0[i]

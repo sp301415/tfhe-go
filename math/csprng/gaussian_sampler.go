@@ -42,7 +42,8 @@ func NewGaussianSampler[T num.Integer](stdDev float64) GaussianSampler[T] {
 // NewGaussianSamplerWithSeed creates a new GaussianSampler, with user supplied seed.
 // Note that retreiving the seed after initialization is not possible.
 //
-// Panics when blake2b initialization fails.
+// Panics when blake2b initialization fails,
+// or stdDev <= 0.
 func NewGaussianSamplerWithSeed[T num.Integer](seed []byte, stdDev float64) GaussianSampler[T] {
 	if stdDev <= 0 {
 		panic("StdDev smaller than zero")

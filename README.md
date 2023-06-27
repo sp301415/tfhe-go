@@ -80,3 +80,4 @@ All results were measured from Apple M1. `ParamsBoolean` and `ParamsUint6` are u
 - Parameter Optimization & Larger Precision for (T)FHE (https://eprint.iacr.org/2022/704)
 - Improving TFHE: faster packed homomorphic operations and efficient circuit bootstrapping (https://eprint.iacr.org/2017/430)
 - MOSFHET: Optimized Software for FHE over the Torus (https://eprint.iacr.org/2022/515)
+- Faster TFHE Bootstrapping with Block Binary Keys (https://eprint.iacr.org/2023/958)
