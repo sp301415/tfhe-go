@@ -137,7 +137,7 @@ func (e Encrypter[T]) EncryptGLevInPlace(pt GLWEPlaintext[T], ctOut GLevCipherte
 	}
 }
 
-// DecryptGLevInt decrypts GLev ciphertext to integer message.
+// DecryptGLev decrypts GLev ciphertext to integer message.
 func (e Encrypter[T]) DecryptGLev(ct GLevCiphertext[T]) []int {
 	pt := e.DecryptGLevPlaintext(ct)
 	messages := make([]int, e.Parameters.polyDegree)
@@ -160,7 +160,7 @@ func (e Encrypter[T]) DecryptGLevInPlace(ct GLevCiphertext[T], ptOut GLWEPlainte
 	e.DecryptGLWEInPlace(ctLastLevel, ptOut)
 }
 
-// EncryptGGSWInt encrypts integer message to GGSW ciphertext.
+// EncryptGGSW encrypts integer message to GGSW ciphertext.
 func (e Encrypter[T]) EncryptGGSW(messages []int, decompParams DecompositionParameters[T]) GGSWCiphertext[T] {
 	pt := NewGLWEPlaintext(e.Parameters)
 	for i := 0; i < e.Parameters.polyDegree && i < len(messages); i++ {
@@ -188,7 +188,7 @@ func (e Encrypter[T]) EncryptGGSWInPlace(pt GLWEPlaintext[T], ctOut GGSWCipherte
 	}
 }
 
-// DecryptGGSWInt decrypts GGSW ciphertext to integer message.
+// DecryptGGSW decrypts GGSW ciphertext to integer message.
 func (e Encrypter[T]) DecryptGGSW(ct GGSWCiphertext[T]) []int {
 	return e.DecryptGLev(ct.Value[0])
 }

@@ -18,7 +18,7 @@ func (e Encrypter[T]) GenEvaluationKey() EvaluationKey[T] {
 	}
 }
 
-// GenEvaluationKey samples a new evaluation key for bootstrapping in parallel.
+// GenEvaluationKeyParallel samples a new evaluation key for bootstrapping in parallel.
 func (e Encrypter[T]) GenEvaluationKeyParallel() EvaluationKey[T] {
 	return EvaluationKey[T]{
 		BootstrapKey: e.GenBootstrapKeyParallel(),

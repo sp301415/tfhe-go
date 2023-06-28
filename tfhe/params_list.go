@@ -93,7 +93,7 @@ var (
 		},
 	}
 
-	// ParamsUint6 ensures 5 bits of message precision.
+	// ParamsUint6 ensures 6 bits of message precision.
 	ParamsUint6 = ParametersLiteral[uint64]{
 		LWEDimension:  915,
 		GLWEDimension: 1,

@@ -63,7 +63,7 @@ func (e Encrypter[T]) EncryptFourierGLevInPlace(pt GLWEPlaintext[T], ctOut Fouri
 	}
 }
 
-// DecryptFourierGLevInt decrypts FourierGLev ciphertext to integer message.
+// DecryptFourierGLev decrypts FourierGLev ciphertext to integer message.
 func (e Encrypter[T]) DecryptFourierGLev(ct FourierGLevCiphertext[T]) []int {
 	pt := e.DecryptFourierGLevPlaintext(ct)
 	messages := make([]int, e.Parameters.polyDegree)
@@ -86,7 +86,7 @@ func (e Encrypter[T]) DecryptFourierGLevInPlace(ct FourierGLevCiphertext[T], ptO
 	e.DecryptFourierGLWEInPlace(ctLastLevel, ptOut)
 }
 
-// EncryptFourierGGSWInt encrypts integer message to FourierGGSW ciphertext.
+// EncryptFourierGGSW encrypts integer message to FourierGGSW ciphertext.
 func (e Encrypter[T]) EncryptFourierGGSW(messages []int, decompParams DecompositionParameters[T]) FourierGGSWCiphertext[T] {
 	pt := NewGLWEPlaintext(e.Parameters)
 	for i := 0; i < e.Parameters.polyDegree && i < len(messages); i++ {
@@ -115,7 +115,7 @@ func (e Encrypter[T]) EncryptFourierGGSWInPlace(pt GLWEPlaintext[T], ctOut Fouri
 	}
 }
 
-// DecryptFourierGGSWInt decrypts FourierGGSW ciphertext to integer message.
+// DecryptFourierGGSW decrypts FourierGGSW ciphertext to integer message.
 func (e Encrypter[T]) DecryptFourierGGSW(ct FourierGGSWCiphertext[T]) []int {
 	return e.DecryptFourierGLev(ct.Value[0])
 }

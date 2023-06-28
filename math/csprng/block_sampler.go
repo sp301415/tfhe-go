@@ -7,7 +7,7 @@ import (
 )
 
 // BlockSampler samples values from block binary distribution.
-// For l = BlockSize, it samples one of the vectors from (0, ..., 0), (1, ..., 0), ..., (0, .., 1).
+// It samples one of the vectors from (0, ..., 0), (1, ..., 0), ..., (0, .., 1).
 type BlockSampler[T num.Integer] struct {
 	baseSampler UniformSampler[int]
 

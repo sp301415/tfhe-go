@@ -148,7 +148,6 @@ func (e Evaluater[T]) BootstrapLUTAssign(lut LookUpTable[T], ct LWECiphertext[T]
 	e.KeySwitchForBootstrapInPlace(e.buffer.sampleExtractedCtForBootstrap, ct)
 }
 
-// Note that the encoded LUT only considers inputs between 0 and MessageModulus.
 // ModSwitch calculates round(2N * p / Q).
 func (e Evaluater[T]) ModSwitch(p T) int {
 	return int(num.RoundRatioBits(p, num.SizeT[T]()-(num.Log2(e.Parameters.polyDegree)+1)))
