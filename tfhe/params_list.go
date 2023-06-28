@@ -116,6 +116,7 @@ var (
 		},
 	}
 
+	// ParamsUint7 ensures 7 bits of message precision.
 	ParamsUint7 = ParametersLiteral[uint64]{
 		LWEDimension:  930,
 		GLWEDimension: 1,
