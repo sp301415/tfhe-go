@@ -51,9 +51,8 @@ func (e Evaluater[T]) GenLookUpTableInPlace(f func(int) int, lutOut LookUpTable[
 	// x = 0 => j = 0 ~ N/P and j = -N/P ~ 0.
 	// So we can rotate negacyclically for N/P.
 
-	intMessageMod := int(e.Parameters.messageModulus)
-	boxSize := e.Parameters.polyDegree / intMessageMod // 2N/P
-	for x := 0; x < intMessageMod; x++ {
+	boxSize := e.Parameters.polyDegree / int(e.Parameters.messageModulus) // 2N/P
+	for x := 0; x < int(e.Parameters.messageModulus); x++ {
 		fx := (T(f(x)) % e.Parameters.messageModulus) << e.Parameters.deltaLog
 		for i := x * boxSize; i < (x+1)*boxSize; i++ {
 			lutOut.Value[0].Coeffs[i] = fx
@@ -166,11 +165,11 @@ func (e Evaluater[T]) BlindRotate(ct LWECiphertext[T], lut LookUpTable[T]) GLWEC
 func (e Evaluater[T]) BlindRotateInPlace(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
 	buffDecomposed := e.decomposedPolyBuffer(e.Parameters.bootstrapParameters)
 
-	// c = X^-b * LUT
 	e.MonomialDivGLWEInPlace(GLWECiphertext[T](lut), e.ModSwitch(ct.Value[0]), ctOut)
 
+	// See Algorithm 2 and Section 5.1 of https://eprint.iacr.org/2023/958.pdf
+	// for more details
 	for i := 0; i < e.Parameters.BlockCount(); i++ {
-		// Decompose ctOut first
 		for j := 0; j < e.Parameters.glweDimension+1; j++ {
 			e.DecomposePolyInplace(ctOut.Value[j], buffDecomposed, e.Parameters.bootstrapParameters)
 			for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {

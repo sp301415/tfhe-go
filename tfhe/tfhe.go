@@ -1,2 +1,2 @@
-// Package tfhe implements the TFHE Fully Homomorphic Encryption Scheme in pure Go.
+// Package tfhe implements the TFHE Fully Homomorphic Encryption Scheme in Go.
 package tfhe

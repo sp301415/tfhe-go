@@ -113,10 +113,9 @@ func (f FourierTransformer[T]) Free() {
 	f.fftInv.Free()
 }
 
-// FourierPoly is a polynomial with Fourier Transform already applied.
-// More precisely, the "FFT" phase of convolve() are precomputed.
+// FourierPoly is a polynomial with Fourier Transform applied.
 type FourierPoly struct {
-	// Coeffs has legnth Degree / 2.
+	// Coeffs has length Degree / 2.
 	Coeffs []complex128
 }
 
@@ -151,7 +150,7 @@ func (p FourierPoly) Clear() {
 	}
 }
 
-// toScaledFloat64 returns x as float64.
+// toFloat64 returns x as float64.
 func (f FourierTransformer[T]) toFloat64(x T) float64 {
 	var z T
 	switch any(z).(type) {

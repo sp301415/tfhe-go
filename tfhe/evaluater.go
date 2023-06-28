@@ -123,7 +123,7 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 		keySwitchedCtLeftOver: NewLWECiphertext(params),
 
 		blindRotatedCtForBootstrap:    NewGLWECiphertext(params),
-		sampleExtractedCtForBootstrap: NewLargeLWECiphertext(params),
+		sampleExtractedCtForBootstrap: LWECiphertext[T]{Value: make([]T, params.LargeLWEDimension()+1)},
 
 		ctLeftOver: LWECiphertext[T]{Value: make([]T, params.LargeLWEDimension()-params.lweDimension+1)},
 

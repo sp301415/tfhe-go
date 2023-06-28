@@ -2,6 +2,7 @@ package tfhe
 
 import (
 	"github.com/sp301415/tfhe/math/poly"
+	"github.com/sp301415/tfhe/math/vec"
 )
 
 // SecretKey is a structure containing LWE and GLWE key.
@@ -31,6 +32,30 @@ func NewSecretKey[T Tint](params Parameters[T]) SecretKey[T] {
 		GLWEKey:     glweKey,
 		LWELargeKey: lweLargeKey,
 	}
+}
+
+// Copy returns a copy of the key.
+func (sk SecretKey[T]) Copy() SecretKey[T] {
+	lweLargeKey := LWEKey[T]{Value: vec.Copy(sk.LWELargeKey.Value)}
+
+	lweKey := LWEKey[T]{Value: lweLargeKey.Value[:len(sk.LWEKey.Value)]}
+
+	glweKey := GLWEKey[T]{Value: make([]poly.Poly[T], len(sk.GLWEKey.Value))}
+	degree := sk.GLWEKey.Value[0].Degree()
+	for i := range glweKey.Value {
+		glweKey.Value[i].Coeffs = lweLargeKey.Value[i*degree : (i+1)*degree]
+	}
+
+	return SecretKey[T]{
+		LWEKey:      lweKey,
+		GLWEKey:     glweKey,
+		LWELargeKey: lweLargeKey,
+	}
+}
+
+// CopyFrom copies values from a key.
+func (sk *SecretKey[T]) CopyFrom(skIn SecretKey[T]) {
+	vec.CopyAssign(skIn.LWELargeKey.Value, sk.LWELargeKey.Value)
 }
 
 // GenSecretKey samples a new LWE key.

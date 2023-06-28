@@ -59,12 +59,6 @@ func NewLWECiphertext[T Tint](params Parameters[T]) LWECiphertext[T] {
 	return LWECiphertext[T]{Value: make([]T, params.lweDimension+1)}
 }
 
-// NewLargeLWECiphertext allocates an empty LWECiphertext,
-// but with dimension GLWEDimension * PolyDegree + 1.
-func NewLargeLWECiphertext[T Tint](params Parameters[T]) LWECiphertext[T] {
-	return LWECiphertext[T]{Value: make([]T, params.LargeLWEDimension()+1)}
-}
-
 // Copy returns a copy of the ciphertext.
 func (ct LWECiphertext[T]) Copy() LWECiphertext[T] {
 	return LWECiphertext[T]{Value: vec.Copy(ct.Value)}
