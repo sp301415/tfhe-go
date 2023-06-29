@@ -41,18 +41,8 @@ type encryptionBuffer[T Tint] struct {
 // NewEncrypter returns a initialized Encrypter with given parameters.
 // It also automatically samples LWE and GLWE key.
 func NewEncrypter[T Tint](params Parameters[T]) Encrypter[T] {
-	encrypter := NewEncrypterWithoutKey(params)
-
-	encrypter.SetSecretKey(encrypter.GenSecretKey())
-
-	return encrypter
-}
-
-// NewEncrypterWithoutKey returns a initialized Encrypter, but without key added.
-// If you try to encrypt without keys, it will panic.
-// You can supply secret key later with SetSecretKey().
-func NewEncrypterWithoutKey[T Tint](params Parameters[T]) Encrypter[T] {
-	return Encrypter[T]{
+	// Fill samplers to call encrypter.GenSecretKey()
+	encrypter := Encrypter[T]{
 		Parameters: params,
 
 		uniformSampler: csprng.NewUniformSampler[T](),
@@ -66,6 +56,10 @@ func NewEncrypterWithoutKey[T Tint](params Parameters[T]) Encrypter[T] {
 
 		buffer: newEncryptionBuffer(params),
 	}
+
+	// Generate Secret Key
+	encrypter.key = encrypter.GenSecretKey()
+	return encrypter
 }
 
 // newEncryptionBuffer allocates an empty encryptionBuffer.

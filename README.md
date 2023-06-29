@@ -42,7 +42,7 @@ ct0 := enc.EncryptGLWE([]int{2})
 ct1 := enc.EncryptGLWE([]int{5})
 ctFlag := enc.EncryptFourierGGSW([]int{1}, decompParams)
 
-eval := tfhe.NewEvaluaterWithoutKey(params)
+eval := tfhe.NewEvaluater(params, enc.GenEvaluationKey())
 defer eval.Free()
 
 ctOut := eval.CMuxFourier(ctFlag, ct0, ct1)
@@ -57,9 +57,8 @@ enc := tfhe.NewEncrypter(params)
 defer enc.Free()
 
 ct := enc.EncryptLWE(3)
-evalKey := enc.GenEvaluationKeyParallel()
 
-eval := tfhe.NewEvaluater(params, evalKey)
+eval := tfhe.NewEvaluater(params, enc.GenEvaluationKey())
 defer eval.Free()
 
 ctOut := eval.BootstrapFunc(ct, func(x int) int { return 2*x + 1 })

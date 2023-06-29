@@ -24,13 +24,6 @@ func NewEvaluater(params tfhe.Parameters[uint32], evkey tfhe.EvaluationKey[uint3
 	return Evaluater{Evaluater: tfhe.NewEvaluater(params, evkey)}
 }
 
-// NewEvaluaterWithoutKey initializes a new Evaluater without keys.
-// If you try to bootstrap without keys, it will panic.
-// You can supply evaluation key later by using SetEvaluationKey().
-func NewEvaluaterWithoutKey(params tfhe.Parameters[uint32]) Evaluater {
-	return Evaluater{Evaluater: tfhe.NewEvaluaterWithoutKey(params)}
-}
-
 // ShallowCopy returns a shallow copy of this Evaluater.
 // Returned Evaluater is safe for concurrent use.
 func (e Evaluater) ShallowCopy() Evaluater {
