@@ -7,13 +7,7 @@ import (
 // Evaluater evaluates homomorphic binary gates on ciphertexts.
 // Therefore, it assumes every ciphertext encrypts 0 or 1.
 //
-// This is meant to be public for everyone.
-//
-// Evaluater uses fftw as backend, so manually freeing memory is needed.
-// Use defer clause after initialization:
-//
-//	eval := tfheb.NewEvaluater(params, evkey)
-//	defer eval.Free()
+// This is meant to be public, usually for servers.
 type Evaluater struct {
 	tfhe.Evaluater[uint32]
 }

@@ -44,6 +44,7 @@ func (p DecompositionParametersLiteral[T]) Compile() DecompositionParameters[T] 
 
 	return DecompositionParameters[T]{
 		base:           p.Base,
+		baseHalf:       p.Base / 2,
 		baseLog:        baseLog,
 		maxBits:        num.SizeT[T](),
 		level:          p.Level,
@@ -55,6 +56,8 @@ func (p DecompositionParametersLiteral[T]) Compile() DecompositionParameters[T] 
 type DecompositionParameters[T Tint] struct {
 	// Base is a base of gadget. It must be power of two.
 	base T
+	// BaseHalf equals Base / 2.
+	baseHalf T
 	// BaseLog equals log(Base).
 	baseLog int
 	// MaxBits equals bit length of T.

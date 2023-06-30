@@ -57,8 +57,8 @@ fmt.Println(enc.DecryptLWE(ctOut)) // 7 = 2*3+1
 All results were measured from Apple M1. `ParamsBoolean` and `ParamsUint6` are used.
 |Operations|Time|
 |----------|----|
-|Programmable Bootstrapping|152.7ms ± 1%|
-|Gate Bootstrapping|18.87ms ± 1%|
+|Programmable Bootstrapping|200.5ms ± 1%|
+|Gate Bootstrapping|21.29ms ± 1%|
 
 ## References
 - TFHE: Fast Fully Homomorphic Encryption over the Torus (https://eprint.iacr.org/2018/421)

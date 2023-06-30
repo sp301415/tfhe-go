@@ -5,13 +5,7 @@ import (
 )
 
 // Evaluater evaluates homomorphic operations on ciphertexts.
-// This is meant to be public for everyone.
-//
-// Evaluater uses fftw as backend, so manually freeing memory is needed.
-// Use defer clause after initialization:
-//
-//	eval := tfhe.NewEvaluater(params, evkey)
-//	defer eval.Free()
+// This is meant to be public, usually for servers.
 type Evaluater[T Tint] struct {
 	Parameters Parameters[T]
 

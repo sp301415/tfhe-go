@@ -13,12 +13,6 @@ import (
 //
 // While FFT is much faster than Evaluater's karatsuba multiplication,
 // in TFHE it is used sparsely because of float64 precision.
-//
-// Evaluater uses fftw as backend, so manually freeing memory is needed.
-// Use defer clause after initialization:
-//
-//	fft := poly.NewFourierTransformer[T](N)
-//	defer fft.Free()
 type FourierTransformer[T num.Integer] struct {
 	// degree is the degree of polynomial that this transformer can handle.
 	degree int
@@ -39,11 +33,9 @@ type FourierTransformer[T num.Integer] struct {
 
 // fftBuffer contains buffer values for FourierTransformer.
 type fftBuffer[T num.Integer] struct {
-	// fp holds the fourier polynomial.
-	// The coefficients of fp is referenced by fftw.
+	// fp holds the FFT value of p.
 	fp FourierPoly
-	// fpInv holds the InvFTT & Untwisted & Unfolded value of fp.
-	// The coefficients of fpInv is referenced by fftw.
+	// fpInv holds the InvFFT value of fp.
 	fpInv FourierPoly
 }
 
@@ -169,44 +161,11 @@ func (f FourierTransformer[T]) FFTAssign(fp FourierPoly) {
 	}
 }
 
-// FFTInPlace applies FFT to fpIn and writes it to fpOut.
-//
-// Note that fpIn.Degree() and fpOut.Degree() should equal f.Degree(),
-// which means that len(fpIn.Coeffs) and len(fpOut.Coeffs) should be f.Degree / 2.
-func (f FourierTransformer[T]) FFTInPlace(fpIn, fpOut FourierPoly) {
-	t := f.degree / 2
-
-	// First loop: m = 1
-	// Move fpIn -> fpOut
-	m := 1
-	t >>= 1
-	for i := 0; i < m; i++ {
-		j1 := 2 * i * t
-		j2 := j1 + t - 1
-		for j := j1; j <= j2; j++ {
-			U, V := fpIn.Coeffs[j], fpIn.Coeffs[j+t]*f.wNj[m+i]
-			fpOut.Coeffs[j], fpOut.Coeffs[j+t] = U+V, U-V
-		}
-	}
-
-	for m := 2; m < f.degree/2; m <<= 1 {
-		t >>= 1
-		for i := 0; i < m; i++ {
-			j1 := 2 * i * t
-			j2 := j1 + t - 1
-			for j := j1; j <= j2; j++ {
-				U, V := fpOut.Coeffs[j], fpOut.Coeffs[j+t]*f.wNj[m+i]
-				fpOut.Coeffs[j], fpOut.Coeffs[j+t] = U+V, U-V
-			}
-		}
-	}
-}
-
 // InvFFTAssign applies Inverse FFT to fp.
 //
 // Note that fp.Degree() should equal f.Degree(),
 // which means that len(fp.Coeffs) should be f.Degree / 2.
-func (f FourierTransformer[T]) InvFFTAssign(fpIn FourierPoly) {
+func (f FourierTransformer[T]) InvFFTAssign(fp FourierPoly) {
 	t := 1
 	for m := f.degree / 2; m > 1; m >>= 1 {
 		j1 := 0
@@ -214,45 +173,8 @@ func (f FourierTransformer[T]) InvFFTAssign(fpIn FourierPoly) {
 		for i := 0; i < h; i++ {
 			j2 := j1 + t - 1
 			for j := j1; j <= j2; j++ {
-				U, V := fpIn.Coeffs[j], fpIn.Coeffs[j+t]
-				fpIn.Coeffs[j], fpIn.Coeffs[j+t] = U+V, (U-V)*f.wNjInv[h+i]
-			}
-			j1 += 2 * t
-		}
-		t <<= 1
-	}
-}
-
-// InvFFTInPlace applies Inverse FFT to fpIn and writes it to fpOut.
-//
-// Note that fpIn.Degree() and fpOut.Degree() should equal f.Degree(),
-// which means that len(fpIn.Coeffs) and len(fpOut.Coeffs) should be f.Degree / 2.
-func (f FourierTransformer[T]) InvFFTInPlace(fpIn, fpOut FourierPoly) {
-	t := 1
-
-	// First loop: m = f.degree / 2
-	// Move fpIn -> fpOut
-	m := f.degree / 2
-	j1 := 0
-	h := m >> 1
-	for i := 0; i < h; i++ {
-		j2 := j1 + t - 1
-		for j := j1; j <= j2; j++ {
-			U, V := fpIn.Coeffs[j], fpIn.Coeffs[j+t]
-			fpOut.Coeffs[j], fpOut.Coeffs[j+t] = U+V, (U-V)*f.wNjInv[h+i]
-		}
-		j1 += 2 * t
-	}
-	t <<= 1
-
-	for m := f.degree / 4; m > 1; m >>= 1 {
-		j1 := 0
-		h := m >> 1
-		for i := 0; i < h; i++ {
-			j2 := j1 + t - 1
-			for j := j1; j <= j2; j++ {
-				U, V := fpOut.Coeffs[j], fpOut.Coeffs[j+t]
-				fpOut.Coeffs[j], fpOut.Coeffs[j+t] = U+V, (U-V)*f.wNjInv[h+i]
+				U, V := fp.Coeffs[j], fp.Coeffs[j+t]
+				fp.Coeffs[j], fp.Coeffs[j+t] = U+V, (U-V)*f.wNjInv[h+i]
 			}
 			j1 += 2 * t
 		}
@@ -335,16 +257,16 @@ func (f FourierTransformer[T]) ToStandardPoly(fp FourierPoly) Poly[T] {
 // ToStandardPolyInPlace transforms FourierPoly to Poly.
 func (f FourierTransformer[T]) ToStandardPolyInPlace(fp FourierPoly, p Poly[T]) {
 	N := f.degree
-	NHalf := float64(N / 2)
 
 	// InvFFT
-	f.InvFFTInPlace(fp, f.buffer.fpInv)
+	f.buffer.fpInv.CopyFrom(fp)
+	f.InvFFTAssign(f.buffer.fpInv)
 
 	// Untwist and Unfold
 	for j := 0; j < N/2; j++ {
 		f.buffer.fpInv.Coeffs[j] *= f.w2NjInv[j]
-		p.Coeffs[j] = T(math.Round(real(f.buffer.fpInv.Coeffs[j]) / NHalf))
-		p.Coeffs[j+N/2] = T(-math.Round(imag(f.buffer.fpInv.Coeffs[j]) / NHalf))
+		p.Coeffs[j] = T(math.Round(real(f.buffer.fpInv.Coeffs[j])))
+		p.Coeffs[j+N/2] = T(-math.Round(imag(f.buffer.fpInv.Coeffs[j])))
 	}
 }
 
@@ -384,7 +306,8 @@ func (f FourierTransformer[T]) ToScaledStandardPolyInPlace(fp FourierPoly, p Pol
 	N := f.degree
 
 	// InvFFT
-	f.InvFFTInPlace(fp, f.buffer.fpInv)
+	f.buffer.fpInv.CopyFrom(fp)
+	f.InvFFTAssign(f.buffer.fpInv)
 
 	// Untwist and Unfold
 	for j := 0; j < N/2; j++ {
@@ -400,7 +323,8 @@ func (f FourierTransformer[T]) ToScaledStandardPolyAddAssign(fp FourierPoly, p P
 	N := f.degree
 
 	// InvFFT
-	f.InvFFTInPlace(fp, f.buffer.fpInv)
+	f.buffer.fpInv.CopyFrom(fp)
+	f.InvFFTAssign(f.buffer.fpInv)
 
 	// Untwist and Unfold
 	for j := 0; j < N/2; j++ {
@@ -416,7 +340,8 @@ func (f FourierTransformer[T]) ToScaledStandardPolySubAssign(fp FourierPoly, p P
 	N := f.degree
 
 	// InvFFT
-	f.InvFFTInPlace(fp, f.buffer.fpInv)
+	f.buffer.fpInv.CopyFrom(fp)
+	f.InvFFTAssign(f.buffer.fpInv)
 
 	// Untwist and Unfold
 	for j := 0; j < N/2; j++ {

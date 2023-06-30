@@ -6,13 +6,7 @@ import (
 )
 
 // Encrypter encrypts and decrypts TFHE plaintexts and ciphertexts.
-// This is meant to be a private only for clients.
-//
-// Encrypter uses fftw as backend, so manually freeing memory is needed.
-// Use defer clause after initialization:
-//
-//	enc := tfhe.NewEncrypter(params)
-//	defer enc.Free()
+// This is meant to be private, only for clients.
 type Encrypter[T Tint] struct {
 	Parameters Parameters[T]
 

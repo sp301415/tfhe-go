@@ -19,18 +19,13 @@ func (e Evaluater[T]) DecomposeInPlace(x T, d []T, decompParams DecompositionPar
 	lastScaledBaseLog := decompParams.scaledBasesLog[decompParams.level-1]
 	u := num.ClosestMultipleBits(x, lastScaledBaseLog) >> lastScaledBaseLog
 	for i := decompParams.level - 1; i >= 1; i-- {
-		res := u & (decompParams.base - 1)
+		d[i] = u & (decompParams.base - 1)
 		u >>= decompParams.baseLog
-
-		carry := res >> (decompParams.baseLog - 1)
-		u += carry
-		res -= carry << decompParams.baseLog
-		d[i] = res
+		u += d[i] >> (decompParams.baseLog - 1)
+		d[i] -= (d[i] & decompParams.baseHalf) << 1
 	}
-	res := u & (decompParams.base - 1)
-	carry := res >> (decompParams.baseLog - 1)
-	res -= carry << decompParams.baseLog
-	d[0] = res
+	d[0] = u & (decompParams.base - 1)
+	d[0] -= (d[0] & decompParams.baseHalf) << 1
 }
 
 // DecomposePoly decomposes x with respect to decompParams.
@@ -51,18 +46,13 @@ func (e Evaluater[T]) DecomposePolyInplace(x poly.Poly[T], d []poly.Poly[T], dec
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		c := num.ClosestMultipleBits(x.Coeffs[i], lastScaledBaseLog) >> lastScaledBaseLog
 		for j := decompParams.level - 1; j >= 1; j-- {
-			res := c & (decompParams.base - 1)
+			d[j].Coeffs[i] = c & (decompParams.base - 1)
 			c >>= decompParams.baseLog
-
-			carry := res >> (decompParams.baseLog - 1)
-			c += carry
-			res -= carry << decompParams.baseLog
-			d[j].Coeffs[i] = res
+			c += d[j].Coeffs[i] >> (decompParams.baseLog - 1)
+			d[j].Coeffs[i] -= (d[j].Coeffs[i] & decompParams.baseHalf) << 1
 		}
-		res := c & (decompParams.base - 1)
-		carry := res >> (decompParams.baseLog - 1)
-		res -= carry << decompParams.baseLog
-		d[0].Coeffs[i] = res
+		d[0].Coeffs[i] = c & (decompParams.base - 1)
+		d[0].Coeffs[i] -= (d[0].Coeffs[i] & decompParams.baseHalf) << 1
 	}
 }
 
