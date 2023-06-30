@@ -141,7 +141,7 @@ func (ct GLevCiphertext[T]) DecompositionParameters() DecompositionParameters[T]
 	return ct.decompParams
 }
 
-// GGSWCiphertext represents an encrypted GGSW ciphertext.
+// GGSWCiphertext represents an encrypted GGSW ciphertext,
 // which is a GLWEDimension+1 collection of GLev ciphertexts.
 type GGSWCiphertext[T Tint] struct {
 	// Value has length GLWEDimension + 1.

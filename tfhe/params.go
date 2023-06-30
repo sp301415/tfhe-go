@@ -112,7 +112,7 @@ func (p DecompositionParameters[T]) LastScaledBaseLog() int {
 	return p.ScaledBaseLog(p.level - 1)
 }
 
-// ParametersLiteral is a structure for binary TFHE parameters.
+// ParametersLiteral is a structure for TFHE parameters.
 //
 // Unless you are a cryptographic expert, DO NOT set these by yourself;
 // always use the default parameters provided.

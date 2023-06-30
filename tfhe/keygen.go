@@ -6,10 +6,15 @@ import (
 )
 
 // SecretKey is a structure containing LWE and GLWE key.
-// LWE Key and GLWE Key are reslices of LWELargeKey.
+//
+// LWEKey and GLWEKey is sampled together, as explained in https://eprint.iacr.org/2023/958.
+// Therefore, values of LWEKey and GLWEKey are always assumed to be reslice of LWELargeKey.
 type SecretKey[T Tint] struct {
-	LWEKey      LWEKey[T]
-	GLWEKey     GLWEKey[T]
+	// LWEKey is a key used for LWE encryption and decryption.
+	LWEKey LWEKey[T]
+	// GLWEKey is a key used for GLWE encryption and decryption.
+	GLWEKey GLWEKey[T]
+	// LWELargeKey is GLWE key parsed as LWE key.
 	LWELargeKey LWEKey[T]
 }
 
@@ -41,8 +46,8 @@ func (sk SecretKey[T]) Copy() SecretKey[T] {
 	lweKey := LWEKey[T]{Value: lweLargeKey.Value[:len(sk.LWEKey.Value)]}
 
 	glweKey := GLWEKey[T]{Value: make([]poly.Poly[T], len(sk.GLWEKey.Value))}
-	degree := sk.GLWEKey.Value[0].Degree()
 	for i := range glweKey.Value {
+		degree := sk.GLWEKey.Value[i].Degree()
 		glweKey.Value[i].Coeffs = lweLargeKey.Value[i*degree : (i+1)*degree]
 	}
 
