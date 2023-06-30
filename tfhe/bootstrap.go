@@ -42,16 +42,7 @@ func (e Evaluater[T]) GenLookUpTable(f func(int) int) LookUpTable[T] {
 // GenLookUpTableInPlace generates a lookup table based on function f and writes it to lutOut.
 // Inputs and Outputs of f is cut by MessageModulus.
 func (e Evaluater[T]) GenLookUpTableInPlace(f func(int) int, lutOut LookUpTable[T]) {
-	// We calculate f(round(P*j/2N)), where P = messageModulus * 2 (We use 1-bit padding, remember?)
-	// For x := round(P*j/2N), observe that:
-	// x = 1 => j = N/P ~ 3N/P
-	// x = 2 => j = 3N/P ~ 5N/P
-	// ...
-	// The only exception is when x = 0. In this case,
-	// x = 0 => j = 0 ~ N/P and j = -N/P ~ 0.
-	// So we can rotate negacyclically for N/P.
-
-	boxSize := e.Parameters.polyDegree / int(e.Parameters.messageModulus) // 2N/P
+	boxSize := e.Parameters.polyDegree / int(e.Parameters.messageModulus)
 	for x := 0; x < int(e.Parameters.messageModulus); x++ {
 		fx := (T(f(x)) % e.Parameters.messageModulus) << e.Parameters.deltaLog
 		for i := x * boxSize; i < (x+1)*boxSize; i++ {
@@ -59,7 +50,6 @@ func (e Evaluater[T]) GenLookUpTableInPlace(f func(int) int, lutOut LookUpTable[
 		}
 	}
 
-	// rotate left negacycically.
 	for i := 0; i < boxSize/2; i++ {
 		lutOut.Value[0].Coeffs[i] = -lutOut.Value[0].Coeffs[i]
 	}
@@ -69,25 +59,14 @@ func (e Evaluater[T]) GenLookUpTableInPlace(f func(int) int, lutOut LookUpTable[
 // GenLookUpTableFullInPlace generates a lookup table based on function f and writes it to lutOut.
 // Input of f is cut by MessageModulus, but output of f is encoded as-is.
 func (e Evaluater[T]) GenLookUpTableFullInPlace(f func(int) T, lutOut LookUpTable[T]) {
-	// We calculate f(round(P*j/2N)), where P = messageModulus * 2 (We use 1-bit padding, remember?)
-	// For x := round(P*j/2N), observe that:
-	// x = 1 => j = N/P ~ 3N/P
-	// x = 2 => j = 3N/P ~ 5N/P
-	// ...
-	// The only exception is when x = 0. In this case,
-	// x = 0 => j = 0 ~ N/P and j = -N/P ~ 0.
-	// So we can rotate negacyclically for N/P.
-
-	intMessageMod := int(e.Parameters.messageModulus)
-	boxSize := e.Parameters.polyDegree / intMessageMod // 2N/P
-	for x := 0; x < intMessageMod; x++ {
+	boxSize := e.Parameters.polyDegree / int(e.Parameters.messageModulus)
+	for x := 0; x < int(e.Parameters.messageModulus); x++ {
 		fx := f(x)
 		for i := x * boxSize; i < (x+1)*boxSize; i++ {
 			lutOut.Value[0].Coeffs[i] = fx
 		}
 	}
 
-	// rotate left negacycically.
 	for i := 0; i < boxSize/2; i++ {
 		lutOut.Value[0].Coeffs[i] = -lutOut.Value[0].Coeffs[i]
 	}
@@ -148,9 +127,9 @@ func (e Evaluater[T]) BootstrapLUTAssign(lut LookUpTable[T], ct LWECiphertext[T]
 	e.KeySwitchForBootstrapInPlace(e.buffer.sampleExtractedCtForBootstrap, ct)
 }
 
-// ModSwitch calculates round(2N * p / Q).
-func (e Evaluater[T]) ModSwitch(p T) int {
-	return int(num.RoundRatioBits(p, num.SizeT[T]()-(num.Log2(e.Parameters.polyDegree)+1)))
+// ModSwitch calculates round(2N * x / Q).
+func (e Evaluater[T]) ModSwitch(x T) int {
+	return int(num.RoundRatioBits(x, num.SizeT[T]()-(num.Log2(e.Parameters.polyDegree)+1)))
 }
 
 // BlindRotate calculates the blind rotation of LWE ciphertext with respect to LUT.
@@ -177,7 +156,7 @@ func (e Evaluater[T]) BlindRotateInPlace(ct LWECiphertext[T], lut LookUpTable[T]
 		}
 
 		for j := i * e.Parameters.blockSize; j < (i+1)*e.Parameters.blockSize; j++ {
-			e.ExternalProductFourierHoistedInPlace(e.evaluationKey.BootstrapKey.Value[j], e.buffer.decompsedAcc, e.buffer.localAcc)
+			e.ExternalProductFourierHoistedInPlace(e.EvaluationKey.BootstrapKey.Value[j], e.buffer.decompsedAcc, e.buffer.localAcc)
 			e.SubGLWEAssign(e.buffer.localAcc, ctOut)
 			e.MonomialMulGLWEAssign(e.ModSwitch(ct.Value[j+1]), e.buffer.localAcc)
 			e.AddGLWEAssign(e.buffer.localAcc, ctOut)
@@ -252,6 +231,6 @@ func (e Evaluater[T]) KeySwitchForBootstrapInPlace(ct, ctOut LWECiphertext[T]) {
 	e.buffer.ctLeftOver.Value[0] = 0
 	vec.CopyAssign(ct.Value[e.Parameters.lweDimension+1:], e.buffer.ctLeftOver.Value[1:])
 
-	e.KeySwitchInPlace(e.buffer.ctLeftOver, e.evaluationKey.KeySwitchKey, ctOut)
+	e.KeySwitchInPlace(e.buffer.ctLeftOver, e.EvaluationKey.KeySwitchKey, ctOut)
 	vec.AddAssign(ct.Value[:e.Parameters.lweDimension+1], ctOut.Value)
 }

@@ -25,7 +25,7 @@ type Encrypter[T Tint] struct {
 	PolyEvaluater      poly.Evaluater[T]
 	FourierTransformer poly.FourierTransformer[T]
 
-	key SecretKey[T]
+	SecretKey SecretKey[T]
 
 	buffer encryptionBuffer[T]
 }
@@ -58,7 +58,7 @@ func NewEncrypter[T Tint](params Parameters[T]) Encrypter[T] {
 	}
 
 	// Generate Secret Key
-	encrypter.key = encrypter.GenSecretKey()
+	encrypter.SecretKey = encrypter.GenSecretKey()
 	return encrypter
 }
 
@@ -81,7 +81,7 @@ func (e Encrypter[T]) ShallowCopy() Encrypter[T] {
 		lweSampler:     csprng.NewGaussianSamplerTorus[T](e.Parameters.lweStdDev),
 		glweSampler:    csprng.NewGaussianSamplerTorus[T](e.Parameters.glweStdDev),
 
-		key: e.key,
+		SecretKey: e.SecretKey,
 
 		PolyEvaluater:      e.PolyEvaluater.ShallowCopy(),
 		FourierTransformer: e.FourierTransformer.ShallowCopy(),
@@ -93,10 +93,4 @@ func (e Encrypter[T]) ShallowCopy() Encrypter[T] {
 // Free frees internal fftw data.
 func (e Encrypter[T]) Free() {
 	e.FourierTransformer.Free()
-}
-
-// SetLWEKey sets the secret key of Encrypter to sk.
-// This does not copy key.
-func (e *Encrypter[T]) SetSecretKey(sk SecretKey[T]) {
-	e.key = sk
 }

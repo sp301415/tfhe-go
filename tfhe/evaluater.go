@@ -18,7 +18,7 @@ type Evaluater[T Tint] struct {
 	PolyEvaluater      poly.Evaluater[T]
 	FourierTransformer poly.FourierTransformer[T]
 
-	evaluationKey EvaluationKey[T]
+	EvaluationKey EvaluationKey[T]
 
 	buffer evaluationBuffer[T]
 }
@@ -78,7 +78,7 @@ func NewEvaluater[T Tint](params Parameters[T], evkey EvaluationKey[T]) Evaluate
 		PolyEvaluater:      poly.NewEvaluater[T](params.polyDegree),
 		FourierTransformer: poly.NewFourierTransformer[T](params.polyDegree),
 
-		evaluationKey: evkey,
+		EvaluationKey: evkey,
 
 		buffer: newEvaluationBuffer(params),
 	}
@@ -134,7 +134,7 @@ func (e Evaluater[T]) ShallowCopy() Evaluater[T] {
 		PolyEvaluater:      e.PolyEvaluater.ShallowCopy(),
 		FourierTransformer: e.FourierTransformer.ShallowCopy(),
 
-		evaluationKey: e.evaluationKey,
+		EvaluationKey: e.EvaluationKey,
 
 		buffer: newEvaluationBuffer(e.Parameters),
 	}

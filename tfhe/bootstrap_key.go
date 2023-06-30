@@ -9,12 +9,6 @@ type EvaluationKey[T Tint] struct {
 	KeySwitchKey KeySwitchKey[T]
 }
 
-// SetEvaluationKey sets the evaluation key of Evaluater to evkey.
-// This does not copy values.
-func (e *Evaluater[T]) SetEvaluationKey(evkey EvaluationKey[T]) {
-	e.evaluationKey = evkey
-}
-
 // BootstrapKey is a key for bootstrapping.
 // Essentially, this is a GGSW encryption of LWE key with GLWE key.
 // However, FFT is already applied for fast external product.
