@@ -1,18 +1,11 @@
 # TFHE-go
 
-TFHE-go is a Go implementation of TFHE[[CGGI16](https://eprint.iacr.org/2016/870)] Scheme. The structure of this library is similar to another great Go-based FHE library, [Lattigo](https://github.com/tuneinsight/lattigo).
+TFHE-go is a pure Go implementation of TFHE[[CGGI16](https://eprint.iacr.org/2016/870)] Scheme. The structure of this library is similar to another great Go-based FHE library, [Lattigo](https://github.com/tuneinsight/lattigo).
 
 Some of the implementations are taken from the excellent [TFHE-rs](https://github.com/zama-ai/tfhe-rs), developed by Zama. The goal is to implement most of the functionalities that TFHE-rs provides, with readable code and minimal performance overhead.
 
 This library was not audited or reviewed by security experts, so I do not recommend this library for any real-world production uses.
 
-
-## Notes
-TFHE-go uses [gosl/fun/fftw](https://github.com/cpmech/gosl) as FFT backend, so FFTW has to be installed in your system. You can set the include path using `CGO_` enviornment variables. For example, Homebrew in Apple Silicon installs libraries in `/opt/homebrew` by default, so you need to set
-```bash
-export CGO_CFLAGS="-I/opt/homebrew/include"
-export CGO_LDFLAGS="-L/opt/homebrew/lib"
-```
 
 ## Examples
 ### Encryption
@@ -20,7 +13,6 @@ export CGO_LDFLAGS="-L/opt/homebrew/lib"
 params := tfhe.ParamsUint4.Compile() // Parameters should be compiled before use.
 
 enc := tfhe.NewEncrypter(params) // Set up Encrypter.
-defer enc.Free()                 // Cleanup internal FFTW values.
 
 ctLWE := enc.EncryptLWE(4)
 ctGLWE := enc.EncryptGLWE([]int{1, 2, 3, 4})
@@ -36,14 +28,12 @@ params := tfhe.ParamsUint4.Compile()
 decompParams := params.KeySwitchParameters()
 
 enc := tfhe.NewEncrypter(params)
-defer enc.Free()
 
 ct0 := enc.EncryptGLWE([]int{2})
 ct1 := enc.EncryptGLWE([]int{5})
 ctFlag := enc.EncryptFourierGGSW([]int{1}, decompParams)
 
 eval := tfhe.NewEvaluater(params, enc.GenEvaluationKey())
-defer eval.Free()
 
 ctOut := eval.CMuxFourier(ctFlag, ct0, ct1)
 fmt.Println(enc.DecryptGLWE(ctOut)[0]) // 5
@@ -54,12 +44,10 @@ fmt.Println(enc.DecryptGLWE(ctOut)[0]) // 5
 params := tfhe.ParamsUint4.Compile()
 
 enc := tfhe.NewEncrypter(params)
-defer enc.Free()
 
 ct := enc.EncryptLWE(3)
 
 eval := tfhe.NewEvaluater(params, enc.GenEvaluationKey())
-defer eval.Free()
 
 ctOut := eval.BootstrapFunc(ct, func(x int) int { return 2*x + 1 })
 fmt.Println(enc.DecryptLWE(ctOut)) // 7 = 2*3+1

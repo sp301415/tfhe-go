@@ -30,11 +30,6 @@ func (e Evaluater) ShallowCopy() Evaluater {
 	return Evaluater{Evaluater: e.Evaluater.ShallowCopy()}
 }
 
-// Free frees internal fftw data.
-func (e Evaluater) Free() {
-	e.Evaluater.Free()
-}
-
 // NOT computes NOT ct0 and returns the result.
 func (e Evaluater) NOT(ct0 tfhe.LWECiphertext[uint32]) tfhe.LWECiphertext[uint32] {
 	ctOut := tfhe.NewLWECiphertext(e.Parameters)

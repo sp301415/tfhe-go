@@ -89,8 +89,3 @@ func (e Encrypter[T]) ShallowCopy() Encrypter[T] {
 		buffer: newEncryptionBuffer(e.Parameters),
 	}
 }
-
-// Free frees internal fftw data.
-func (e Encrypter[T]) Free() {
-	e.FourierTransformer.Free()
-}

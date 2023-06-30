@@ -6,13 +6,12 @@ import (
 
 	"github.com/sp301415/tfhe/math/num"
 	"github.com/sp301415/tfhe/math/poly"
-	"golang.org/x/exp/constraints"
 )
 
 // GaussianSampler samples from Discrete Gaussian Distribution, centered around zero.
 //
 // See rand.UniformSampler for more details.
-type GaussianSampler[T constraints.Integer] struct {
+type GaussianSampler[T num.Integer] struct {
 	baseSampler UniformSampler[uint32]
 
 	StdDev float64

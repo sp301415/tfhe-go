@@ -139,8 +139,3 @@ func (e Evaluater[T]) ShallowCopy() Evaluater[T] {
 		buffer: newEvaluationBuffer(e.Parameters),
 	}
 }
-
-// Free frees internal fftw data.
-func (e Evaluater[T]) Free() {
-	e.FourierTransformer.Free()
-}

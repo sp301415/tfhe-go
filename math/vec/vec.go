@@ -11,7 +11,6 @@ package vec
 
 import (
 	"github.com/sp301415/tfhe/math/num"
-	"golang.org/x/exp/slices"
 )
 
 // Equals returns if two vectors are equal.
@@ -106,6 +105,22 @@ func ReverseAssign[T any](v []T) {
 	}
 }
 
+// BitReverseAssign reorders v into bit-reversal order.
+func BitReverseAssign[T any](v []T) {
+	var bit, j int
+	for i := 1; i < len(v); i++ {
+		bit = len(v) >> 1
+		for j >= bit {
+			j -= bit
+			bit >>= 1
+		}
+		j += bit
+		if i < j {
+			v[i], v[j] = v[j], v[i]
+		}
+	}
+}
+
 // CopyAssign copies v0 to v1.
 func CopyAssign[T any](v0, v1 []T) {
 	copy(v1, v0)
@@ -113,7 +128,10 @@ func CopyAssign[T any](v0, v1 []T) {
 
 // Copy returns a copy of v.
 func Copy[T any](v []T) []T {
-	return slices.Clone(v)
+	if v == nil {
+		return nil
+	}
+	return append(make([]T, 0, len(v)), v...)
 }
 
 // Dot returns the dot product of two vectors.

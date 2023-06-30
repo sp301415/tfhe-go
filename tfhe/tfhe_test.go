@@ -172,10 +172,7 @@ func TestEvaluater(t *testing.T) {
 		}.Compile()
 
 		enc := tfhe.NewEncrypter(cbsParams)
-		defer enc.Free()
-
 		eval := tfhe.NewEvaluater(cbsParams, enc.GenEvaluationKeyParallel())
-		defer eval.Free()
 
 		cbsk := enc.GenCircuitBootstrapKeyParallel(pfkskDecompParams)
 
