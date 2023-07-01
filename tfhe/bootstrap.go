@@ -145,8 +145,7 @@ func (e Evaluater[T]) BlindRotateInPlace(ct LWECiphertext[T], lut LookUpTable[T]
 
 	e.MonomialDivGLWEInPlace(GLWECiphertext[T](lut), e.ModSwitch(ct.Value[0]), ctOut)
 
-	// See Algorithm 2 and Section 5.1 of https://eprint.iacr.org/2023/958.pdf
-	// for more details
+	// Implementation of Algorithm 2 and Section 5.1 from https://eprint.iacr.org/2023/958.pdf
 	for i := 0; i < e.Parameters.BlockCount(); i++ {
 		for j := 0; j < e.Parameters.glweDimension+1; j++ {
 			e.DecomposePolyInplace(ctOut.Value[j], buffDecomposed, e.Parameters.bootstrapParameters)

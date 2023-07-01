@@ -50,8 +50,8 @@ func NewFourierTransformer[T num.Integer](N int) FourierTransformer[T] {
 	wNjInv := make([]complex128, N/2)
 	for j := 0; j < N/2; j++ {
 		e := 2 * math.Pi * float64(j) / float64(N)
-		wNj[j] = cmplx.Exp(-complex(0, e))
-		wNjInv[j] = cmplx.Exp(complex(0, e))
+		wNj[j] = cmplx.Exp(complex(0, e))
+		wNjInv[j] = cmplx.Exp(-complex(0, e))
 	}
 	vec.BitReverseAssign(wNj)
 	vec.BitReverseAssign(wNjInv)
@@ -147,13 +147,14 @@ func (p FourierPoly) Clear() {
 // Note that fp.Degree() should equal f.Degree(),
 // which means that len(fp.Coeffs) should be f.Degree / 2.
 func (f FourierTransformer[T]) FFTAssign(fp FourierPoly) {
+	// Implementation of Algorithm 1 from https://eprint.iacr.org/2016/504.pdf
 	t := f.degree / 2
-	for m := 1; m < f.degree/2; m <<= 1 {
-		t >>= 1
+	for m := 1; m < f.degree/2; m *= 2 {
+		t /= 2
 		for i := 0; i < m; i++ {
 			j1 := 2 * i * t
-			j2 := j1 + t - 1
-			for j := j1; j <= j2; j++ {
+			j2 := j1 + t
+			for j := j1; j < j2; j++ {
 				U, V := fp.Coeffs[j], fp.Coeffs[j+t]*f.wNj[m+i]
 				fp.Coeffs[j], fp.Coeffs[j+t] = U+V, U-V
 			}
@@ -166,19 +167,20 @@ func (f FourierTransformer[T]) FFTAssign(fp FourierPoly) {
 // Note that fp.Degree() should equal f.Degree(),
 // which means that len(fp.Coeffs) should be f.Degree / 2.
 func (f FourierTransformer[T]) InvFFTAssign(fp FourierPoly) {
+	// Implementation of Algorithm 2 from https://eprint.iacr.org/2016/504.pdf
 	t := 1
-	for m := f.degree / 2; m > 1; m >>= 1 {
+	for m := f.degree / 2; m > 1; m /= 2 {
 		j1 := 0
-		h := m >> 1
+		h := m / 2
 		for i := 0; i < h; i++ {
-			j2 := j1 + t - 1
-			for j := j1; j <= j2; j++ {
+			j2 := j1 + t
+			for j := j1; j < j2; j++ {
 				U, V := fp.Coeffs[j], fp.Coeffs[j+t]
 				fp.Coeffs[j], fp.Coeffs[j+t] = U+V, (U-V)*f.wNjInv[h+i]
 			}
 			j1 += 2 * t
 		}
-		t <<= 1
+		t *= 2
 	}
 }
 

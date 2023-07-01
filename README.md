@@ -63,6 +63,7 @@ All results were measured from Apple M1. `ParamsBoolean` and `ParamsUint6` are u
 ## References
 - TFHE: Fast Fully Homomorphic Encryption over the Torus (https://eprint.iacr.org/2018/421)
 - Guide to Fully Homomorphic Encryption over the Discretized Torus (https://eprint.iacr.org/2021/1402)
+- Speeding up the Number Theoretic Transform for Faster Ideal Lattice-Based Cryptography (https://eprint.iacr.org/2016/504)
 - Fast and Error-Free Negacyclic Integer Convolution using Extended Fourier Transform (https://eprint.iacr.org/2021/480)
 - Parameter Optimization & Larger Precision for (T)FHE (https://eprint.iacr.org/2022/704)
 - Improving TFHE: faster packed homomorphic operations and efficient circuit bootstrapping (https://eprint.iacr.org/2017/430)
