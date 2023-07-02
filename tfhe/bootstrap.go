@@ -181,11 +181,8 @@ func (e Evaluater[T]) SampleExtractInPlace(ct GLWECiphertext[T], index int, ctOu
 		start := i * e.Parameters.polyDegree
 		end := (i + 1) * e.Parameters.polyDegree
 
-		// Reverse polynomial coefficient of ctMask, and save it to ctOutMask
 		vec.ReverseInPlace(ctMask[i].Coeffs, ctOutMask[start:end])
 
-		// We rotate to right index + 1 times,
-		// and negate index+1 ~ PolyDegree values.
 		vec.RotateAssign(ctOutMask[start:end], index+1)
 		vec.NegAssign(ctOutMask[start+index+1 : end])
 	}

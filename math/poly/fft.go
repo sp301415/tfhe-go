@@ -90,8 +90,6 @@ func newfftBuffer[T num.Integer](N int) fftBuffer[T] {
 // ShallowCopy returns a shallow copy of this FourierTransformer.
 // Returned FourierTransformer is safe for concurrent usf.
 func (f FourierTransformer[T]) ShallowCopy() FourierTransformer[T] {
-	buffer := newfftBuffer[T](f.degree)
-
 	return FourierTransformer[T]{
 		degree: f.degree,
 		maxT:   f.maxT,
@@ -101,7 +99,7 @@ func (f FourierTransformer[T]) ShallowCopy() FourierTransformer[T] {
 		w2Nj:    f.w2Nj,
 		w2NjInv: f.w2NjInv,
 
-		buffer: buffer,
+		buffer: newfftBuffer[T](f.degree),
 	}
 }
 
@@ -218,12 +216,10 @@ func (f FourierTransformer[T]) ToFourierPoly(p Poly[T]) FourierPoly {
 func (f FourierTransformer[T]) ToFourierPolyInPlace(p Poly[T], fp FourierPoly) {
 	N := f.degree
 
-	// Fold and Twist
 	for j := 0; j < N/2; j++ {
 		fp.Coeffs[j] = complex(f.toFloat64(p.Coeffs[j]), -f.toFloat64(p.Coeffs[j+N/2])) * f.w2Nj[j]
 	}
 
-	// FFT
 	f.FFTAssign(fp)
 }
 
@@ -240,12 +236,10 @@ func (f FourierTransformer[T]) ToScaledFourierPoly(p Poly[T]) FourierPoly {
 func (f FourierTransformer[T]) ToScaledFourierPolyInPlace(p Poly[T], fp FourierPoly) {
 	N := f.degree
 
-	// Fold and Twist
 	for j := 0; j < N/2; j++ {
 		fp.Coeffs[j] = complex(f.toScaledFloat64(p.Coeffs[j]), -f.toScaledFloat64(p.Coeffs[j+N/2])) * f.w2Nj[j]
 	}
 
-	// FFT
 	f.FFTAssign(fp)
 }
 
@@ -264,7 +258,6 @@ func (f FourierTransformer[T]) ToStandardPolyInPlace(fp FourierPoly, p Poly[T]) 
 	f.buffer.fpInv.CopyFrom(fp)
 	f.InvFFTAssign(f.buffer.fpInv)
 
-	// Untwist and Unfold
 	for j := 0; j < N/2; j++ {
 		f.buffer.fpInv.Coeffs[j] *= f.w2NjInv[j]
 		p.Coeffs[j] = T(math.Round(real(f.buffer.fpInv.Coeffs[j])))
@@ -307,7 +300,6 @@ func (f FourierTransformer[T]) ToScaledStandardPoly(fp FourierPoly) Poly[T] {
 func (f FourierTransformer[T]) ToScaledStandardPolyInPlace(fp FourierPoly, p Poly[T]) {
 	N := f.degree
 
-	// InvFFT
 	f.buffer.fpInv.CopyFrom(fp)
 	f.InvFFTAssign(f.buffer.fpInv)
 
@@ -324,11 +316,9 @@ func (f FourierTransformer[T]) ToScaledStandardPolyInPlace(fp FourierPoly, p Pol
 func (f FourierTransformer[T]) ToScaledStandardPolyAddAssign(fp FourierPoly, p Poly[T]) {
 	N := f.degree
 
-	// InvFFT
 	f.buffer.fpInv.CopyFrom(fp)
 	f.InvFFTAssign(f.buffer.fpInv)
 
-	// Untwist and Unfold
 	for j := 0; j < N/2; j++ {
 		f.buffer.fpInv.Coeffs[j] *= f.w2NjInv[j]
 		p.Coeffs[j] += f.fromScaledFloat64(real(f.buffer.fpInv.Coeffs[j]))
@@ -341,11 +331,9 @@ func (f FourierTransformer[T]) ToScaledStandardPolyAddAssign(fp FourierPoly, p P
 func (f FourierTransformer[T]) ToScaledStandardPolySubAssign(fp FourierPoly, p Poly[T]) {
 	N := f.degree
 
-	// InvFFT
 	f.buffer.fpInv.CopyFrom(fp)
 	f.InvFFTAssign(f.buffer.fpInv)
 
-	// Untwist and Unfold
 	for j := 0; j < N/2; j++ {
 		f.buffer.fpInv.Coeffs[j] *= f.w2NjInv[j]
 		p.Coeffs[j] -= f.fromScaledFloat64(real(f.buffer.fpInv.Coeffs[j]))
