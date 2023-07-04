@@ -60,7 +60,7 @@ func (sk SecretKey[T]) Copy() SecretKey[T] {
 
 // CopyFrom copies values from a key.
 func (sk *SecretKey[T]) CopyFrom(skIn SecretKey[T]) {
-	vec.CopyAssign(skIn.LWELargeKey.Value, sk.LWELargeKey.Value)
+	vec.CopyInPlace(skIn.LWELargeKey.Value, sk.LWELargeKey.Value)
 }
 
 // GenSecretKey samples a new LWE key.

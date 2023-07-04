@@ -20,7 +20,7 @@ func (sk LWEKey[T]) Copy() LWEKey[T] {
 
 // CopyFrom copies values from a key.
 func (sk *LWEKey[T]) CopyFrom(skIn LWEKey[T]) {
-	vec.CopyAssign(skIn.Value, sk.Value)
+	vec.CopyInPlace(skIn.Value, sk.Value)
 }
 
 // LWEPlaintext represents an encoded LWE plaintext.
@@ -66,7 +66,7 @@ func (ct LWECiphertext[T]) Copy() LWECiphertext[T] {
 
 // CopyFrom copies values from a ciphertext.
 func (ct *LWECiphertext[T]) CopyFrom(ctIn LWECiphertext[T]) {
-	vec.CopyAssign(ctIn.Value, ct.Value)
+	vec.CopyInPlace(ctIn.Value, ct.Value)
 }
 
 // LevCiphertext is a leveled LWE ciphertext, decomposed according to DecompositionParameters.

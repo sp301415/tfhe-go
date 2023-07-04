@@ -6,15 +6,13 @@ import (
 )
 
 // Decompose decomposes x with respect to decompParams.
-// Equivalent to decompParams.Decompose().
 func (e Evaluater[T]) Decompose(x T, decompParams DecompositionParameters[T]) []T {
 	decomposed := make([]T, decompParams.level)
 	e.DecomposeInPlace(x, decomposed, decompParams)
 	return decomposed
 }
 
-// DecomposeInplace decomposes x with respect to decompParams.
-// Equivalent to decompParams.DecomposeInPlace().
+// DecomposeInplace decomposes x with respect to decompParams, and writes it to d.
 func (e Evaluater[T]) DecomposeInPlace(x T, d []T, decompParams DecompositionParameters[T]) {
 	lastScaledBaseLog := decompParams.scaledBasesLog[decompParams.level-1]
 	u := num.ClosestMultipleBits(x, lastScaledBaseLog) >> lastScaledBaseLog
@@ -29,7 +27,6 @@ func (e Evaluater[T]) DecomposeInPlace(x T, d []T, decompParams DecompositionPar
 }
 
 // DecomposePoly decomposes x with respect to decompParams.
-// Equivalant to decompParams.DecomposePoly().
 func (e Evaluater[T]) DecomposePoly(x poly.Poly[T], decompParams DecompositionParameters[T]) []poly.Poly[T] {
 	decomposed := make([]poly.Poly[T], decompParams.level)
 	for i := 0; i < decompParams.level; i++ {
@@ -39,8 +36,7 @@ func (e Evaluater[T]) DecomposePoly(x poly.Poly[T], decompParams DecompositionPa
 	return decomposed
 }
 
-// DecomposePolyInPlace decomposes x with respect to decompParams.
-// Equivalant to decompParams.DecomposePolyInPlace().
+// DecomposePolyInPlace decomposes x with respect to decompParams, and writes it to d.
 func (e Evaluater[T]) DecomposePolyInplace(x poly.Poly[T], d []poly.Poly[T], decompParams DecompositionParameters[T]) {
 	lastScaledBaseLog := decompParams.scaledBasesLog[decompParams.level-1]
 	for i := 0; i < e.Parameters.polyDegree; i++ {

@@ -130,7 +130,7 @@ func (p FourierPoly) Copy() FourierPoly {
 
 // CopyFrom copies p0 to p.
 func (p *FourierPoly) CopyFrom(p0 FourierPoly) {
-	vec.CopyAssign(p0.Coeffs, p.Coeffs)
+	vec.CopyInPlace(p0.Coeffs, p.Coeffs)
 }
 
 // Clear clears all the coefficients to zero.

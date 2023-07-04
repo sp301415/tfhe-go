@@ -66,8 +66,8 @@ func RotateInPlace[T any](v []T, l int, vOut []T) {
 		l %= len(v)
 	}
 
-	CopyAssign(v, vOut[l:])
-	CopyAssign(v[len(v)-l:], vOut[:l])
+	CopyInPlace(v, vOut[l:])
+	CopyInPlace(v[len(v)-l:], vOut[:l])
 }
 
 // RotateAssign rotates v l times to the right.
@@ -121,8 +121,8 @@ func BitReverseAssign[T any](v []T) {
 	}
 }
 
-// CopyAssign copies v0 to v1.
-func CopyAssign[T any](v0, v1 []T) {
+// CopyInPlace copies v0 to v1.
+func CopyInPlace[T any](v0, v1 []T) {
 	copy(v1, v0)
 }
 

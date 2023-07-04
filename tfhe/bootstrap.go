@@ -225,7 +225,7 @@ func (e Evaluater[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[T
 // Input ciphertext should be length LWELargeDimension + 1, and output ciphertext should be length LWEDimension + 1.
 func (e Evaluater[T]) KeySwitchForBootstrapInPlace(ct, ctOut LWECiphertext[T]) {
 	e.buffer.ctLeftOver.Value[0] = 0
-	vec.CopyAssign(ct.Value[e.Parameters.lweDimension+1:], e.buffer.ctLeftOver.Value[1:])
+	vec.CopyInPlace(ct.Value[e.Parameters.lweDimension+1:], e.buffer.ctLeftOver.Value[1:])
 
 	e.KeySwitchInPlace(e.buffer.ctLeftOver, e.EvaluationKey.KeySwitchKey, ctOut)
 	vec.AddAssign(ct.Value[:e.Parameters.lweDimension+1], ctOut.Value)
