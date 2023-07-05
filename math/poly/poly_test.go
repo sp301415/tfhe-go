@@ -20,8 +20,10 @@ var (
 )
 
 func BenchmarkOperations(b *testing.B) {
-	p0 := sampler.SamplePoly(N)
-	p1 := sampler.SamplePoly(N)
+	p0 := poly.New[uint64](N)
+	p1 := poly.New[uint64](N)
+	sampler.SampleSliceInPlace(p0.Coeffs)
+	sampler.SampleSliceInPlace(p1.Coeffs)
 
 	b.Run("Add", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
@@ -49,7 +51,7 @@ func BenchmarkOperations(b *testing.B) {
 
 	b.Run("MulAdd", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			eval.MulAddAssign(p0, p1, pOut)
+			eval.MulAddInPlace(p0, p1, pOut)
 		}
 	})
 

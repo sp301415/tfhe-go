@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 
 	"github.com/sp301415/tfhe/math/num"
-	"github.com/sp301415/tfhe/math/poly"
 )
 
 // BinarySampler samples values from uniform binary distribution {0, 1}.
@@ -78,28 +77,9 @@ func (s *BinarySampler[T]) Sample() T {
 	return sample
 }
 
-// SampleSliceAssign samples uniform binary values to v.
-func (s BinarySampler[T]) SampleSliceAssign(v []T) {
+// SampleSliceInPlace samples uniform binary values to v.
+func (s BinarySampler[T]) SampleSliceInPlace(v []T) {
 	for i := range v {
 		v[i] = s.Sample()
 	}
-}
-
-// SampleSlice returns uniformly sampled binary slice of length n.
-func (s BinarySampler[T]) SampleSlice(n int) []T {
-	v := make([]T, n)
-	s.SampleSliceAssign(v)
-	return v
-}
-
-// SamplePolyAssign samples a polynomial from uniform binary distribution.
-func (s BinarySampler[T]) SamplePolyAssign(p poly.Poly[T]) {
-	s.SampleSliceAssign(p.Coeffs)
-}
-
-// SamplePoly returns uniformly sampled binary polynomial of degree N.
-func (s BinarySampler[T]) SamplePoly(N int) poly.Poly[T] {
-	p := poly.New[T](N)
-	s.SamplePolyAssign(p)
-	return p
 }

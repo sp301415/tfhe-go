@@ -1,17 +1,32 @@
 // Package vec implements vector operations acting on slices.
 //
-// Operations usually take three forms: for example,
-//   - Add(v0, v1) is equivalent to v := v0 + v1
-//   - AddInPlace(v0, v1, vOut) is equivalent to vOut = v0 + v1
-//   - AddAssign(v0, vOut) is equivalent to vOut += v0
+// Operations usually take two forms: for example,
+//   - Add(v0, v1) is equivalent to v := v0 + v1.
+//   - AddInPlace(v0, v1, vOut) is equivalent to vOut = v0 + v1.
+//     Sometimes, InPlace method only takes one argument, like BitReverse(v).
+//     This means that input argument is altered.
 //
-// For performance reasons, functions in this package usually don't implement bound checks,
-// so be careful.
+// # Warning
+//   - InPlace methods may not return correct results when output overlaps with inputs.
+//     However, it is always correct when v0 == vOut or v1 == vOut.
+//   - For performance reasons, functions in this package usually don't implement bound checks.
+//     If length mismatch happens, usually the result is wrong.
 package vec
 
 import (
 	"github.com/sp301415/tfhe/math/num"
 )
+
+// sliceEquals returns if two slice, v0 and v1, are really equal;
+// This means that length, and pointer to the backing array is equal.
+// (Capacity doesn't matter.)
+func sliceEquals[T any](v0, v1 []T) bool {
+	if len(v0) != len(v1) {
+		return false
+	}
+
+	return len(v0) == 0 || &v0[0] == &v1[0]
+}
 
 // Equals returns if two vectors are equal.
 func Equals[T comparable](v0, v1 []T) bool {
@@ -34,18 +49,18 @@ func Fill[T any](v []T, x T) {
 	}
 }
 
-// CastInPlace casts v of type []T1 to vOut of type []T2.
-func CastInPlace[T1, T2 num.Real](v []T1, vOut []T2) {
-	for i := range vOut {
-		vOut[i] = T2(v[i])
-	}
-}
-
 // Cast casts and returns vector v of type []T1 to []T2.
 func Cast[T1, T2 num.Real](v []T1) []T2 {
 	vOut := make([]T2, len(v))
 	CastInPlace(v, vOut)
 	return vOut
+}
+
+// CastInPlace casts v of type []T1 to vOut of type []T2.
+func CastInPlace[T1, T2 num.Real](v []T1, vOut []T2) {
+	for i := range vOut {
+		vOut[i] = T2(v[i])
+	}
 }
 
 // Rotate rotates v l times to the right, and returns it.
@@ -66,22 +81,14 @@ func RotateInPlace[T any](v []T, l int, vOut []T) {
 		l %= len(v)
 	}
 
-	CopyInPlace(v, vOut[l:])
-	CopyInPlace(v[len(v)-l:], vOut[:l])
-}
-
-// RotateAssign rotates v l times to the right.
-// If l < 0, then it rotates the vector l times to the left.
-func RotateAssign[T any](v []T, l int) {
-	if l < 0 {
-		l = len(v) - ((-l) % len(v))
+	if sliceEquals(v, vOut) {
+		ReverseInPlace(vOut, vOut)
+		ReverseInPlace(vOut[:l], vOut[:l])
+		ReverseInPlace(vOut[l:], vOut[l:])
 	} else {
-		l %= len(v)
+		CopyInPlace(v, vOut[l:])
+		CopyInPlace(v[len(v)-l:], vOut[:l])
 	}
-
-	ReverseAssign(v)
-	ReverseAssign(v[:l])
-	ReverseAssign(v[l:])
 }
 
 // Reverse reverses v and returns it.
@@ -93,20 +100,19 @@ func Reverse[T any](v []T) []T {
 
 // ReverseInPlace reverses v and writes it to vOut.
 func ReverseInPlace[T any](v, vOut []T) {
-	for i := range vOut {
-		vOut[len(vOut)-i-1] = v[i]
+	if sliceEquals(v, vOut) {
+		for i, j := 0, len(v)-1; i < j; i, j = i+1, j-1 {
+			vOut[i], vOut[j] = vOut[j], vOut[i]
+		}
+	} else {
+		for i := range vOut {
+			vOut[len(vOut)-i-1] = v[i]
+		}
 	}
 }
 
-// ReverseAssign reverses v.
-func ReverseAssign[T any](v []T) {
-	for i, j := 0, len(v)-1; i < j; i, j = i+1, j-1 {
-		v[i], v[j] = v[j], v[i]
-	}
-}
-
-// BitReverseAssign reorders v into bit-reversal order.
-func BitReverseAssign[T any](v []T) {
+// BitReverseInPlace reorders v into bit-reversal order.
+func BitReverseInPlace[T any](v []T) {
 	var bit, j int
 	for i := 1; i < len(v); i++ {
 		bit = len(v) >> 1
@@ -121,17 +127,17 @@ func BitReverseAssign[T any](v []T) {
 	}
 }
 
-// CopyInPlace copies v0 to v1.
-func CopyInPlace[T any](v0, v1 []T) {
-	copy(v1, v0)
-}
-
 // Copy returns a copy of v.
 func Copy[T any](v []T) []T {
 	if v == nil {
 		return nil
 	}
 	return append(make([]T, 0, len(v)), v...)
+}
+
+// CopyInPlace copies v0 to v1.
+func CopyInPlace[T any](v0, v1 []T) {
+	copy(v1, v0)
 }
 
 // Dot returns the dot product of two vectors.
@@ -157,13 +163,6 @@ func AddInPlace[T num.Number](v0, v1, vOut []T) {
 	}
 }
 
-// AddAssign adds v0 to vOut.
-func AddAssign[T num.Number](v0, vOut []T) {
-	for i := range vOut {
-		vOut[i] += v0[i]
-	}
-}
-
 // Sub subtracts v0, v1 and returns the result.
 func Sub[T num.Number](v0, v1 []T) []T {
 	v := make([]T, len(v0))
@@ -175,13 +174,6 @@ func Sub[T num.Number](v0, v1 []T) []T {
 func SubInPlace[T num.Number](v0, v1, vOut []T) {
 	for i := range vOut {
 		vOut[i] = v0[i] - v1[i]
-	}
-}
-
-// SubAssign subtracts v0 from vOut.
-func SubAssign[T num.Number](v0, vOut []T) {
-	for i := range vOut {
-		vOut[i] -= v0[i]
 	}
 }
 
@@ -199,13 +191,6 @@ func NegInPlace[T num.Number](v0, vOut []T) {
 	}
 }
 
-// NegAssign negates v0.
-func NegAssign[T num.Number](v0 []T) {
-	for i := range v0 {
-		v0[i] = -v0[i]
-	}
-}
-
 // ScalarMul multplies c to v0 and returns the result.
 func ScalarMul[T num.Number](v0 []T, c T) []T {
 	v := make([]T, len(v0))
@@ -220,20 +205,15 @@ func ScalarMulInPlace[T num.Number](v0 []T, c T, vOut []T) {
 	}
 }
 
-// ScalarMulAssign multplies c to vOut.
-func ScalarMulAssign[T num.Number](c T, vOut []T) {
-	ScalarMulInPlace(vOut, c, vOut)
-}
-
-// ScalarMulAddAssign multiplies c to v1 and adds to vOut.
-func ScalarMulAddAssign[T num.Number](v0 []T, c T, vOut []T) {
+// ScalarMulAddInPlace multiplies c to v0 and adds to vOut.
+func ScalarMulAddInPlace[T num.Number](v0 []T, c T, vOut []T) {
 	for i := range vOut {
 		vOut[i] += c * v0[i]
 	}
 }
 
-// ScalarMulSubAssign multiplies c to v0 and subtracts from vOut.
-func ScalarMulSubAssign[T num.Number](v0 []T, c T, vOut []T) {
+// ScalarMulSubInPlace multiplies c to v0 and subtracts from vOut.
+func ScalarMulSubInPlace[T num.Number](v0 []T, c T, vOut []T) {
 	for i := range vOut {
 		vOut[i] -= c * v0[i]
 	}
@@ -253,22 +233,15 @@ func ElementWiseMulInPlace[T num.Number](v0 []T, v1 []T, vOut []T) {
 	}
 }
 
-// ElementWiseMulAssign multplies v to vOut.
-func ElementWiseMulAssign[T num.Number](v []T, vOut []T) {
-	for i := range vOut {
-		vOut[i] *= v[i]
-	}
-}
-
-// ElementWiseMulAddAssign multiplies v0, v1 and adds to vOut.
-func ElementWiseMulAddAssign[T num.Number](v0 []T, v1 []T, vOut []T) {
+// ElementWiseMulAddInPlace multiplies v0, v1 and adds to vOut.
+func ElementWiseMulAddInPlace[T num.Number](v0 []T, v1 []T, vOut []T) {
 	for i := range vOut {
 		vOut[i] += v0[i] * v1[i]
 	}
 }
 
-// ElementWiseMulSubAssign multiplies v0, v1 and subtracts from vOut.
-func ElementWiseMulSubAssign[T num.Number](v0 []T, v1 []T, vOut []T) {
+// ElementWiseMulSubInPlace multiplies v0, v1 and subtracts from vOut.
+func ElementWiseMulSubInPlace[T num.Number](v0 []T, v1 []T, vOut []T) {
 	for i := range vOut {
 		vOut[i] -= v0[i] * v1[i]
 	}

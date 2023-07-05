@@ -68,10 +68,10 @@ func (e Encrypter[T]) GenSecretKey() SecretKey[T] {
 	sk := NewSecretKey(e.Parameters)
 
 	// Sample LWE key from Block Binary Distribution
-	e.blockSampler.SampleSliceAssign(sk.LWELargeKey.Value[:e.Parameters.lweDimension])
+	e.blockSampler.SampleSliceInPlace(sk.LWELargeKey.Value[:e.Parameters.lweDimension])
 
 	// Sample the rest from Binary Distribution
-	e.binarySampler.SampleSliceAssign(sk.LWELargeKey.Value[e.Parameters.lweDimension:])
+	e.binarySampler.SampleSliceInPlace(sk.LWELargeKey.Value[e.Parameters.lweDimension:])
 
 	return sk
 }

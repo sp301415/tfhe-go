@@ -5,10 +5,15 @@ import (
 )
 
 // Evaluater calculates polynomial algorithms.
-// Operations usually take three forms: for example,
+// Operations usually take two forms: for example,
 //   - Add(p0, p1) is equivalent to var p = p0 + p1
 //   - AddInPlace(p0, p1, pOut) is equivalent to pOut = p0 + p1
-//   - AddAssign(p0, pOut) is equivalent to pOut += p0
+//
+// # Warning
+//   - InPlace methods may not return correct results when output overlaps with inputs.
+//     However, it is always correct when p0 == pOut or p1 == pOut.
+//   - For performance reasons, functions in this package usually don't implement bound checks.
+//     If length mismatch happens, usually the result is wrong.
 type Evaluater[T num.Integer] struct {
 	// degree is the degree of polynomial that this evaluater can handle.
 	degree int
@@ -22,7 +27,7 @@ type evaluationBuffer[T num.Integer] struct {
 	// Each buffer can be indexed as ((3^depth - 1)/2) + index. (I know, right?)
 	karatsubaBuffer []karatsubaBuffer[T]
 
-	// pOut holds the intermediate polynomial in MulAssign, MulAdd or MulSub type operations.
+	// pOut holds the intermediate polynomial in MulAdd or MulSub type operations.
 	// This may take aditional O(N) loop, but the multiplication itself is a dominating factor,
 	// so it doesn't matter.
 	pOut Poly[T]

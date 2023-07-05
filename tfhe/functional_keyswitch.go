@@ -21,7 +21,7 @@ func (e Evaluater[T]) PrivateFunctionalLWEKeySwitchInPlace(ctIn []LWECiphertext[
 				if i == 0 && j == 0 && k == 0 {
 					e.ScalarMulLWEInPlace(pfksk.Value[i].Value[j].Value[k], -buffDecomposed[k], ctOut)
 				} else {
-					e.ScalarMulSubLWEAssign(pfksk.Value[i].Value[j].Value[k], buffDecomposed[k], ctOut)
+					e.ScalarMulSubLWEInPlace(pfksk.Value[i].Value[j].Value[k], buffDecomposed[k], ctOut)
 				}
 			}
 		}
@@ -45,7 +45,7 @@ func (e Evaluater[T]) PrivateFunctionalGLWEKeySwitchInPlace(ctIn []LWECiphertext
 				if i == 0 && j == 0 && k == 0 {
 					e.ScalarMulGLWEInPlace(pfksk.Value[i][j].Value[k], -buffDecomposed[k], ctOut)
 				} else {
-					e.ScalarMulSubGLWEAssign(pfksk.Value[i][j].Value[k], buffDecomposed[k], ctOut)
+					e.ScalarMulSubGLWEInPlace(pfksk.Value[i][j].Value[k], buffDecomposed[k], ctOut)
 				}
 			}
 		}
@@ -79,7 +79,7 @@ func (e Evaluater[T]) PublicFunctionalLWEKeySwitchInPlace(ctIn []LWECiphertext[T
 			if i == 0 && j == 0 {
 				e.ScalarMulLWEInPlace(pfksk.Value[i].Value[j], -buffDecomposed[j], ctOut)
 			} else {
-				e.ScalarMulSubLWEAssign(pfksk.Value[i].Value[j], buffDecomposed[j], ctOut)
+				e.ScalarMulSubLWEInPlace(pfksk.Value[i].Value[j], buffDecomposed[j], ctOut)
 			}
 		}
 	}
@@ -119,9 +119,9 @@ func (e Evaluater[T]) PublicFunctionalGLWEKeySwitchInPlace(ctIn []LWECiphertext[
 		for j := 0; j < pfksk.decompParams.level; j++ {
 			if i == 0 && j == 0 {
 				e.PolyMulFourierGLWEInPlace(pfksk.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtForPublicFunctionalKeySwitch)
-				e.NegFourierGLWEAssign(e.buffer.fourierCtForPublicFunctionalKeySwitch)
+				e.NegFourierGLWEInPlace(e.buffer.fourierCtForPublicFunctionalKeySwitch, e.buffer.fourierCtForPublicFunctionalKeySwitch)
 			} else {
-				e.PolyMulSubFourierGLWEAssign(pfksk.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtForPublicFunctionalKeySwitch)
+				e.PolyMulSubFourierGLWEInPlace(pfksk.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtForPublicFunctionalKeySwitch)
 			}
 		}
 	}
@@ -132,7 +132,7 @@ func (e Evaluater[T]) PublicFunctionalGLWEKeySwitchInPlace(ctIn []LWECiphertext[
 		in[i] = ct.Value[0]
 	}
 	f(in, e.buffer.outForPublicFunctionalKeySwitch)
-	e.PolyEvaluater.AddAssign(e.buffer.outForPublicFunctionalKeySwitch, ctOut.Value[0])
+	e.PolyEvaluater.AddInPlace(ctOut.Value[0], e.buffer.outForPublicFunctionalKeySwitch, ctOut.Value[0])
 }
 
 // PackingPublicFunctionalKeySwitch is a special instance of public functional keyswitching with packing function.

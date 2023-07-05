@@ -5,7 +5,6 @@ import (
 	"math"
 
 	"github.com/sp301415/tfhe/math/num"
-	"github.com/sp301415/tfhe/math/poly"
 )
 
 // GaussianSampler samples from Rounded Gaussian Distribution, centered around zero.
@@ -15,6 +14,8 @@ type GaussianSampler[T num.Integer] struct {
 	baseSampler UniformSampler[int32]
 
 	StdDev float64
+
+	buff [1]float64
 }
 
 // NewGaussianSampler creates a new GaussianSampler.
@@ -68,8 +69,8 @@ func (s GaussianSampler[T]) uniformFloat() float64 {
 	return float64(s.baseSampler.Sample()) * math.Exp2(-31)
 }
 
-// NormFloat2 samples two float64 values from normal distribution.
-func (s GaussianSampler[T]) NormFloat2() (float64, float64) {
+// normFloat2 samples two float64 values from normal distribution.
+func (s GaussianSampler[T]) normFloat2() (float64, float64) {
 	// Implementation of Polar Box-Muller Transform (https://en.wikipedia.org/wiki/Box–Muller_transform#Polar_form)
 	for {
 		u, v := s.uniformFloat(), s.uniformFloat()
@@ -83,55 +84,47 @@ func (s GaussianSampler[T]) NormFloat2() (float64, float64) {
 
 // NormFloat samples float64 value from normal distribution.
 func (s GaussianSampler[T]) NormFloat() float64 {
-	u, _ := s.NormFloat2()
+	if !math.IsNaN(s.buff[0]) {
+		u := s.buff[0]
+		s.buff[0] = math.NaN()
+		return u
+	}
+	u, v := s.normFloat2()
+	s.buff[0] = v
 	return u
 }
 
-// Sample2 returns a pair of numbers sampled from rounded gaussian distribution.
-func (s GaussianSampler[T]) Sample2() (T, T) {
-	u, v := s.NormFloat2()
+// sample2 returns a pair of numbers sampled from rounded gaussian distribution.
+func (s GaussianSampler[T]) sample2() (T, T) {
+	u, v := s.normFloat2()
 	return T(math.Round(u * s.StdDev)), T(math.Round(v * s.StdDev))
 }
 
 // Sample returns a number sampled from rounded gaussian distribution.
 func (s GaussianSampler[T]) Sample() T {
-	u, _ := s.Sample2()
-	return u
+	u := s.NormFloat()
+	return T(math.Round(u * s.StdDev))
 }
 
-// SampleSliceAssign samples rounded gaussian values to v.
-func (s GaussianSampler[T]) SampleSliceAssign(v []T) {
+// SampleSliceInPlace samples rounded gaussian values to v.
+func (s GaussianSampler[T]) SampleSliceInPlace(v []T) {
 	for i := 0; i < len(v); i += 2 {
-		v[i], v[i+1] = s.Sample2()
+		v[i], v[i+1] = s.sample2()
 	}
 	if len(v)%2 != 0 {
 		v[len(v)-1] = s.Sample()
 	}
 }
 
-// SampleSlice returns sampled rounded gaussian slice of length n.
-func (s GaussianSampler[T]) SampleSlice(n int) []T {
-	v := make([]T, n)
-	s.SampleSliceAssign(v)
-	return v
-}
-
-// SamplePolyAssign samples a polynomial rounded from gaussian distribution.
-func (s GaussianSampler[T]) SamplePolyAssign(p poly.Poly[T]) {
-	s.SampleSliceAssign(p.Coeffs)
-}
-
-// SamplePolyAddAssign samples a polynomial from rounded gaussian distribution
-// and adds it to p.
-func (s GaussianSampler[T]) SamplePolyAddAssign(p poly.Poly[T]) {
-	for i := range p.Coeffs {
-		p.Coeffs[i] += s.Sample()
+// SampleSliceAddInPlace samples rounded gaussian values and adds to v.
+// Mostly used in EncryptBody functions, adding noise to the message.
+func (s GaussianSampler[T]) SampleSliceAddInPlace(v []T) {
+	for i := 0; i < len(v); i += 2 {
+		x, y := s.sample2()
+		v[i] += x
+		v[i+1] += y
 	}
-}
-
-// SamplePoly returns sampled rounded gaussian polynomial of degree N.
-func (s GaussianSampler[T]) SamplePoly(N int) poly.Poly[T] {
-	p := poly.New[T](N)
-	s.SamplePolyAssign(p)
-	return p
+	if len(v)%2 != 0 {
+		v[len(v)-1] += s.Sample()
+	}
 }

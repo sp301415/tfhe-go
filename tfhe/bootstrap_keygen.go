@@ -43,7 +43,7 @@ func (e Encrypter[T]) GenBootstrapKey() BootstrapKey[T] {
 			}
 			for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
 				e.PolyEvaluater.ScalarMulInPlace(e.buffer.ptForGGSW, e.Parameters.bootstrapParameters.ScaledBase(k), e.buffer.standardCt.Value[0])
-				e.EncryptGLWEAssign(e.buffer.standardCt)
+				e.EncryptGLWEBody(e.buffer.standardCt)
 				e.ToFourierGLWECiphertextInPlace(e.buffer.standardCt, bsk.Value[i].Value[j].Value[k])
 			}
 		}
@@ -92,7 +92,7 @@ func (e Encrypter[T]) GenBootstrapKeyParallel() BootstrapKey[T] {
 				}
 				for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
 					e.PolyEvaluater.ScalarMulInPlace(e.buffer.ptForGGSW, e.Parameters.bootstrapParameters.ScaledBase(k), e.buffer.standardCt.Value[0])
-					e.EncryptGLWEAssign(e.buffer.standardCt)
+					e.EncryptGLWEBody(e.buffer.standardCt)
 					e.ToFourierGLWECiphertextInPlace(e.buffer.standardCt, bsk.Value[i].Value[j].Value[k])
 				}
 			}
@@ -113,7 +113,7 @@ func (e Encrypter[T]) GenKeySwitchKey(skIn LWEKey[T], decompParams Decomposition
 	for i := 0; i < ksk.InputLWEDimension(); i++ {
 		for j := 0; j < decompParams.level; j++ {
 			ksk.Value[i].Value[j].Value[0] = skIn.Value[i] << decompParams.ScaledBaseLog(j)
-			e.EncryptLWEAssign(ksk.Value[i].Value[j])
+			e.EncryptLWEBody(ksk.Value[i].Value[j])
 		}
 	}
 
@@ -152,7 +152,7 @@ func (e Encrypter[T]) GenKeySwitchKeyParallel(skIn LWEKey[T], decompParams Decom
 			for jobs := range jobs {
 				i, j := jobs[0], jobs[1]
 				ksk.Value[i].Value[j].Value[0] = skIn.Value[i] << decompParams.ScaledBaseLog(j)
-				e.EncryptLWEAssign(ksk.Value[i].Value[j])
+				e.EncryptLWEBody(ksk.Value[i].Value[j])
 			}
 		}(i)
 	}

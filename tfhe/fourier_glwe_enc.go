@@ -58,7 +58,7 @@ func (e Encrypter[T]) EncryptFourierGLevPlaintext(pt GLWEPlaintext[T], decompPar
 func (e Encrypter[T]) EncryptFourierGLevInPlace(pt GLWEPlaintext[T], ctOut FourierGLevCiphertext[T]) {
 	for i := 0; i < ctOut.decompParams.level; i++ {
 		e.PolyEvaluater.ScalarMulInPlace(pt.Value, ctOut.decompParams.ScaledBase(i), e.buffer.standardCt.Value[0])
-		e.EncryptGLWEAssign(e.buffer.standardCt)
+		e.EncryptGLWEBody(e.buffer.standardCt)
 		e.ToFourierGLWECiphertextInPlace(e.buffer.standardCt, ctOut.Value[i])
 	}
 }
@@ -109,7 +109,7 @@ func (e Encrypter[T]) EncryptFourierGGSWInPlace(pt GLWEPlaintext[T], ctOut Fouri
 		e.PolyEvaluater.MulInPlace(e.SecretKey.GLWEKey.Value[i-1], pt.Value, e.buffer.ptForGGSW)
 		for j := 0; j < ctOut.decompParams.level; j++ {
 			e.PolyEvaluater.ScalarMulInPlace(e.buffer.ptForGGSW, -ctOut.decompParams.ScaledBase(j), e.buffer.standardCt.Value[0])
-			e.EncryptGLWEAssign(e.buffer.standardCt)
+			e.EncryptGLWEBody(e.buffer.standardCt)
 			e.ToFourierGLWECiphertextInPlace(e.buffer.standardCt, ctOut.Value[i].Value[j])
 		}
 	}

@@ -16,11 +16,6 @@ func (e Evaluater[T]) AddInPlace(p0, p1, pOut Poly[T]) {
 	vec.AddInPlace(p0.Coeffs, p1.Coeffs, pOut.Coeffs)
 }
 
-// AddAssign adds p0 to ptOut.
-func (e Evaluater[T]) AddAssign(p0, pOut Poly[T]) {
-	vec.AddAssign(p0.Coeffs, pOut.Coeffs)
-}
-
 // Sub subtracts p0, p1 and returns the result.
 func (e Evaluater[T]) Sub(p0, p1 Poly[T]) Poly[T] {
 	p := New[T](e.degree)
@@ -33,11 +28,6 @@ func (e Evaluater[T]) SubInPlace(p0, p1, pOut Poly[T]) {
 	vec.SubInPlace(p0.Coeffs, p1.Coeffs, pOut.Coeffs)
 }
 
-// SubAssign subtracts p0 from pOut.
-func (e Evaluater[T]) SubAssign(p0, pOut Poly[T]) {
-	vec.SubAssign(p0.Coeffs, pOut.Coeffs)
-}
-
 // Neg negates p0 and returns the result.
 func (e Evaluater[T]) Neg(p0 Poly[T]) Poly[T] {
 	p := New[T](e.degree)
@@ -48,11 +38,6 @@ func (e Evaluater[T]) Neg(p0 Poly[T]) Poly[T] {
 // NegInPlace negates p0 and writes it to pOut.
 func (e Evaluater[T]) NegInPlace(p0, pOut Poly[T]) {
 	vec.NegInPlace(p0.Coeffs, pOut.Coeffs)
-}
-
-// NegAssign negates p0.
-func (e Evaluater[T]) NegAssign(p0 Poly[T]) {
-	vec.NegAssign(p0.Coeffs)
 }
 
 // Mul multiplies p0, p1 and returns the result.
@@ -71,26 +56,16 @@ func (e Evaluater[T]) MulInPlace(p0, p1, pOut Poly[T]) {
 	}
 }
 
-// MulAssign multiplies p0 to pOut.
-func (e Evaluater[T]) MulAssign(p0, pOut Poly[T]) {
-	e.buffer.pOut.CopyFrom(pOut)
-	if e.degree <= KaratsubaRecurseThreshold {
-		e.mulInPlaceNaive(p0, e.buffer.pOut, pOut)
-	} else {
-		e.mulInPlaceKaratsuba(p0, e.buffer.pOut, pOut)
-	}
+// MulAddInPlace multiplies p0, p1 and adds it to pOut.
+func (e Evaluater[T]) MulAddInPlace(p0, p1, pOut Poly[T]) {
+	e.MulInPlace(p0, p1, e.buffer.pOut)
+	e.AddInPlace(pOut, e.buffer.pOut, pOut)
 }
 
-// MulAddAssign multiplies p0, p1 and adds it to pOut.
-func (e Evaluater[T]) MulAddAssign(p0, p1, pOut Poly[T]) {
+// MulSubInPlace multiplies p0, p1 and subtracts it from pOut.
+func (e Evaluater[T]) MulSubInPlace(p0, p1, pOut Poly[T]) {
 	e.MulInPlace(p0, p1, e.buffer.pOut)
-	e.AddAssign(e.buffer.pOut, pOut)
-}
-
-// MulSubAssign multiplies p0, p1 and subtracts it from pOut.
-func (e Evaluater[T]) MulSubAssign(p0, p1, pOut Poly[T]) {
-	e.MulInPlace(p0, p1, e.buffer.pOut)
-	e.SubAssign(e.buffer.pOut, pOut)
+	e.SubInPlace(pOut, e.buffer.pOut, pOut)
 }
 
 // ScalarMul multplies c to p0 and returns the result.
@@ -105,19 +80,14 @@ func (e Evaluater[T]) ScalarMulInPlace(p0 Poly[T], c T, pOut Poly[T]) {
 	vec.ScalarMulInPlace(p0.Coeffs, c, pOut.Coeffs)
 }
 
-// ScalarMulAssign multplies c to pOut.
-func (e Evaluater[T]) ScalarMulAssign(c T, pOut Poly[T]) {
-	vec.ScalarMulAssign(c, pOut.Coeffs)
+// ScalarMulAddInPlace multplies c to p0 and adds it to pOut.
+func (e Evaluater[T]) ScalarMulAddInPlace(p0 Poly[T], c T, pOut Poly[T]) {
+	vec.ScalarMulAddInPlace(p0.Coeffs, c, pOut.Coeffs)
 }
 
-// ScalarMulAddAssign multplies c to p0 and adds it to pOut.
-func (e Evaluater[T]) ScalarMulAddAssign(p0 Poly[T], c T, pOut Poly[T]) {
-	vec.ScalarMulAddAssign(p0.Coeffs, c, pOut.Coeffs)
-}
-
-// ScalarMulAssign multplies c to p0 and subtracts it from pOut.
-func (e Evaluater[T]) ScalarMulSubAssign(p0 Poly[T], c T, pOut Poly[T]) {
-	vec.ScalarMulSubAssign(p0.Coeffs, c, pOut.Coeffs)
+// ScalarMulSubInPlace multplies c to p0 and subtracts it from pOut.
+func (e Evaluater[T]) ScalarMulSubInPlace(p0 Poly[T], c T, pOut Poly[T]) {
+	vec.ScalarMulSubInPlace(p0.Coeffs, c, pOut.Coeffs)
 }
 
 // MonomialMul multplies X^d to p0 and returns the result.
@@ -136,23 +106,7 @@ func (e Evaluater[T]) MonomialMulInPlace(p0 Poly[T], d int, pOut Poly[T]) {
 
 	cycles := d / e.degree
 	if cycles%2 != 0 {
-		vec.NegAssign(pOut.Coeffs)
-	}
-
-	for i := 0; i < dd; i++ {
-		pOut.Coeffs[i] = -pOut.Coeffs[i]
-	}
-}
-
-// MonomialMulAssign multplies X^d to pOut.
-// Assumes d >= 0.
-func (e Evaluater[T]) MonomialMulAssign(d int, pOut Poly[T]) {
-	dd := d % e.degree
-	vec.RotateAssign(pOut.Coeffs, dd)
-
-	cycles := d / e.degree
-	if cycles%2 != 0 {
-		vec.NegAssign(pOut.Coeffs)
+		vec.NegInPlace(pOut.Coeffs, pOut.Coeffs)
 	}
 
 	for i := 0; i < dd; i++ {
@@ -176,23 +130,7 @@ func (e Evaluater[T]) MonomialDivInPlace(p0 Poly[T], d int, pOut Poly[T]) {
 
 	cycles := d / e.degree
 	if cycles%2 != 0 {
-		vec.NegAssign(pOut.Coeffs)
-	}
-
-	for i := e.degree - dd; i < e.degree; i++ {
-		pOut.Coeffs[i] = -pOut.Coeffs[i]
-	}
-}
-
-// MonomialMulAssign divides X^d from pOut.
-// Assumes d >= 0.
-func (e Evaluater[T]) MonomialDivAssign(d int, pOut Poly[T]) {
-	dd := d % e.degree
-	vec.RotateAssign(pOut.Coeffs, -dd)
-
-	cycles := d / e.degree
-	if cycles%2 != 0 {
-		vec.NegAssign(pOut.Coeffs)
+		vec.NegInPlace(pOut.Coeffs, pOut.Coeffs)
 	}
 
 	for i := e.degree - dd; i < e.degree; i++ {

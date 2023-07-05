@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 
 	"github.com/sp301415/tfhe/math/num"
-	"github.com/sp301415/tfhe/math/poly"
 	"golang.org/x/crypto/blake2b"
 )
 
@@ -82,28 +81,9 @@ func (s UniformSampler[T]) SampleRange(a, b T) T {
 	}
 }
 
-// SampleSliceAssign samples uniform values to v.
-func (s UniformSampler[T]) SampleSliceAssign(v []T) {
+// SampleSliceInPlace samples uniform values to v.
+func (s UniformSampler[T]) SampleSliceInPlace(v []T) {
 	for i := range v {
 		v[i] = s.Sample()
 	}
-}
-
-// SampleSlice returns uniformly sampled slice of length n.
-func (s UniformSampler[T]) SampleSlice(n int) []T {
-	v := make([]T, n)
-	s.SampleSliceAssign(v)
-	return v
-}
-
-// SamplePolyAssign samples a polynomial from uniform distribution.
-func (s UniformSampler[T]) SamplePolyAssign(p poly.Poly[T]) {
-	s.SampleSliceAssign(p.Coeffs)
-}
-
-// SamplePoly returns uniformly sampled polynomial of degree N.
-func (s UniformSampler[T]) SamplePoly(N int) poly.Poly[T] {
-	p := poly.New[T](N)
-	s.SamplePolyAssign(p)
-	return p
 }
