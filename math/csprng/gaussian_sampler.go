@@ -15,7 +15,7 @@ type GaussianSampler[T num.Integer] struct {
 
 	StdDev float64
 
-	buff [1]float64
+	buff []float64
 }
 
 // NewGaussianSampler creates a new GaussianSampler.
@@ -45,10 +45,11 @@ func NewGaussianSamplerWithSeed[T num.Integer](seed []byte, stdDev float64) Gaus
 		panic("StdDev smaller than zero")
 	}
 
+	buff := []float64{math.NaN()}
 	return GaussianSampler[T]{
 		baseSampler: NewUniformSamplerWithSeed[int32](seed),
-
-		StdDev: stdDev,
+		StdDev:      stdDev,
+		buff:        buff,
 	}
 }
 
