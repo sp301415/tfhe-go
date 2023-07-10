@@ -42,9 +42,9 @@ func (e Encrypter[T]) GenBootstrapKey() BootstrapKey[T] {
 				e.PolyEvaluater.ScalarMulInPlace(e.SecretKey.GLWEKey.Value[j-1], -e.SecretKey.LWEKey.Value[i], e.buffer.ptForGGSW)
 			}
 			for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
-				e.PolyEvaluater.ScalarMulInPlace(e.buffer.ptForGGSW, e.Parameters.bootstrapParameters.ScaledBase(k), e.buffer.standardCt.Value[0])
-				e.EncryptGLWEBody(e.buffer.standardCt)
-				e.ToFourierGLWECiphertextInPlace(e.buffer.standardCt, bsk.Value[i].Value[j].Value[k])
+				e.PolyEvaluater.ScalarMulInPlace(e.buffer.ptForGGSW, e.Parameters.bootstrapParameters.ScaledBase(k), e.buffer.ctGLWE.Value[0])
+				e.EncryptGLWEBody(e.buffer.ctGLWE)
+				e.ToFourierGLWECiphertextInPlace(e.buffer.ctGLWE, bsk.Value[i].Value[j].Value[k])
 			}
 		}
 	}
@@ -91,9 +91,9 @@ func (e Encrypter[T]) GenBootstrapKeyParallel() BootstrapKey[T] {
 					e.PolyEvaluater.ScalarMulInPlace(e.SecretKey.GLWEKey.Value[j-1], -e.SecretKey.LWEKey.Value[i], e.buffer.ptForGGSW)
 				}
 				for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
-					e.PolyEvaluater.ScalarMulInPlace(e.buffer.ptForGGSW, e.Parameters.bootstrapParameters.ScaledBase(k), e.buffer.standardCt.Value[0])
-					e.EncryptGLWEBody(e.buffer.standardCt)
-					e.ToFourierGLWECiphertextInPlace(e.buffer.standardCt, bsk.Value[i].Value[j].Value[k])
+					e.PolyEvaluater.ScalarMulInPlace(e.buffer.ptForGGSW, e.Parameters.bootstrapParameters.ScaledBase(k), e.buffer.ctGLWE.Value[0])
+					e.EncryptGLWEBody(e.buffer.ctGLWE)
+					e.ToFourierGLWECiphertextInPlace(e.buffer.ctGLWE, bsk.Value[i].Value[j].Value[k])
 				}
 			}
 		}(i)

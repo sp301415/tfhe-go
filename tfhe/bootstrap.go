@@ -148,7 +148,7 @@ func (e Evaluater[T]) BlindRotateInPlace(ct LWECiphertext[T], lut LookUpTable[T]
 // SampleExtract extracts LWE ciphertext of index i from GLWE ciphertext and returns it.
 // The output ciphertext has length GLWEDimension * PolyDegree + 1.
 func (e Evaluater[T]) SampleExtract(ct GLWECiphertext[T], index int) LWECiphertext[T] {
-	ctOut := LWECiphertext[T]{Value: make([]T, e.Parameters.glweDimension*e.Parameters.polyDegree+1)}
+	ctOut := LWECiphertext[T]{Value: make([]T, e.Parameters.LargeLWEDimension())}
 	e.SampleExtractInPlace(ct, index, ctOut)
 	return ctOut
 }
