@@ -14,8 +14,6 @@ type GaussianSampler[T num.Integer] struct {
 	baseSampler UniformSampler[int32]
 
 	StdDev float64
-
-	buff []float64
 }
 
 // NewGaussianSampler creates a new GaussianSampler.
@@ -45,11 +43,9 @@ func NewGaussianSamplerWithSeed[T num.Integer](seed []byte, stdDev float64) Gaus
 		panic("StdDev smaller than zero")
 	}
 
-	buff := []float64{math.NaN()}
 	return GaussianSampler[T]{
 		baseSampler: NewUniformSamplerWithSeed[int32](seed),
 		StdDev:      stdDev,
-		buff:        buff,
 	}
 }
 
@@ -83,18 +79,6 @@ func (s GaussianSampler[T]) normFloat2() (float64, float64) {
 	}
 }
 
-// NormFloat samples float64 value from normal distribution.
-func (s GaussianSampler[T]) NormFloat() float64 {
-	if !math.IsNaN(s.buff[0]) {
-		u := s.buff[0]
-		s.buff[0] = math.NaN()
-		return u
-	}
-	u, v := s.normFloat2()
-	s.buff[0] = v
-	return u
-}
-
 // sample2 returns a pair of numbers sampled from rounded gaussian distribution.
 func (s GaussianSampler[T]) sample2() (T, T) {
 	u, v := s.normFloat2()
@@ -103,8 +87,8 @@ func (s GaussianSampler[T]) sample2() (T, T) {
 
 // Sample returns a number sampled from rounded gaussian distribution.
 func (s GaussianSampler[T]) Sample() T {
-	u := s.NormFloat()
-	return T(math.Round(u * s.StdDev))
+	u, _ := s.sample2()
+	return u
 }
 
 // SampleSliceInPlace samples rounded gaussian values to v.

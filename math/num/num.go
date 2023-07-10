@@ -1,4 +1,4 @@
-// Package num implements various utility functions regarding constraints.Integer.
+// Package num implements various utility functions regarding numeric types.
 package num
 
 import (
@@ -135,8 +135,8 @@ func RoundRatioBits[T Integer](x T, bits int) T {
 
 // ClosestMultipleBits returns the closest multiple of x respect to 2^bits.
 // It is same as round(x/2^bits) * 2^bits.
-//   - If bits == 0, then it returns x.
-//   - If bits < 0, it panics.
+//
+// If bits <= 0, it panics.
 func ClosestMultipleBits[T Integer](x T, bits int) T {
 	return RoundRatioBits(x, bits) << bits
 }

@@ -12,12 +12,6 @@ import (
 // See rand.UniformSampler for more details.
 type BinarySampler[T num.Integer] struct {
 	baseSampler UniformSampler[uint64]
-
-	// ptr represents the pointer in the buffer.
-	// if ptr = 8, new sample is needed.
-	ptr int
-	// buf is a byte buffer. Length is always 1.
-	buf []byte
 }
 
 // NewBinarySampler creates a new BinarySampler.
@@ -42,9 +36,6 @@ func NewBinarySampler[T num.Integer]() BinarySampler[T] {
 func NewBinarySamplerWithSeed[T num.Integer](seed []byte) BinarySampler[T] {
 	return BinarySampler[T]{
 		baseSampler: NewUniformSampler[uint64](),
-
-		ptr: 0,
-		buf: make([]byte, 1),
 	}
 }
 
@@ -62,24 +53,20 @@ func (s BinarySampler[T]) Read(b []byte) (n int, err error) {
 }
 
 // Sample uniformly samples a random binary integer.
-func (s *BinarySampler[T]) Sample() T {
-	if s.ptr == 8 {
-		if _, err := s.baseSampler.Read(s.buf); err != nil {
-			panic(err)
-		}
-		s.ptr = 0
-	}
-
-	sample := T(s.buf[0] & 1)
-	s.buf[0] >>= 1
-	s.ptr++
-
-	return sample
+func (s BinarySampler[T]) Sample() T {
+	return T(s.baseSampler.Sample() & 1)
 }
 
 // SampleSliceInPlace samples uniform binary values to v.
 func (s BinarySampler[T]) SampleSliceInPlace(v []T) {
-	for i := range v {
-		v[i] = s.Sample()
+	for i := 0; i < len(v); i += 64 {
+		buf := s.baseSampler.Sample()
+		for j := i; j < i+64; j++ {
+			if j >= len(v) {
+				break
+			}
+			v[j] = T(buf & 1)
+			buf >>= 1
+		}
 	}
 }

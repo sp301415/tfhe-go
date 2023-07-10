@@ -3,8 +3,6 @@
 // Operations usually take two forms: for example,
 //   - Add(v0, v1) is equivalent to v := v0 + v1.
 //   - AddInPlace(v0, v1, vOut) is equivalent to vOut = v0 + v1.
-//     Sometimes, InPlace method only takes one argument, like BitReverse(v).
-//     This means that input argument is altered.
 //
 // # Warning
 //   - InPlace methods may not return correct results when output overlaps with inputs.
@@ -17,14 +15,13 @@ import (
 	"github.com/sp301415/tfhe/math/num"
 )
 
-// sliceEquals returns if two slice, v0 and v1, are really equal;
+// SliceEquals returns if two slice, v0 and v1, are really equal;
 // This means that length, and pointer to the backing array is equal.
 // (Capacity doesn't matter.)
-func sliceEquals[T any](v0, v1 []T) bool {
+func SliceEquals[T any](v0, v1 []T) bool {
 	if len(v0) != len(v1) {
 		return false
 	}
-
 	return len(v0) == 0 || &v0[0] == &v1[0]
 }
 
@@ -81,7 +78,7 @@ func RotateInPlace[T any](v []T, l int, vOut []T) {
 		l %= len(v)
 	}
 
-	if sliceEquals(v, vOut) {
+	if SliceEquals(v, vOut) {
 		ReverseInPlace(vOut, vOut)
 		ReverseInPlace(vOut[:l], vOut[:l])
 		ReverseInPlace(vOut[l:], vOut[l:])
@@ -100,7 +97,7 @@ func Reverse[T any](v []T) []T {
 
 // ReverseInPlace reverses v and writes it to vOut.
 func ReverseInPlace[T any](v, vOut []T) {
-	if sliceEquals(v, vOut) {
+	if SliceEquals(v, vOut) {
 		for i, j := 0, len(v)-1; i < j; i, j = i+1, j-1 {
 			vOut[i], vOut[j] = vOut[j], vOut[i]
 		}
@@ -112,7 +109,11 @@ func ReverseInPlace[T any](v, vOut []T) {
 }
 
 // BitReverseInPlace reorders v into bit-reversal order.
-func BitReverseInPlace[T any](v []T) {
+func BitReverseInPlace[T any](v, vOut []T) {
+	if !SliceEquals(v, vOut) {
+		CopyInPlace(v, vOut)
+	}
+
 	var bit, j int
 	for i := 1; i < len(v); i++ {
 		bit = len(v) >> 1

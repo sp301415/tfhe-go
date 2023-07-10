@@ -1,11 +1,4 @@
 // Package poly implements polynomial and its operations.
-//
-// Most polynomial operations are done using Evaluater. Operations usually take two forms: for example,
-//   - Add(p0, p1) is equivalent to var p = p0 + p1.
-//   - AddInPlace(p0, p1, pOut) is equivalent to pOut = p0 + p1.
-//
-// For performance reasons, functions in this package usually don't implement bound checks,
-// so be careful.
 package poly
 
 import (

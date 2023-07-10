@@ -53,8 +53,8 @@ func NewFourierTransformer[T num.Integer](N int) FourierTransformer[T] {
 		wNj[j] = cmplx.Exp(complex(0, e))
 		wNjInv[j] = cmplx.Exp(-complex(0, e))
 	}
-	vec.BitReverseInPlace(wNj)
-	vec.BitReverseInPlace(wNjInv)
+	vec.BitReverseInPlace(wNj, wNj)
+	vec.BitReverseInPlace(wNjInv, wNjInv)
 
 	w2Nj := make([]complex128, N/2)
 	w2NjInv := make([]complex128, N/2)
@@ -144,17 +144,21 @@ func (p FourierPoly) Clear() {
 //
 // Note that fp.Degree() should equal f.Degree(),
 // which means that len(fp.Coeffs) should be f.Degree / 2.
-func (f FourierTransformer[T]) FFTInPlace(fp FourierPoly) {
+func (f FourierTransformer[T]) FFTInPlace(fp, fpOut FourierPoly) {
+	if !vec.SliceEquals(fp.Coeffs, fpOut.Coeffs) {
+		vec.CopyInPlace(fp.Coeffs, fpOut.Coeffs)
+	}
+
 	// Implementation of Algorithm 1 from https://eprint.iacr.org/2016/504.pdf
 	t := f.degree / 2
-	for m := 1; m < f.degree/2; m *= 2 {
+	for m := 1; m < f.degree/2; m <<= 2 {
 		t /= 2
 		for i := 0; i < m; i++ {
 			j1 := 2 * i * t
 			j2 := j1 + t
 			for j := j1; j < j2; j++ {
-				U, V := fp.Coeffs[j], fp.Coeffs[j+t]*f.wNj[m+i]
-				fp.Coeffs[j], fp.Coeffs[j+t] = U+V, U-V
+				U, V := fpOut.Coeffs[j], fpOut.Coeffs[j+t]*f.wNj[m+i]
+				fpOut.Coeffs[j], fpOut.Coeffs[j+t] = U+V, U-V
 			}
 		}
 	}
@@ -164,21 +168,25 @@ func (f FourierTransformer[T]) FFTInPlace(fp FourierPoly) {
 //
 // Note that fp.Degree() should equal f.Degree(),
 // which means that len(fp.Coeffs) should be f.Degree / 2.
-func (f FourierTransformer[T]) InvFFTInPlace(fp FourierPoly) {
+func (f FourierTransformer[T]) InvFFTInPlace(fp, fpOut FourierPoly) {
+	if !vec.SliceEquals(fp.Coeffs, fpOut.Coeffs) {
+		vec.CopyInPlace(fp.Coeffs, fpOut.Coeffs)
+	}
+
 	// Implementation of Algorithm 2 from https://eprint.iacr.org/2016/504.pdf
 	t := 1
-	for m := f.degree / 2; m > 1; m /= 2 {
+	for m := f.degree / 2; m > 1; m >>= 2 {
 		j1 := 0
 		h := m / 2
 		for i := 0; i < h; i++ {
 			j2 := j1 + t
 			for j := j1; j < j2; j++ {
-				U, V := fp.Coeffs[j], fp.Coeffs[j+t]
-				fp.Coeffs[j], fp.Coeffs[j+t] = U+V, (U-V)*f.wNjInv[h+i]
+				U, V := fpOut.Coeffs[j], fpOut.Coeffs[j+t]
+				fpOut.Coeffs[j], fpOut.Coeffs[j+t] = U+V, (U-V)*f.wNjInv[h+i]
 			}
 			j1 += 2 * t
 		}
-		t *= 2
+		t <<= 1
 	}
 }
 
@@ -220,7 +228,7 @@ func (f FourierTransformer[T]) ToFourierPolyInPlace(p Poly[T], fp FourierPoly) {
 		fp.Coeffs[j] = complex(f.toFloat64(p.Coeffs[j]), -f.toFloat64(p.Coeffs[j+N/2])) * f.w2Nj[j]
 	}
 
-	f.FFTInPlace(fp)
+	f.FFTInPlace(fp, fp)
 }
 
 // ToScaledFourierPoly transforms Poly to FourierPoly and returns it.
@@ -240,7 +248,7 @@ func (f FourierTransformer[T]) ToScaledFourierPolyInPlace(p Poly[T], fp FourierP
 		fp.Coeffs[j] = complex(f.toScaledFloat64(p.Coeffs[j]), -f.toScaledFloat64(p.Coeffs[j+N/2])) * f.w2Nj[j]
 	}
 
-	f.FFTInPlace(fp)
+	f.FFTInPlace(fp, fp)
 }
 
 // ToStandardPoly transforms FourierPoly to Poly and returns it.
@@ -255,8 +263,7 @@ func (f FourierTransformer[T]) ToStandardPolyInPlace(fp FourierPoly, p Poly[T]) 
 	N := f.degree
 
 	// InvFFT
-	f.buffer.fpInv.CopyFrom(fp)
-	f.InvFFTInPlace(f.buffer.fpInv)
+	f.InvFFTInPlace(fp, f.buffer.fpInv)
 
 	for j := 0; j < N/2; j++ {
 		f.buffer.fpInv.Coeffs[j] *= f.w2NjInv[j]
@@ -300,8 +307,7 @@ func (f FourierTransformer[T]) ToScaledStandardPoly(fp FourierPoly) Poly[T] {
 func (f FourierTransformer[T]) ToScaledStandardPolyInPlace(fp FourierPoly, p Poly[T]) {
 	N := f.degree
 
-	f.buffer.fpInv.CopyFrom(fp)
-	f.InvFFTInPlace(f.buffer.fpInv)
+	f.InvFFTInPlace(fp, f.buffer.fpInv)
 
 	// Untwist and Unfold
 	for j := 0; j < N/2; j++ {
@@ -316,8 +322,7 @@ func (f FourierTransformer[T]) ToScaledStandardPolyInPlace(fp FourierPoly, p Pol
 func (f FourierTransformer[T]) ToScaledStandardPolyAddInPlace(fp FourierPoly, p Poly[T]) {
 	N := f.degree
 
-	f.buffer.fpInv.CopyFrom(fp)
-	f.InvFFTInPlace(f.buffer.fpInv)
+	f.InvFFTInPlace(fp, f.buffer.fpInv)
 
 	for j := 0; j < N/2; j++ {
 		f.buffer.fpInv.Coeffs[j] *= f.w2NjInv[j]
@@ -331,8 +336,7 @@ func (f FourierTransformer[T]) ToScaledStandardPolyAddInPlace(fp FourierPoly, p 
 func (f FourierTransformer[T]) ToScaledStandardPolySubInPlace(fp FourierPoly, p Poly[T]) {
 	N := f.degree
 
-	f.buffer.fpInv.CopyFrom(fp)
-	f.InvFFTInPlace(f.buffer.fpInv)
+	f.InvFFTInPlace(fp, f.buffer.fpInv)
 
 	for j := 0; j < N/2; j++ {
 		f.buffer.fpInv.Coeffs[j] *= f.w2NjInv[j]
