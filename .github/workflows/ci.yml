@@ -18,9 +18,6 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
 
-      - name: Install FFTW
-        run: sudo apt install -y libfftw3-dev
-
       - name: Run Tests
         run: |
           go test ./tfhe/ -v -timeout=0

@@ -151,8 +151,8 @@ func (f FourierTransformer[T]) FFTInPlace(fp, fpOut FourierPoly) {
 
 	// Implementation of Algorithm 1 from https://eprint.iacr.org/2016/504.pdf
 	t := f.degree / 2
-	for m := 1; m < f.degree/2; m <<= 2 {
-		t /= 2
+	for m := 1; m < f.degree/2; m <<= 1 {
+		t >>= 1
 		for i := 0; i < m; i++ {
 			j1 := 2 * i * t
 			j2 := j1 + t
@@ -175,7 +175,7 @@ func (f FourierTransformer[T]) InvFFTInPlace(fp, fpOut FourierPoly) {
 
 	// Implementation of Algorithm 2 from https://eprint.iacr.org/2016/504.pdf
 	t := 1
-	for m := f.degree / 2; m > 1; m >>= 2 {
+	for m := f.degree / 2; m > 1; m >>= 1 {
 		j1 := 0
 		h := m / 2
 		for i := 0; i < h; i++ {
