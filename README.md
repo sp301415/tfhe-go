@@ -66,10 +66,11 @@ eval := tfheb.NewEvaluater(params, enc.GenEvaluationKeyParallel())
 ct0 := enc.EncryptLWEBits(3)
 ct1 := enc.EncryptLWEBits(3)
 
+ctXNOR := tfhe.NewLWECiphertext(params)
 ctOut := eval.XNOR(ct0[0], ct1[0])
 for i := 1; i < 64; i++ {
-	eval.XNORInPlace(ct0[i], ctOut, ctOut)
-	eval.XNORInPlace(ct1[i], ctOut, ctOut)
+	eval.XNORInPlace(ct0[i], ct1[i], ctXNOR)
+	eval.ANDInPlace(ctXNOR, ctOut, ctOut)
 }
 
 fmt.Println(enc.DecryptLWEBool(ctOut))
