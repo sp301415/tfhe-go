@@ -33,7 +33,9 @@ ct0 := enc.EncryptGLWE([]int{2})
 ct1 := enc.EncryptGLWE([]int{5})
 ctFlag := enc.EncryptFourierGGSW([]int{1}, decompParams)
 
-eval := tfhe.NewEvaluater(params, enc.GenEvaluationKeyParallel())
+// We don't need evaluation key for CMUX,
+// so we can just supply empty key!
+eval := tfhe.NewEvaluater(params, tfhe.EvaluationKey[uint64]{})
 
 ctOut := eval.CMuxFourier(ctFlag, ct0, ct1)
 fmt.Println(enc.DecryptGLWE(ctOut)[0]) // 5
@@ -51,6 +53,27 @@ eval := tfhe.NewEvaluater(params, enc.GenEvaluationKeyParallel())
 
 ctOut := eval.BootstrapFunc(ct, func(x int) int { return 2*x + 1 })
 fmt.Println(enc.DecryptLWE(ctOut)) // 7 = 2*3+1
+```
+
+### Comparison using Gate Bootstrapping
+```go
+params := tfheb.ParamsBoolean.Compile()
+
+enc := tfheb.NewEncrypter(params)
+eval := tfheb.NewEvaluater(params, enc.GenEvaluationKeyParallel())
+
+// Change these values yourself!
+ct0 := enc.EncryptLWEBits(2)
+ct1 := enc.EncryptLWEBits(3)
+
+ctOut := eval.XOR(ct0[0], ct1[0])
+for i := 1; i < 64; i++ {
+	eval.XORInPlace(ct0[i], ctOut, ctOut)
+	eval.XORInPlace(ct1[i], ctOut, ctOut)
+}
+eval.NOTInPlace(ctOut, ctOut)
+
+fmt.Println(enc.DecryptLWEBool(ctOut))
 ```
 
 ## Benchmarks
