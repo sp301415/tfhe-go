@@ -34,8 +34,8 @@ type evaluationBuffer[T Tint] struct {
 	// Initially has length MaxBufferDecomposedLevel.
 	decomposedVec []T
 
-	// fourierCtOutForExtProd holds the fourier transformed ctGLWEOut in ExternalProductFourier.
-	fourierCtOutForExtProd FourierGLWECiphertext[T]
+	// fourierCtForExtProd holds the fourier transformed ctGLWEOut in ExternalProductFourier.
+	fourierCtForExtProd FourierGLWECiphertext[T]
 	// ctSubForCMux holds ct1 - ct0 in CMux.
 	ctSubForCMux GLWECiphertext[T]
 
@@ -44,20 +44,20 @@ type evaluationBuffer[T Tint] struct {
 	// localAcc holds the value of (ACC * BootstrapKey_i).
 	localAcc GLWECiphertext[T]
 
-	// blindRotatedCtForBootstrap holds the blind rotated GLWE ciphertext for bootstrapping.
-	blindRotatedCtForBootstrap GLWECiphertext[T]
-	// sampleExtractedCtForBootstrap holds the sample extracted LWE large ciphertext for bootstrapping.
-	sampleExtractedCtForBootstrap LWECiphertext[T]
-	// ctLeftOver holds LargeLWEDimension - LWEDimension + 1 sized ciphertext from keyswitching.
-	ctLeftOver LWECiphertext[T]
+	// blindRotatedCt holds the blind rotated GLWE ciphertext for bootstrapping.
+	blindRotatedCt GLWECiphertext[T]
+	// sampleExtractedCt holds the sample extracted LWE large ciphertext for bootstrapping.
+	sampleExtractedCt LWECiphertext[T]
+	// leftoverCt holds LargeLWEDimension - LWEDimension + 1 sized ciphertext from keyswitching.
+	leftoverCt LWECiphertext[T]
 
 	// lut is an empty lut, used for BlindRotateFunc.
 	lut LookUpTable[T]
 
-	// outForPublicFunctionalKeySwitch holds the output value of f in GLWE public functional keyswitching.
-	outForPublicFunctionalKeySwitch poly.Poly[T]
-	// fourierCtForPublicFunctionalKeySwitch holds the accumulater value for GLWE public functional keyswitching.
-	fourierCtForPublicFunctionalKeySwitch FourierGLWECiphertext[T]
+	// outForPubFuncKeySwitch holds the output value of f in GLWE public functional keyswitching.
+	outForPubFuncKeySwitch poly.Poly[T]
+	// fourierCtForPubFuncKeySwitch holds the accumulater value for GLWE public functional keyswitching.
+	fourierCtForPubFuncKeySwitch FourierGLWECiphertext[T]
 
 	// levelCtForCircuitBootstrap holds a bootstrapped leveled ciphertext in Circuit Bootstrapping.
 	levelCtForCircuitBootstrap LWECiphertext[T]
@@ -97,21 +97,21 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 		decomposedPoly: decomposedPoly,
 		decomposedVec:  make([]T, maxBufferDecomposedLevel),
 
-		fourierCtOutForExtProd: NewFourierGLWECiphertext(params),
-		ctSubForCMux:           NewGLWECiphertext(params),
+		fourierCtForExtProd: NewFourierGLWECiphertext(params),
+		ctSubForCMux:        NewGLWECiphertext(params),
 
 		decompsedAcc: decomposedAcc,
 		localAcc:     NewGLWECiphertext(params),
 
-		blindRotatedCtForBootstrap:    NewGLWECiphertext(params),
-		sampleExtractedCtForBootstrap: LWECiphertext[T]{Value: make([]T, params.LargeLWEDimension()+1)},
+		blindRotatedCt:    NewGLWECiphertext(params),
+		sampleExtractedCt: LWECiphertext[T]{Value: make([]T, params.LargeLWEDimension()+1)},
 
-		ctLeftOver: LWECiphertext[T]{Value: make([]T, params.LargeLWEDimension()-params.lweDimension+1)},
+		leftoverCt: LWECiphertext[T]{Value: make([]T, params.LargeLWEDimension()-params.lweDimension+1)},
 
 		lut: NewLookUpTable(params),
 
-		outForPublicFunctionalKeySwitch:       poly.New[T](params.polyDegree),
-		fourierCtForPublicFunctionalKeySwitch: NewFourierGLWECiphertext(params),
+		outForPubFuncKeySwitch:       poly.New[T](params.polyDegree),
+		fourierCtForPubFuncKeySwitch: NewFourierGLWECiphertext(params),
 
 		levelCtForCircuitBootstrap: NewLWECiphertext(params),
 	}

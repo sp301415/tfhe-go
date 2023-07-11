@@ -114,25 +114,25 @@ func (e Evaluater[T]) PublicFunctionalGLWEKeySwitchInPlace(ctIn []LWECiphertext[
 		for j, ct := range ctIn {
 			in[j] = ct.Value[i+1]
 		}
-		f(in, e.buffer.outForPublicFunctionalKeySwitch)
-		e.DecomposePolyInplace(e.buffer.outForPublicFunctionalKeySwitch, buffDecomposed, pfksk.decompParams)
+		f(in, e.buffer.outForPubFuncKeySwitch)
+		e.DecomposePolyInplace(e.buffer.outForPubFuncKeySwitch, buffDecomposed, pfksk.decompParams)
 		for j := 0; j < pfksk.decompParams.level; j++ {
 			if i == 0 && j == 0 {
-				e.PolyMulFourierGLWEInPlace(pfksk.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtForPublicFunctionalKeySwitch)
-				e.NegFourierGLWEInPlace(e.buffer.fourierCtForPublicFunctionalKeySwitch, e.buffer.fourierCtForPublicFunctionalKeySwitch)
+				e.PolyMulFourierGLWEInPlace(pfksk.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtForPubFuncKeySwitch)
+				e.NegFourierGLWEInPlace(e.buffer.fourierCtForPubFuncKeySwitch, e.buffer.fourierCtForPubFuncKeySwitch)
 			} else {
-				e.PolyMulSubFourierGLWEInPlace(pfksk.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtForPublicFunctionalKeySwitch)
+				e.PolyMulSubFourierGLWEInPlace(pfksk.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtForPubFuncKeySwitch)
 			}
 		}
 	}
 
-	e.ToStandardGLWECiphertextInPlace(e.buffer.fourierCtForPublicFunctionalKeySwitch, ctOut)
+	e.ToStandardGLWECiphertextInPlace(e.buffer.fourierCtForPubFuncKeySwitch, ctOut)
 
 	for i, ct := range ctIn {
 		in[i] = ct.Value[0]
 	}
-	f(in, e.buffer.outForPublicFunctionalKeySwitch)
-	e.PolyEvaluater.AddInPlace(ctOut.Value[0], e.buffer.outForPublicFunctionalKeySwitch, ctOut.Value[0])
+	f(in, e.buffer.outForPubFuncKeySwitch)
+	e.PolyEvaluater.AddInPlace(ctOut.Value[0], e.buffer.outForPubFuncKeySwitch, ctOut.Value[0])
 }
 
 // PackingPublicFunctionalKeySwitch is a special instance of public functional keyswitching with packing function.

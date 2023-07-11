@@ -251,13 +251,13 @@ func (e Encrypter[T]) GenPublicFunctionalLWEKeySwitchKeyParallel(decompParams De
 func (e Encrypter[T]) GenPublicFunctionalGLWEKeySwitchKey(decompParams DecompositionParameters[T]) PublicFunctionalGLWEKeySwitchKey[T] {
 	pfksk := NewPublicFunctionalGLWEKeySwitchKey(e.Parameters, decompParams)
 
-	e.buffer.ctGLWE.Value[0].Clear()
+	e.buffer.glweCt.Value[0].Clear()
 	for i := 0; i < e.Parameters.lweDimension; i++ {
 		for j := 0; j < decompParams.level; j++ {
-			e.buffer.ctGLWE.Value[0].Clear()
-			e.buffer.ctGLWE.Value[0].Coeffs[0] = e.SecretKey.LWEKey.Value[i] << decompParams.ScaledBaseLog(j)
-			e.EncryptGLWEBody(e.buffer.ctGLWE)
-			e.ToFourierGLWECiphertextInPlace(e.buffer.ctGLWE, pfksk.Value[i].Value[j])
+			e.buffer.glweCt.Value[0].Clear()
+			e.buffer.glweCt.Value[0].Coeffs[0] = e.SecretKey.LWEKey.Value[i] << decompParams.ScaledBaseLog(j)
+			e.EncryptGLWEBody(e.buffer.glweCt)
+			e.ToFourierGLWECiphertextInPlace(e.buffer.glweCt, pfksk.Value[i].Value[j])
 		}
 	}
 
@@ -295,10 +295,10 @@ func (e Encrypter[T]) GenPublicFunctionalGLWEKeySwitchKeyParallel(decompParams D
 
 			for i := range jobs {
 				for j := 0; j < decompParams.level; j++ {
-					e.buffer.ctGLWE.Value[0].Clear()
-					e.buffer.ctGLWE.Value[0].Coeffs[0] = e.SecretKey.LWEKey.Value[i] << decompParams.ScaledBaseLog(j)
-					e.EncryptGLWEBody(e.buffer.ctGLWE)
-					e.ToFourierGLWECiphertextInPlace(e.buffer.ctGLWE, pfksk.Value[i].Value[j])
+					e.buffer.glweCt.Value[0].Clear()
+					e.buffer.glweCt.Value[0].Coeffs[0] = e.SecretKey.LWEKey.Value[i] << decompParams.ScaledBaseLog(j)
+					e.EncryptGLWEBody(e.buffer.glweCt)
+					e.ToFourierGLWECiphertextInPlace(e.buffer.glweCt, pfksk.Value[i].Value[j])
 				}
 			}
 		}(i)

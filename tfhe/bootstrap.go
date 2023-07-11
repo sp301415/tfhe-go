@@ -104,9 +104,9 @@ func (e Evaluater[T]) BootstrapLUT(ct LWECiphertext[T], lut LookUpTable[T]) LWEC
 
 // BootstrapLUTInPlace bootstraps LWE ciphertext with respect to given LUT and writes it to ctOut.
 func (e Evaluater[T]) BootstrapLUTInPlace(ct LWECiphertext[T], lut LookUpTable[T], ctOut LWECiphertext[T]) {
-	e.BlindRotateInPlace(ct, lut, e.buffer.blindRotatedCtForBootstrap)
-	e.SampleExtractInPlace(e.buffer.blindRotatedCtForBootstrap, 0, e.buffer.sampleExtractedCtForBootstrap)
-	e.KeySwitchForBootstrapInPlace(e.buffer.sampleExtractedCtForBootstrap, ctOut)
+	e.BlindRotateInPlace(ct, lut, e.buffer.blindRotatedCt)
+	e.SampleExtractInPlace(e.buffer.blindRotatedCt, 0, e.buffer.sampleExtractedCt)
+	e.KeySwitchForBootstrapInPlace(e.buffer.sampleExtractedCt, ctOut)
 }
 
 // ModSwitch calculates round(2N * x / Q).
@@ -206,9 +206,9 @@ func (e Evaluater[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[T
 // KeySwitchForBootstrapInPlace performs the keyswitching using evaulater's bootstrap key.
 // Input ciphertext should be length LWELargeDimension + 1, and output ciphertext should be length LWEDimension + 1.
 func (e Evaluater[T]) KeySwitchForBootstrapInPlace(ct, ctOut LWECiphertext[T]) {
-	e.buffer.ctLeftOver.Value[0] = 0
-	vec.CopyInPlace(ct.Value[e.Parameters.lweDimension+1:], e.buffer.ctLeftOver.Value[1:])
+	e.buffer.leftoverCt.Value[0] = 0
+	vec.CopyInPlace(ct.Value[e.Parameters.lweDimension+1:], e.buffer.leftoverCt.Value[1:])
 
-	e.KeySwitchInPlace(e.buffer.ctLeftOver, e.EvaluationKey.KeySwitchKey, ctOut)
+	e.KeySwitchInPlace(e.buffer.leftoverCt, e.EvaluationKey.KeySwitchKey, ctOut)
 	vec.AddInPlace(ctOut.Value, ct.Value[:e.Parameters.lweDimension+1], ctOut.Value)
 }

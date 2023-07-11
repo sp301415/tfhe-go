@@ -150,15 +150,15 @@ func (e Evaluater[T]) ExternalProductFourierInPlace(ctFourierGGSW FourierGGSWCip
 		e.DecomposePolyInplace(ctGLWE.Value[i], buffDecomposed, ctFourierGGSW.decompParams)
 		for j := 0; j < ctFourierGGSW.decompParams.level; j++ {
 			if i == 0 && j == 0 {
-				e.PolyMulFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtOutForExtProd)
+				e.PolyMulFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtForExtProd)
 			} else {
-				e.PolyMulAddFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtOutForExtProd)
+				e.PolyMulAddFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtForExtProd)
 			}
 		}
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.ToScaledStandardPolyInPlace(e.buffer.fourierCtOutForExtProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierTransformer.ToScaledStandardPolyInPlace(e.buffer.fourierCtForExtProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
@@ -171,15 +171,15 @@ func (e Evaluater[T]) ExternalProductFourierAddInPlace(ctFourierGGSW FourierGGSW
 		e.DecomposePolyInplace(ctGLWE.Value[i], buffDecomposed, ctFourierGGSW.decompParams)
 		for j := 0; j < ctFourierGGSW.decompParams.level; j++ {
 			if i == 0 && j == 0 {
-				e.PolyMulFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtOutForExtProd)
+				e.PolyMulFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtForExtProd)
 			} else {
-				e.PolyMulAddFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtOutForExtProd)
+				e.PolyMulAddFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtForExtProd)
 			}
 		}
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.ToScaledStandardPolyAddInPlace(e.buffer.fourierCtOutForExtProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierTransformer.ToScaledStandardPolyAddInPlace(e.buffer.fourierCtForExtProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
@@ -192,15 +192,15 @@ func (e Evaluater[T]) ExternalProductFourierSubInPlace(ctFourierGGSW FourierGGSW
 		e.DecomposePolyInplace(ctGLWE.Value[i], buffDecomposed, ctFourierGGSW.decompParams)
 		for j := 0; j < ctFourierGGSW.decompParams.level; j++ {
 			if i == 0 && j == 0 {
-				e.PolyMulFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtOutForExtProd)
+				e.PolyMulFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtForExtProd)
 			} else {
-				e.PolyMulAddFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtOutForExtProd)
+				e.PolyMulAddFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtForExtProd)
 			}
 		}
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.ToScaledStandardPolySubInPlace(e.buffer.fourierCtOutForExtProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierTransformer.ToScaledStandardPolySubInPlace(e.buffer.fourierCtForExtProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
@@ -218,15 +218,15 @@ func (e Evaluater[T]) ExternalProductFourierHoistedInPlace(ctFourierGGSW Fourier
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		for j := 0; j < ctFourierGGSW.decompParams.level; j++ {
 			if i == 0 && j == 0 {
-				e.FourierPolyMulFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], ctGLWE[i][j], e.buffer.fourierCtOutForExtProd)
+				e.FourierPolyMulFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], ctGLWE[i][j], e.buffer.fourierCtForExtProd)
 			} else {
-				e.FourierPolyMulAddFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], ctGLWE[i][j], e.buffer.fourierCtOutForExtProd)
+				e.FourierPolyMulAddFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], ctGLWE[i][j], e.buffer.fourierCtForExtProd)
 			}
 		}
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.ToScaledStandardPolyInPlace(e.buffer.fourierCtOutForExtProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierTransformer.ToScaledStandardPolyInPlace(e.buffer.fourierCtForExtProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 

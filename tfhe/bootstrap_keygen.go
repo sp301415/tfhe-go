@@ -36,15 +36,15 @@ func (e Encrypter[T]) GenBootstrapKey() BootstrapKey[T] {
 	for i := 0; i < e.Parameters.lweDimension; i++ {
 		for j := 0; j < e.Parameters.glweDimension+1; j++ {
 			if j == 0 {
-				e.buffer.ptForGGSW.Clear()
-				e.buffer.ptForGGSW.Coeffs[0] = e.SecretKey.LWEKey.Value[i]
+				e.buffer.ggswPt.Clear()
+				e.buffer.ggswPt.Coeffs[0] = e.SecretKey.LWEKey.Value[i]
 			} else {
-				e.PolyEvaluater.ScalarMulInPlace(e.SecretKey.GLWEKey.Value[j-1], -e.SecretKey.LWEKey.Value[i], e.buffer.ptForGGSW)
+				e.PolyEvaluater.ScalarMulInPlace(e.SecretKey.GLWEKey.Value[j-1], -e.SecretKey.LWEKey.Value[i], e.buffer.ggswPt)
 			}
 			for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
-				e.PolyEvaluater.ScalarMulInPlace(e.buffer.ptForGGSW, e.Parameters.bootstrapParameters.ScaledBase(k), e.buffer.ctGLWE.Value[0])
-				e.EncryptGLWEBody(e.buffer.ctGLWE)
-				e.ToFourierGLWECiphertextInPlace(e.buffer.ctGLWE, bsk.Value[i].Value[j].Value[k])
+				e.PolyEvaluater.ScalarMulInPlace(e.buffer.ggswPt, e.Parameters.bootstrapParameters.ScaledBase(k), e.buffer.glweCt.Value[0])
+				e.EncryptGLWEBody(e.buffer.glweCt)
+				e.ToFourierGLWECiphertextInPlace(e.buffer.glweCt, bsk.Value[i].Value[j].Value[k])
 			}
 		}
 	}
@@ -85,15 +85,15 @@ func (e Encrypter[T]) GenBootstrapKeyParallel() BootstrapKey[T] {
 				i, j := job[0], job[1]
 
 				if j == 0 {
-					e.buffer.ptForGGSW.Clear()
-					e.buffer.ptForGGSW.Coeffs[0] = e.SecretKey.LWEKey.Value[i]
+					e.buffer.ggswPt.Clear()
+					e.buffer.ggswPt.Coeffs[0] = e.SecretKey.LWEKey.Value[i]
 				} else {
-					e.PolyEvaluater.ScalarMulInPlace(e.SecretKey.GLWEKey.Value[j-1], -e.SecretKey.LWEKey.Value[i], e.buffer.ptForGGSW)
+					e.PolyEvaluater.ScalarMulInPlace(e.SecretKey.GLWEKey.Value[j-1], -e.SecretKey.LWEKey.Value[i], e.buffer.ggswPt)
 				}
 				for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
-					e.PolyEvaluater.ScalarMulInPlace(e.buffer.ptForGGSW, e.Parameters.bootstrapParameters.ScaledBase(k), e.buffer.ctGLWE.Value[0])
-					e.EncryptGLWEBody(e.buffer.ctGLWE)
-					e.ToFourierGLWECiphertextInPlace(e.buffer.ctGLWE, bsk.Value[i].Value[j].Value[k])
+					e.PolyEvaluater.ScalarMulInPlace(e.buffer.ggswPt, e.Parameters.bootstrapParameters.ScaledBase(k), e.buffer.glweCt.Value[0])
+					e.EncryptGLWEBody(e.buffer.glweCt)
+					e.ToFourierGLWECiphertextInPlace(e.buffer.glweCt, bsk.Value[i].Value[j].Value[k])
 				}
 			}
 		}(i)
