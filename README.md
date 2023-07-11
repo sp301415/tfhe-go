@@ -63,15 +63,14 @@ enc := tfheb.NewEncrypter(params)
 eval := tfheb.NewEvaluater(params, enc.GenEvaluationKeyParallel())
 
 // Change these values yourself!
-ct0 := enc.EncryptLWEBits(2)
+ct0 := enc.EncryptLWEBits(3)
 ct1 := enc.EncryptLWEBits(3)
 
-ctOut := eval.XOR(ct0[0], ct1[0])
+ctOut := eval.XNOR(ct0[0], ct1[0])
 for i := 1; i < 64; i++ {
-	eval.XORInPlace(ct0[i], ctOut, ctOut)
-	eval.XORInPlace(ct1[i], ctOut, ctOut)
+	eval.XNORInPlace(ct0[i], ctOut, ctOut)
+	eval.XNORInPlace(ct1[i], ctOut, ctOut)
 }
-eval.NOTInPlace(ctOut, ctOut)
 
 fmt.Println(enc.DecryptLWEBool(ctOut))
 ```

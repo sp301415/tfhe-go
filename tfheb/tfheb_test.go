@@ -53,7 +53,13 @@ func TestEvaluater(t *testing.T) {
 
 	t.Run("XOR", func(t *testing.T) {
 		for _, tc := range tests {
-			assert.Equal(t, !(tc.pt0 == tc.pt1), enc.DecryptLWEBool(eval.XOR(tc.ct0, tc.ct1)))
+			assert.Equal(t, tc.pt0 != tc.pt1, enc.DecryptLWEBool(eval.XOR(tc.ct0, tc.ct1)))
+		}
+	})
+
+	t.Run("XNOR", func(t *testing.T) {
+		for _, tc := range tests {
+			assert.Equal(t, tc.pt0 == tc.pt1, enc.DecryptLWEBool(eval.XNOR(tc.ct0, tc.ct1)))
 		}
 	})
 }

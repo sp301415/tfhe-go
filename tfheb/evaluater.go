@@ -33,6 +33,7 @@ func (e Evaluater) ShallowCopy() Evaluater {
 }
 
 // NOT computes NOT ct0 and returns the result.
+// Equivalent to ^ct0.
 func (e Evaluater) NOT(ct0 tfhe.LWECiphertext[uint32]) tfhe.LWECiphertext[uint32] {
 	ctOut := tfhe.NewLWECiphertext(e.Parameters)
 	e.NOTInPlace(ct0, ctOut)
@@ -40,6 +41,7 @@ func (e Evaluater) NOT(ct0 tfhe.LWECiphertext[uint32]) tfhe.LWECiphertext[uint32
 }
 
 // NOTInPlace computes NOT ct0 and writes it to ctOut.
+// Equivalent to ^ct0.
 func (e Evaluater) NOTInPlace(ct0, ctOut tfhe.LWECiphertext[uint32]) {
 	// ctOut = -ct0
 	for i := 0; i < e.Parameters.LWEDimension()+1; i++ {
@@ -48,6 +50,7 @@ func (e Evaluater) NOTInPlace(ct0, ctOut tfhe.LWECiphertext[uint32]) {
 }
 
 // AND computes ct0 AND ct1 and returns the result.
+// Equivalent to ct0 && ct1.
 func (e Evaluater) AND(ct0, ct1 tfhe.LWECiphertext[uint32]) tfhe.LWECiphertext[uint32] {
 	ctOut := tfhe.NewLWECiphertext(e.Parameters)
 	e.ANDInPlace(ct0, ct1, ctOut)
@@ -55,6 +58,7 @@ func (e Evaluater) AND(ct0, ct1 tfhe.LWECiphertext[uint32]) tfhe.LWECiphertext[u
 }
 
 // ANDInPlace computes ct0 AND ct1 and writes it to ctOut.
+// Equivalent to ct0 && ct1.
 func (e Evaluater) ANDInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 	// ctOut = ct0 + ct1 - 1/8
 	for i := 0; i < e.Parameters.LWEDimension()+1; i++ {
@@ -66,6 +70,7 @@ func (e Evaluater) ANDInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 }
 
 // NAND computes ct0 NAND ct1 and returns the result.
+// Equivalent to !(ct0 && ct1).
 func (e Evaluater) NAND(ct0, ct1 tfhe.LWECiphertext[uint32]) tfhe.LWECiphertext[uint32] {
 	ctOut := tfhe.NewLWECiphertext(e.Parameters)
 	e.NANDInPlace(ct0, ct1, ctOut)
@@ -73,6 +78,7 @@ func (e Evaluater) NAND(ct0, ct1 tfhe.LWECiphertext[uint32]) tfhe.LWECiphertext[
 }
 
 // NANDInPlace computes ct0 NAND ct1 and writes it to ctOut.
+// Equivalent to !(ct0 && ct1).
 func (e Evaluater) NANDInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 	// ctOut = - ct0 - ct1 + 1/8
 	for i := 0; i < e.Parameters.LWEDimension()+1; i++ {
@@ -84,6 +90,7 @@ func (e Evaluater) NANDInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 }
 
 // OR computes ct0 OR ct1 and returns the result.
+// Equivalent to ct0 || ct1.
 func (e Evaluater) OR(ct0, ct1 tfhe.LWECiphertext[uint32]) tfhe.LWECiphertext[uint32] {
 	ctOut := tfhe.NewLWECiphertext(e.Parameters)
 	e.ORInPlace(ct0, ct1, ctOut)
@@ -91,6 +98,7 @@ func (e Evaluater) OR(ct0, ct1 tfhe.LWECiphertext[uint32]) tfhe.LWECiphertext[ui
 }
 
 // ORInPlace computes ct0 OR ct1 and writes it to ctOut.
+// Equivalent to ct0 || ct1.
 func (e Evaluater) ORInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 	// ctOut = ct0 + ct1 + 1/8
 	for i := 0; i < e.Parameters.LWEDimension()+1; i++ {
@@ -101,14 +109,16 @@ func (e Evaluater) ORInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 	e.BootstrapLUTInPlace(ctOut, e.signLUT, ctOut)
 }
 
-// NOR computes ct0 AND ct1 and returns the result.
+// NOR computes ct0 NOR ct1 and returns the result.
+// Equivalent to !(ct0 || ct1).
 func (e Evaluater) NOR(ct0, ct1 tfhe.LWECiphertext[uint32]) tfhe.LWECiphertext[uint32] {
 	ctOut := tfhe.NewLWECiphertext(e.Parameters)
 	e.NORInPlace(ct0, ct1, ctOut)
 	return ctOut
 }
 
-// NORInPlace computes ct0 OR ct1 and writes it to ctOut.
+// NORInPlace computes ct0 NOR ct1 and writes it to ctOut.
+// Equivalent to !(ct0 || ct1).
 func (e Evaluater) NORInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 	// ctOut = - ct0 - ct1 - 1/8
 	for i := 0; i < e.Parameters.LWEDimension()+1; i++ {
@@ -119,7 +129,8 @@ func (e Evaluater) NORInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 	e.BootstrapLUTInPlace(ctOut, e.signLUT, ctOut)
 }
 
-// XOR computes ct0 AND ct1 and returns the result.
+// XOR computes ct0 XOR ct1 and returns the result.
+// Equivalent to ct0 != ct1.
 func (e Evaluater) XOR(ct0, ct1 tfhe.LWECiphertext[uint32]) tfhe.LWECiphertext[uint32] {
 	ctOut := tfhe.NewLWECiphertext(e.Parameters)
 	e.XORInPlace(ct0, ct1, ctOut)
@@ -127,12 +138,33 @@ func (e Evaluater) XOR(ct0, ct1 tfhe.LWECiphertext[uint32]) tfhe.LWECiphertext[u
 }
 
 // XORInPlace computes ct0 XOR ct1 and writes it to ctOut.
+// Equivalent to ct0 != ct1.
 func (e Evaluater) XORInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 	// ctOut = 2*(ct0 + ct1) + 1/4
 	for i := 0; i < e.Parameters.LWEDimension()+1; i++ {
 		ctOut.Value[i] = 2 * (ct0.Value[i] + ct1.Value[i])
 	}
 	ctOut.Value[0] += 1 << (32 - 2)
+
+	e.BootstrapLUTInPlace(ctOut, e.signLUT, ctOut)
+}
+
+// XNOR computes ct0 XNOR ct1 and returns the result.
+// Equivalent to ct0 == ct1.
+func (e Evaluater) XNOR(ct0, ct1 tfhe.LWECiphertext[uint32]) tfhe.LWECiphertext[uint32] {
+	ctOut := tfhe.NewLWECiphertext(e.Parameters)
+	e.XNORInPlace(ct0, ct1, ctOut)
+	return ctOut
+}
+
+// XNORInPlace computes ct0 XNOR ct1 and writes it to ctOut.
+// Equivalent to ct0 == ct1.
+func (e Evaluater) XNORInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
+	// ctOut = -2*(ct0 + ct1) - 1/4
+	for i := 0; i < e.Parameters.LWEDimension()+1; i++ {
+		ctOut.Value[i] = 2 * (-ct0.Value[i] - ct1.Value[i])
+	}
+	ctOut.Value[0] -= 1 << (32 - 2)
 
 	e.BootstrapLUTInPlace(ctOut, e.signLUT, ctOut)
 }
