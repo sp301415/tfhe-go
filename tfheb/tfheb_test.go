@@ -10,71 +10,61 @@ import (
 
 var (
 	testParams = tfheb.ParamsBoolean.Compile()
-	enc        = tfhe.NewEncrypter(testParams)
+	enc        = tfheb.NewEncrypter(testParams)
 	eval       = tfheb.NewEvaluater(testParams, enc.GenEvaluationKeyParallel())
 )
 
-func i2b(x int) bool {
-	return x != 0
-}
-
 func TestEvaluater(t *testing.T) {
-	ciphertexts := make(map[[2]int][2]tfhe.LWECiphertext[uint32], 4)
-	for i := 0; i <= 1; i++ {
-		for j := 0; j <= 1; j++ {
-			ciphertexts[[2]int{i, j}] = [2]tfhe.LWECiphertext[uint32]{
-				enc.EncryptLWE(i),
-				enc.EncryptLWE(j),
-			}
-		}
+	tests := []struct {
+		pt0 bool
+		pt1 bool
+		ct0 tfhe.LWECiphertext[uint32]
+		ct1 tfhe.LWECiphertext[uint32]
+	}{
+		{true, true, enc.EncryptLWEBool(true), enc.EncryptLWEBool(true)},
+		{true, false, enc.EncryptLWEBool(true), enc.EncryptLWEBool(false)},
+		{false, true, enc.EncryptLWEBool(false), enc.EncryptLWEBool(true)},
+		{false, false, enc.EncryptLWEBool(false), enc.EncryptLWEBool(false)},
 	}
 
-	t.Run("NOT", func(t *testing.T) {
-		for pt, ct := range ciphertexts {
-			ctOut := eval.NOT(ct[0])
-			assert.Equal(t, !i2b(pt[0]), i2b(enc.DecryptLWE(ctOut)))
+	t.Run("AND", func(t *testing.T) {
+		for _, tc := range tests {
+			assert.Equal(t, tc.pt0 && tc.pt1, enc.DecryptLWEBool(eval.AND(tc.ct0, tc.ct1)))
 		}
 	})
 
-	t.Run("AND", func(t *testing.T) {
-		for pt, ct := range ciphertexts {
-			ctOut := eval.AND(ct[0], ct[1])
-			assert.Equal(t, i2b(pt[0]) && i2b(pt[1]), i2b(enc.DecryptLWE(ctOut)))
+	t.Run("NAND", func(t *testing.T) {
+		for _, tc := range tests {
+			assert.Equal(t, !(tc.pt0 && tc.pt1), enc.DecryptLWEBool(eval.NAND(tc.ct0, tc.ct1)))
 		}
 	})
 
 	t.Run("OR", func(t *testing.T) {
-		for pt, ct := range ciphertexts {
-			ctOut := eval.OR(ct[0], ct[1])
-			assert.Equal(t, i2b(pt[0]) || i2b(pt[1]), i2b(enc.DecryptLWE(ctOut)))
+		for _, tc := range tests {
+			assert.Equal(t, tc.pt0 || tc.pt1, enc.DecryptLWEBool(eval.OR(tc.ct0, tc.ct1)))
+		}
+	})
+
+	t.Run("NOR", func(t *testing.T) {
+		for _, tc := range tests {
+			assert.Equal(t, !(tc.pt0 || tc.pt1), enc.DecryptLWEBool(eval.NOR(tc.ct0, tc.ct1)))
 		}
 	})
 
 	t.Run("XOR", func(t *testing.T) {
-		for pt, ct := range ciphertexts {
-			ctOut := eval.XOR(ct[0], ct[1])
-			assert.Equal(t, i2b(pt[0]) != i2b(pt[1]), i2b(enc.DecryptLWE(ctOut)))
+		for _, tc := range tests {
+			assert.Equal(t, !(tc.pt0 == tc.pt1), enc.DecryptLWEBool(eval.XOR(tc.ct0, tc.ct1)))
 		}
 	})
 }
 
 func BenchmarkGateBootstrap(b *testing.B) {
-	ct0 := enc.EncryptLWE(1)
-	ct1 := enc.EncryptLWE(1)
+	ct0 := enc.EncryptLWEBool(true)
+	ct1 := enc.EncryptLWEBool(false)
 	ctOut := tfhe.NewLWECiphertext(testParams)
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
 		eval.ANDInPlace(ct0, ct1, ctOut)
-	}
-}
-
-func BenchmarkBooleanBootstrap(b *testing.B) {
-	ct := enc.EncryptLWE(1)
-	lut := eval.GenLookUpTable(func(x int) int { return x })
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		eval.BootstrapLUTInPlace(ct, lut, ct)
 	}
 }
