@@ -34,6 +34,8 @@ type evaluationBuffer[T Tint] struct {
 	// Initially has length MaxBufferDecomposedLevel.
 	decomposedVec []T
 
+	// fpForOps holds the fourier transformed polynomial for multiplications.
+	fpForOps poly.FourierPoly
 	// fourierCtForExtProd holds the fourier transformed ctGLWEOut in ExternalProductFourier.
 	fourierCtForExtProd FourierGLWECiphertext[T]
 	// ctSubForCMux holds ct1 - ct0 in CMux.
@@ -89,6 +91,7 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 		decomposedPoly: decomposedPoly,
 		decomposedVec:  make([]T, maxBufferDecomposedLevel),
 
+		fpForOps:            poly.NewFourierPoly(params.polyDegree),
 		fourierCtForExtProd: NewFourierGLWECiphertext(params),
 		ctSubForCMux:        NewGLWECiphertext(params),
 

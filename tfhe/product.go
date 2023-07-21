@@ -193,16 +193,16 @@ func (e Evaluater[T]) ExternalProductFourierHoistedInPlace(ctFourierGGSW Fourier
 	}
 }
 
-// CMux calculates the CMUX between ctFourierGGSW, ct0 and ct1: so ctOut = ct0 + ctGGSW * (ct1 - ct0).
-// CMUX essentially acts as an if clause; if ctGGSW = 0, ct0 is returned, and if ctGGSW = 1, ct1 is returned.
+// CMux calculates the CMUX between ctFourierGGSW, ct0 and ct1: so ctOut = ct0 + ctFourierGGSW * (ct1 - ct0).
+// CMUX essentially acts as an if clause; if ctFourierGGSW = 0, ct0 is returned, and if ctFourierGGSW = 1, ct1 is returned.
 func (e Evaluater[T]) CMux(ctFourierGGSW FourierGGSWCiphertext[T], ct0, ct1 GLWECiphertext[T]) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
 	e.CMuxInPlace(ctFourierGGSW, ct0, ct1, ctOut)
 	return ctOut
 }
 
-// CMuxFourierInPlace calculates the CMUX between ctFourierGGSW, ct0 and ct1: so ctOut = ct0 + ctGGSW * (ct1 - ct0).
-// CMUX essentially acts as an if clause; if ctGGSW = 0, ct0 is returned, and if ctGGSW = 1, ct1 is returned.
+// CMuxFourierInPlace calculates the CMUX between ctFourierGGSW, ct0 and ct1: so ctOut = ct0 + ctFourierGGSW * (ct1 - ct0).
+// CMUX essentially acts as an if clause; if ctFourierGGSW = 0, ct0 is returned, and if ctFourierGGSW = 1, ct1 is returned.
 func (e Evaluater[T]) CMuxInPlace(ctFourierGGSW FourierGGSWCiphertext[T], ct0, ct1, ctOut GLWECiphertext[T]) {
 	ctOut.CopyFrom(ct0)
 	e.SubGLWEInPlace(ct1, ct0, e.buffer.ctSubForCMux)

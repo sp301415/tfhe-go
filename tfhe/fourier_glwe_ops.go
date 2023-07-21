@@ -53,22 +53,25 @@ func (e Evaluater[T]) PolyMulFourierGLWE(ct0 FourierGLWECiphertext[T], p poly.Po
 
 // PolyMulFourierGLWEInPlace multiplies p to ct0 and writes to ctOut.
 func (e Evaluater[T]) PolyMulFourierGLWEInPlace(ct0 FourierGLWECiphertext[T], p poly.Poly[T], ctOut FourierGLWECiphertext[T]) {
+	e.FourierTransformer.ToFourierPolyInPlace(p, e.buffer.fpForOps)
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.PolyMulInPlace(ct0.Value[i], p, ctOut.Value[i])
+		e.FourierTransformer.MulInPlace(ct0.Value[i], e.buffer.fpForOps, ctOut.Value[i])
 	}
 }
 
 // PolyMulAddFourierGLWEInPlace multiplies p to ct0 and adds to ctOut.
 func (e Evaluater[T]) PolyMulAddFourierGLWEInPlace(ct0 FourierGLWECiphertext[T], p poly.Poly[T], ctOut FourierGLWECiphertext[T]) {
+	e.FourierTransformer.ToFourierPolyInPlace(p, e.buffer.fpForOps)
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.PolyMulAddInPlace(ct0.Value[i], p, ctOut.Value[i])
+		e.FourierTransformer.MulAddInPlace(ct0.Value[i], e.buffer.fpForOps, ctOut.Value[i])
 	}
 }
 
 // PolyMulSubFourierGLWEInPlace multiplies p to ct0 and subtracts from ctOut.
 func (e Evaluater[T]) PolyMulSubFourierGLWEInPlace(ct0 FourierGLWECiphertext[T], p poly.Poly[T], ctOut FourierGLWECiphertext[T]) {
+	e.FourierTransformer.ToFourierPolyInPlace(p, e.buffer.fpForOps)
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.PolyMulSubInPlace(ct0.Value[i], p, ctOut.Value[i])
+		e.FourierTransformer.MulSubInPlace(ct0.Value[i], e.buffer.fpForOps, ctOut.Value[i])
 	}
 }
 
