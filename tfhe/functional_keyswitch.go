@@ -108,31 +108,33 @@ func (e Evaluater[T]) PublicFunctionalGLWEKeySwitch(ctIn []LWECiphertext[T], f f
 // The initial value of out is undefined.
 func (e Evaluater[T]) PublicFunctionalGLWEKeySwitchInPlace(ctIn []LWECiphertext[T], f func([]T, poly.Poly[T]), pfksk PublicFunctionalGLWEKeySwitchKey[T], ctOut GLWECiphertext[T]) {
 	buffDecomposed := e.decomposedPolyBuffer(pfksk.decompParams)
-
 	in := make([]T, len(ctIn))
+	out := poly.New[T](e.Parameters.polyDegree)
+
+	fourierCtOut := NewFourierGLWECiphertext(e.Parameters)
 	for i := 0; i < e.Parameters.lweDimension; i++ {
 		for j, ct := range ctIn {
 			in[j] = ct.Value[i+1]
 		}
-		f(in, e.buffer.outForPubFuncKeySwitch)
-		e.DecomposePolyInplace(e.buffer.outForPubFuncKeySwitch, buffDecomposed, pfksk.decompParams)
+		f(in, out)
+		e.DecomposePolyInplace(out, buffDecomposed, pfksk.decompParams)
 		for j := 0; j < pfksk.decompParams.level; j++ {
 			if i == 0 && j == 0 {
-				e.PolyMulFourierGLWEInPlace(pfksk.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtForPubFuncKeySwitch)
-				e.NegFourierGLWEInPlace(e.buffer.fourierCtForPubFuncKeySwitch, e.buffer.fourierCtForPubFuncKeySwitch)
+				e.PolyMulFourierGLWEInPlace(pfksk.Value[i].Value[j], buffDecomposed[j], fourierCtOut)
+				e.NegFourierGLWEInPlace(fourierCtOut, fourierCtOut)
 			} else {
-				e.PolyMulSubFourierGLWEInPlace(pfksk.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtForPubFuncKeySwitch)
+				e.PolyMulSubFourierGLWEInPlace(pfksk.Value[i].Value[j], buffDecomposed[j], fourierCtOut)
 			}
 		}
 	}
 
-	e.ToStandardGLWECiphertextInPlace(e.buffer.fourierCtForPubFuncKeySwitch, ctOut)
+	e.ToStandardGLWECiphertextInPlace(fourierCtOut, ctOut)
 
 	for i, ct := range ctIn {
 		in[i] = ct.Value[0]
 	}
-	f(in, e.buffer.outForPubFuncKeySwitch)
-	e.PolyEvaluater.AddInPlace(ctOut.Value[0], e.buffer.outForPubFuncKeySwitch, ctOut.Value[0])
+	f(in, out)
+	e.PolyEvaluater.AddInPlace(ctOut.Value[0], out, ctOut.Value[0])
 }
 
 // PackingPublicFunctionalKeySwitch is a special instance of public functional keyswitching with packing function.
@@ -158,11 +160,12 @@ func (e Evaluater[T]) CircuitBootstrap(ct LWECiphertext[T], decompParams Decompo
 
 // CircuitBootstrapInPlace computes circuit bootstrapping and writes the result to ctOut.
 func (e Evaluater[T]) CircuitBootstrapInPlace(ct LWECiphertext[T], cbsk CircuitBootstrapKey[T], ctOut GGSWCiphertext[T]) {
+	levelCt := NewLWECiphertext(e.Parameters)
 	for i := 0; i < ctOut.decompParams.level; i++ {
 		e.GenLookUpTableFullInPlace(func(x int) T { return T(x) << ctOut.decompParams.ScaledBaseLog(i) }, e.buffer.lut)
-		e.BootstrapLUTInPlace(ct, e.buffer.lut, e.buffer.levelCtForCircuitBootstrap)
+		e.BootstrapLUTInPlace(ct, e.buffer.lut, levelCt)
 		for j := 0; j < e.Parameters.glweDimension+1; j++ {
-			e.PrivateFunctionalGLWEKeySwitchInPlace([]LWECiphertext[T]{e.buffer.levelCtForCircuitBootstrap}, cbsk.Value[j], ctOut.Value[j].Value[i])
+			e.PrivateFunctionalGLWEKeySwitchInPlace([]LWECiphertext[T]{levelCt}, cbsk.Value[j], ctOut.Value[j].Value[i])
 		}
 	}
 }
