@@ -404,9 +404,9 @@ func (f FourierTransformer[T]) MulSubInPlace(fp0, fp1, fpOut FourierPoly) {
 }
 
 // PolyMul multiplies fp0, p1 and returns the result.
-func (f FourierTransformer[T]) PolyMul(fp0, p1 FourierPoly) FourierPoly {
+func (f FourierTransformer[T]) PolyMul(fp0 FourierPoly, p1 Poly[T]) FourierPoly {
 	fp := NewFourierPoly(f.degree)
-	f.MulInPlace(fp0, p1, fp)
+	f.PolyMulInPlace(fp0, p1, fp)
 	return fp
 }
 

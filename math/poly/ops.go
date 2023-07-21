@@ -49,7 +49,7 @@ func (e Evaluater[T]) Mul(p0, p1 Poly[T]) Poly[T] {
 
 // MulInPlace multiplies p0, p1 and writes it to pOut.
 func (e Evaluater[T]) MulInPlace(p0, p1, pOut Poly[T]) {
-	if e.degree <= KaratsubaRecurseThreshold {
+	if e.degree <= karatsubaRecurseThreshold {
 		e.mulInPlaceNaive(p0, p1, pOut)
 	} else {
 		e.mulInPlaceKaratsuba(p0, p1, pOut)

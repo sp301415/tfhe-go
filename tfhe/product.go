@@ -83,138 +83,79 @@ func (e *Evaluater[T]) decomposedVecBuffer(decompParams DecompositionParameters[
 }
 
 // ExternalProduct calculates the external product between
-// ctGGSW and ctGLWE, and returns the result GLWE ciphertext.
-func (e Evaluater[T]) ExternalProduct(ctGGSW GGSWCiphertext[T], ctGLWE GLWECiphertext[T]) GLWECiphertext[T] {
+// ctFourierGGSW and ctGLWE, and returns it.
+func (e Evaluater[T]) ExternalProduct(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE GLWECiphertext[T]) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
-	e.ExternalProductInPlace(ctGGSW, ctGLWE, ctOut)
+	e.ExternalProductInPlace(ctFourierGGSW, ctGLWE, ctOut)
 	return ctOut
 }
 
 // ExternalProductInPlace calculates the external product between
-// ctGGSW and ctGLWE, and writes it to ctOut.
-func (e Evaluater[T]) ExternalProductInPlace(ctGGSW GGSWCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
-	buffDecomposed := e.decomposedPolyBuffer(ctGGSW.decompParams)
-
-	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.DecomposePolyInplace(ctGLWE.Value[i], buffDecomposed, ctGGSW.decompParams)
-		for j := 0; j < ctGGSW.decompParams.level; j++ {
-			if i == 0 && j == 0 {
-				e.PolyMulGLWEInPlace(ctGGSW.Value[i].Value[j], buffDecomposed[j], ctGLWEOut)
-			} else {
-				e.PolyMulAddGLWEInPlace(ctGGSW.Value[i].Value[j], buffDecomposed[j], ctGLWEOut)
-			}
-		}
-	}
-}
-
-// ExternalProductAddInPlace calculates the external product between
-// ctGGSW and ctGLWE, and adds it to ctGLWEOut.
-func (e Evaluater[T]) ExternalProductAddInPlace(ctGGSW GGSWCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
-	buffDecomposed := e.decomposedPolyBuffer(ctGGSW.decompParams)
-
-	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.DecomposePolyInplace(ctGLWE.Value[i], buffDecomposed, ctGGSW.decompParams)
-		for j := 0; j < ctGGSW.decompParams.level; j++ {
-			e.PolyMulAddGLWEInPlace(ctGGSW.Value[i].Value[j], buffDecomposed[j], ctGLWEOut)
-		}
-	}
-}
-
-// ExternalProductSubInPlace calculates the external product between
-// ctGGSW and ctGLWE, and subtracts it from ctGLWEOut.
-func (e Evaluater[T]) ExternalProductSubInPlace(ctGGSW GGSWCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
-	buffDecomposed := e.decomposedPolyBuffer(ctGGSW.decompParams)
-
-	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.DecomposePolyInplace(ctGLWE.Value[i], buffDecomposed, ctGGSW.decompParams)
-		for j := 0; j < ctGGSW.decompParams.level; j++ {
-			e.PolyMulSubGLWEInPlace(ctGGSW.Value[i].Value[j], buffDecomposed[j], ctGLWEOut)
-		}
-	}
-}
-
-// ExternalProductFourier calculates the external product between
-// ctFourierGGSW and ctGLWE, and returns it.
-func (e Evaluater[T]) ExternalProductFourier(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE GLWECiphertext[T]) GLWECiphertext[T] {
-	ctOut := NewGLWECiphertext(e.Parameters)
-	e.ExternalProductFourierInPlace(ctFourierGGSW, ctGLWE, ctOut)
-	return ctOut
-}
-
-// ExternalProductFourierInPlace calculates the external product between
 // ctFourierGGSW and ctGLWE, and writes it to ctGLWEOut.
-func (e Evaluater[T]) ExternalProductFourierInPlace(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
-	buffDecomposed := e.decomposedPolyBuffer(ctFourierGGSW.decompParams)
-
-	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.DecomposePolyInplace(ctGLWE.Value[i], buffDecomposed, ctFourierGGSW.decompParams)
-		for j := 0; j < ctFourierGGSW.decompParams.level; j++ {
-			if i == 0 && j == 0 {
-				e.PolyMulFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtForExtProd)
-			} else {
-				e.PolyMulAddFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtForExtProd)
-			}
-		}
-	}
+func (e Evaluater[T]) ExternalProductInPlace(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
+	e.ExternalProductFourierInPlace(ctFourierGGSW, ctGLWE, e.buffer.fourierCtForExtProd)
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.FourierTransformer.ToScaledStandardPolyInPlace(e.buffer.fourierCtForExtProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
-// ExternalProductFourierAddInPlace calculates the external product between
+// ExternalProductAddInPlace calculates the external product between
 // ctFourierGGSW and ctGLWE, and adds it to ctOut.
-func (e Evaluater[T]) ExternalProductFourierAddInPlace(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
-	buffDecomposed := e.decomposedPolyBuffer(ctFourierGGSW.decompParams)
-
-	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.DecomposePolyInplace(ctGLWE.Value[i], buffDecomposed, ctFourierGGSW.decompParams)
-		for j := 0; j < ctFourierGGSW.decompParams.level; j++ {
-			if i == 0 && j == 0 {
-				e.PolyMulFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtForExtProd)
-			} else {
-				e.PolyMulAddFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtForExtProd)
-			}
-		}
-	}
+func (e Evaluater[T]) ExternalProductAddInPlace(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
+	e.ExternalProductFourierInPlace(ctFourierGGSW, ctGLWE, e.buffer.fourierCtForExtProd)
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.FourierTransformer.ToScaledStandardPolyAddInPlace(e.buffer.fourierCtForExtProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
-// ExternalProductFourierSubInPlace calculates the external product between
+// ExternalProductSubInPlace calculates the external product between
 // ctFourierGGSW and ctGLWE, and subtracts it from ctOut.
-func (e Evaluater[T]) ExternalProductFourierSubInPlace(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
-	buffDecomposed := e.decomposedPolyBuffer(ctFourierGGSW.decompParams)
-
-	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.DecomposePolyInplace(ctGLWE.Value[i], buffDecomposed, ctFourierGGSW.decompParams)
-		for j := 0; j < ctFourierGGSW.decompParams.level; j++ {
-			if i == 0 && j == 0 {
-				e.PolyMulFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtForExtProd)
-			} else {
-				e.PolyMulAddFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], e.buffer.fourierCtForExtProd)
-			}
-		}
-	}
+func (e Evaluater[T]) ExternalProductSubInPlace(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
+	e.ExternalProductFourierInPlace(ctFourierGGSW, ctGLWE, e.buffer.fourierCtForExtProd)
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.FourierTransformer.ToScaledStandardPolySubInPlace(e.buffer.fourierCtForExtProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
+// ExternalProductFourier calculates the external product between
+// ctFourierGGSW and ctFourierGLWE, and returns it in Fourier form.
+func (e Evaluater[T]) ExternalProductFourier(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE GLWECiphertext[T]) FourierGLWECiphertext[T] {
+	ctOut := NewFourierGLWECiphertext(e.Parameters)
+	e.ExternalProductFourierInPlace(ctFourierGGSW, ctGLWE, ctOut)
+	return ctOut
+}
+
+// ExternalProductInPlace calculates the external product between
+// ctFourierGGSW and ctGLWE, and writes it to ctFourierGLWEOut.
+func (e Evaluater[T]) ExternalProductFourierInPlace(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE GLWECiphertext[T], ctFourierGLWEOut FourierGLWECiphertext[T]) {
+	buffDecomposed := e.decomposedPolyBuffer(ctFourierGGSW.decompParams)
+
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.DecomposePolyInplace(ctGLWE.Value[i], buffDecomposed, ctFourierGGSW.decompParams)
+		for j := 0; j < ctFourierGGSW.decompParams.level; j++ {
+			if i == 0 && j == 0 {
+				e.PolyMulFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], ctFourierGLWEOut)
+			} else {
+				e.PolyMulAddFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], buffDecomposed[j], ctFourierGLWEOut)
+			}
+		}
+	}
+}
+
 // ExternalProductFourierHoisted calculates the external product between
 // ctFourierGGSW and decomposed ctGLWE, and returns it.
-func (e Evaluater[T]) ExternalProductFourierHoisted(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE [][]poly.FourierPoly) GLWECiphertext[T] {
+func (e Evaluater[T]) ExternalProductHoisted(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE [][]poly.FourierPoly) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
-	e.ExternalProductFourierHoistedInPlace(ctFourierGGSW, ctGLWE, ctOut)
+	e.ExternalProductHoistedInPlace(ctFourierGGSW, ctGLWE, ctOut)
 	return ctOut
 }
 
 // ExternalProductFourierHoistedInPlace calculates the external product between
 // ctFourierGGSW and decomposed ctGLWE, and writes it to ctGLWEOut.
-func (e Evaluater[T]) ExternalProductFourierHoistedInPlace(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE [][]poly.FourierPoly, ctGLWEOut GLWECiphertext[T]) {
+func (e Evaluater[T]) ExternalProductHoistedInPlace(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE [][]poly.FourierPoly, ctGLWEOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		for j := 0; j < ctFourierGGSW.decompParams.level; j++ {
 			if i == 0 && j == 0 {
@@ -230,34 +171,40 @@ func (e Evaluater[T]) ExternalProductFourierHoistedInPlace(ctFourierGGSW Fourier
 	}
 }
 
-// CMux calculates the CMUX between ctGGSW, ct0 and ct1: so ctOut = ct0 + ctGGSW * (ct1 - ct0).
-// CMUX essentially acts as an if caluse; if ctGGSW = 0, ct0 is returned, and if ctGGSW = 1, ct1 is returned.
-func (e Evaluater[T]) CMux(ctGGSW GGSWCiphertext[T], ct0, ct1 GLWECiphertext[T]) GLWECiphertext[T] {
-	ctOut := NewGLWECiphertext(e.Parameters)
-	e.CMuxInPlace(ctGGSW, ct0, ct1, ctOut)
+// ExternalProductFourierHoisted calculates the external product between
+// ctFourierGGSW and decomposed ctGLWE, and returns it.
+func (e Evaluater[T]) ExternalProductFourierHoisted(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE [][]poly.FourierPoly) FourierGLWECiphertext[T] {
+	ctOut := NewFourierGLWECiphertext(e.Parameters)
+	e.ExternalProductFourierHoistedInPlace(ctFourierGGSW, ctGLWE, ctOut)
 	return ctOut
 }
 
-// CMuxInPlace calculates the CMUX between ctGGSW, ct0 and ct1: so ctOut = ct0 + ctGGSW * (ct1 - ct0).
-// CMUX essentially acts as an if caluse; if ctGGSW = 0, ct0 is returned, and if ctGGSW = 1, ct1 is returned.
-func (e Evaluater[T]) CMuxInPlace(ctGGSW GGSWCiphertext[T], ct0, ct1, ctOut GLWECiphertext[T]) {
-	ctOut.CopyFrom(ct0)
-	e.SubGLWEInPlace(ct1, ct0, e.buffer.ctSubForCMux)
-	e.ExternalProductAddInPlace(ctGGSW, e.buffer.ctSubForCMux, ctOut)
+// ExternalProductFourierHoistedInPlace calculates the external product between
+// ctFourierGGSW and decomposed ctGLWE, and writes it to ctGLWEOut.
+func (e Evaluater[T]) ExternalProductFourierHoistedInPlace(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE [][]poly.FourierPoly, ctGLWEOut FourierGLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		for j := 0; j < ctFourierGGSW.decompParams.level; j++ {
+			if i == 0 && j == 0 {
+				e.FourierPolyMulFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], ctGLWE[i][j], ctGLWEOut)
+			} else {
+				e.FourierPolyMulAddFourierGLWEInPlace(ctFourierGGSW.Value[i].Value[j], ctGLWE[i][j], ctGLWEOut)
+			}
+		}
+	}
 }
 
-// CMuxFourier calculates the CMUX between ctFourierGGSW, ct0 and ct1: so ctOut = ct0 + ctGGSW * (ct1 - ct0).
+// CMux calculates the CMUX between ctFourierGGSW, ct0 and ct1: so ctOut = ct0 + ctGGSW * (ct1 - ct0).
 // CMUX essentially acts as an if clause; if ctGGSW = 0, ct0 is returned, and if ctGGSW = 1, ct1 is returned.
-func (e Evaluater[T]) CMuxFourier(ctFourierGGSW FourierGGSWCiphertext[T], ct0, ct1 GLWECiphertext[T]) GLWECiphertext[T] {
+func (e Evaluater[T]) CMux(ctFourierGGSW FourierGGSWCiphertext[T], ct0, ct1 GLWECiphertext[T]) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
-	e.CMuxFourierInPlace(ctFourierGGSW, ct0, ct1, ctOut)
+	e.CMuxInPlace(ctFourierGGSW, ct0, ct1, ctOut)
 	return ctOut
 }
 
 // CMuxFourierInPlace calculates the CMUX between ctFourierGGSW, ct0 and ct1: so ctOut = ct0 + ctGGSW * (ct1 - ct0).
 // CMUX essentially acts as an if clause; if ctGGSW = 0, ct0 is returned, and if ctGGSW = 1, ct1 is returned.
-func (e Evaluater[T]) CMuxFourierInPlace(ctFourierGGSW FourierGGSWCiphertext[T], ct0, ct1, ctOut GLWECiphertext[T]) {
+func (e Evaluater[T]) CMuxInPlace(ctFourierGGSW FourierGGSWCiphertext[T], ct0, ct1, ctOut GLWECiphertext[T]) {
 	ctOut.CopyFrom(ct0)
 	e.SubGLWEInPlace(ct1, ct0, e.buffer.ctSubForCMux)
-	e.ExternalProductFourierAddInPlace(ctFourierGGSW, e.buffer.ctSubForCMux, ctOut)
+	e.ExternalProductAddInPlace(ctFourierGGSW, e.buffer.ctSubForCMux, ctOut)
 }

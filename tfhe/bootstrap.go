@@ -109,9 +109,9 @@ func (e Evaluater[T]) BootstrapLUTInPlace(ct LWECiphertext[T], lut LookUpTable[T
 	e.KeySwitchForBootstrapInPlace(e.buffer.sampleExtractedCt, ctOut)
 }
 
-// ModSwitch calculates round(2N * x / Q).
+// ModSwitch calculates round(2N * x / Q) mod 2N.
 func (e Evaluater[T]) ModSwitch(x T) int {
-	return int(num.RoundRatioBits(x, num.SizeT[T]()-(num.Log2(e.Parameters.polyDegree)+1)))
+	return int(num.RoundRatioBits(x, num.SizeT[T]()-(num.Log2(e.Parameters.polyDegree)+1))) % (2 * e.Parameters.polyDegree)
 }
 
 // BlindRotate calculates the blind rotation of LWE ciphertext with respect to LUT.
@@ -137,7 +137,7 @@ func (e Evaluater[T]) BlindRotateInPlace(ct LWECiphertext[T], lut LookUpTable[T]
 		}
 
 		for j := i * e.Parameters.blockSize; j < (i+1)*e.Parameters.blockSize; j++ {
-			e.ExternalProductFourierHoistedInPlace(e.EvaluationKey.BootstrapKey.Value[j], e.buffer.decompsedAcc, e.buffer.localAcc)
+			e.ExternalProductHoistedInPlace(e.EvaluationKey.BootstrapKey.Value[j], e.buffer.decompsedAcc, e.buffer.localAcc)
 			e.SubGLWEInPlace(ctOut, e.buffer.localAcc, ctOut)
 			e.MonomialMulGLWEInPlace(e.buffer.localAcc, e.ModSwitch(ct.Value[j+1]), e.buffer.localAcc)
 			e.AddGLWEInPlace(ctOut, e.buffer.localAcc, ctOut)

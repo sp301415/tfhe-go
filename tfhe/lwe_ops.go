@@ -49,9 +49,7 @@ func (e Evaluater[T]) ScalarAddLWE(ct0 LWECiphertext[T], c T) LWECiphertext[T] {
 
 // ScalarMulAddInPlace adds c to ct0 and writes it to ctOut.
 func (e Evaluater[T]) ScalarAddLWEInPlace(ct0 LWECiphertext[T], c T, ctOut LWECiphertext[T]) {
-	for i := 0; i < e.Parameters.lweDimension+1; i++ {
-		ctOut.Value[i] = ctOut.Value[i] + c*e.Parameters.delta
-	}
+	ctOut.Value[0] += c * e.Parameters.delta
 }
 
 // ScalarMulLWE multplies c to ct0 and returns the result.

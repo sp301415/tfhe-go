@@ -5,9 +5,9 @@ import (
 )
 
 const (
-	// KaratsubaRecurseThreshold is the minimum degree of plaintext to perform karatsuba multiplication.
+	// karatsubaRecurseThreshold is the minimum degree of plaintext to perform karatsuba multiplication.
 	// If polynomial's degree equals this value, then the recursive algorithm switches to textbook multiplication.
-	KaratsubaRecurseThreshold = 64
+	karatsubaRecurseThreshold = 64
 )
 
 // karatsubaBuffer contains vuffer values for each karatsuba multiplication.
@@ -28,7 +28,7 @@ type karatsubaBuffer[T num.Integer] struct {
 // Each value of the buffer can be accessed with karatsubaTreeIndex.
 func newKaratsubaBuffer[T num.Integer](N int) []karatsubaBuffer[T] {
 	// The full depth of the tree = log2(N / KaratsubaThreshold)
-	fullDepth := num.Log2(N / KaratsubaRecurseThreshold)
+	fullDepth := num.Log2(N / karatsubaRecurseThreshold)
 	// We only need fullDepth buffers.
 	buff := make([]karatsubaBuffer[T], fullDepth)
 	for i := 0; i < fullDepth; i++ {
@@ -109,7 +109,7 @@ func (e Evaluater[T]) mulInPlaceKaratsuba(p, q, pOut Poly[T]) {
 func (e Evaluater[T]) karatsuba(p, q, pOut []T, depth int) {
 	N := len(p)
 
-	if N <= KaratsubaRecurseThreshold {
+	if N <= karatsubaRecurseThreshold {
 		// Multiply naively
 		for i := range pOut {
 			pOut[i] = 0

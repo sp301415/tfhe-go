@@ -74,6 +74,19 @@ func (e Evaluater[T]) ScalarMulSubGLWEInPlace(ct0 GLWECiphertext[T], c T, ctOut 
 	}
 }
 
+// PolyAddGLWE adds p to ct0 and returns the result.
+func (e Evaluater[T]) PolyAddGLWE(ct0 GLWECiphertext[T], p poly.Poly[T]) GLWECiphertext[T] {
+	ctOut := NewGLWECiphertext(e.Parameters)
+	e.PolyAddGLWEInPlace(ct0, p, ctOut)
+	return ctOut
+}
+
+// PolyAddGLWEInPlace adds p to ct0 and writes to ctOut.
+func (e Evaluater[T]) PolyAddGLWEInPlace(ct0 GLWECiphertext[T], p poly.Poly[T], ctOut GLWECiphertext[T]) {
+	e.PolyEvaluater.AddInPlace(ct0.Value[0], p, ctOut.Value[0])
+
+}
+
 // PolyMulGLWE multiplies p to ct0 and returns the result.
 func (e Evaluater[T]) PolyMulGLWE(ct0 GLWECiphertext[T], p poly.Poly[T]) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)

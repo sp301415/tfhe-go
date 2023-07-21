@@ -85,7 +85,7 @@ func TestEvaluater(t *testing.T) {
 		mul := 2
 		ctMul := testEncrypter.EncryptFourierGGSW([]int{mul}, testParams.KeySwitchParameters())
 
-		ctOut := testEvaluater.ExternalProductFourier(ctMul, ct)
+		ctOut := testEvaluater.ExternalProduct(ctMul, ct)
 
 		for i, m := range messages {
 			assert.Equal(t, mul*m, testEncrypter.DecryptGLWE(ctOut)[i])
@@ -100,7 +100,7 @@ func TestEvaluater(t *testing.T) {
 			ct1 := testEncrypter.EncryptGLWE(messagesPool[1])
 			ctGGSW := testEncrypter.EncryptFourierGGSW([]int{i}, testParams.BootstrapParameters())
 
-			ctOut := testEvaluater.CMuxFourier(ctGGSW, ct0, ct1)
+			ctOut := testEvaluater.CMux(ctGGSW, ct0, ct1)
 
 			assert.Equal(t, messagesPool[i], testEncrypter.DecryptGLWE(ctOut)[:len(messages)])
 		}

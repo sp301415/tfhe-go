@@ -39,7 +39,7 @@ ctFlag := enc.EncryptFourierGGSW([]int{1}, decompParams)
 // so we can just supply empty key!
 eval := tfhe.NewEvaluater(params, tfhe.EvaluationKey[uint64]{})
 
-ctOut := eval.CMuxFourier(ctFlag, ct0, ct1)
+ctOut := eval.CMux(ctFlag, ct0, ct1)
 fmt.Println(enc.DecryptGLWE(ctOut)[0]) // 5
 ```
 
