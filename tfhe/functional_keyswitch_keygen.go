@@ -17,7 +17,7 @@ import (
 //
 // This can take a long time.
 // Use GenPrivateFunctionalLWEKeySwitchKeyParallel for better key generation performance.
-func (e Encrypter[T]) GenPrivateFunctionalLWEKeySwitchKey(inputCount int, f func([]T) T, decompParams DecompositionParameters[T]) PrivateFunctionalLWEKeySwitchKey[T] {
+func (e Encryptor[T]) GenPrivateFunctionalLWEKeySwitchKey(inputCount int, f func([]T) T, decompParams DecompositionParameters[T]) PrivateFunctionalLWEKeySwitchKey[T] {
 	pfksk := NewPrivateFunctionalLWEKeySwitchKey(e.Parameters, inputCount, decompParams)
 
 	in := make([]T, inputCount)
@@ -45,15 +45,15 @@ func (e Encrypter[T]) GenPrivateFunctionalLWEKeySwitchKey(inputCount int, f func
 // The function f has the form f(in []T) T,
 // where length of in is always inputCount.
 // f should also be thread-safe.
-func (e Encrypter[T]) GenPrivateFunctionalLWEKeySwitchKeyParallel(inputCount int, f func([]T) T, decompParams DecompositionParameters[T]) PrivateFunctionalLWEKeySwitchKey[T] {
+func (e Encryptor[T]) GenPrivateFunctionalLWEKeySwitchKeyParallel(inputCount int, f func([]T) T, decompParams DecompositionParameters[T]) PrivateFunctionalLWEKeySwitchKey[T] {
 	pfksk := NewPrivateFunctionalLWEKeySwitchKey(e.Parameters, inputCount, decompParams)
 
 	workSize := inputCount * (e.Parameters.lweDimension + 1)
 	chunkCount := num.Min(runtime.NumCPU(), num.Sqrt(workSize))
 
-	encrypterPool := make([]Encrypter[T], chunkCount)
-	for i := range encrypterPool {
-		encrypterPool[i] = e.ShallowCopy()
+	encryptorPool := make([]Encryptor[T], chunkCount)
+	for i := range encryptorPool {
+		encryptorPool[i] = e.ShallowCopy()
 	}
 
 	jobs := make(chan [2]int)
@@ -71,7 +71,7 @@ func (e Encrypter[T]) GenPrivateFunctionalLWEKeySwitchKeyParallel(inputCount int
 	for i := 0; i < chunkCount; i++ {
 		go func(chunkIdx int) {
 			defer wg.Done()
-			e := encrypterPool[chunkIdx]
+			e := encryptorPool[chunkIdx]
 
 			in := make([]T, inputCount)
 			for jobs := range jobs {
@@ -104,7 +104,7 @@ func (e Encrypter[T]) GenPrivateFunctionalLWEKeySwitchKeyParallel(inputCount int
 //
 // This can take a long time.
 // Use GenPrivateFunctionalGLWEKeySwitchKeyParallel for better key generation performance.
-func (e Encrypter[T]) GenPrivateFunctionalGLWEKeySwitchKey(inputCount int, f func([]T, poly.Poly[T]), decompParams DecompositionParameters[T]) PrivateFunctionalGLWEKeySwitchKey[T] {
+func (e Encryptor[T]) GenPrivateFunctionalGLWEKeySwitchKey(inputCount int, f func([]T, poly.Poly[T]), decompParams DecompositionParameters[T]) PrivateFunctionalGLWEKeySwitchKey[T] {
 	pfksk := NewPrivateFunctionalGLWEKeySwitchKey(e.Parameters, inputCount, decompParams)
 
 	in := make([]T, inputCount)
@@ -133,15 +133,15 @@ func (e Encrypter[T]) GenPrivateFunctionalGLWEKeySwitchKey(inputCount int, f fun
 // where length of in is always inputCount.
 // The initial value of out is undefined.
 // f should also be thread-safe.
-func (e Encrypter[T]) GenPrivateFunctionalGLWEKeySwitchKeyParallel(inputCount int, f func([]T, poly.Poly[T]), decompParams DecompositionParameters[T]) PrivateFunctionalGLWEKeySwitchKey[T] {
+func (e Encryptor[T]) GenPrivateFunctionalGLWEKeySwitchKeyParallel(inputCount int, f func([]T, poly.Poly[T]), decompParams DecompositionParameters[T]) PrivateFunctionalGLWEKeySwitchKey[T] {
 	pfksk := NewPrivateFunctionalGLWEKeySwitchKey(e.Parameters, inputCount, decompParams)
 
 	workSize := inputCount * (e.Parameters.lweDimension + 1)
 	chunkCount := num.Min(runtime.NumCPU(), num.Sqrt(workSize))
 
-	encrypterPool := make([]Encrypter[T], chunkCount)
-	for i := range encrypterPool {
-		encrypterPool[i] = e.ShallowCopy()
+	encryptorPool := make([]Encryptor[T], chunkCount)
+	for i := range encryptorPool {
+		encryptorPool[i] = e.ShallowCopy()
 	}
 
 	jobs := make(chan [2]int)
@@ -159,7 +159,7 @@ func (e Encrypter[T]) GenPrivateFunctionalGLWEKeySwitchKeyParallel(inputCount in
 	for i := 0; i < chunkCount; i++ {
 		go func(chunkIdx int) {
 			defer wg.Done()
-			e := encrypterPool[chunkIdx]
+			e := encryptorPool[chunkIdx]
 
 			in := make([]T, inputCount)
 			for jobs := range jobs {
@@ -188,7 +188,7 @@ func (e Encrypter[T]) GenPrivateFunctionalGLWEKeySwitchKeyParallel(inputCount in
 //
 // This can take a long time.
 // Use GenPublicFunctionalLWEKeySwitchKeyParallel for better key generation performance.
-func (e Encrypter[T]) GenPublicFunctionalLWEKeySwitchKey(decompParams DecompositionParameters[T]) PublicFunctionalLWEKeySwitchKey[T] {
+func (e Encryptor[T]) GenPublicFunctionalLWEKeySwitchKey(decompParams DecompositionParameters[T]) PublicFunctionalLWEKeySwitchKey[T] {
 	pfksk := NewPublicFunctionalLWEKeySwitchKey(e.Parameters, decompParams)
 
 	for i := 0; i < e.Parameters.lweDimension; i++ {
@@ -203,15 +203,15 @@ func (e Encrypter[T]) GenPublicFunctionalLWEKeySwitchKey(decompParams Decomposit
 
 // GenPublicFunctionalLWEKeySwitchKeyParallel samples a new public functional keyswitch key
 // for LWE public keyswitching in parallel.
-func (e Encrypter[T]) GenPublicFunctionalLWEKeySwitchKeyParallel(decompParams DecompositionParameters[T]) PublicFunctionalLWEKeySwitchKey[T] {
+func (e Encryptor[T]) GenPublicFunctionalLWEKeySwitchKeyParallel(decompParams DecompositionParameters[T]) PublicFunctionalLWEKeySwitchKey[T] {
 	pfksk := NewPublicFunctionalLWEKeySwitchKey(e.Parameters, decompParams)
 
 	workSize := e.Parameters.lweDimension
 	chunkCount := num.Min(runtime.NumCPU(), num.Sqrt(workSize))
 
-	encrypterPool := make([]Encrypter[T], chunkCount)
-	for i := range encrypterPool {
-		encrypterPool[i] = e.ShallowCopy()
+	encryptorPool := make([]Encryptor[T], chunkCount)
+	for i := range encryptorPool {
+		encryptorPool[i] = e.ShallowCopy()
 	}
 
 	jobs := make(chan int)
@@ -228,7 +228,7 @@ func (e Encrypter[T]) GenPublicFunctionalLWEKeySwitchKeyParallel(decompParams De
 	for i := 0; i < chunkCount; i++ {
 		go func(chunkIdx int) {
 			defer wg.Done()
-			e := encrypterPool[chunkIdx]
+			e := encryptorPool[chunkIdx]
 
 			for i := range jobs {
 				for j := 0; j < decompParams.level; j++ {
@@ -248,7 +248,7 @@ func (e Encrypter[T]) GenPublicFunctionalLWEKeySwitchKeyParallel(decompParams De
 //
 // This can take a long time.
 // Use GenPublicFunctionalGLWEKeySwitchKeyParallel for better key generation performance.
-func (e Encrypter[T]) GenPublicFunctionalGLWEKeySwitchKey(decompParams DecompositionParameters[T]) PublicFunctionalGLWEKeySwitchKey[T] {
+func (e Encryptor[T]) GenPublicFunctionalGLWEKeySwitchKey(decompParams DecompositionParameters[T]) PublicFunctionalGLWEKeySwitchKey[T] {
 	pfksk := NewPublicFunctionalGLWEKeySwitchKey(e.Parameters, decompParams)
 
 	e.buffer.glweCt.Value[0].Clear()
@@ -266,15 +266,15 @@ func (e Encrypter[T]) GenPublicFunctionalGLWEKeySwitchKey(decompParams Decomposi
 
 // GenPublicFunctionalGLWEKeySwitchKeyParallel samples a new public functional keyswitch key
 // for GLWE public keyswitching in parallel.
-func (e Encrypter[T]) GenPublicFunctionalGLWEKeySwitchKeyParallel(decompParams DecompositionParameters[T]) PublicFunctionalGLWEKeySwitchKey[T] {
+func (e Encryptor[T]) GenPublicFunctionalGLWEKeySwitchKeyParallel(decompParams DecompositionParameters[T]) PublicFunctionalGLWEKeySwitchKey[T] {
 	pfksk := NewPublicFunctionalGLWEKeySwitchKey(e.Parameters, decompParams)
 
 	workSize := e.Parameters.lweDimension
 	chunkCount := num.Min(runtime.NumCPU(), num.Sqrt(workSize))
 
-	encrypterPool := make([]Encrypter[T], chunkCount)
-	for i := range encrypterPool {
-		encrypterPool[i] = e.ShallowCopy()
+	encryptorPool := make([]Encryptor[T], chunkCount)
+	for i := range encryptorPool {
+		encryptorPool[i] = e.ShallowCopy()
 	}
 
 	jobs := make(chan int)
@@ -291,7 +291,7 @@ func (e Encrypter[T]) GenPublicFunctionalGLWEKeySwitchKeyParallel(decompParams D
 	for i := 0; i < chunkCount; i++ {
 		go func(chunkIdx int) {
 			defer wg.Done()
-			e := encrypterPool[chunkIdx]
+			e := encryptorPool[chunkIdx]
 
 			for i := range jobs {
 				for j := 0; j < decompParams.level; j++ {
@@ -312,7 +312,7 @@ func (e Encrypter[T]) GenPublicFunctionalGLWEKeySwitchKeyParallel(decompParams D
 //
 // This can take a long time.
 // Use GenPublicFunctionalGLWEKeySwitchKeyParallel for better key generation performance.
-func (e Encrypter[T]) GenCircuitBootstrapKey(decompParams DecompositionParameters[T]) CircuitBootstrapKey[T] {
+func (e Encryptor[T]) GenCircuitBootstrapKey(decompParams DecompositionParameters[T]) CircuitBootstrapKey[T] {
 	cbsk := CircuitBootstrapKey[T]{decompParams: decompParams}
 	cbsk.Value = make([]PrivateFunctionalGLWEKeySwitchKey[T], e.Parameters.glweDimension+1)
 
@@ -334,7 +334,7 @@ func (e Encrypter[T]) GenCircuitBootstrapKey(decompParams DecompositionParameter
 }
 
 // GenCircuitBootstrapKeyParallel samples a new circuit bootstrap key in parallel.
-func (e Encrypter[T]) GenCircuitBootstrapKeyParallel(decompParams DecompositionParameters[T]) CircuitBootstrapKey[T] {
+func (e Encryptor[T]) GenCircuitBootstrapKeyParallel(decompParams DecompositionParameters[T]) CircuitBootstrapKey[T] {
 	cbsk := CircuitBootstrapKey[T]{decompParams: decompParams}
 	cbsk.Value = make([]PrivateFunctionalGLWEKeySwitchKey[T], e.Parameters.glweDimension+1)
 

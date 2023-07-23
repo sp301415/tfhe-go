@@ -33,7 +33,7 @@ func (lut *LookUpTable[T]) CopyFrom(lutIn LookUpTable[T]) {
 
 // GenLookUpTable generates a lookup table based on function f and returns it.
 // Inputs and Outputs of f is cut by MessageModulus.
-func (e Evaluater[T]) GenLookUpTable(f func(int) int) LookUpTable[T] {
+func (e Evaluator[T]) GenLookUpTable(f func(int) int) LookUpTable[T] {
 	lutOut := NewLookUpTable(e.Parameters)
 	e.GenLookUpTableInPlace(f, lutOut)
 	return lutOut
@@ -41,7 +41,7 @@ func (e Evaluater[T]) GenLookUpTable(f func(int) int) LookUpTable[T] {
 
 // GenLookUpTableInPlace generates a lookup table based on function f and writes it to lutOut.
 // Inputs and Outputs of f is cut by MessageModulus.
-func (e Evaluater[T]) GenLookUpTableInPlace(f func(int) int, lutOut LookUpTable[T]) {
+func (e Evaluator[T]) GenLookUpTableInPlace(f func(int) int, lutOut LookUpTable[T]) {
 	boxSize := e.Parameters.polyDegree / int(e.Parameters.messageModulus)
 	for x := 0; x < int(e.Parameters.messageModulus); x++ {
 		fx := (T(f(x)) % e.Parameters.messageModulus) << e.Parameters.deltaLog
@@ -58,7 +58,7 @@ func (e Evaluater[T]) GenLookUpTableInPlace(f func(int) int, lutOut LookUpTable[
 
 // GenLookUpTableFullInPlace generates a lookup table based on function f and writes it to lutOut.
 // Input of f is cut by MessageModulus, but output of f is encoded as-is.
-func (e Evaluater[T]) GenLookUpTableFullInPlace(f func(int) T, lutOut LookUpTable[T]) {
+func (e Evaluator[T]) GenLookUpTableFullInPlace(f func(int) T, lutOut LookUpTable[T]) {
 	boxSize := e.Parameters.polyDegree / int(e.Parameters.messageModulus)
 	for x := 0; x < int(e.Parameters.messageModulus); x++ {
 		fx := f(x)
@@ -74,55 +74,55 @@ func (e Evaluater[T]) GenLookUpTableFullInPlace(f func(int) T, lutOut LookUpTabl
 }
 
 // Bootstrap returns a bootstrapped LWE ciphertext.
-func (e Evaluater[T]) Bootstrap(ct LWECiphertext[T]) LWECiphertext[T] {
+func (e Evaluator[T]) Bootstrap(ct LWECiphertext[T]) LWECiphertext[T] {
 	return e.BootstrapFunc(ct, func(x int) int { return x })
 }
 
 // BootstrapInPlace bootstraps LWE ciphertext and writes it to ctOut.
-func (e Evaluater[T]) BootstrapInPlace(ct, ctOut LWECiphertext[T]) {
+func (e Evaluator[T]) BootstrapInPlace(ct, ctOut LWECiphertext[T]) {
 	e.BootstrapFuncInPlace(ct, func(x int) int { return x }, ctOut)
 }
 
 // BootstrapFunc returns a bootstrapped LWE ciphertext with resepect to given function.
-func (e Evaluater[T]) BootstrapFunc(ct LWECiphertext[T], f func(int) int) LWECiphertext[T] {
+func (e Evaluator[T]) BootstrapFunc(ct LWECiphertext[T], f func(int) int) LWECiphertext[T] {
 	e.GenLookUpTableInPlace(f, e.buffer.lut)
 	return e.BootstrapLUT(ct, e.buffer.lut)
 }
 
 // BootstrapFuncInPlace bootstraps LWE ciphertext with resepect to given function and writes it to ctOut.
-func (e Evaluater[T]) BootstrapFuncInPlace(ct LWECiphertext[T], f func(int) int, ctOut LWECiphertext[T]) {
+func (e Evaluator[T]) BootstrapFuncInPlace(ct LWECiphertext[T], f func(int) int, ctOut LWECiphertext[T]) {
 	e.GenLookUpTableInPlace(f, e.buffer.lut)
 	e.BootstrapLUTInPlace(ct, e.buffer.lut, ctOut)
 }
 
 // BootstrapLUT returns a bootstrapped LWE ciphertext with respect to given LUT.
-func (e Evaluater[T]) BootstrapLUT(ct LWECiphertext[T], lut LookUpTable[T]) LWECiphertext[T] {
+func (e Evaluator[T]) BootstrapLUT(ct LWECiphertext[T], lut LookUpTable[T]) LWECiphertext[T] {
 	ctOut := NewLWECiphertext(e.Parameters)
 	e.BootstrapLUTInPlace(ct, lut, ctOut)
 	return ctOut
 }
 
 // BootstrapLUTInPlace bootstraps LWE ciphertext with respect to given LUT and writes it to ctOut.
-func (e Evaluater[T]) BootstrapLUTInPlace(ct LWECiphertext[T], lut LookUpTable[T], ctOut LWECiphertext[T]) {
+func (e Evaluator[T]) BootstrapLUTInPlace(ct LWECiphertext[T], lut LookUpTable[T], ctOut LWECiphertext[T]) {
 	e.BlindRotateInPlace(ct, lut, e.buffer.blindRotatedCt)
 	e.SampleExtractInPlace(e.buffer.blindRotatedCt, 0, e.buffer.sampleExtractedCt)
 	e.KeySwitchForBootstrapInPlace(e.buffer.sampleExtractedCt, ctOut)
 }
 
 // ModSwitch calculates round(2N * x / Q) mod 2N.
-func (e Evaluater[T]) ModSwitch(x T) int {
+func (e Evaluator[T]) ModSwitch(x T) int {
 	return int(num.RoundRatioBits(x, num.SizeT[T]()-(num.Log2(e.Parameters.polyDegree)+1))) % (2 * e.Parameters.polyDegree)
 }
 
 // BlindRotate calculates the blind rotation of LWE ciphertext with respect to LUT.
-func (e Evaluater[T]) BlindRotate(ct LWECiphertext[T], lut LookUpTable[T]) GLWECiphertext[T] {
+func (e Evaluator[T]) BlindRotate(ct LWECiphertext[T], lut LookUpTable[T]) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
 	e.BlindRotateInPlace(ct, lut, ctOut)
 	return ctOut
 }
 
 // BlindRotateInPlace calculates the blind rotation of LWE ciphertext with respect to LUT.
-func (e Evaluater[T]) BlindRotateInPlace(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
+func (e Evaluator[T]) BlindRotateInPlace(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
 	buffDecomposed := e.decomposedPolyBuffer(e.Parameters.bootstrapParameters)
 
 	e.MonomialDivGLWEInPlace(GLWECiphertext[T](lut), e.ModSwitch(ct.Value[0]), ctOut)
@@ -147,7 +147,7 @@ func (e Evaluater[T]) BlindRotateInPlace(ct LWECiphertext[T], lut LookUpTable[T]
 
 // SampleExtract extracts LWE ciphertext of index i from GLWE ciphertext and returns it.
 // The output ciphertext has length GLWEDimension * PolyDegree + 1.
-func (e Evaluater[T]) SampleExtract(ct GLWECiphertext[T], index int) LWECiphertext[T] {
+func (e Evaluator[T]) SampleExtract(ct GLWECiphertext[T], index int) LWECiphertext[T] {
 	ctOut := LWECiphertext[T]{Value: make([]T, e.Parameters.LargeLWEDimension())}
 	e.SampleExtractInPlace(ct, index, ctOut)
 	return ctOut
@@ -155,7 +155,7 @@ func (e Evaluater[T]) SampleExtract(ct GLWECiphertext[T], index int) LWECipherte
 
 // SampleExtractInPlace extracts LWE ciphertext of index from GLWE ciphertext.
 // The output ciphertext should have length GLWEDimension * PolyDegree + 1.
-func (e Evaluater[T]) SampleExtractInPlace(ct GLWECiphertext[T], index int, ctOut LWECiphertext[T]) {
+func (e Evaluator[T]) SampleExtractInPlace(ct GLWECiphertext[T], index int, ctOut LWECiphertext[T]) {
 	ctOut.Value[0] = ct.Value[0].Coeffs[index]
 
 	ctMask, ctOutMask := ct.Value[1:], ctOut.Value[1:]
@@ -171,14 +171,14 @@ func (e Evaluater[T]) SampleExtractInPlace(ct GLWECiphertext[T], index int, ctOu
 }
 
 // KeySwitch switches key of ct, and returns a new ciphertext.
-func (e Evaluater[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchKey[T]) LWECiphertext[T] {
+func (e Evaluator[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchKey[T]) LWECiphertext[T] {
 	ctOut := LWECiphertext[T]{Value: make([]T, ksk.OutputLWEDimension()+1)}
 	e.KeySwitchInPlace(ct, ksk, ctOut)
 	return ctOut
 }
 
 // KeySwitchInPlace switches key of ct, and saves it to ctOut.
-func (e Evaluater[T]) KeySwitchInPlace(ct LWECiphertext[T], ksk KeySwitchKey[T], ctOut LWECiphertext[T]) {
+func (e Evaluator[T]) KeySwitchInPlace(ct LWECiphertext[T], ksk KeySwitchKey[T], ctOut LWECiphertext[T]) {
 	buffDecomposed := e.decomposedVecBuffer(ksk.decompParams)
 
 	for i := 0; i < ksk.InputLWEDimension(); i++ {
@@ -197,7 +197,7 @@ func (e Evaluater[T]) KeySwitchInPlace(ct LWECiphertext[T], ksk KeySwitchKey[T],
 
 // KeySwitchForBootstrap performs the keyswitching using evaulater's bootstrap key.
 // Input ciphertext should be length LWELargeDimension + 1, and output ciphertext will be length LWEDimension + 1.
-func (e Evaluater[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[T] {
+func (e Evaluator[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[T] {
 	ctOut := NewLWECiphertext(e.Parameters)
 	e.KeySwitchForBootstrapInPlace(ct, ctOut)
 	return ctOut
@@ -205,7 +205,7 @@ func (e Evaluater[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[T
 
 // KeySwitchForBootstrapInPlace performs the keyswitching using evaulater's bootstrap key.
 // Input ciphertext should be length LWELargeDimension + 1, and output ciphertext should be length LWEDimension + 1.
-func (e Evaluater[T]) KeySwitchForBootstrapInPlace(ct, ctOut LWECiphertext[T]) {
+func (e Evaluator[T]) KeySwitchForBootstrapInPlace(ct, ctOut LWECiphertext[T]) {
 	e.buffer.leftoverCt.Value[0] = 0
 	vec.CopyInPlace(ct.Value[e.Parameters.lweDimension+1:], e.buffer.leftoverCt.Value[1:])
 

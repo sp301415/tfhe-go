@@ -13,7 +13,7 @@ var (
 	pOut  = poly.New[uint64](N)
 	fpOut = poly.NewFourierPoly(N)
 
-	eval = poly.NewEvaluater[uint64](N)
+	eval = poly.NewEvaluator[uint64](N)
 	fft  = poly.NewFourierTransformer[uint64](N)
 
 	sampler = csprng.NewUniformSamplerWithSeed[uint64](nil)

@@ -64,7 +64,7 @@ func (sk *SecretKey[T]) CopyFrom(skIn SecretKey[T]) {
 }
 
 // GenSecretKey samples a new LWE key.
-func (e Encrypter[T]) GenSecretKey() SecretKey[T] {
+func (e Encryptor[T]) GenSecretKey() SecretKey[T] {
 	sk := NewSecretKey(e.Parameters)
 
 	// Sample LWE key from Block Binary Distribution

@@ -4,7 +4,7 @@ import (
 	"github.com/sp301415/tfhe/math/num"
 )
 
-// Evaluater calculates polynomial algorithms.
+// Evaluator calculates polynomial algorithms.
 // Operations usually take two forms: for example,
 //   - Add(p0, p1) is equivalent to var p = p0 + p1
 //   - AddInPlace(p0, p1, pOut) is equivalent to pOut = p0 + p1
@@ -14,14 +14,14 @@ import (
 //     However, it is always correct when p0 == pOut or p1 == pOut.
 //   - For performance reasons, functions in this package usually don't implement bound checks.
 //     If length mismatch happens, usually the result is wrong.
-type Evaluater[T num.Integer] struct {
-	// degree is the degree of polynomial that this evaluater can handle.
+type Evaluator[T num.Integer] struct {
+	// degree is the degree of polynomial that this evaluator can handle.
 	degree int
 
 	buffer evaluationBuffer[T]
 }
 
-// evaluationBuffer contains buffer values for Evaluater.
+// evaluationBuffer contains buffer values for Evaluator.
 type evaluationBuffer[T num.Integer] struct {
 	// karatsubaBuffer holds the intermediate buffers used in karatsuba multiplication.
 	// Each buffer can be indexed as ((3^depth - 1)/2) + index. (I know, right?)
@@ -33,14 +33,14 @@ type evaluationBuffer[T num.Integer] struct {
 	pOut Poly[T]
 }
 
-// NewEvaluater creates a new Evaluater with degree N.
+// NewEvaluator creates a new Evaluator with degree N.
 // N should be power of two.
-func NewEvaluater[T num.Integer](N int) Evaluater[T] {
+func NewEvaluator[T num.Integer](N int) Evaluator[T] {
 	if !num.IsPowerOfTwo(N) {
 		panic("degree should be power of two")
 	}
 
-	return Evaluater[T]{
+	return Evaluator[T]{
 		degree: N,
 
 		buffer: newEvaluationBuffer[T](N),
@@ -56,17 +56,17 @@ func newEvaluationBuffer[T num.Integer](N int) evaluationBuffer[T] {
 	}
 }
 
-// ShallowCopy returns a shallow copy of this Evaluater.
-// Returned Evaluater is safe for concurrent use.
-func (e Evaluater[T]) ShallowCopy() Evaluater[T] {
-	return Evaluater[T]{
+// ShallowCopy returns a shallow copy of this Evaluator.
+// Returned Evaluator is safe for concurrent use.
+func (e Evaluator[T]) ShallowCopy() Evaluator[T] {
+	return Evaluator[T]{
 		degree: e.degree,
 
 		buffer: newEvaluationBuffer[T](e.degree),
 	}
 }
 
-// Degree returns the degree of polynomial that the evaluater can handle.
-func (e Evaluater[T]) Degree() int {
+// Degree returns the degree of polynomial that the evaluator can handle.
+func (e Evaluator[T]) Degree() int {
 	return e.degree
 }

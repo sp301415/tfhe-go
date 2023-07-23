@@ -11,7 +11,7 @@ import (
 // FourierTransformer calculates algorithms related to FFT,
 // most notably the polynomial multiplication.
 //
-// While FFT is much faster than Evaluater's karatsuba multiplication,
+// While FFT is much faster than Evaluator's karatsuba multiplication,
 // in TFHE it is used sparsely because of float64 precision.
 type FourierTransformer[T num.Integer] struct {
 	// degree is the degree of polynomial that this transformer can handle.

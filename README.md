@@ -14,7 +14,7 @@ This library was not audited or reviewed by security experts, so I do not recomm
 ```go
 params := tfhe.ParamsUint4.Compile() // Parameters should be compiled before use.
 
-enc := tfhe.NewEncrypter(params) // Set up Encrypter.
+enc := tfhe.NewEncryptor(params) // Set up Encryptor.
 
 ctLWE := enc.EncryptLWE(4)
 ctGLWE := enc.EncryptGLWE([]int{1, 2, 3, 4})
@@ -29,7 +29,7 @@ fmt.Println(enc.DecryptGLWE(ctGLWE)[:4]) // [1, 2, 3, 4]
 params := tfhe.ParamsUint4.Compile()
 decompParams := params.KeySwitchParameters()
 
-enc := tfhe.NewEncrypter(params)
+enc := tfhe.NewEncryptor(params)
 
 ct0 := enc.EncryptGLWE([]int{2})
 ct1 := enc.EncryptGLWE([]int{5})
@@ -37,7 +37,7 @@ ctFlag := enc.EncryptFourierGGSW([]int{1}, decompParams)
 
 // We don't need evaluation key for CMUX,
 // so we can just supply empty key!
-eval := tfhe.NewEvaluater(params, tfhe.EvaluationKey[uint64]{})
+eval := tfhe.NewEvaluator(params, tfhe.EvaluationKey[uint64]{})
 
 ctOut := eval.CMux(ctFlag, ct0, ct1)
 fmt.Println(enc.DecryptGLWE(ctOut)[0]) // 5
@@ -47,11 +47,11 @@ fmt.Println(enc.DecryptGLWE(ctOut)[0]) // 5
 ```go
 params := tfhe.ParamsUint4.Compile()
 
-enc := tfhe.NewEncrypter(params)
+enc := tfhe.NewEncryptor(params)
 
 ct := enc.EncryptLWE(3)
 
-eval := tfhe.NewEvaluater(params, enc.GenEvaluationKeyParallel())
+eval := tfhe.NewEvaluator(params, enc.GenEvaluationKeyParallel())
 
 ctOut := eval.BootstrapFunc(ct, func(x int) int { return 2*x + 1 })
 fmt.Println(enc.DecryptLWE(ctOut)) // 7 = 2*3+1
@@ -61,8 +61,8 @@ fmt.Println(enc.DecryptLWE(ctOut)) // 7 = 2*3+1
 ```go
 params := tfheb.ParamsBoolean.Compile()
 
-enc := tfheb.NewEncrypter(params)
-eval := tfheb.NewEvaluater(params, enc.GenEvaluationKeyParallel())
+enc := tfheb.NewEncryptor(params)
+eval := tfheb.NewEvaluator(params, enc.GenEvaluationKeyParallel())
 
 // Change these values yourself!
 ct0 := enc.EncryptLWEBits(3)

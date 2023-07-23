@@ -10,11 +10,11 @@ import (
 
 var (
 	testParams = tfheb.ParamsBoolean.Compile()
-	enc        = tfheb.NewEncrypter(testParams)
-	eval       = tfheb.NewEvaluater(testParams, enc.GenEvaluationKeyParallel())
+	enc        = tfheb.NewEncryptor(testParams)
+	eval       = tfheb.NewEvaluator(testParams, enc.GenEvaluationKeyParallel())
 )
 
-func TestEvaluater(t *testing.T) {
+func TestEvaluator(t *testing.T) {
 	tests := []struct {
 		pt0 bool
 		pt1 bool

@@ -4,12 +4,12 @@ import (
 	"github.com/sp301415/tfhe/math/poly"
 )
 
-// Evaluater evaluates homomorphic operations on ciphertexts.
+// Evaluator evaluates homomorphic operations on ciphertexts.
 // This is meant to be public, usually for servers.
-type Evaluater[T Tint] struct {
+type Evaluator[T Tint] struct {
 	Parameters Parameters[T]
 
-	PolyEvaluater      poly.Evaluater[T]
+	PolyEvaluator      poly.Evaluator[T]
 	FourierTransformer poly.FourierTransformer[T]
 
 	EvaluationKey EvaluationKey[T]
@@ -25,7 +25,7 @@ const (
 	maxBufferDecomposedLevel = 5
 )
 
-// evaluationBuffer contains buffer values for Evaluater.
+// evaluationBuffer contains buffer values for Evaluator.
 type evaluationBuffer[T Tint] struct {
 	// decomposedPoly holds the decomposed polynomial.
 	// Initially has length MaxBufferDecomposedLevel.
@@ -57,13 +57,13 @@ type evaluationBuffer[T Tint] struct {
 	lut LookUpTable[T]
 }
 
-// NewEvaluater creates a new Evaluater based on parameters.
+// NewEvaluator creates a new Evaluator based on parameters.
 // This does not copy evaluation keys, since they are large.
-func NewEvaluater[T Tint](params Parameters[T], evkey EvaluationKey[T]) Evaluater[T] {
-	return Evaluater[T]{
+func NewEvaluator[T Tint](params Parameters[T], evkey EvaluationKey[T]) Evaluator[T] {
+	return Evaluator[T]{
 		Parameters: params,
 
-		PolyEvaluater:      poly.NewEvaluater[T](params.polyDegree),
+		PolyEvaluator:      poly.NewEvaluator[T](params.polyDegree),
 		FourierTransformer: poly.NewFourierTransformer[T](params.polyDegree),
 
 		EvaluationKey: evkey,
@@ -106,13 +106,13 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 	}
 }
 
-// ShallowCopy returns a shallow copy of this Evaluater.
-// Returned Evaluater is safe for concurrent use.
-func (e Evaluater[T]) ShallowCopy() Evaluater[T] {
-	return Evaluater[T]{
+// ShallowCopy returns a shallow copy of this Evaluator.
+// Returned Evaluator is safe for concurrent use.
+func (e Evaluator[T]) ShallowCopy() Evaluator[T] {
+	return Evaluator[T]{
 		Parameters: e.Parameters,
 
-		PolyEvaluater:      e.PolyEvaluater.ShallowCopy(),
+		PolyEvaluator:      e.PolyEvaluator.ShallowCopy(),
 		FourierTransformer: e.FourierTransformer.ShallowCopy(),
 
 		EvaluationKey: e.EvaluationKey,
