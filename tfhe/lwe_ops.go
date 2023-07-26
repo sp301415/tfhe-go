@@ -40,16 +40,16 @@ func (e Evaluator[T]) NegLWEInPlace(ct0, ctOut LWECiphertext[T]) {
 	vec.NegInPlace(ct0.Value, ctOut.Value)
 }
 
-// ScalarAddLWE adds c to ct0 and returns the result.
-func (e Evaluator[T]) ScalarAddLWE(ct0 LWECiphertext[T], c T) LWECiphertext[T] {
+// ScalarAddLWE adds pt to ct0 and returns the result.
+func (e Evaluator[T]) PlaintextAddLWE(ct0 LWECiphertext[T], pt LWEPlaintext[T]) LWECiphertext[T] {
 	ctOut := NewLWECiphertext(e.Parameters)
-	e.ScalarAddLWEInPlace(ct0, c, ctOut)
+	e.PlaintextAddLWEInPlace(ct0, pt, ctOut)
 	return ctOut
 }
 
-// ScalarMulAddInPlace adds c to ct0 and writes it to ctOut.
-func (e Evaluator[T]) ScalarAddLWEInPlace(ct0 LWECiphertext[T], c T, ctOut LWECiphertext[T]) {
-	ctOut.Value[0] += c * e.Parameters.delta
+// ScalarMulAddInPlace adds pt to ct0 and writes it to ctOut.
+func (e Evaluator[T]) PlaintextAddLWEInPlace(ct0 LWECiphertext[T], pt LWEPlaintext[T], ctOut LWECiphertext[T]) {
+	ctOut.Value[0] += pt.Value
 }
 
 // ScalarMulLWE multplies c to ct0 and returns the result.

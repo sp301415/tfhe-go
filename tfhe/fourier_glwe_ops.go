@@ -75,18 +75,6 @@ func (e Evaluator[T]) PolyMulSubFourierGLWEInPlace(ct0 FourierGLWECiphertext[T],
 	}
 }
 
-// FourierPolyAddGLWE adds p to ct0 and returns the result.
-func (e Evaluator[T]) FourierPolyAddFourierGLWE(ct0 FourierGLWECiphertext[T], p poly.FourierPoly) FourierGLWECiphertext[T] {
-	ctOut := NewFourierGLWECiphertext(e.Parameters)
-	e.FourierPolyAddFourierGLWEInPlace(ct0, p, ctOut)
-	return ctOut
-}
-
-// FourierPolyAddGLWEInPlace adds p to ct0 and writes to ctOut.
-func (e Evaluator[T]) FourierPolyAddFourierGLWEInPlace(ct0 FourierGLWECiphertext[T], p poly.FourierPoly, ctOut FourierGLWECiphertext[T]) {
-	e.FourierTransformer.AddInPlace(ct0.Value[0], p, ctOut.Value[0])
-}
-
 // FourierPolyMulFourierGLWE multiplies fp to ct0 and returns the result.
 func (e Evaluator[T]) FourierPolyMulFourierGLWE(ct0 FourierGLWECiphertext[T], fp poly.FourierPoly) FourierGLWECiphertext[T] {
 	ctOut := NewFourierGLWECiphertext(e.Parameters)

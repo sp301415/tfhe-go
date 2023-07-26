@@ -8,6 +8,8 @@ import (
 // Encryptor encrypts and decrypts TFHE plaintexts and ciphertexts.
 // This is meant to be private, only for clients.
 type Encryptor[T Tint] struct {
+	Encoder[T]
+
 	Parameters Parameters[T]
 
 	uniformSampler csprng.UniformSampler[T]
@@ -26,10 +28,10 @@ type Encryptor[T Tint] struct {
 
 // encryptionBuffer contains buffer values for Encryptor.
 type encryptionBuffer[T Tint] struct {
-	// glweCt holds standard GLWE Ciphertext for Fourier encryption / decryptions.
-	glweCt GLWECiphertext[T]
-	// ggswPt holds GLWEKey * Pt in GGSW encryption.
-	ggswPt poly.Poly[T]
+	// ctGLWE holds standard GLWE Ciphertext for Fourier encryption / decryptions.
+	ctGLWE GLWECiphertext[T]
+	// ptForGGSW holds GLWEKey * Pt in GGSW encryption.
+	ptForGGSW poly.Poly[T]
 }
 
 // NewEncryptor returns a initialized Encryptor with given parameters.
@@ -37,6 +39,8 @@ type encryptionBuffer[T Tint] struct {
 func NewEncryptor[T Tint](params Parameters[T]) Encryptor[T] {
 	// Fill samplers to call encryptor.GenSecretKey()
 	encryptor := Encryptor[T]{
+		Encoder: NewEncoder(params),
+
 		Parameters: params,
 
 		uniformSampler: csprng.NewUniformSampler[T](),
@@ -59,8 +63,8 @@ func NewEncryptor[T Tint](params Parameters[T]) Encryptor[T] {
 // newEncryptionBuffer allocates an empty encryptionBuffer.
 func newEncryptionBuffer[T Tint](params Parameters[T]) encryptionBuffer[T] {
 	return encryptionBuffer[T]{
-		glweCt: NewGLWECiphertext(params),
-		ggswPt: poly.New[T](params.polyDegree),
+		ctGLWE:    NewGLWECiphertext(params),
+		ptForGGSW: poly.New[T](params.polyDegree),
 	}
 }
 

@@ -62,6 +62,19 @@ func TestEvaluator(t *testing.T) {
 			assert.Equal(t, tc.pt0 == tc.pt1, enc.DecryptLWEBool(eval.XNOR(tc.ct0, tc.ct1)))
 		}
 	})
+
+	t.Run("Bits", func(t *testing.T) {
+		msg0, msg1 := 0b01, 0b10
+		ct0 := enc.EncryptLWEBits(msg0)[:4]
+		ct1 := enc.EncryptLWEBits(msg1)[:4]
+
+		ctOut := enc.EncryptLWEBits(0)[:4]
+		for i := range ctOut {
+			eval.XORInPlace(ct0[i], ct1[i], ctOut[i])
+		}
+
+		assert.Equal(t, enc.DecryptLWEBits(ctOut), msg0^msg1)
+	})
 }
 
 func BenchmarkGateBootstrap(b *testing.B) {

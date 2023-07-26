@@ -7,6 +7,8 @@ import (
 // Evaluator evaluates homomorphic operations on ciphertexts.
 // This is meant to be public, usually for servers.
 type Evaluator[T Tint] struct {
+	Encoder[T]
+
 	Parameters Parameters[T]
 
 	PolyEvaluator      poly.Evaluator[T]
@@ -61,6 +63,8 @@ type evaluationBuffer[T Tint] struct {
 // This does not copy evaluation keys, since they are large.
 func NewEvaluator[T Tint](params Parameters[T], evkey EvaluationKey[T]) Evaluator[T] {
 	return Evaluator[T]{
+		Encoder: NewEncoder(params),
+
 		Parameters: params,
 
 		PolyEvaluator:      poly.NewEvaluator[T](params.polyDegree),

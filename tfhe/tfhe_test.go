@@ -79,7 +79,7 @@ func TestEncryptor(t *testing.T) {
 func TestEvaluator(t *testing.T) {
 	messages := []int{1, 2, 3}
 
-	t.Run("ExternalProductFourier", func(t *testing.T) {
+	t.Run("ExternalProduct", func(t *testing.T) {
 		ct := testEncryptor.EncryptGLWE(messages)
 
 		mul := 2

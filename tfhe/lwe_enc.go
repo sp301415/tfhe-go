@@ -5,42 +5,6 @@ import (
 	"github.com/sp301415/tfhe/math/vec"
 )
 
-// EncodeLWE encodes integer message to LWE plaintext.
-// Parameter's MessageModulus and Delta are used.
-func (e Encryptor[T]) EncodeLWE(message int) LWEPlaintext[T] {
-	return LWEPlaintext[T]{Value: (T(message) % e.Parameters.messageModulus) << e.Parameters.deltaLog}
-}
-
-// EncodeLWECustom encodes integer message to LWE plaintext
-// using custom MessageModulus and Delta.
-//
-// If MessageModulus = 0, then no modulus reduction is performed.
-func (e Encryptor[T]) EncodeLWECustom(message int, messageModulus, delta T) LWEPlaintext[T] {
-	encoded := T(message)
-	if messageModulus != 0 {
-		encoded %= messageModulus
-	}
-	return LWEPlaintext[T]{Value: encoded * delta}
-}
-
-// DecodeLWE decodes LWE plaintext to integer message.
-// Parameter's MessageModulus and Delta are used.
-func (e Encryptor[T]) DecodeLWE(pt LWEPlaintext[T]) int {
-	return int(num.RoundRatioBits(pt.Value, e.Parameters.deltaLog) % e.Parameters.messageModulus)
-}
-
-// DecodeLWECustom decodes LWE plaintext to integer message
-// using custom MessageModulus and Delta.
-//
-// If MessageModulus = 0, then no modulus reduction is performed.
-func (e Encryptor[T]) DecodeLWECustom(pt LWEPlaintext[T], messageModulus, delta T) int {
-	decoded := num.RoundRatio(pt.Value, delta)
-	if messageModulus != 0 {
-		decoded %= messageModulus
-	}
-	return int(decoded)
-}
-
 // EncryptLWE encodes and encrypts integer message to LWE ciphertext.
 func (e Encryptor[T]) EncryptLWE(message int) LWECiphertext[T] {
 	return e.EncryptLWEPlaintext(e.EncodeLWE(message))

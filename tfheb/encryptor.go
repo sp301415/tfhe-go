@@ -4,25 +4,20 @@ import (
 	"github.com/sp301415/tfhe/tfhe"
 )
 
-const (
-	// PlaintextFalse is a plaintext value corresponding to false.
-	// Equals to -1/8.
-	PlaintextFalse = 7 << (32 - 3)
-	// PlaintextTrue is a plaintext value corresponding to true.
-	// Equals to 1/8.
-	PlaintextTrue = 1 << (32 - 3)
-)
-
 // Encryptor encrypts binary TFHE plaintexts and ciphertexts.
 // This is meant to be private, only for clients.
 type Encryptor struct {
+	Encoder
 	tfhe.Encryptor[uint32]
 }
 
 // NewEncryptor returns a initialized Encryptor with given parameters.
 // It also automatically samples LWE and GLWE key.
 func NewEncryptor(params tfhe.Parameters[uint32]) Encryptor {
-	return Encryptor{Encryptor: tfhe.NewEncryptor(params)}
+	return Encryptor{
+		Encoder:   NewEncoder(params),
+		Encryptor: tfhe.NewEncryptor(params),
+	}
 }
 
 // EncryptLWEBool encrypts boolean message to LWE ciphertexts.
@@ -30,15 +25,12 @@ func NewEncryptor(params tfhe.Parameters[uint32]) Encryptor {
 //
 // Note that this is DIFFERENT from calling EncryptLWE with 0 or 1.
 func (e Encryptor) EncryptLWEBool(message bool) tfhe.LWECiphertext[uint32] {
-	if message {
-		return e.EncryptLWEPlaintext(tfhe.LWEPlaintext[uint32]{Value: PlaintextTrue})
-	}
-	return e.EncryptLWEPlaintext(tfhe.LWEPlaintext[uint32]{Value: PlaintextFalse})
+	return e.EncryptLWEPlaintext(e.EncodeLWEBool(message))
 }
 
 // DecryptLWEBool decrypts LWE ciphertext to boolean value.
 func (e Encryptor) DecryptLWEBool(ct tfhe.LWECiphertext[uint32]) bool {
-	return e.DecryptLWEPlaintext(ct).Value < (1 << 31)
+	return e.DecodeLWEBool(e.DecryptLWEPlaintext(ct))
 }
 
 // EncryptLWEBits encrypts each bits of an integer message.
