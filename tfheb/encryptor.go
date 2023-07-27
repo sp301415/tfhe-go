@@ -8,15 +8,15 @@ import (
 // This is meant to be private, only for clients.
 type Encryptor struct {
 	Encoder
-	tfhe.Encryptor[uint32]
+	BaseEncryptor tfhe.Encryptor[uint32]
 }
 
 // NewEncryptor returns a initialized Encryptor with given parameters.
 // It also automatically samples LWE and GLWE key.
 func NewEncryptor(params tfhe.Parameters[uint32]) Encryptor {
 	return Encryptor{
-		Encoder:   NewEncoder(params),
-		Encryptor: tfhe.NewEncryptor(params),
+		Encoder:       NewEncoder(params),
+		BaseEncryptor: tfhe.NewEncryptor(params),
 	}
 }
 
@@ -25,12 +25,12 @@ func NewEncryptor(params tfhe.Parameters[uint32]) Encryptor {
 //
 // Note that this is DIFFERENT from calling EncryptLWE with 0 or 1.
 func (e Encryptor) EncryptLWEBool(message bool) tfhe.LWECiphertext[uint32] {
-	return e.EncryptLWEPlaintext(e.EncodeLWEBool(message))
+	return e.BaseEncryptor.EncryptLWEPlaintext(e.EncodeLWEBool(message))
 }
 
 // DecryptLWEBool decrypts LWE ciphertext to boolean value.
 func (e Encryptor) DecryptLWEBool(ct tfhe.LWECiphertext[uint32]) bool {
-	return e.DecodeLWEBool(e.DecryptLWEPlaintext(ct))
+	return e.DecodeLWEBool(e.BaseEncryptor.DecryptLWEPlaintext(ct))
 }
 
 // EncryptLWEBits encrypts each bits of an integer message.
@@ -57,4 +57,17 @@ func (e Encryptor) DecryptLWEBits(cts []tfhe.LWECiphertext[uint32]) int {
 		}
 	}
 	return msg
+}
+
+// GenEvaluationKey samples a new evaluation key for bootstrapping.
+//
+// This can take a long time.
+// Use GenEvaluationKeyParallel for better key generation performance.
+func (e Encryptor) GenEvaluationKey() tfhe.EvaluationKey[uint32] {
+	return e.BaseEncryptor.GenEvaluationKey()
+}
+
+// GenEvaluationKeyParallel samples a new evaluation key for bootstrapping in parallel.
+func (e Encryptor) GenEvaluationKeyParallel() tfhe.EvaluationKey[uint32] {
+	return e.BaseEncryptor.GenEvaluationKeyParallel()
 }

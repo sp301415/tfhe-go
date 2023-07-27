@@ -9,8 +9,9 @@ import (
 //
 // This is meant to be public, usually for servers.
 type Evaluator struct {
-	tfhe.Evaluator[uint32]
-	signLUT tfhe.LookUpTable[uint32]
+	Parameters    tfhe.Parameters[uint32]
+	BaseEvaluator tfhe.Evaluator[uint32]
+	signLUT       tfhe.LookUpTable[uint32]
 }
 
 // NewEvaluator creates a new Evaluator based on parameters.
@@ -21,15 +22,20 @@ func NewEvaluator(params tfhe.Parameters[uint32], evkey tfhe.EvaluationKey[uint3
 		signLUT.Value[0].Coeffs[i] = 1 << (32 - 3)
 	}
 	return Evaluator{
-		Evaluator: tfhe.NewEvaluator(params, evkey),
-		signLUT:   signLUT,
+		Parameters:    params,
+		BaseEvaluator: tfhe.NewEvaluator(params, evkey),
+		signLUT:       signLUT,
 	}
 }
 
 // ShallowCopy returns a shallow copy of this Evaluator.
 // Returned Evaluator is safe for concurrent use.
 func (e Evaluator) ShallowCopy() Evaluator {
-	return Evaluator{Evaluator: e.Evaluator.ShallowCopy()}
+	return Evaluator{
+		Parameters:    e.Parameters,
+		BaseEvaluator: e.BaseEvaluator.ShallowCopy(),
+		signLUT:       e.signLUT,
+	}
 }
 
 // NOT computes NOT ct0 and returns the result.
@@ -66,7 +72,7 @@ func (e Evaluator) ANDInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 	}
 	ctOut.Value[0] -= 1 << (32 - 3)
 
-	e.BootstrapLUTInPlace(ctOut, e.signLUT, ctOut)
+	e.BaseEvaluator.BootstrapLUTInPlace(ctOut, e.signLUT, ctOut)
 }
 
 // NAND computes ct0 NAND ct1 and returns the result.
@@ -86,7 +92,7 @@ func (e Evaluator) NANDInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 	}
 	ctOut.Value[0] += 1 << (32 - 3)
 
-	e.BootstrapLUTInPlace(ctOut, e.signLUT, ctOut)
+	e.BaseEvaluator.BootstrapLUTInPlace(ctOut, e.signLUT, ctOut)
 }
 
 // OR computes ct0 OR ct1 and returns the result.
@@ -106,7 +112,7 @@ func (e Evaluator) ORInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 	}
 	ctOut.Value[0] += 1 << (32 - 3)
 
-	e.BootstrapLUTInPlace(ctOut, e.signLUT, ctOut)
+	e.BaseEvaluator.BootstrapLUTInPlace(ctOut, e.signLUT, ctOut)
 }
 
 // NOR computes ct0 NOR ct1 and returns the result.
@@ -126,7 +132,7 @@ func (e Evaluator) NORInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 	}
 	ctOut.Value[0] -= 1 << (32 - 3)
 
-	e.BootstrapLUTInPlace(ctOut, e.signLUT, ctOut)
+	e.BaseEvaluator.BootstrapLUTInPlace(ctOut, e.signLUT, ctOut)
 }
 
 // XOR computes ct0 XOR ct1 and returns the result.
@@ -146,7 +152,7 @@ func (e Evaluator) XORInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 	}
 	ctOut.Value[0] += 1 << (32 - 2)
 
-	e.BootstrapLUTInPlace(ctOut, e.signLUT, ctOut)
+	e.BaseEvaluator.BootstrapLUTInPlace(ctOut, e.signLUT, ctOut)
 }
 
 // XNOR computes ct0 XNOR ct1 and returns the result.
@@ -166,5 +172,5 @@ func (e Evaluator) XNORInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 	}
 	ctOut.Value[0] -= 1 << (32 - 2)
 
-	e.BootstrapLUTInPlace(ctOut, e.signLUT, ctOut)
+	e.BaseEvaluator.BootstrapLUTInPlace(ctOut, e.signLUT, ctOut)
 }
