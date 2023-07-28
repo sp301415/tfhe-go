@@ -9,6 +9,7 @@ import (
 //
 // This is meant to be public, usually for servers.
 type Evaluator struct {
+	Encoder
 	Parameters    tfhe.Parameters[uint32]
 	BaseEvaluator tfhe.Evaluator[uint32]
 	signLUT       tfhe.LookUpTable[uint32]
@@ -22,6 +23,7 @@ func NewEvaluator(params tfhe.Parameters[uint32], evkey tfhe.EvaluationKey[uint3
 		signLUT.Value[0].Coeffs[i] = 1 << (32 - 3)
 	}
 	return Evaluator{
+		Encoder:       NewEncoder(params),
 		Parameters:    params,
 		BaseEvaluator: tfhe.NewEvaluator(params, evkey),
 		signLUT:       signLUT,
@@ -32,6 +34,7 @@ func NewEvaluator(params tfhe.Parameters[uint32], evkey tfhe.EvaluationKey[uint3
 // Returned Evaluator is safe for concurrent use.
 func (e Evaluator) ShallowCopy() Evaluator {
 	return Evaluator{
+		Encoder:       e.Encoder,
 		Parameters:    e.Parameters,
 		BaseEvaluator: e.BaseEvaluator.ShallowCopy(),
 		signLUT:       e.signLUT,

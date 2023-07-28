@@ -8,6 +8,7 @@ import (
 // This is meant to be private, only for clients.
 type Encryptor struct {
 	Encoder
+	Parameters    tfhe.Parameters[uint32]
 	BaseEncryptor tfhe.Encryptor[uint32]
 }
 
@@ -16,7 +17,18 @@ type Encryptor struct {
 func NewEncryptor(params tfhe.Parameters[uint32]) Encryptor {
 	return Encryptor{
 		Encoder:       NewEncoder(params),
+		Parameters:    params,
 		BaseEncryptor: tfhe.NewEncryptor(params),
+	}
+}
+
+// ShallowCopy returns a shallow copy of this Encryptor.
+// Returned Encryptor is safe for concurrent use.
+func (e Encryptor) ShallowCopy() Encryptor {
+	return Encryptor{
+		Encoder:       e.Encoder,
+		Parameters:    e.Parameters,
+		BaseEncryptor: e.BaseEncryptor.ShallowCopy(),
 	}
 }
 
@@ -26,6 +38,14 @@ func NewEncryptor(params tfhe.Parameters[uint32]) Encryptor {
 // Note that this is DIFFERENT from calling EncryptLWE with 0 or 1.
 func (e Encryptor) EncryptLWEBool(message bool) tfhe.LWECiphertext[uint32] {
 	return e.BaseEncryptor.EncryptLWEPlaintext(e.EncodeLWEBool(message))
+}
+
+// EncryptLWEBool encrypts boolean message to LWE ciphertexts.
+// Like most languages, false == 0, and true == 1.
+//
+// Note that this is DIFFERENT from calling EncryptLWE with 0 or 1.
+func (e Encryptor) EncryptLWEBoolInPlace(message bool, ct tfhe.LWECiphertext[uint32]) {
+	e.BaseEncryptor.EncryptLWEInPlace(e.EncodeLWEBool(message), ct)
 }
 
 // DecryptLWEBool decrypts LWE ciphertext to boolean value.
@@ -38,11 +58,18 @@ func (e Encryptor) DecryptLWEBool(ct tfhe.LWECiphertext[uint32]) bool {
 // The order of the bits are little-endian.
 func (e Encryptor) EncryptLWEBits(message int) []tfhe.LWECiphertext[uint32] {
 	cts := make([]tfhe.LWECiphertext[uint32], 64)
-	for i := 0; i < 64; i++ {
+	e.EncryptLWEBitsInPlace(message, cts)
+	return cts
+}
+
+// EncryptLWEBitsInPlace encrypts each bits of an integer message.
+// The order of the bits are little-endian,
+// and will be cut by the length of cts.
+func (e Encryptor) EncryptLWEBitsInPlace(message int, cts []tfhe.LWECiphertext[uint32]) {
+	for i := 0; i < len(cts); i++ {
 		cts[i] = e.EncryptLWEBool(message&1 == 1)
 		message >>= 1
 	}
-	return cts
 }
 
 // DecryptLWEBits decrypts a slice of binary LWE ciphertext
