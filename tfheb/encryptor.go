@@ -44,8 +44,8 @@ func (e Encryptor) EncryptLWEBool(message bool) tfhe.LWECiphertext[uint32] {
 // Like most languages, false == 0, and true == 1.
 //
 // Note that this is DIFFERENT from calling EncryptLWE with 0 or 1.
-func (e Encryptor) EncryptLWEBoolInPlace(message bool, ct tfhe.LWECiphertext[uint32]) {
-	e.BaseEncryptor.EncryptLWEInPlace(e.EncodeLWEBool(message), ct)
+func (e Encryptor) EncryptLWEBoolAssign(message bool, ct tfhe.LWECiphertext[uint32]) {
+	e.BaseEncryptor.EncryptLWEAssign(e.EncodeLWEBool(message), ct)
 }
 
 // DecryptLWEBool decrypts LWE ciphertext to boolean value.
@@ -58,14 +58,14 @@ func (e Encryptor) DecryptLWEBool(ct tfhe.LWECiphertext[uint32]) bool {
 // The order of the bits are little-endian.
 func (e Encryptor) EncryptLWEBits(message int) []tfhe.LWECiphertext[uint32] {
 	cts := make([]tfhe.LWECiphertext[uint32], 64)
-	e.EncryptLWEBitsInPlace(message, cts)
+	e.EncryptLWEBitsAssign(message, cts)
 	return cts
 }
 
-// EncryptLWEBitsInPlace encrypts each bits of an integer message.
+// EncryptLWEBitsAssign encrypts each bits of an integer message.
 // The order of the bits are little-endian,
 // and will be cut by the length of cts.
-func (e Encryptor) EncryptLWEBitsInPlace(message int, cts []tfhe.LWECiphertext[uint32]) {
+func (e Encryptor) EncryptLWEBitsAssign(message int, cts []tfhe.LWECiphertext[uint32]) {
 	for i := 0; i < len(cts); i++ {
 		cts[i] = e.EncryptLWEBool(message&1 == 1)
 		message >>= 1

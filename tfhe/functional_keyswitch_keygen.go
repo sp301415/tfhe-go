@@ -257,7 +257,7 @@ func (e Encryptor[T]) GenPublicFunctionalGLWEKeySwitchKey(decompParams Decomposi
 			e.buffer.ctGLWE.Value[0].Clear()
 			e.buffer.ctGLWE.Value[0].Coeffs[0] = e.SecretKey.LWEKey.Value[i] << decompParams.ScaledBaseLog(j)
 			e.EncryptGLWEBody(e.buffer.ctGLWE)
-			e.ToFourierGLWECiphertextInPlace(e.buffer.ctGLWE, pfksk.Value[i].Value[j])
+			e.ToFourierGLWECiphertextAssign(e.buffer.ctGLWE, pfksk.Value[i].Value[j])
 		}
 	}
 
@@ -298,7 +298,7 @@ func (e Encryptor[T]) GenPublicFunctionalGLWEKeySwitchKeyParallel(decompParams D
 					e.buffer.ctGLWE.Value[0].Clear()
 					e.buffer.ctGLWE.Value[0].Coeffs[0] = e.SecretKey.LWEKey.Value[i] << decompParams.ScaledBaseLog(j)
 					e.EncryptGLWEBody(e.buffer.ctGLWE)
-					e.ToFourierGLWECiphertextInPlace(e.buffer.ctGLWE, pfksk.Value[i].Value[j])
+					e.ToFourierGLWECiphertextAssign(e.buffer.ctGLWE, pfksk.Value[i].Value[j])
 				}
 			}
 		}(i)

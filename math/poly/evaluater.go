@@ -6,14 +6,16 @@ import (
 
 // Evaluator calculates polynomial algorithms.
 // Operations usually take two forms: for example,
-//   - Add(p0, p1) is equivalent to var p = p0 + p1
-//   - AddInPlace(p0, p1, pOut) is equivalent to pOut = p0 + p1
+//   - Add(p0, p1) is equivalent to var p = p0 + p1.
+//   - AddAssign(p0, p1, pOut) is equivalent to pOut = p0 + p1.
+//
+// For some operations, InPlace method is implemented, where it
+// transforms the input directly.
 //
 // # Warning
-//   - InPlace methods may not return correct results when output overlaps with inputs.
-//     However, it is always correct when p0 == pOut or p1 == pOut.
-//   - For performance reasons, functions in this package usually don't implement bound checks.
-//     If length mismatch happens, usually the result is wrong.
+//
+// For performance reasons, functions in this package usually don't implement bound checks.
+// If length mismatch happens, usually the result is wrong.
 type Evaluator[T num.Integer] struct {
 	// degree is the degree of polynomial that this evaluator can handle.
 	degree int

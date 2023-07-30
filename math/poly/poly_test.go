@@ -22,36 +22,36 @@ var (
 func BenchmarkOperations(b *testing.B) {
 	p0 := poly.New[uint64](N)
 	p1 := poly.New[uint64](N)
-	sampler.SampleSliceInPlace(p0.Coeffs)
-	sampler.SampleSliceInPlace(p1.Coeffs)
+	sampler.SampleSliceAssign(p0.Coeffs)
+	sampler.SampleSliceAssign(p1.Coeffs)
 
 	b.Run("Add", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			eval.AddInPlace(p0, p1, pOut)
+			eval.AddAssign(p0, p1, pOut)
 		}
 	})
 
 	b.Run("Mul", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			eval.MulInPlace(p0, p1, pOut)
+			eval.MulAssign(p0, p1, pOut)
 		}
 	})
 
 	b.Run("ScalarMul", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			eval.ScalarMulInPlace(p0, 512, pOut)
+			eval.ScalarMulAssign(p0, 512, pOut)
 		}
 	})
 
 	b.Run("MonomialMul", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			eval.MonomialMulInPlace(p0, 32, pOut)
+			eval.MonomialMulAssign(p0, 32, pOut)
 		}
 	})
 
 	b.Run("MulAdd", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			eval.MulAddInPlace(p0, p1, pOut)
+			eval.MulAddAssign(p0, p1, pOut)
 		}
 	})
 
@@ -60,13 +60,13 @@ func BenchmarkOperations(b *testing.B) {
 
 	b.Run("FourierMul", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			fft.MulInPlace(fp0, fp1, fpOut)
+			fft.MulAssign(fp0, fp1, fpOut)
 		}
 	})
 
 	b.Run("FourierStandardMul", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			fft.PolyMulInPlace(fp0, p1, fpOut)
+			fft.PolyMulAssign(fp0, p1, fpOut)
 		}
 	})
 }

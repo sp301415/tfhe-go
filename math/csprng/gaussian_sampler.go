@@ -91,8 +91,8 @@ func (s GaussianSampler[T]) Sample() T {
 	return u
 }
 
-// SampleSliceInPlace samples rounded gaussian values to v.
-func (s GaussianSampler[T]) SampleSliceInPlace(v []T) {
+// SampleSliceAssign samples rounded gaussian values to v.
+func (s GaussianSampler[T]) SampleSliceAssign(v []T) {
 	for i := 0; i < len(v); i += 2 {
 		v[i], v[i+1] = s.sample2()
 	}
@@ -101,9 +101,9 @@ func (s GaussianSampler[T]) SampleSliceInPlace(v []T) {
 	}
 }
 
-// SampleSliceAddInPlace samples rounded gaussian values and adds to v.
+// SampleSliceAddAssign samples rounded gaussian values and adds to v.
 // Mostly used in EncryptBody functions, adding noise to the message.
-func (s GaussianSampler[T]) SampleSliceAddInPlace(v []T) {
+func (s GaussianSampler[T]) SampleSliceAddAssign(v []T) {
 	for i := 0; i < len(v); i += 2 {
 		x, y := s.sample2()
 		v[i] += x

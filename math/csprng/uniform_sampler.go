@@ -81,8 +81,8 @@ func (s UniformSampler[T]) SampleRange(a, b T) T {
 	}
 }
 
-// SampleSliceInPlace samples uniform values to v.
-func (s UniformSampler[T]) SampleSliceInPlace(v []T) {
+// SampleSliceAssign samples uniform values to v.
+func (s UniformSampler[T]) SampleSliceAssign(v []T) {
 	for i := range v {
 		v[i] = s.Sample()
 	}

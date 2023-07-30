@@ -37,21 +37,21 @@ func (e Encoder[T]) EncodeLWECustom(message int, messageModulus, delta T) LWEPla
 	return LWEPlaintext[T]{Value: encoded * delta}
 }
 
-// EncodeLWECiphertext trivially encodes integer message to LWE ciphertext,
+// EncodeLWECiphertext trivially encodes LWE plaintext to LWE ciphertext,
 // with zero mask and no error.
 // Resulting ciphertext is cryptographically insecure.
-func (e Encoder[T]) EncodeLWECiphertext(message int) LWECiphertext[T] {
+func (e Encoder[T]) EncodeLWECiphertext(pt LWEPlaintext[T]) LWECiphertext[T] {
 	ct := NewLWECiphertext(e.Parameters)
-	ct.Value[0] = e.EncodeLWE(message).Value
+	ct.Value[0] = pt.Value
 	return ct
 }
 
-// EncodeLWECiphertextInPlace trivially encodes integer message to LWE ciphertext,
+// EncodeLWECiphertextAssign trivially encodes LWE plaintext to LWE ciphertext,
 // with zero mask and no error.
 // Resulting ciphertext is cryptographically insecure.
-func (e Encoder[T]) EncodeLWECiphertextInPlace(message int, ct LWECiphertext[T]) {
+func (e Encoder[T]) EncodeLWECiphertextAssign(pt LWEPlaintext[T], ct LWECiphertext[T]) {
 	vec.Fill(ct.Value[1:], 0)
-	ct.Value[0] = e.EncodeLWE(message).Value
+	ct.Value[0] = pt.Value
 }
 
 // DecodeLWE decodes LWE plaintext to integer message.
@@ -79,16 +79,16 @@ func (e Encoder[T]) DecodeLWECustom(pt LWEPlaintext[T], messageModulus, delta T)
 // If len(messages) > PolyDegree, the leftovers are discarded.
 func (e Encoder[T]) EncodeGLWE(messages []int) GLWEPlaintext[T] {
 	pt := NewGLWEPlaintext(e.Parameters)
-	e.EncodeGLWEInPlace(messages, pt)
+	e.EncodeGLWEAssign(messages, pt)
 	return pt
 }
 
-// EncodeGLWEInPlace encodes up to Parameters.PolyDegree integer messages into one GLWE plaintext.
+// EncodeGLWEAssign encodes up to Parameters.PolyDegree integer messages into one GLWE plaintext.
 // Parameter's MessageModulus and Delta are used.
 //
 // If len(messages) < PolyDegree, the leftovers are padded with zero.
 // If len(messages) > PolyDegree, the leftovers are discarded.
-func (e Encoder[T]) EncodeGLWEInPlace(messages []int, pt GLWEPlaintext[T]) {
+func (e Encoder[T]) EncodeGLWEAssign(messages []int, pt GLWEPlaintext[T]) {
 	for i := 0; i < e.Parameters.polyDegree && i < len(messages); i++ {
 		pt.Value.Coeffs[i] = (T(messages[i]) % e.Parameters.messageModulus) << e.Parameters.deltaLog
 	}
@@ -145,13 +145,13 @@ func (e Encoder[T]) DecodeGLWECustom(pt GLWEPlaintext[T], messageModulus, delta 
 // Resulting ciphertext is cryptographically insecure.
 func (e Encoder[T]) EncodeGLWECiphertext(messages []int) GLWECiphertext[T] {
 	ct := NewGLWECiphertext(e.Parameters)
-	e.EncodeGLWEInPlace(messages, GLWEPlaintext[T]{Value: ct.Value[0]})
+	e.EncodeGLWEAssign(messages, GLWEPlaintext[T]{Value: ct.Value[0]})
 	return ct
 }
 
-// EncodeGLWECiphertextInPlace trivially encodes integer messages to GLWE ciphertext,
+// EncodeGLWECiphertextAssign trivially encodes integer messages to GLWE ciphertext,
 // with zero mask and no error.
 // Resulting ciphertext is cryptographically insecure.
-func (e Encoder[T]) EncodeGLWECiphertextInPlace(messages []int, ct GLWECiphertext[T]) {
-	e.EncodeGLWEInPlace(messages, GLWEPlaintext[T]{Value: ct.Value[0]})
+func (e Encoder[T]) EncodeGLWECiphertextAssign(messages []int, ct GLWECiphertext[T]) {
+	e.EncodeGLWEAssign(messages, GLWEPlaintext[T]{Value: ct.Value[0]})
 }

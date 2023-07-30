@@ -25,7 +25,7 @@ func New[T num.Integer](N int) Poly[T] {
 // The given slice is copied, and extended to degree N.
 func From[T num.Integer](coeffs []T, N int) Poly[T] {
 	p := New[T](N)
-	vec.CopyInPlace(coeffs, p.Coeffs)
+	vec.CopyAssign(coeffs, p.Coeffs)
 	return p
 }
 
@@ -36,7 +36,7 @@ func (p Poly[T]) Copy() Poly[T] {
 
 // CopyFrom copies p0 to p.
 func (p *Poly[T]) CopyFrom(p0 Poly[T]) {
-	vec.CopyInPlace(p0.Coeffs, p.Coeffs)
+	vec.CopyAssign(p0.Coeffs, p.Coeffs)
 }
 
 // Degree returns the degree of the polynomial.

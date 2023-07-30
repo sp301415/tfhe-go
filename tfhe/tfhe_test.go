@@ -196,6 +196,6 @@ func BenchmarkBootstrap(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		benchEvaluator.BootstrapInPlace(ct, ctOut)
+		benchEvaluator.BootstrapAssign(ct, ctOut)
 	}
 }

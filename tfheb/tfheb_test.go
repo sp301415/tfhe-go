@@ -70,7 +70,7 @@ func TestEvaluator(t *testing.T) {
 
 		ctOut := enc.EncryptLWEBits(0)[:4]
 		for i := range ctOut {
-			eval.XORInPlace(ct0[i], ct1[i], ctOut[i])
+			eval.XORAssign(ct0[i], ct1[i], ctOut[i])
 		}
 
 		assert.Equal(t, enc.DecryptLWEBits(ctOut), msg0^msg1)
@@ -84,6 +84,6 @@ func BenchmarkGateBootstrap(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		eval.ANDInPlace(ct0, ct1, ctOut)
+		eval.ANDAssign(ct0, ct1, ctOut)
 	}
 }

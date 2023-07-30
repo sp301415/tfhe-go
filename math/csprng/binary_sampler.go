@@ -57,8 +57,8 @@ func (s BinarySampler[T]) Sample() T {
 	return T(s.baseSampler.Sample() & 1)
 }
 
-// SampleSliceInPlace samples uniform binary values to v.
-func (s BinarySampler[T]) SampleSliceInPlace(v []T) {
+// SampleSliceAssign samples uniform binary values to v.
+func (s BinarySampler[T]) SampleSliceAssign(v []T) {
 	for i := 0; i < len(v); i += 64 {
 		buf := s.baseSampler.Sample()
 		for j := i; j < i+64; j++ {

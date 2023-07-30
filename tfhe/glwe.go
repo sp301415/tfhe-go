@@ -43,7 +43,7 @@ func (sk GLWEKey[T]) ToLWEKey() LWEKey[T] {
 
 	lweKey := LWEKey[T]{Value: make([]T, glweDimension*degree)}
 	for i := 0; i < glweDimension; i++ {
-		vec.CopyInPlace(sk.Value[i].Coeffs, lweKey.Value[i*degree:(i+1)*degree])
+		vec.CopyAssign(sk.Value[i].Coeffs, lweKey.Value[i*degree:(i+1)*degree])
 	}
 	return lweKey
 }

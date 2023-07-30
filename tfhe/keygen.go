@@ -60,7 +60,7 @@ func (sk SecretKey[T]) Copy() SecretKey[T] {
 
 // CopyFrom copies values from a key.
 func (sk *SecretKey[T]) CopyFrom(skIn SecretKey[T]) {
-	vec.CopyInPlace(skIn.LWELargeKey.Value, sk.LWELargeKey.Value)
+	vec.CopyAssign(skIn.LWELargeKey.Value, sk.LWELargeKey.Value)
 }
 
 // GenSecretKey samples a new LWE key.
@@ -68,10 +68,10 @@ func (e Encryptor[T]) GenSecretKey() SecretKey[T] {
 	sk := NewSecretKey(e.Parameters)
 
 	// Sample LWE key from Block Binary Distribution
-	e.blockSampler.SampleSliceInPlace(sk.LWELargeKey.Value[:e.Parameters.lweDimension])
+	e.blockSampler.SampleSliceAssign(sk.LWELargeKey.Value[:e.Parameters.lweDimension])
 
 	// Sample the rest from Binary Distribution
-	e.binarySampler.SampleSliceInPlace(sk.LWELargeKey.Value[e.Parameters.lweDimension:])
+	e.binarySampler.SampleSliceAssign(sk.LWELargeKey.Value[e.Parameters.lweDimension:])
 
 	return sk
 }

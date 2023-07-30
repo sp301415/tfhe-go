@@ -6,7 +6,6 @@ import (
 
 // Evaluator evaluates homomorphic binary gates on ciphertexts.
 // All LWE ciphertexts should be encrypted with tfheb.Encryptor.
-//
 // This is meant to be public, usually for servers.
 type Evaluator struct {
 	Encoder
@@ -45,13 +44,13 @@ func (e Evaluator) ShallowCopy() Evaluator {
 // Equivalent to ^ct0.
 func (e Evaluator) NOT(ct0 tfhe.LWECiphertext[uint32]) tfhe.LWECiphertext[uint32] {
 	ctOut := tfhe.NewLWECiphertext(e.Parameters)
-	e.NOTInPlace(ct0, ctOut)
+	e.NOTAssign(ct0, ctOut)
 	return ctOut
 }
 
-// NOTInPlace computes NOT ct0 and writes it to ctOut.
+// NOTAssign computes NOT ct0 and writes it to ctOut.
 // Equivalent to ^ct0.
-func (e Evaluator) NOTInPlace(ct0, ctOut tfhe.LWECiphertext[uint32]) {
+func (e Evaluator) NOTAssign(ct0, ctOut tfhe.LWECiphertext[uint32]) {
 	// ctOut = -ct0
 	for i := 0; i < e.Parameters.LWEDimension()+1; i++ {
 		ctOut.Value[i] = -ct0.Value[i]
@@ -62,118 +61,118 @@ func (e Evaluator) NOTInPlace(ct0, ctOut tfhe.LWECiphertext[uint32]) {
 // Equivalent to ct0 && ct1.
 func (e Evaluator) AND(ct0, ct1 tfhe.LWECiphertext[uint32]) tfhe.LWECiphertext[uint32] {
 	ctOut := tfhe.NewLWECiphertext(e.Parameters)
-	e.ANDInPlace(ct0, ct1, ctOut)
+	e.ANDAssign(ct0, ct1, ctOut)
 	return ctOut
 }
 
-// ANDInPlace computes ct0 AND ct1 and writes it to ctOut.
+// ANDAssign computes ct0 AND ct1 and writes it to ctOut.
 // Equivalent to ct0 && ct1.
-func (e Evaluator) ANDInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
+func (e Evaluator) ANDAssign(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 	// ctOut = ct0 + ct1 - 1/8
 	for i := 0; i < e.Parameters.LWEDimension()+1; i++ {
 		ctOut.Value[i] = ct0.Value[i] + ct1.Value[i]
 	}
 	ctOut.Value[0] -= 1 << (32 - 3)
 
-	e.BaseEvaluator.BootstrapLUTInPlace(ctOut, e.signLUT, ctOut)
+	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
 }
 
 // NAND computes ct0 NAND ct1 and returns the result.
 // Equivalent to !(ct0 && ct1).
 func (e Evaluator) NAND(ct0, ct1 tfhe.LWECiphertext[uint32]) tfhe.LWECiphertext[uint32] {
 	ctOut := tfhe.NewLWECiphertext(e.Parameters)
-	e.NANDInPlace(ct0, ct1, ctOut)
+	e.NANDAssign(ct0, ct1, ctOut)
 	return ctOut
 }
 
-// NANDInPlace computes ct0 NAND ct1 and writes it to ctOut.
+// NANDAssign computes ct0 NAND ct1 and writes it to ctOut.
 // Equivalent to !(ct0 && ct1).
-func (e Evaluator) NANDInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
+func (e Evaluator) NANDAssign(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 	// ctOut = - ct0 - ct1 + 1/8
 	for i := 0; i < e.Parameters.LWEDimension()+1; i++ {
 		ctOut.Value[i] = -ct0.Value[i] - ct1.Value[i]
 	}
 	ctOut.Value[0] += 1 << (32 - 3)
 
-	e.BaseEvaluator.BootstrapLUTInPlace(ctOut, e.signLUT, ctOut)
+	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
 }
 
 // OR computes ct0 OR ct1 and returns the result.
 // Equivalent to ct0 || ct1.
 func (e Evaluator) OR(ct0, ct1 tfhe.LWECiphertext[uint32]) tfhe.LWECiphertext[uint32] {
 	ctOut := tfhe.NewLWECiphertext(e.Parameters)
-	e.ORInPlace(ct0, ct1, ctOut)
+	e.ORAssign(ct0, ct1, ctOut)
 	return ctOut
 }
 
-// ORInPlace computes ct0 OR ct1 and writes it to ctOut.
+// ORAssign computes ct0 OR ct1 and writes it to ctOut.
 // Equivalent to ct0 || ct1.
-func (e Evaluator) ORInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
+func (e Evaluator) ORAssign(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 	// ctOut = ct0 + ct1 + 1/8
 	for i := 0; i < e.Parameters.LWEDimension()+1; i++ {
 		ctOut.Value[i] = ct0.Value[i] + ct1.Value[i]
 	}
 	ctOut.Value[0] += 1 << (32 - 3)
 
-	e.BaseEvaluator.BootstrapLUTInPlace(ctOut, e.signLUT, ctOut)
+	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
 }
 
 // NOR computes ct0 NOR ct1 and returns the result.
 // Equivalent to !(ct0 || ct1).
 func (e Evaluator) NOR(ct0, ct1 tfhe.LWECiphertext[uint32]) tfhe.LWECiphertext[uint32] {
 	ctOut := tfhe.NewLWECiphertext(e.Parameters)
-	e.NORInPlace(ct0, ct1, ctOut)
+	e.NORAssign(ct0, ct1, ctOut)
 	return ctOut
 }
 
-// NORInPlace computes ct0 NOR ct1 and writes it to ctOut.
+// NORAssign computes ct0 NOR ct1 and writes it to ctOut.
 // Equivalent to !(ct0 || ct1).
-func (e Evaluator) NORInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
+func (e Evaluator) NORAssign(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 	// ctOut = - ct0 - ct1 - 1/8
 	for i := 0; i < e.Parameters.LWEDimension()+1; i++ {
 		ctOut.Value[i] = -ct0.Value[i] - ct1.Value[i]
 	}
 	ctOut.Value[0] -= 1 << (32 - 3)
 
-	e.BaseEvaluator.BootstrapLUTInPlace(ctOut, e.signLUT, ctOut)
+	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
 }
 
 // XOR computes ct0 XOR ct1 and returns the result.
 // Equivalent to ct0 != ct1.
 func (e Evaluator) XOR(ct0, ct1 tfhe.LWECiphertext[uint32]) tfhe.LWECiphertext[uint32] {
 	ctOut := tfhe.NewLWECiphertext(e.Parameters)
-	e.XORInPlace(ct0, ct1, ctOut)
+	e.XORAssign(ct0, ct1, ctOut)
 	return ctOut
 }
 
-// XORInPlace computes ct0 XOR ct1 and writes it to ctOut.
+// XORAssign computes ct0 XOR ct1 and writes it to ctOut.
 // Equivalent to ct0 != ct1.
-func (e Evaluator) XORInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
+func (e Evaluator) XORAssign(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 	// ctOut = 2*(ct0 + ct1) + 1/4
 	for i := 0; i < e.Parameters.LWEDimension()+1; i++ {
 		ctOut.Value[i] = 2 * (ct0.Value[i] + ct1.Value[i])
 	}
 	ctOut.Value[0] += 1 << (32 - 2)
 
-	e.BaseEvaluator.BootstrapLUTInPlace(ctOut, e.signLUT, ctOut)
+	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
 }
 
 // XNOR computes ct0 XNOR ct1 and returns the result.
 // Equivalent to ct0 == ct1.
 func (e Evaluator) XNOR(ct0, ct1 tfhe.LWECiphertext[uint32]) tfhe.LWECiphertext[uint32] {
 	ctOut := tfhe.NewLWECiphertext(e.Parameters)
-	e.XNORInPlace(ct0, ct1, ctOut)
+	e.XNORAssign(ct0, ct1, ctOut)
 	return ctOut
 }
 
-// XNORInPlace computes ct0 XNOR ct1 and writes it to ctOut.
+// XNORAssign computes ct0 XNOR ct1 and writes it to ctOut.
 // Equivalent to ct0 == ct1.
-func (e Evaluator) XNORInPlace(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
+func (e Evaluator) XNORAssign(ct0, ct1, ctOut tfhe.LWECiphertext[uint32]) {
 	// ctOut = -2*(ct0 + ct1) - 1/4
 	for i := 0; i < e.Parameters.LWEDimension()+1; i++ {
 		ctOut.Value[i] = 2 * (-ct0.Value[i] - ct1.Value[i])
 	}
 	ctOut.Value[0] -= 1 << (32 - 2)
 
-	e.BaseEvaluator.BootstrapLUTInPlace(ctOut, e.signLUT, ctOut)
+	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
 }
