@@ -52,34 +52,34 @@ func (e Evaluator[T]) DecomposePolyAssign(x poly.Poly[T], d []poly.Poly[T], deco
 	}
 }
 
-// decomposedPolyBuffer returns the decomposedPoly buffer of Evaluator.
-// if len(decomposedPoly) >= Level, it returns the subslice of the buffer.
+// polyDecomposedBuffer returns the polyDecomposed buffer of Evaluator.
+// if len(polyDecomposed) >= Level, it returns the subslice of the buffer.
 // otherwise, it extends the buffer of the Evaluator and returns it.
-func (e *Evaluator[T]) decomposedPolyBuffer(decompParams DecompositionParameters[T]) []poly.Poly[T] {
-	if len(e.buffer.decomposedPoly) >= decompParams.level {
-		return e.buffer.decomposedPoly[:decompParams.level]
+func (e *Evaluator[T]) polyDecomposedBuffer(decompParams DecompositionParameters[T]) []poly.Poly[T] {
+	if len(e.buffer.polyDecomposed) >= decompParams.level {
+		return e.buffer.polyDecomposed[:decompParams.level]
 	}
 
-	oldLen := len(e.buffer.decomposedPoly)
-	e.buffer.decomposedPoly = append(e.buffer.decomposedPoly, make([]poly.Poly[T], decompParams.level-oldLen)...)
+	oldLen := len(e.buffer.polyDecomposed)
+	e.buffer.polyDecomposed = append(e.buffer.polyDecomposed, make([]poly.Poly[T], decompParams.level-oldLen)...)
 	for i := oldLen; i < decompParams.level; i++ {
-		e.buffer.decomposedPoly[i] = poly.New[T](e.Parameters.polyDegree)
+		e.buffer.polyDecomposed[i] = poly.New[T](e.Parameters.polyDegree)
 	}
 
-	return e.buffer.decomposedPoly
+	return e.buffer.polyDecomposed
 }
 
-// decomposedVecBuffer returns the decomposedVec buffer of Evaluator.
-// if len(decomposedVec) >= Level, it returns the subslice of the buffer.
+// vecDecomposedBuffer returns the vecDecomposed buffer of Evaluator.
+// if len(vecDecomposed) >= Level, it returns the subslice of the buffer.
 // otherwise, it extends the buffer of the Evaluator and returns it.
-func (e *Evaluator[T]) decomposedVecBuffer(decompParams DecompositionParameters[T]) []T {
-	if len(e.buffer.decomposedVec) >= decompParams.level {
-		return e.buffer.decomposedVec[:decompParams.level]
+func (e *Evaluator[T]) vecDecomposedBuffer(decompParams DecompositionParameters[T]) []T {
+	if len(e.buffer.vecDecomposed) >= decompParams.level {
+		return e.buffer.vecDecomposed[:decompParams.level]
 	}
 
-	oldLen := len(e.buffer.decomposedVec)
-	e.buffer.decomposedVec = append(e.buffer.decomposedVec, make([]T, decompParams.level-oldLen)...)
-	return e.buffer.decomposedVec
+	oldLen := len(e.buffer.vecDecomposed)
+	e.buffer.vecDecomposed = append(e.buffer.vecDecomposed, make([]T, decompParams.level-oldLen)...)
+	return e.buffer.vecDecomposed
 }
 
 // ExternalProduct calculates the external product between
@@ -131,7 +131,7 @@ func (e Evaluator[T]) ExternalProductFourier(ctFourierGGSW FourierGGSWCiphertext
 // ExternalProductFourierAssign calculates the external product between
 // ctFourierGGSW and ctGLWE, and writes it to ctFourierGLWEOut.
 func (e Evaluator[T]) ExternalProductFourierAssign(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE GLWECiphertext[T], ctFourierGLWEOut FourierGLWECiphertext[T]) {
-	buffDecomposed := e.decomposedPolyBuffer(ctFourierGGSW.decompParams)
+	buffDecomposed := e.polyDecomposedBuffer(ctFourierGGSW.decompParams)
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.DecomposePolyAssign(ctGLWE.Value[i], buffDecomposed, ctFourierGGSW.decompParams)
@@ -145,7 +145,7 @@ func (e Evaluator[T]) ExternalProductFourierAssign(ctFourierGGSW FourierGGSWCiph
 	}
 }
 
-// ExternalProductFourierHoisted calculates the external product between
+// ExternalProductHoisted calculates the external product between
 // ctFourierGGSW and decomposed ctGLWE, and returns it.
 func (e Evaluator[T]) ExternalProductHoisted(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE [][]poly.FourierPoly) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
@@ -153,7 +153,7 @@ func (e Evaluator[T]) ExternalProductHoisted(ctFourierGGSW FourierGGSWCiphertext
 	return ctOut
 }
 
-// ExternalProductFourierHoistedAssign calculates the external product between
+// ExternalProductHoistedAssign calculates the external product between
 // ctFourierGGSW and decomposed ctGLWE, and writes it to ctGLWEOut.
 func (e Evaluator[T]) ExternalProductHoistedAssign(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE [][]poly.FourierPoly, ctGLWEOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {

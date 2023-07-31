@@ -13,7 +13,7 @@ func (e Evaluator[T]) PrivateFunctionalLWEKeySwitch(ctIn []LWECiphertext[T], pfk
 
 // PrivateFunctionalLWEKeySwitchAssign applies LWE private functional keyswitching on ctIn and writes it to ctOut.
 func (e Evaluator[T]) PrivateFunctionalLWEKeySwitchAssign(ctIn []LWECiphertext[T], pfksk PrivateFunctionalLWEKeySwitchKey[T], ctOut LWECiphertext[T]) {
-	buffDecomposed := e.decomposedVecBuffer(pfksk.decompParams)
+	buffDecomposed := e.vecDecomposedBuffer(pfksk.decompParams)
 	for i := 0; i < pfksk.InputCount(); i++ {
 		for j := 0; j < e.Parameters.lweDimension+1; j++ {
 			e.DecomposeAssign(ctIn[i].Value[j], buffDecomposed, pfksk.decompParams)
@@ -37,7 +37,8 @@ func (e Evaluator[T]) PrivateFunctionalGLWEKeySwitch(ctIn []LWECiphertext[T], pf
 
 // PrivateFunctionalGLWEKeySwitchAssign applies GLWE private functional keyswitching on ctIn and writes it to ctOut.
 func (e Evaluator[T]) PrivateFunctionalGLWEKeySwitchAssign(ctIn []LWECiphertext[T], pfksk PrivateFunctionalGLWEKeySwitchKey[T], ctOut GLWECiphertext[T]) {
-	buffDecomposed := e.decomposedVecBuffer(pfksk.decompParams)
+	buffDecomposed := e.vecDecomposedBuffer(pfksk.decompParams)
+
 	for i := 0; i < pfksk.InputCount(); i++ {
 		for j := 0; j < e.Parameters.lweDimension+1; j++ {
 			e.DecomposeAssign(ctIn[i].Value[j], buffDecomposed, pfksk.decompParams)
@@ -67,9 +68,9 @@ func (e Evaluator[T]) PublicFunctionalLWEKeySwitch(ctIn []LWECiphertext[T], f fu
 // The function f has the form f(in []T) T,
 // where length of in is always len(ctIn).
 func (e Evaluator[T]) PublicFunctionalLWEKeySwitchAssign(ctIn []LWECiphertext[T], f func([]T) T, pfksk PublicFunctionalLWEKeySwitchKey[T], ctOut LWECiphertext[T]) {
-	buffDecomposed := e.decomposedVecBuffer(pfksk.decompParams)
-
+	buffDecomposed := e.vecDecomposedBuffer(pfksk.decompParams)
 	in := make([]T, len(ctIn))
+
 	for i := 0; i < e.Parameters.lweDimension; i++ {
 		for j, ct := range ctIn {
 			in[j] = ct.Value[i+1]
@@ -107,7 +108,7 @@ func (e Evaluator[T]) PublicFunctionalGLWEKeySwitch(ctIn []LWECiphertext[T], f f
 // where length of in is always inputCount.
 // The initial value of out is undefined.
 func (e Evaluator[T]) PublicFunctionalGLWEKeySwitchAssign(ctIn []LWECiphertext[T], f func([]T, poly.Poly[T]), pfksk PublicFunctionalGLWEKeySwitchKey[T], ctOut GLWECiphertext[T]) {
-	buffDecomposed := e.decomposedPolyBuffer(pfksk.decompParams)
+	buffDecomposed := e.polyDecomposedBuffer(pfksk.decompParams)
 	in := make([]T, len(ctIn))
 	out := poly.New[T](e.Parameters.polyDegree)
 

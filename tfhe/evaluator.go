@@ -29,12 +29,12 @@ const (
 
 // evaluationBuffer contains buffer values for Evaluator.
 type evaluationBuffer[T Tint] struct {
-	// decomposedPoly holds the decomposed polynomial.
+	// polyDecomposed holds the decomposed polynomial.
 	// Initially has length MaxBufferDecomposedLevel.
-	decomposedPoly []poly.Poly[T]
-	// decomposedVec holds the decomposed scalar.
+	polyDecomposed []poly.Poly[T]
+	// vecDecomposed holds the decomposed scalar.
 	// Initially has length MaxBufferDecomposedLevel.
-	decomposedVec []T
+	vecDecomposed []T
 
 	// fpOut holds the fourier transformed polynomial for multiplications.
 	fpOut poly.FourierPoly
@@ -43,10 +43,10 @@ type evaluationBuffer[T Tint] struct {
 	// ctCMux holds ct1 - ct0 in CMux.
 	ctCMux GLWECiphertext[T]
 
-	// decomposedAcc holds the decomposed accumulator in Blind Rotation.
-	decompsedAcc [][]poly.FourierPoly
-	// localAcc holds the value of (ACC * BootstrapKey_i).
-	localAcc GLWECiphertext[T]
+	// accDecomposed holds the decomposed accumulator in Blind Rotation.
+	accDecomposed [][]poly.FourierPoly
+	// acc holds the accumulator in Blind Rotation.
+	acc GLWECiphertext[T]
 
 	// ctRotate holds the blind rotated GLWE ciphertext for bootstrapping.
 	ctRotate GLWECiphertext[T]
@@ -78,29 +78,29 @@ func NewEvaluator[T Tint](params Parameters[T], evkey EvaluationKey[T]) Evaluato
 
 // newEvaluationBuffer allocates an empty evaluationBuffer.
 func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
-	decomposedPoly := make([]poly.Poly[T], maxBufferDecomposedLevel)
-	for i := range decomposedPoly {
-		decomposedPoly[i] = poly.New[T](params.polyDegree)
+	polyDecomposed := make([]poly.Poly[T], maxBufferDecomposedLevel)
+	for i := range polyDecomposed {
+		polyDecomposed[i] = poly.New[T](params.polyDegree)
 	}
 
-	decomposedAcc := make([][]poly.FourierPoly, params.glweDimension+1)
-	for i := range decomposedAcc {
-		decomposedAcc[i] = make([]poly.FourierPoly, params.bootstrapParameters.level)
-		for j := range decomposedAcc[i] {
-			decomposedAcc[i][j] = poly.NewFourierPoly(params.polyDegree)
+	accDecomposed := make([][]poly.FourierPoly, params.glweDimension+1)
+	for i := range accDecomposed {
+		accDecomposed[i] = make([]poly.FourierPoly, params.bootstrapParameters.level)
+		for j := range accDecomposed[i] {
+			accDecomposed[i][j] = poly.NewFourierPoly(params.polyDegree)
 		}
 	}
 
 	return evaluationBuffer[T]{
-		decomposedPoly: decomposedPoly,
-		decomposedVec:  make([]T, maxBufferDecomposedLevel),
+		polyDecomposed: polyDecomposed,
+		vecDecomposed:  make([]T, maxBufferDecomposedLevel),
 
 		fpOut:         poly.NewFourierPoly(params.polyDegree),
 		ctFourierProd: NewFourierGLWECiphertext(params),
 		ctCMux:        NewGLWECiphertext(params),
 
-		decompsedAcc: decomposedAcc,
-		localAcc:     NewGLWECiphertext(params),
+		accDecomposed: accDecomposed,
+		acc:           NewGLWECiphertext(params),
 
 		ctRotate:    NewGLWECiphertext(params),
 		ctExtract:   LWECiphertext[T]{Value: make([]T, params.LargeLWEDimension()+1)},

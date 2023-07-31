@@ -123,7 +123,7 @@ func (e Evaluator[T]) BlindRotate(ct LWECiphertext[T], lut LookUpTable[T]) GLWEC
 
 // BlindRotateAssign calculates the blind rotation of LWE ciphertext with respect to LUT.
 func (e Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
-	buffDecomposed := e.decomposedPolyBuffer(e.Parameters.bootstrapParameters)
+	buffDecomposed := e.polyDecomposedBuffer(e.Parameters.bootstrapParameters)
 
 	e.MonomialMulGLWEAssign(GLWECiphertext[T](lut), -e.ModSwitch(ct.Value[0]), ctOut)
 
@@ -132,15 +132,15 @@ func (e Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T],
 		for j := 0; j < e.Parameters.glweDimension+1; j++ {
 			e.DecomposePolyAssign(ctOut.Value[j], buffDecomposed, e.Parameters.bootstrapParameters)
 			for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
-				e.FourierTransformer.ToFourierPolyAssign(buffDecomposed[k], e.buffer.decompsedAcc[j][k])
+				e.FourierTransformer.ToFourierPolyAssign(buffDecomposed[k], e.buffer.accDecomposed[j][k])
 			}
 		}
 
 		for j := i * e.Parameters.blockSize; j < (i+1)*e.Parameters.blockSize; j++ {
-			e.ExternalProductHoistedAssign(e.EvaluationKey.BootstrapKey.Value[j], e.buffer.decompsedAcc, e.buffer.localAcc)
-			e.SubGLWEAssign(ctOut, e.buffer.localAcc, ctOut)
-			e.MonomialMulGLWEInPlace(e.buffer.localAcc, e.ModSwitch(ct.Value[j+1]))
-			e.AddGLWEAssign(ctOut, e.buffer.localAcc, ctOut)
+			e.ExternalProductHoistedAssign(e.EvaluationKey.BootstrapKey.Value[j], e.buffer.accDecomposed, e.buffer.acc)
+			e.SubGLWEAssign(ctOut, e.buffer.acc, ctOut)
+			e.MonomialMulGLWEInPlace(e.buffer.acc, e.ModSwitch(ct.Value[j+1]))
+			e.AddGLWEAssign(ctOut, e.buffer.acc, ctOut)
 		}
 	}
 }
@@ -179,7 +179,7 @@ func (e Evaluator[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchKey[T]) LWECip
 
 // KeySwitchAssign switches key of ct, and saves it to ctOut.
 func (e Evaluator[T]) KeySwitchAssign(ct LWECiphertext[T], ksk KeySwitchKey[T], ctOut LWECiphertext[T]) {
-	buffDecomposed := e.decomposedVecBuffer(ksk.decompParams)
+	buffDecomposed := e.vecDecomposedBuffer(ksk.decompParams)
 
 	for i := 0; i < ksk.InputLWEDimension(); i++ {
 		e.DecomposeAssign(ct.Value[i+1], buffDecomposed, ksk.decompParams)
