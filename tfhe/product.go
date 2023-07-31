@@ -93,30 +93,30 @@ func (e Evaluator[T]) ExternalProduct(ctFourierGGSW FourierGGSWCiphertext[T], ct
 // ExternalProductAssign calculates the external product between
 // ctFourierGGSW and ctGLWE, and writes it to ctGLWEOut.
 func (e Evaluator[T]) ExternalProductAssign(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
-	e.ExternalProductFourierAssign(ctFourierGGSW, ctGLWE, e.buffer.fourierCtForExtProd)
+	e.ExternalProductFourierAssign(ctFourierGGSW, ctGLWE, e.buffer.ctFourierProd)
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.ToScaledStandardPolyAssign(e.buffer.fourierCtForExtProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierTransformer.ToScaledStandardPolyAssign(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
 // ExternalProductAddAssign calculates the external product between
 // ctFourierGGSW and ctGLWE, and adds it to ctOut.
 func (e Evaluator[T]) ExternalProductAddAssign(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
-	e.ExternalProductFourierAssign(ctFourierGGSW, ctGLWE, e.buffer.fourierCtForExtProd)
+	e.ExternalProductFourierAssign(ctFourierGGSW, ctGLWE, e.buffer.ctFourierProd)
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.ToScaledStandardPolyAddAssign(e.buffer.fourierCtForExtProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierTransformer.ToScaledStandardPolyAddAssign(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
 // ExternalProductSubAssign calculates the external product between
 // ctFourierGGSW and ctGLWE, and subtracts it from ctOut.
 func (e Evaluator[T]) ExternalProductSubAssign(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
-	e.ExternalProductFourierAssign(ctFourierGGSW, ctGLWE, e.buffer.fourierCtForExtProd)
+	e.ExternalProductFourierAssign(ctFourierGGSW, ctGLWE, e.buffer.ctFourierProd)
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.ToScaledStandardPolySubAssign(e.buffer.fourierCtForExtProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierTransformer.ToScaledStandardPolySubAssign(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
@@ -159,15 +159,15 @@ func (e Evaluator[T]) ExternalProductHoistedAssign(ctFourierGGSW FourierGGSWCiph
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		for j := 0; j < ctFourierGGSW.decompParams.level; j++ {
 			if i == 0 && j == 0 {
-				e.FourierPolyMulFourierGLWEAssign(ctFourierGGSW.Value[i].Value[j], ctGLWE[i][j], e.buffer.fourierCtForExtProd)
+				e.FourierPolyMulFourierGLWEAssign(ctFourierGGSW.Value[i].Value[j], ctGLWE[i][j], e.buffer.ctFourierProd)
 			} else {
-				e.FourierPolyMulAddFourierGLWEAssign(ctFourierGGSW.Value[i].Value[j], ctGLWE[i][j], e.buffer.fourierCtForExtProd)
+				e.FourierPolyMulAddFourierGLWEAssign(ctFourierGGSW.Value[i].Value[j], ctGLWE[i][j], e.buffer.ctFourierProd)
 			}
 		}
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.ToScaledStandardPolyAssign(e.buffer.fourierCtForExtProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierTransformer.ToScaledStandardPolyAssign(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
@@ -183,6 +183,6 @@ func (e Evaluator[T]) CMux(ctFourierGGSW FourierGGSWCiphertext[T], ct0, ct1 GLWE
 // CMUX essentially acts as an if clause; if ctFourierGGSW = 0, ct0 is returned, and if ctFourierGGSW = 1, ct1 is returned.
 func (e Evaluator[T]) CMuxAssign(ctFourierGGSW FourierGGSWCiphertext[T], ct0, ct1, ctOut GLWECiphertext[T]) {
 	ctOut.CopyFrom(ct0)
-	e.SubGLWEAssign(ct1, ct0, e.buffer.ctSubForCMux)
-	e.ExternalProductAddAssign(ctFourierGGSW, e.buffer.ctSubForCMux, ctOut)
+	e.SubGLWEAssign(ct1, ct0, e.buffer.ctCMux)
+	e.ExternalProductAddAssign(ctFourierGGSW, e.buffer.ctCMux, ctOut)
 }

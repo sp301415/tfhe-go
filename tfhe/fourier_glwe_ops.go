@@ -53,25 +53,25 @@ func (e Evaluator[T]) PolyMulFourierGLWE(ct0 FourierGLWECiphertext[T], p poly.Po
 
 // PolyMulFourierGLWEAssign multiplies p to ct0 and writes to ctOut.
 func (e Evaluator[T]) PolyMulFourierGLWEAssign(ct0 FourierGLWECiphertext[T], p poly.Poly[T], ctOut FourierGLWECiphertext[T]) {
-	e.FourierTransformer.ToFourierPolyAssign(p, e.buffer.fpForOps)
+	e.FourierTransformer.ToFourierPolyAssign(p, e.buffer.fpOut)
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.MulAssign(ct0.Value[i], e.buffer.fpForOps, ctOut.Value[i])
+		e.FourierTransformer.MulAssign(ct0.Value[i], e.buffer.fpOut, ctOut.Value[i])
 	}
 }
 
 // PolyMulAddFourierGLWEAssign multiplies p to ct0 and adds to ctOut.
 func (e Evaluator[T]) PolyMulAddFourierGLWEAssign(ct0 FourierGLWECiphertext[T], p poly.Poly[T], ctOut FourierGLWECiphertext[T]) {
-	e.FourierTransformer.ToFourierPolyAssign(p, e.buffer.fpForOps)
+	e.FourierTransformer.ToFourierPolyAssign(p, e.buffer.fpOut)
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.MulAddAssign(ct0.Value[i], e.buffer.fpForOps, ctOut.Value[i])
+		e.FourierTransformer.MulAddAssign(ct0.Value[i], e.buffer.fpOut, ctOut.Value[i])
 	}
 }
 
 // PolyMulSubFourierGLWEAssign multiplies p to ct0 and subtracts from ctOut.
 func (e Evaluator[T]) PolyMulSubFourierGLWEAssign(ct0 FourierGLWECiphertext[T], p poly.Poly[T], ctOut FourierGLWECiphertext[T]) {
-	e.FourierTransformer.ToFourierPolyAssign(p, e.buffer.fpForOps)
+	e.FourierTransformer.ToFourierPolyAssign(p, e.buffer.fpOut)
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.MulSubAssign(ct0.Value[i], e.buffer.fpForOps, ctOut.Value[i])
+		e.FourierTransformer.MulSubAssign(ct0.Value[i], e.buffer.fpOut, ctOut.Value[i])
 	}
 }
 

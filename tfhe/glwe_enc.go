@@ -121,9 +121,9 @@ func (e Encryptor[T]) EncryptGGSWPlaintext(pt GLWEPlaintext[T], decompParams Dec
 func (e Encryptor[T]) EncryptGGSWAssign(pt GLWEPlaintext[T], ctOut GGSWCiphertext[T]) {
 	e.EncryptGLevAssign(pt, ctOut.Value[0])
 	for i := 1; i < e.Parameters.glweDimension+1; i++ {
-		e.PolyEvaluator.MulAssign(e.SecretKey.GLWEKey.Value[i-1], pt.Value, e.buffer.ptForGGSW)
+		e.PolyEvaluator.MulAssign(e.SecretKey.GLWEKey.Value[i-1], pt.Value, e.buffer.ptGGSW)
 		for j := 0; j < ctOut.decompParams.level; j++ {
-			e.PolyEvaluator.ScalarMulAssign(e.buffer.ptForGGSW, -ctOut.decompParams.ScaledBase(j), ctOut.Value[i].Value[j].Value[0])
+			e.PolyEvaluator.ScalarMulAssign(e.buffer.ptGGSW, -ctOut.decompParams.ScaledBase(j), ctOut.Value[i].Value[j].Value[0])
 			e.EncryptGLWEBody(ctOut.Value[i].Value[j])
 		}
 	}

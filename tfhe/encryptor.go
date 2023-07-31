@@ -30,8 +30,8 @@ type Encryptor[T Tint] struct {
 type encryptionBuffer[T Tint] struct {
 	// ctGLWE holds standard GLWE Ciphertext for Fourier encryption / decryptions.
 	ctGLWE GLWECiphertext[T]
-	// ptForGGSW holds GLWEKey * Pt in GGSW encryption.
-	ptForGGSW poly.Poly[T]
+	// ptGGSW holds GLWEKey * Pt in GGSW encryption.
+	ptGGSW poly.Poly[T]
 }
 
 // NewEncryptor returns a initialized Encryptor with given parameters.
@@ -63,8 +63,8 @@ func NewEncryptor[T Tint](params Parameters[T]) Encryptor[T] {
 // newEncryptionBuffer allocates an empty encryptionBuffer.
 func newEncryptionBuffer[T Tint](params Parameters[T]) encryptionBuffer[T] {
 	return encryptionBuffer[T]{
-		ctGLWE:    NewGLWECiphertext(params),
-		ptForGGSW: poly.New[T](params.polyDegree),
+		ctGLWE: NewGLWECiphertext(params),
+		ptGGSW: poly.New[T](params.polyDegree),
 	}
 }
 

@@ -36,13 +36,13 @@ func (e Encryptor[T]) GenBootstrapKey() BootstrapKey[T] {
 	for i := 0; i < e.Parameters.lweDimension; i++ {
 		for j := 0; j < e.Parameters.glweDimension+1; j++ {
 			if j == 0 {
-				e.buffer.ptForGGSW.Clear()
-				e.buffer.ptForGGSW.Coeffs[0] = e.SecretKey.LWEKey.Value[i]
+				e.buffer.ptGGSW.Clear()
+				e.buffer.ptGGSW.Coeffs[0] = e.SecretKey.LWEKey.Value[i]
 			} else {
-				e.PolyEvaluator.ScalarMulAssign(e.SecretKey.GLWEKey.Value[j-1], -e.SecretKey.LWEKey.Value[i], e.buffer.ptForGGSW)
+				e.PolyEvaluator.ScalarMulAssign(e.SecretKey.GLWEKey.Value[j-1], -e.SecretKey.LWEKey.Value[i], e.buffer.ptGGSW)
 			}
 			for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
-				e.PolyEvaluator.ScalarMulAssign(e.buffer.ptForGGSW, e.Parameters.bootstrapParameters.ScaledBase(k), e.buffer.ctGLWE.Value[0])
+				e.PolyEvaluator.ScalarMulAssign(e.buffer.ptGGSW, e.Parameters.bootstrapParameters.ScaledBase(k), e.buffer.ctGLWE.Value[0])
 				e.EncryptGLWEBody(e.buffer.ctGLWE)
 				e.ToFourierGLWECiphertextAssign(e.buffer.ctGLWE, bsk.Value[i].Value[j].Value[k])
 			}
@@ -85,13 +85,13 @@ func (e Encryptor[T]) GenBootstrapKeyParallel() BootstrapKey[T] {
 				i, j := job[0], job[1]
 
 				if j == 0 {
-					e.buffer.ptForGGSW.Clear()
-					e.buffer.ptForGGSW.Coeffs[0] = e.SecretKey.LWEKey.Value[i]
+					e.buffer.ptGGSW.Clear()
+					e.buffer.ptGGSW.Coeffs[0] = e.SecretKey.LWEKey.Value[i]
 				} else {
-					e.PolyEvaluator.ScalarMulAssign(e.SecretKey.GLWEKey.Value[j-1], -e.SecretKey.LWEKey.Value[i], e.buffer.ptForGGSW)
+					e.PolyEvaluator.ScalarMulAssign(e.SecretKey.GLWEKey.Value[j-1], -e.SecretKey.LWEKey.Value[i], e.buffer.ptGGSW)
 				}
 				for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
-					e.PolyEvaluator.ScalarMulAssign(e.buffer.ptForGGSW, e.Parameters.bootstrapParameters.ScaledBase(k), e.buffer.ctGLWE.Value[0])
+					e.PolyEvaluator.ScalarMulAssign(e.buffer.ptGGSW, e.Parameters.bootstrapParameters.ScaledBase(k), e.buffer.ctGLWE.Value[0])
 					e.EncryptGLWEBody(e.buffer.ctGLWE)
 					e.ToFourierGLWECiphertextAssign(e.buffer.ctGLWE, bsk.Value[i].Value[j].Value[k])
 				}

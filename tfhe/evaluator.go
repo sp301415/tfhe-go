@@ -36,24 +36,24 @@ type evaluationBuffer[T Tint] struct {
 	// Initially has length MaxBufferDecomposedLevel.
 	decomposedVec []T
 
-	// fpForOps holds the fourier transformed polynomial for multiplications.
-	fpForOps poly.FourierPoly
-	// fourierCtForExtProd holds the fourier transformed ctGLWEOut in ExternalProductFourier.
-	fourierCtForExtProd FourierGLWECiphertext[T]
-	// ctSubForCMux holds ct1 - ct0 in CMux.
-	ctSubForCMux GLWECiphertext[T]
+	// fpOut holds the fourier transformed polynomial for multiplications.
+	fpOut poly.FourierPoly
+	// ctFourierProd holds the fourier transformed ctGLWEOut in ExternalProductFourier.
+	ctFourierProd FourierGLWECiphertext[T]
+	// ctCMux holds ct1 - ct0 in CMux.
+	ctCMux GLWECiphertext[T]
 
 	// decomposedAcc holds the decomposed accumulator in Blind Rotation.
 	decompsedAcc [][]poly.FourierPoly
 	// localAcc holds the value of (ACC * BootstrapKey_i).
 	localAcc GLWECiphertext[T]
 
-	// blindRotatedCt holds the blind rotated GLWE ciphertext for bootstrapping.
-	blindRotatedCt GLWECiphertext[T]
-	// sampleExtractedCt holds the sample extracted LWE large ciphertext for bootstrapping.
-	sampleExtractedCt LWECiphertext[T]
-	// leftoverCt holds LargeLWEDimension - LWEDimension + 1 sized ciphertext from keyswitching.
-	leftoverCt LWECiphertext[T]
+	// ctRotate holds the blind rotated GLWE ciphertext for bootstrapping.
+	ctRotate GLWECiphertext[T]
+	// ctExtract holds the sample extracted LWE large ciphertext for bootstrapping.
+	ctExtract LWECiphertext[T]
+	// ctKeySwitch holds LargeLWEDimension - LWEDimension + 1 sized ciphertext from keyswitching.
+	ctKeySwitch LWECiphertext[T]
 
 	// lut is an empty lut, used for BlindRotateFunc.
 	lut LookUpTable[T]
@@ -95,16 +95,16 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 		decomposedPoly: decomposedPoly,
 		decomposedVec:  make([]T, maxBufferDecomposedLevel),
 
-		fpForOps:            poly.NewFourierPoly(params.polyDegree),
-		fourierCtForExtProd: NewFourierGLWECiphertext(params),
-		ctSubForCMux:        NewGLWECiphertext(params),
+		fpOut:         poly.NewFourierPoly(params.polyDegree),
+		ctFourierProd: NewFourierGLWECiphertext(params),
+		ctCMux:        NewGLWECiphertext(params),
 
 		decompsedAcc: decomposedAcc,
 		localAcc:     NewGLWECiphertext(params),
 
-		blindRotatedCt:    NewGLWECiphertext(params),
-		sampleExtractedCt: LWECiphertext[T]{Value: make([]T, params.LargeLWEDimension()+1)},
-		leftoverCt:        LWECiphertext[T]{Value: make([]T, params.LargeLWEDimension()-params.lweDimension+1)},
+		ctRotate:    NewGLWECiphertext(params),
+		ctExtract:   LWECiphertext[T]{Value: make([]T, params.LargeLWEDimension()+1)},
+		ctKeySwitch: LWECiphertext[T]{Value: make([]T, params.LargeLWEDimension()-params.lweDimension+1)},
 
 		lut: NewLookUpTable(params),
 	}
