@@ -45,7 +45,7 @@ func (e Encryptor) EncryptLWEBool(message bool) tfhe.LWECiphertext[uint32] {
 //
 // Note that this is DIFFERENT from calling EncryptLWE with 0 or 1.
 func (e Encryptor) EncryptLWEBoolAssign(message bool, ct tfhe.LWECiphertext[uint32]) {
-	e.BaseEncryptor.EncryptLWEAssign(e.EncodeLWEBool(message), ct)
+	e.BaseEncryptor.EncryptLWEPlaintextAssign(e.EncodeLWEBool(message), ct)
 }
 
 // DecryptLWEBool decrypts LWE ciphertext to boolean value.

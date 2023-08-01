@@ -1,6 +1,7 @@
 package tfhe_test
 
 import (
+	"fmt"
 	"math"
 	"testing"
 
@@ -198,4 +199,51 @@ func BenchmarkBootstrap(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		benchEvaluator.BootstrapAssign(ct, ctOut)
 	}
+}
+
+func ExampleEncryptor() {
+	params := tfhe.ParamsUint4.Compile() // Parameters should be compiled before use.
+
+	enc := tfhe.NewEncryptor(params) // Set up Encryptor.
+
+	ctLWE := enc.EncryptLWE(4)
+	ctGLWE := enc.EncryptGLWE([]int{1, 2, 3, 4})
+
+	// Decrypt Everything!
+	fmt.Println(enc.DecryptLWE(ctLWE))       // 4
+	fmt.Println(enc.DecryptGLWE(ctGLWE)[:4]) // [1, 2, 3, 4]
+}
+
+func ExampleEvaluator_CMux() {
+	params := tfhe.ParamsUint4.Compile()
+	decompParams := tfhe.DecompositionParametersLiteral[uint64]{
+		Base:  1 << 3,
+		Level: 6,
+	}.Compile()
+
+	enc := tfhe.NewEncryptor(params)
+
+	ct0 := enc.EncryptGLWE([]int{2})
+	ct1 := enc.EncryptGLWE([]int{5})
+	ctFlag := enc.EncryptFourierGGSW([]int{1}, decompParams)
+
+	// We don't need evaluation key for CMUX,
+	// so we can just supply empty key.
+	eval := tfhe.NewEvaluator(params, tfhe.EvaluationKey[uint64]{})
+
+	ctOut := eval.CMux(ctFlag, ct0, ct1)
+	fmt.Println(enc.DecryptGLWE(ctOut)[0]) // 5
+}
+
+func ExampleEvaluator_BootstrapFunc() {
+	params := tfhe.ParamsUint4.Compile()
+
+	enc := tfhe.NewEncryptor(params)
+
+	ct := enc.EncryptLWE(3)
+
+	eval := tfhe.NewEvaluator(params, enc.GenEvaluationKeyParallel())
+
+	ctOut := eval.BootstrapFunc(ct, func(x int) int { return 2*x + 1 })
+	fmt.Println(enc.DecryptLWE(ctOut)) // 7 = 2*3+1
 }

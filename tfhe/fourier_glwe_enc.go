@@ -10,13 +10,13 @@ func (e Encryptor[T]) EncryptFourierGLWE(messages []int) FourierGLWECiphertext[T
 // EncryptFourierGLWEPlaintext encrypts GLWE plaintext to FourierGLWE ciphertext.
 func (e Encryptor[T]) EncryptFourierGLWEPlaintext(pt GLWEPlaintext[T]) FourierGLWECiphertext[T] {
 	ctOut := NewFourierGLWECiphertext(e.Parameters)
-	e.EncryptFourierGLWEAssign(pt, ctOut)
+	e.EncryptFourierGLWEPlaintextAssign(pt, ctOut)
 	return ctOut
 }
 
-// EncryptFourierGLWEAssign encrypts GLWE plaintext to FourierGLWE ciphertext and writes it to ctOut.
-func (e Encryptor[T]) EncryptFourierGLWEAssign(pt GLWEPlaintext[T], ctOut FourierGLWECiphertext[T]) {
-	e.EncryptGLWEAssign(pt, e.buffer.ctGLWE)
+// EncryptFourierGLWEPlaintextAssign encrypts GLWE plaintext to FourierGLWE ciphertext and writes it to ctOut.
+func (e Encryptor[T]) EncryptFourierGLWEPlaintextAssign(pt GLWEPlaintext[T], ctOut FourierGLWECiphertext[T]) {
+	e.EncryptGLWEPlaintextAssign(pt, e.buffer.ctGLWE)
 	e.ToFourierGLWECiphertextAssign(e.buffer.ctGLWE, ctOut)
 }
 
@@ -28,14 +28,14 @@ func (e Encryptor[T]) DecryptFourierGLWE(ct FourierGLWECiphertext[T]) []int {
 // DecryptFourierGLWEPlaintext decrypts FourierGLWE ciphertext to GLWE plaintext.
 func (e Encryptor[T]) DecryptFourierGLWEPlaintext(ct FourierGLWECiphertext[T]) GLWEPlaintext[T] {
 	ptOut := NewGLWEPlaintext(e.Parameters)
-	e.DecryptFourierGLWEAssign(ct, ptOut)
+	e.DecryptFourierGLWEPlaintextAssign(ct, ptOut)
 	return ptOut
 }
 
-// DecryptFourierGLWEAssign decrypts FourierGLWE ciphertext to GLWE plaintext and writes it to ptOut.
-func (e Encryptor[T]) DecryptFourierGLWEAssign(ct FourierGLWECiphertext[T], ptOut GLWEPlaintext[T]) {
+// DecryptFourierGLWEPlaintextAssign decrypts FourierGLWE ciphertext to GLWE plaintext and writes it to ptOut.
+func (e Encryptor[T]) DecryptFourierGLWEPlaintextAssign(ct FourierGLWECiphertext[T], ptOut GLWEPlaintext[T]) {
 	e.ToStandardGLWECiphertextAssign(ct, e.buffer.ctGLWE)
-	e.DecryptGLWEAssign(e.buffer.ctGLWE, ptOut)
+	e.DecryptGLWEPlaintextAssign(e.buffer.ctGLWE, ptOut)
 }
 
 // EncryptFourierGLev encrypts integer message to FourierGLev ciphertext.
@@ -50,12 +50,12 @@ func (e Encryptor[T]) EncryptFourierGLev(messages []int, decompParams Decomposit
 // EncryptFourierGLevPlaintext encrypts GLWE plaintext to FourierGLev ciphertext.
 func (e Encryptor[T]) EncryptFourierGLevPlaintext(pt GLWEPlaintext[T], decompParams DecompositionParameters[T]) FourierGLevCiphertext[T] {
 	ctOut := NewFourierGLevCiphertext(e.Parameters, decompParams)
-	e.EncryptFourierGLevAssign(pt, ctOut)
+	e.EncryptFourierGLevPlaintextAssign(pt, ctOut)
 	return ctOut
 }
 
-// EncryptFourierGLevAssign encrypts GLWE plaintext to FourierGLev ciphertext, and writes it to ctOut.
-func (e Encryptor[T]) EncryptFourierGLevAssign(pt GLWEPlaintext[T], ctOut FourierGLevCiphertext[T]) {
+// EncryptFourierGLevPlaintextAssign encrypts GLWE plaintext to FourierGLev ciphertext, and writes it to ctOut.
+func (e Encryptor[T]) EncryptFourierGLevPlaintextAssign(pt GLWEPlaintext[T], ctOut FourierGLevCiphertext[T]) {
 	for i := 0; i < ctOut.decompParams.level; i++ {
 		e.PolyEvaluator.ScalarMulAssign(pt.Value, ctOut.decompParams.ScaledBase(i), e.buffer.ctGLWE.Value[0])
 		e.EncryptGLWEBody(e.buffer.ctGLWE)
@@ -76,14 +76,14 @@ func (e Encryptor[T]) DecryptFourierGLev(ct FourierGLevCiphertext[T]) []int {
 // DecryptFourierGLevPlaintext decrypts FourierGLev ciphertext to GLWE plaintext.
 func (e Encryptor[T]) DecryptFourierGLevPlaintext(ct FourierGLevCiphertext[T]) GLWEPlaintext[T] {
 	ptOut := NewGLWEPlaintext(e.Parameters)
-	e.DecryptFourierGLevAssign(ct, ptOut)
+	e.DecryptFourierGLevPlaintextAssign(ct, ptOut)
 	return ptOut
 }
 
-// DecryptFourierGLevAssign decrypts FourierGLev ciphertext to GLWE plaintext and writes it to ptOut.
-func (e Encryptor[T]) DecryptFourierGLevAssign(ct FourierGLevCiphertext[T], ptOut GLWEPlaintext[T]) {
+// DecryptFourierGLevPlaintextAssign decrypts FourierGLev ciphertext to GLWE plaintext and writes it to ptOut.
+func (e Encryptor[T]) DecryptFourierGLevPlaintextAssign(ct FourierGLevCiphertext[T], ptOut GLWEPlaintext[T]) {
 	ctLastLevel := ct.Value[ct.decompParams.level-1]
-	e.DecryptFourierGLWEAssign(ctLastLevel, ptOut)
+	e.DecryptFourierGLWEPlaintextAssign(ctLastLevel, ptOut)
 }
 
 // EncryptFourierGGSW encrypts integer message to FourierGGSW ciphertext.
@@ -98,13 +98,13 @@ func (e Encryptor[T]) EncryptFourierGGSW(messages []int, decompParams Decomposit
 // EncryptFourierGGSWPlaintext encrypts GLWE plaintext to FourierGGSW ciphertext.
 func (e Encryptor[T]) EncryptFourierGGSWPlaintext(pt GLWEPlaintext[T], decompParams DecompositionParameters[T]) FourierGGSWCiphertext[T] {
 	ctOut := NewFourierGGSWCiphertext(e.Parameters, decompParams)
-	e.EncryptFourierGGSWAssign(pt, ctOut)
+	e.EncryptFourierGGSWPlaintextAssign(pt, ctOut)
 	return ctOut
 }
 
-// EncryptFourierGGSWAssign encrypts GLWE plaintext to FourierGGSW ciphertext, and writes it to ctOut.
-func (e Encryptor[T]) EncryptFourierGGSWAssign(pt GLWEPlaintext[T], ctOut FourierGGSWCiphertext[T]) {
-	e.EncryptFourierGLevAssign(pt, ctOut.Value[0])
+// EncryptFourierGGSWPlaintextAssign encrypts GLWE plaintext to FourierGGSW ciphertext, and writes it to ctOut.
+func (e Encryptor[T]) EncryptFourierGGSWPlaintextAssign(pt GLWEPlaintext[T], ctOut FourierGGSWCiphertext[T]) {
+	e.EncryptFourierGLevPlaintextAssign(pt, ctOut.Value[0])
 	for i := 1; i < e.Parameters.glweDimension+1; i++ {
 		e.PolyEvaluator.MulAssign(e.SecretKey.GLWEKey.Value[i-1], pt.Value, e.buffer.ptGGSW)
 		for j := 0; j < ctOut.decompParams.level; j++ {
@@ -125,7 +125,7 @@ func (e Encryptor[T]) DecryptFourierGGSWPlaintext(ct FourierGGSWCiphertext[T]) G
 	return e.DecryptFourierGLevPlaintext(ct.Value[0])
 }
 
-// DecryptFourierGGSWAssign decrypts FourierGGSW ciphertext to GLWE plaintext and writes it to ptOut.
-func (e Encryptor[T]) DecryptFourierGGSWAssign(ct FourierGGSWCiphertext[T], ptOut GLWEPlaintext[T]) {
-	e.DecryptFourierGLevAssign(ct.Value[0], ptOut)
+// DecryptFourierGGSWPlaintextAssign decrypts FourierGGSW ciphertext to GLWE plaintext and writes it to ptOut.
+func (e Encryptor[T]) DecryptFourierGGSWPlaintextAssign(ct FourierGGSWCiphertext[T], ptOut GLWEPlaintext[T]) {
+	e.DecryptFourierGLevPlaintextAssign(ct.Value[0], ptOut)
 }

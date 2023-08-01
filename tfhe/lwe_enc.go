@@ -13,12 +13,12 @@ func (e Encryptor[T]) EncryptLWE(message int) LWECiphertext[T] {
 // EncryptLWEPlaintext encrypts LWE plaintext to LWE ciphertext.
 func (e Encryptor[T]) EncryptLWEPlaintext(pt LWEPlaintext[T]) LWECiphertext[T] {
 	ctOut := NewLWECiphertext(e.Parameters)
-	e.EncryptLWEAssign(pt, ctOut)
+	e.EncryptLWEPlaintextAssign(pt, ctOut)
 	return ctOut
 }
 
-// EncryptLWEAssign encrypts LWE plaintext to LWE ciphertext and writes it to ctOut.
-func (e Encryptor[T]) EncryptLWEAssign(pt LWEPlaintext[T], ctOut LWECiphertext[T]) {
+// EncryptLWEPlaintextAssign encrypts LWE plaintext to LWE ciphertext and writes it to ctOut.
+func (e Encryptor[T]) EncryptLWEPlaintextAssign(pt LWEPlaintext[T], ctOut LWECiphertext[T]) {
 	ctOut.Value[0] = pt.Value
 	e.EncryptLWEBody(ctOut)
 }
@@ -50,12 +50,12 @@ func (e Encryptor[T]) EncryptLev(message int, decompParams DecompositionParamete
 // EncryptLevPlaintext encrypts LWE plaintext to Lev ciphertext.
 func (e Encryptor[T]) EncryptLevPlaintext(pt LWEPlaintext[T], decompParams DecompositionParameters[T]) LevCiphertext[T] {
 	ctOut := NewLevCiphertext(e.Parameters, decompParams)
-	e.EncryptLevAssign(pt, ctOut)
+	e.EncryptLevPlaintextAssign(pt, ctOut)
 	return ctOut
 }
 
-// EncryptLevAssign encrypts LWE plaintext to Lev ciphertext, and writes it to ctOut.
-func (e Encryptor[T]) EncryptLevAssign(pt LWEPlaintext[T], ctOut LevCiphertext[T]) {
+// EncryptLevPlaintextAssign encrypts LWE plaintext to Lev ciphertext, and writes it to ctOut.
+func (e Encryptor[T]) EncryptLevPlaintextAssign(pt LWEPlaintext[T], ctOut LevCiphertext[T]) {
 	for i := 0; i < ctOut.decompParams.level; i++ {
 		ctOut.Value[i].Value[0] = pt.Value << ctOut.decompParams.ScaledBaseLog(i)
 		e.EncryptLWEBody(ctOut.Value[i])
@@ -83,13 +83,13 @@ func (e Encryptor[T]) EncryptGSW(message int, decompParams DecompositionParamete
 // EncryptGSWPlaintext encrypts LWE plaintext to GSW ciphertext.
 func (e Encryptor[T]) EncryptGSWPlaintext(pt LWEPlaintext[T], decompParams DecompositionParameters[T]) GSWCiphertext[T] {
 	ctOut := NewGSWCiphertext(e.Parameters, decompParams)
-	e.EncryptGSWAssign(pt, ctOut)
+	e.EncryptGSWPlaintextAssign(pt, ctOut)
 	return ctOut
 }
 
-// EncryptGSWAssign encrypts LWE plaintext to GSW ciphertext, and writes it to ctOut.
-func (e Encryptor[T]) EncryptGSWAssign(pt LWEPlaintext[T], ctOut GSWCiphertext[T]) {
-	e.EncryptLevAssign(pt, ctOut.Value[0])
+// EncryptGSWPlaintextAssign encrypts LWE plaintext to GSW ciphertext, and writes it to ctOut.
+func (e Encryptor[T]) EncryptGSWPlaintextAssign(pt LWEPlaintext[T], ctOut GSWCiphertext[T]) {
+	e.EncryptLevPlaintextAssign(pt, ctOut.Value[0])
 
 	for i := 1; i < e.Parameters.lweDimension+1; i++ {
 		for j := 0; j < ctOut.decompParams.level; j++ {
