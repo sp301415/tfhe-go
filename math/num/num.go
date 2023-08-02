@@ -195,3 +195,47 @@ func MinN[T Real](x ...T) T {
 func Sqrt[T Integer](x T) T {
 	return T(math.Round(math.Sqrt(float64(x))))
 }
+
+// FromFloat64 returns value of type T from float64 value.
+// This fixes Go's behavior when casting negative float
+// to unsigned types.
+//
+// Must be used with ToFloat64.
+func FromFloat64[T Integer](x float64) T {
+	x = math.Round(x)
+
+	var z T
+	switch any(z).(type) {
+	case uint, uintptr:
+		return T(int(x))
+	case uint8:
+		return T(int8(x))
+	case uint16:
+		return T(int16(x))
+	case uint32:
+		return T(int32(x))
+	case uint64:
+		return T(int64(x))
+	}
+	return T(x)
+}
+
+// ToFloat64 returns x as float64.
+//
+// Must be used with FromFloat64.
+func ToFloat64[T Integer](x T) float64 {
+	var z T
+	switch any(z).(type) {
+	case uint, uintptr:
+		return float64(int(x))
+	case uint8:
+		return float64(int8(x))
+	case uint16:
+		return float64(int16(x))
+	case uint32:
+		return float64(int32(x))
+	case uint64:
+		return float64(int64(x))
+	}
+	return float64(x)
+}

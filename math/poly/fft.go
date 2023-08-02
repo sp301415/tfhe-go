@@ -182,27 +182,9 @@ func (f FourierTransformer[T]) InvFFTInPlace(fp FourierPoly) {
 	}
 }
 
-// toFloat64 returns x as float64.
-func (f FourierTransformer[T]) toFloat64(x T) float64 {
-	var z T
-	switch any(z).(type) {
-	case uint, uintptr:
-		return float64(int(x))
-	case uint8:
-		return float64(int8(x))
-	case uint16:
-		return float64(int16(x))
-	case uint32:
-		return float64(int32(x))
-	case uint64:
-		return float64(int64(x))
-	}
-	return float64(x)
-}
-
 // toScaledFloat64 returns scaled x as float64.
 func (f FourierTransformer[T]) toScaledFloat64(x T) float64 {
-	return f.toFloat64(x) / f.maxT
+	return num.ToFloat64(x) / f.maxT
 }
 
 // ToFourierPoly transforms Poly to FourierPoly and returns it.
@@ -217,7 +199,7 @@ func (f FourierTransformer[T]) ToFourierPolyAssign(p Poly[T], fp FourierPoly) {
 	N := f.degree
 
 	for j := 0; j < N/2; j++ {
-		fp.Coeffs[j] = complex(f.toFloat64(p.Coeffs[j]), -f.toFloat64(p.Coeffs[j+N/2])) * f.w2Nj[j]
+		fp.Coeffs[j] = complex(num.ToFloat64(p.Coeffs[j]), -num.ToFloat64(p.Coeffs[j+N/2])) * f.w2Nj[j]
 	}
 
 	f.FFTInPlace(fp)
@@ -243,6 +225,13 @@ func (f FourierTransformer[T]) ToScaledFourierPolyAssign(p Poly[T], fp FourierPo
 	f.FFTInPlace(fp)
 }
 
+// fromScaledFloat64 returns T value from scaled float64 value.
+func (f FourierTransformer[T]) fromScaledFloat64(x float64) T {
+	fr := x - math.Round(x)
+	fr *= f.maxT
+	return num.FromFloat64[T](fr)
+}
+
 // ToStandardPoly transforms FourierPoly to Poly and returns it.
 func (f FourierTransformer[T]) ToStandardPoly(fp FourierPoly) Poly[T] {
 	p := New[T](f.degree)
@@ -259,31 +248,9 @@ func (f FourierTransformer[T]) ToStandardPolyAssign(fp FourierPoly, p Poly[T]) {
 
 	for j := 0; j < N/2; j++ {
 		f.buffer.fpInv.Coeffs[j] *= f.w2NjInv[j]
-		p.Coeffs[j] = T(math.Round(real(f.buffer.fpInv.Coeffs[j])))
-		p.Coeffs[j+N/2] = T(-math.Round(imag(f.buffer.fpInv.Coeffs[j])))
+		p.Coeffs[j] = num.FromFloat64[T](real(f.buffer.fpInv.Coeffs[j]))
+		p.Coeffs[j+N/2] = -num.FromFloat64[T](imag(f.buffer.fpInv.Coeffs[j]))
 	}
-}
-
-// fromScaledFloat64 returns T value from scaled float64 value.
-func (f FourierTransformer[T]) fromScaledFloat64(x float64) T {
-	fr := x - math.Round(x)
-	fr *= f.maxT
-	fr = math.Round(fr)
-
-	var z T
-	switch any(z).(type) {
-	case uint, uintptr:
-		return T(int(fr))
-	case uint8:
-		return T(int8(fr))
-	case uint16:
-		return T(int16(fr))
-	case uint32:
-		return T(int32(fr))
-	case uint64:
-		return T(int64(fr))
-	}
-	return T(fr)
 }
 
 // ToScaledStandardPoly transforms FourierPoly to Poly and returns it.
@@ -306,7 +273,7 @@ func (f FourierTransformer[T]) ToScaledStandardPolyAssign(fp FourierPoly, p Poly
 	for j := 0; j < N/2; j++ {
 		f.buffer.fpInv.Coeffs[j] *= f.w2NjInv[j]
 		p.Coeffs[j] = f.fromScaledFloat64(real(f.buffer.fpInv.Coeffs[j]))
-		p.Coeffs[j+N/2] = f.fromScaledFloat64(-imag(f.buffer.fpInv.Coeffs[j]))
+		p.Coeffs[j+N/2] = -f.fromScaledFloat64(imag(f.buffer.fpInv.Coeffs[j]))
 	}
 }
 
@@ -321,7 +288,7 @@ func (f FourierTransformer[T]) ToScaledStandardPolyAddAssign(fp FourierPoly, p P
 	for j := 0; j < N/2; j++ {
 		f.buffer.fpInv.Coeffs[j] *= f.w2NjInv[j]
 		p.Coeffs[j] += f.fromScaledFloat64(real(f.buffer.fpInv.Coeffs[j]))
-		p.Coeffs[j+N/2] += f.fromScaledFloat64(-imag(f.buffer.fpInv.Coeffs[j]))
+		p.Coeffs[j+N/2] += -f.fromScaledFloat64(imag(f.buffer.fpInv.Coeffs[j]))
 	}
 }
 
@@ -336,7 +303,7 @@ func (f FourierTransformer[T]) ToScaledStandardPolySubAssign(fp FourierPoly, p P
 	for j := 0; j < N/2; j++ {
 		f.buffer.fpInv.Coeffs[j] *= f.w2NjInv[j]
 		p.Coeffs[j] -= f.fromScaledFloat64(real(f.buffer.fpInv.Coeffs[j]))
-		p.Coeffs[j+N/2] -= f.fromScaledFloat64(-imag(f.buffer.fpInv.Coeffs[j]))
+		p.Coeffs[j+N/2] -= -f.fromScaledFloat64(imag(f.buffer.fpInv.Coeffs[j]))
 	}
 }
 

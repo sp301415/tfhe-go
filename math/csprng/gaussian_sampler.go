@@ -82,7 +82,7 @@ func (s GaussianSampler[T]) normFloat2() (float64, float64) {
 // sample2 returns a pair of numbers sampled from rounded gaussian distribution.
 func (s GaussianSampler[T]) sample2() (T, T) {
 	u, v := s.normFloat2()
-	return T(math.Round(u * s.StdDev)), T(math.Round(v * s.StdDev))
+	return num.FromFloat64[T](u * s.StdDev), num.FromFloat64[T](v * s.StdDev)
 }
 
 // Sample returns a number sampled from rounded gaussian distribution.
