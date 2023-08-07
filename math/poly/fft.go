@@ -19,9 +19,11 @@ type FourierTransformer[T num.Integer] struct {
 	// maxT is a float64 value of 2^sizeT.
 	maxT float64
 
-	// wNj holds the precomputed values of w_N^j where j = 0 ~ N/2.
+	// wNj holds the precomputed values of w_N^j where j = 0 ~ N/2,
+	// ordered in bit-reversed order.
 	wNj []complex128
-	// wNjInv holds the precomputed values of w_N^-j where j = 0 ~ N/2.
+	// wNjInv holds the precomputed values of w_N^-j where j = 0 ~ N/2,
+	// ordered in bit-reversed order.
 	wNjInv []complex128
 	// w2Nj holds the precomputed values of w_2N^j where j = 0 ~ N/2.
 	w2Nj []complex128
@@ -100,43 +102,6 @@ func (f FourierTransformer[T]) ShallowCopy() FourierTransformer[T] {
 		w2NjInv: f.w2NjInv,
 
 		buffer: newfftBuffer[T](f.degree),
-	}
-}
-
-// FourierPoly is a polynomial with Fourier Transform applied.
-type FourierPoly struct {
-	// Coeffs has length Degree / 2.
-	Coeffs []complex128
-}
-
-// NewFourierPoly creates a fourier polynomial with degree N with empty coefficients.
-// N should be power of two. Otherwise, it panics.
-func NewFourierPoly(N int) FourierPoly {
-	if !num.IsPowerOfTwo(N) {
-		panic("degree not power of two")
-	}
-	return FourierPoly{Coeffs: make([]complex128, N/2)}
-}
-
-// Degree returns the degree of the polynomial.
-func (p FourierPoly) Degree() int {
-	return len(p.Coeffs) * 2
-}
-
-// Copy returns a copy of the polynomial.
-func (p FourierPoly) Copy() FourierPoly {
-	return FourierPoly{Coeffs: vec.Copy(p.Coeffs)}
-}
-
-// CopyFrom copies p0 to p.
-func (p *FourierPoly) CopyFrom(p0 FourierPoly) {
-	vec.CopyAssign(p0.Coeffs, p.Coeffs)
-}
-
-// Clear clears all the coefficients to zero.
-func (p FourierPoly) Clear() {
-	for i := range p.Coeffs {
-		p.Coeffs[i] = 0
 	}
 }
 

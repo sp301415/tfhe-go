@@ -44,7 +44,7 @@ func (e Encoder) DecodeLWEBool(pt tfhe.LWEPlaintext[uint32]) bool {
 // with zero mask and no error.
 // Resulting ciphertext is cryptographically insecure.
 //
-// Note that this is DIFFERENT from calling EncodeLWE with 0 or 1.
+// Note that this is different from calling EncodeLWE with 0 or 1.
 func (e Encoder) EncodeLWEBoolCiphertext(message bool) tfhe.LWECiphertext[uint32] {
 	ct := tfhe.NewLWECiphertext(e.Parameters)
 	ct.Value[0] = e.EncodeLWEBool(message).Value
@@ -55,7 +55,7 @@ func (e Encoder) EncodeLWEBoolCiphertext(message bool) tfhe.LWECiphertext[uint32
 // with zero mask and no error.
 // Resulting ciphertext is cryptographically insecure.
 //
-// Note that this is DIFFERENT from calling EncodeLWE with 0 or 1.
+// Note that this is different from calling EncodeLWE with 0 or 1.
 func (e Encoder) EncodeLWEBoolCiphertextAssign(message bool, ct tfhe.LWECiphertext[uint32]) {
 	ct.Value[0] = e.EncodeLWEBool(message).Value
 }

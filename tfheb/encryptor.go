@@ -35,7 +35,7 @@ func (e Encryptor) ShallowCopy() Encryptor {
 // EncryptLWEBool encrypts boolean message to LWE ciphertexts.
 // Like most languages, false == 0, and true == 1.
 //
-// Note that this is DIFFERENT from calling EncryptLWE with 0 or 1.
+// Note that this is different from calling EncryptLWE with 0 or 1.
 func (e Encryptor) EncryptLWEBool(message bool) tfhe.LWECiphertext[uint32] {
 	return e.BaseEncryptor.EncryptLWEPlaintext(e.EncodeLWEBool(message))
 }
@@ -43,7 +43,7 @@ func (e Encryptor) EncryptLWEBool(message bool) tfhe.LWECiphertext[uint32] {
 // EncryptLWEBool encrypts boolean message to LWE ciphertexts.
 // Like most languages, false == 0, and true == 1.
 //
-// Note that this is DIFFERENT from calling EncryptLWE with 0 or 1.
+// Note that this is different from calling EncryptLWE with 0 or 1.
 func (e Encryptor) EncryptLWEBoolAssign(message bool, ct tfhe.LWECiphertext[uint32]) {
 	e.BaseEncryptor.EncryptLWEPlaintextAssign(e.EncodeLWEBool(message), ct)
 }

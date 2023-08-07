@@ -123,7 +123,7 @@ func (e Evaluator[T]) BlindRotate(ct LWECiphertext[T], lut LookUpTable[T]) GLWEC
 
 // BlindRotateAssign calculates the blind rotation of LWE ciphertext with respect to LUT.
 func (e Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
-	buffDecomposed := e.polyDecomposedBuffer(e.Parameters.bootstrapParameters)
+	buffDecomposed := e.polyDecomposed(e.Parameters.bootstrapParameters)
 
 	e.MonomialMulGLWEAssign(GLWECiphertext[T](lut), -e.ModSwitch(ct.Value[0]), ctOut)
 
@@ -179,7 +179,7 @@ func (e Evaluator[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchKey[T]) LWECip
 
 // KeySwitchAssign switches key of ct, and saves it to ctOut.
 func (e Evaluator[T]) KeySwitchAssign(ct LWECiphertext[T], ksk KeySwitchKey[T], ctOut LWECiphertext[T]) {
-	buffDecomposed := e.vecDecomposedBuffer(ksk.decompParams)
+	buffDecomposed := e.vecDecomposed(ksk.decompParams)
 
 	for i := 0; i < ksk.InputLWEDimension(); i++ {
 		e.DecomposeAssign(ct.Value[i+1], buffDecomposed, ksk.decompParams)

@@ -23,7 +23,7 @@ const (
 	// maxBufferDecomposedLevel represents the length of
 	// initial buffer for decomposed values.
 	// You can get buffer of appropriate length
-	// by using decomposedVecBuffer() and decomposedPolyBuffer().
+	// by using vecDecomposedBuffer() and polyDecomposedBuffer().
 	maxBufferDecomposedLevel = 5
 )
 
@@ -31,9 +31,11 @@ const (
 type evaluationBuffer[T Tint] struct {
 	// polyDecomposed holds the decomposed polynomial.
 	// Initially has length MaxBufferDecomposedLevel.
+	// Use polyDecomposed() to get appropriate length of buffer.
 	polyDecomposed []poly.Poly[T]
 	// vecDecomposed holds the decomposed scalar.
 	// Initially has length MaxBufferDecomposedLevel.
+	// Use vecDecomposed() to get appropriate length of buffer.
 	vecDecomposed []T
 
 	// fpOut holds the fourier transformed polynomial for multiplications.

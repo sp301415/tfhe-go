@@ -45,6 +45,7 @@ func (p DecompositionParametersLiteral[T]) Compile() DecompositionParameters[T] 
 	return DecompositionParameters[T]{
 		base:           p.Base,
 		baseHalf:       p.Base / 2,
+		baseMask:       p.Base - 1,
 		baseLog:        baseLog,
 		maxBits:        num.SizeT[T](),
 		level:          p.Level,
@@ -58,6 +59,9 @@ type DecompositionParameters[T Tint] struct {
 	base T
 	// BaseHalf equals Base / 2.
 	baseHalf T
+	// BaseMask equals Base - 1.
+	// This is used for modulo operation, where c % Base equals c & BaseMask.
+	baseMask T
 	// BaseLog equals log(Base).
 	baseLog int
 	// MaxBits equals bit length of T.
@@ -121,10 +125,10 @@ func (p DecompositionParameters[T]) LastScaledBaseLog() int {
 // always use the default parameters provided.
 type ParametersLiteral[T Tint] struct {
 	// LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
-	// Length of LWE secret key is LWEDimension, and the length of LWE ciphertext is LWEDimension+1.
+	// Length of LWE secret key is LWEDimension, and length of LWE ciphertext is LWEDimension+1.
 	LWEDimension int
 	// GLWEDimension is the dimension of GLWE lattice used. Usually this is denoted by k.
-	// Length of GLWE secret key is GLWEDimension, and the length of GLWE ciphertext is GLWEDimension+1.
+	// Length of GLWE secret key is GLWEDimension, and length of GLWE ciphertext is GLWEDimension+1.
 	GLWEDimension int
 	// PolyDegree is the degree of polynomials in GLWE entities. Usually this is denoted by N.
 	PolyDegree int
@@ -194,10 +198,10 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 // Parameters are read-only, compiled parameters based on ParametersLiteral.
 type Parameters[T Tint] struct {
 	// LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
-	// Length of LWE secret key is LWEDimension, and the length of LWE ciphertext is LWEDimension+1.
+	// Length of LWE secret key is LWEDimension, and length of LWE ciphertext is LWEDimension+1.
 	lweDimension int
 	// GLWEDimension is the dimension of GLWE lattice used. Usually this is denoted by k.
-	// Length of GLWE secret key is GLWEDimension, and the length of GLWE ciphertext is GLWEDimension+1.
+	// Length of GLWE secret key is GLWEDimension, and length of GLWE ciphertext is GLWEDimension+1.
 	glweDimension int
 	// PolyDegree is the degree of polynomials in GLWE entities. Usually this is denoted by N.
 	polyDegree int
@@ -227,7 +231,7 @@ type Parameters[T Tint] struct {
 }
 
 // LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
-// Length of LWE secret key is LWEDimension, and the length of LWE ciphertext is LWEDimension+1.
+// Length of LWE secret key is LWEDimension, and length of LWE ciphertext is LWEDimension+1.
 func (p Parameters[T]) LWEDimension() int {
 	return p.lweDimension
 }
@@ -239,7 +243,7 @@ func (p Parameters[T]) LargeLWEDimension() int {
 }
 
 // GLWEDimension is the dimension of GLWE lattice used. Usually this is denoted by k.
-// Length of GLWE secret key is GLWEDimension, and the length of GLWE ciphertext is GLWEDimension+1.
+// Length of GLWE secret key is GLWEDimension, and length of GLWE ciphertext is GLWEDimension+1.
 func (p Parameters[T]) GLWEDimension() int {
 	return p.glweDimension
 }
