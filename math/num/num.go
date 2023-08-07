@@ -21,7 +21,7 @@ type Real interface {
 	Integer | ~float32 | ~float64
 }
 
-// Number represents Integer, Float, and Complex types.
+// Number represents Integer, Float, and Complex type.
 type Number interface {
 	Real | ~complex64 | ~complex128
 }
@@ -166,15 +166,15 @@ func MaxN[T Real](x ...T) T {
 	}
 
 	max = x[0]
-	for _, v := range x {
-		if v > max {
-			max = v
+	for i := 1; i < len(x); i++ {
+		if x[i] > max {
+			max = x[i]
 		}
 	}
 	return max
 }
 
-// MaxN returns the smallest number of x.
+// MinN returns the smallest number of x.
 // If x is empty, it returns the zero value of T.
 func MinN[T Real](x ...T) T {
 	var min T
@@ -183,9 +183,9 @@ func MinN[T Real](x ...T) T {
 	}
 
 	min = x[0]
-	for _, v := range x {
-		if v < min {
-			min = v
+	for i := 1; i < len(x); i++ {
+		if x[i] < min {
+			min = x[i]
 		}
 	}
 	return min
