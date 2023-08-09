@@ -8,7 +8,7 @@ import (
 // Encryptor encrypts and decrypts TFHE plaintexts and ciphertexts.
 // This is meant to be private, only for clients.
 type Encryptor[T Tint] struct {
-	Encoder[T]
+	*Encoder[T]
 
 	Parameters Parameters[T]
 
@@ -18,8 +18,8 @@ type Encryptor[T Tint] struct {
 	lweSampler     csprng.GaussianSampler[T]
 	glweSampler    csprng.GaussianSampler[T]
 
-	PolyEvaluator      poly.Evaluator[T]
-	FourierTransformer poly.FourierTransformer[T]
+	PolyEvaluator      *poly.Evaluator[T]
+	FourierTransformer *poly.FourierTransformer[T]
 
 	SecretKey SecretKey[T]
 
@@ -36,7 +36,7 @@ type encryptionBuffer[T Tint] struct {
 
 // NewEncryptor returns a initialized Encryptor with given parameters.
 // It also automatically samples LWE and GLWE key.
-func NewEncryptor[T Tint](params Parameters[T]) Encryptor[T] {
+func NewEncryptor[T Tint](params Parameters[T]) *Encryptor[T] {
 	// Fill samplers to call encryptor.GenSecretKey()
 	encryptor := Encryptor[T]{
 		Encoder: NewEncoder(params),
@@ -57,7 +57,7 @@ func NewEncryptor[T Tint](params Parameters[T]) Encryptor[T] {
 
 	// Generate Secret Key
 	encryptor.SecretKey = encryptor.GenSecretKey()
-	return encryptor
+	return &encryptor
 }
 
 // newEncryptionBuffer allocates an empty encryptionBuffer.
@@ -70,8 +70,8 @@ func newEncryptionBuffer[T Tint](params Parameters[T]) encryptionBuffer[T] {
 
 // ShallowCopy returns a shallow copy of this Encryptor.
 // Returned Encryptor is safe for concurrent use.
-func (e Encryptor[T]) ShallowCopy() Encryptor[T] {
-	return Encryptor[T]{
+func (e Encryptor[T]) ShallowCopy() *Encryptor[T] {
+	return &Encryptor[T]{
 		Encoder: e.Encoder,
 
 		Parameters: e.Parameters,

@@ -19,8 +19,8 @@ type Encoder struct {
 }
 
 // NewEncoder returns a initialized Encoder with given parameters.
-func NewEncoder(params tfhe.Parameters[uint32]) Encoder {
-	return Encoder{
+func NewEncoder(params tfhe.Parameters[uint32]) *Encoder {
+	return &Encoder{
 		Parameters: params,
 	}
 }
@@ -28,7 +28,7 @@ func NewEncoder(params tfhe.Parameters[uint32]) Encoder {
 // EncodeLWEBool encodes boolean message to LWE plaintext.
 //
 // Note that this is DIFFERENT from calling EncodeLWE with 0 or 1.
-func (e Encoder) EncodeLWEBool(message bool) tfhe.LWEPlaintext[uint32] {
+func (e *Encoder) EncodeLWEBool(message bool) tfhe.LWEPlaintext[uint32] {
 	if message {
 		return tfhe.LWEPlaintext[uint32]{Value: PlaintextTrue}
 	}
@@ -36,7 +36,7 @@ func (e Encoder) EncodeLWEBool(message bool) tfhe.LWEPlaintext[uint32] {
 }
 
 // DecodeLWEBool decodes LWE plaintext to boolean message.
-func (e Encoder) DecodeLWEBool(pt tfhe.LWEPlaintext[uint32]) bool {
+func (e *Encoder) DecodeLWEBool(pt tfhe.LWEPlaintext[uint32]) bool {
 	return pt.Value < (1 << 31)
 }
 
@@ -45,7 +45,7 @@ func (e Encoder) DecodeLWEBool(pt tfhe.LWEPlaintext[uint32]) bool {
 // Resulting ciphertext is cryptographically insecure.
 //
 // Note that this is different from calling EncodeLWE with 0 or 1.
-func (e Encoder) EncodeLWEBoolCiphertext(message bool) tfhe.LWECiphertext[uint32] {
+func (e *Encoder) EncodeLWEBoolCiphertext(message bool) tfhe.LWECiphertext[uint32] {
 	ct := tfhe.NewLWECiphertext(e.Parameters)
 	ct.Value[0] = e.EncodeLWEBool(message).Value
 	return ct
@@ -56,6 +56,6 @@ func (e Encoder) EncodeLWEBoolCiphertext(message bool) tfhe.LWECiphertext[uint32
 // Resulting ciphertext is cryptographically insecure.
 //
 // Note that this is different from calling EncodeLWE with 0 or 1.
-func (e Encoder) EncodeLWEBoolCiphertextAssign(message bool, ct tfhe.LWECiphertext[uint32]) {
+func (e *Encoder) EncodeLWEBoolCiphertextAssign(message bool, ct tfhe.LWECiphertext[uint32]) {
 	ct.Value[0] = e.EncodeLWEBool(message).Value
 }

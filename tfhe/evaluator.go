@@ -7,12 +7,12 @@ import (
 // Evaluator evaluates homomorphic operations on ciphertexts.
 // This is meant to be public, usually for servers.
 type Evaluator[T Tint] struct {
-	Encoder[T]
+	*Encoder[T]
 
 	Parameters Parameters[T]
 
-	PolyEvaluator      poly.Evaluator[T]
-	FourierTransformer poly.FourierTransformer[T]
+	PolyEvaluator      *poly.Evaluator[T]
+	FourierTransformer *poly.FourierTransformer[T]
 
 	EvaluationKey EvaluationKey[T]
 
@@ -63,8 +63,8 @@ type evaluationBuffer[T Tint] struct {
 
 // NewEvaluator creates a new Evaluator based on parameters.
 // This does not copy evaluation keys, since they are large.
-func NewEvaluator[T Tint](params Parameters[T], evkey EvaluationKey[T]) Evaluator[T] {
-	return Evaluator[T]{
+func NewEvaluator[T Tint](params Parameters[T], evkey EvaluationKey[T]) *Evaluator[T] {
+	return &Evaluator[T]{
 		Encoder: NewEncoder(params),
 
 		Parameters: params,
@@ -114,8 +114,8 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 
 // ShallowCopy returns a shallow copy of this Evaluator.
 // Returned Evaluator is safe for concurrent use.
-func (e Evaluator[T]) ShallowCopy() Evaluator[T] {
-	return Evaluator[T]{
+func (e Evaluator[T]) ShallowCopy() *Evaluator[T] {
+	return &Evaluator[T]{
 		Encoder: e.Encoder,
 
 		Parameters: e.Parameters,

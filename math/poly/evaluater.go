@@ -37,12 +37,12 @@ type evaluationBuffer[T num.Integer] struct {
 
 // NewEvaluator creates a new Evaluator with degree N.
 // N should be power of two.
-func NewEvaluator[T num.Integer](N int) Evaluator[T] {
+func NewEvaluator[T num.Integer](N int) *Evaluator[T] {
 	if !num.IsPowerOfTwo(N) {
 		panic("degree should be power of two")
 	}
 
-	return Evaluator[T]{
+	return &Evaluator[T]{
 		degree: N,
 
 		buffer: newEvaluationBuffer[T](N),
@@ -60,8 +60,8 @@ func newEvaluationBuffer[T num.Integer](N int) evaluationBuffer[T] {
 
 // ShallowCopy returns a shallow copy of this Evaluator.
 // Returned Evaluator is safe for concurrent use.
-func (e Evaluator[T]) ShallowCopy() Evaluator[T] {
-	return Evaluator[T]{
+func (e Evaluator[T]) ShallowCopy() *Evaluator[T] {
+	return &Evaluator[T]{
 		degree: e.degree,
 
 		buffer: newEvaluationBuffer[T](e.degree),
