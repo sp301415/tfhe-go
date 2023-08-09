@@ -202,7 +202,7 @@ func BenchmarkBootstrap(b *testing.B) {
 }
 
 func ExampleEncryptor() {
-	params := tfhe.ParamsUint4.Compile() // Parameters should be compiled before use.
+	params := tfhe.ParamsUint4.Compile() // Parameters must be compiled before use.
 
 	enc := tfhe.NewEncryptor(params) // Set up Encryptor.
 

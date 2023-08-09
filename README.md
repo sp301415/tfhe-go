@@ -4,7 +4,7 @@
 
 TFHE-go is a pure Go implementation of TFHE[[CGGI16](https://eprint.iacr.org/2016/870)] Scheme. The structure of this library is similar to another great Go-based FHE library, [Lattigo](https://github.com/tuneinsight/lattigo).
 
-Some of the implementations are taken from the excellent [TFHE-rs](https://github.com/zama-ai/tfhe-rs), developed by Zama. The goal is to implement most of the functionalities that TFHE-rs provides, with readable code and minimal performance overhead.
+This library is heavily influenced by excellent [TFHE-rs](https://github.com/zama-ai/tfhe-rs), developed by [Zama](https://www.zama.ai). The goal is to implement most of the functionalities that TFHE-rs provides, with readable code and minimal performance overhead.
 
 This library was not audited or reviewed by security experts, so I do not recommend this library for any real-world production uses.
 
@@ -12,7 +12,7 @@ This library was not audited or reviewed by security experts, so I do not recomm
 ## Examples
 ### Encryption
 ```go
-params := tfhe.ParamsUint4.Compile() // Parameters should be compiled before use.
+params := tfhe.ParamsUint4.Compile() // Parameters must be compiled before use.
 
 enc := tfhe.NewEncryptor(params) // Set up Encryptor.
 
@@ -82,11 +82,11 @@ fmt.Println(enc.DecryptLWEBool(ctOut))
 ```
 
 ## Benchmarks
-All results were measured from Apple M1. `ParamsBoolean` and `ParamsUint6` are used.
-|Operations|Time|
-|----------|----|
-|Programmable Bootstrapping|176.0ms ± 2%|
-|Gate Bootstrapping|19.03ms ± 1%|
+All results were measured from Apple M2. `ParamsBoolean` and `ParamsUint6` are used. Currently, TFHE-go is ~1.8x slower than TFHE-rs.
+|Operation|TFHE-go|TFHE-rs|
+|---------|-------|-------|
+|Programmable Bootstrapping|169.5ms|96.3ms|
+|Gate Bootstrapping|19.46ms|10.70ms|
 
 ## References
 - TFHE: Fast Fully Homomorphic Encryption over the Torus (https://eprint.iacr.org/2018/421)
