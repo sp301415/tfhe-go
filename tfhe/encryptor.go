@@ -70,7 +70,7 @@ func newEncryptionBuffer[T Tint](params Parameters[T]) encryptionBuffer[T] {
 
 // ShallowCopy returns a shallow copy of this Encryptor.
 // Returned Encryptor is safe for concurrent use.
-func (e Encryptor[T]) ShallowCopy() *Encryptor[T] {
+func (e *Encryptor[T]) ShallowCopy() *Encryptor[T] {
 	return &Encryptor[T]{
 		Encoder: e.Encoder,
 

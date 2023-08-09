@@ -60,7 +60,7 @@ func newEvaluationBuffer[T num.Integer](N int) evaluationBuffer[T] {
 
 // ShallowCopy returns a shallow copy of this Evaluator.
 // Returned Evaluator is safe for concurrent use.
-func (e Evaluator[T]) ShallowCopy() *Evaluator[T] {
+func (e *Evaluator[T]) ShallowCopy() *Evaluator[T] {
 	return &Evaluator[T]{
 		degree: e.degree,
 
@@ -69,6 +69,6 @@ func (e Evaluator[T]) ShallowCopy() *Evaluator[T] {
 }
 
 // Degree returns the degree of polynomial that the evaluator can handle.
-func (e Evaluator[T]) Degree() int {
+func (e *Evaluator[T]) Degree() int {
 	return e.degree
 }

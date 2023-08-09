@@ -114,7 +114,7 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 
 // ShallowCopy returns a shallow copy of this Evaluator.
 // Returned Evaluator is safe for concurrent use.
-func (e Evaluator[T]) ShallowCopy() *Evaluator[T] {
+func (e *Evaluator[T]) ShallowCopy() *Evaluator[T] {
 	return &Evaluator[T]{
 		Encoder: e.Encoder,
 
