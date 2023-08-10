@@ -13,15 +13,16 @@ func (e *Evaluator[T]) PrivateFunctionalLWEKeySwitch(ctIn []LWECiphertext[T], pf
 
 // PrivateFunctionalLWEKeySwitchAssign applies LWE private functional keyswitching on ctIn and writes it to ctOut.
 func (e *Evaluator[T]) PrivateFunctionalLWEKeySwitchAssign(ctIn []LWECiphertext[T], pfksk PrivateFunctionalLWEKeySwitchKey[T], ctOut LWECiphertext[T]) {
-	buffDecomposed := e.vecDecomposed(pfksk.decompParams)
+	vecDecomposed := e.getVecDecomposedBuffer(pfksk.decompParams)
+
 	for i := 0; i < pfksk.InputCount(); i++ {
 		for j := 0; j < e.Parameters.lweDimension+1; j++ {
-			e.DecomposeAssign(ctIn[i].Value[j], buffDecomposed, pfksk.decompParams)
+			e.DecomposeAssign(ctIn[i].Value[j], vecDecomposed, pfksk.decompParams)
 			for k := 0; k < pfksk.decompParams.level; k++ {
 				if i == 0 && j == 0 && k == 0 {
-					e.ScalarMulLWEAssign(pfksk.Value[i].Value[j].Value[k], -buffDecomposed[k], ctOut)
+					e.ScalarMulLWEAssign(pfksk.Value[i].Value[j].Value[k], -vecDecomposed[k], ctOut)
 				} else {
-					e.ScalarMulSubLWEAssign(pfksk.Value[i].Value[j].Value[k], buffDecomposed[k], ctOut)
+					e.ScalarMulSubLWEAssign(pfksk.Value[i].Value[j].Value[k], vecDecomposed[k], ctOut)
 				}
 			}
 		}
@@ -37,16 +38,16 @@ func (e *Evaluator[T]) PrivateFunctionalGLWEKeySwitch(ctIn []LWECiphertext[T], p
 
 // PrivateFunctionalGLWEKeySwitchAssign applies GLWE private functional keyswitching on ctIn and writes it to ctOut.
 func (e *Evaluator[T]) PrivateFunctionalGLWEKeySwitchAssign(ctIn []LWECiphertext[T], pfksk PrivateFunctionalGLWEKeySwitchKey[T], ctOut GLWECiphertext[T]) {
-	buffDecomposed := e.vecDecomposed(pfksk.decompParams)
+	vecDecomposed := e.getVecDecomposedBuffer(pfksk.decompParams)
 
 	for i := 0; i < pfksk.InputCount(); i++ {
 		for j := 0; j < e.Parameters.lweDimension+1; j++ {
-			e.DecomposeAssign(ctIn[i].Value[j], buffDecomposed, pfksk.decompParams)
+			e.DecomposeAssign(ctIn[i].Value[j], vecDecomposed, pfksk.decompParams)
 			for k := 0; k < pfksk.decompParams.level; k++ {
 				if i == 0 && j == 0 && k == 0 {
-					e.ScalarMulGLWEAssign(pfksk.Value[i][j].Value[k], -buffDecomposed[k], ctOut)
+					e.ScalarMulGLWEAssign(pfksk.Value[i][j].Value[k], -vecDecomposed[k], ctOut)
 				} else {
-					e.ScalarMulSubGLWEAssign(pfksk.Value[i][j].Value[k], buffDecomposed[k], ctOut)
+					e.ScalarMulSubGLWEAssign(pfksk.Value[i][j].Value[k], vecDecomposed[k], ctOut)
 				}
 			}
 		}
@@ -68,19 +69,20 @@ func (e *Evaluator[T]) PublicFunctionalLWEKeySwitch(ctIn []LWECiphertext[T], f f
 // The function f has the form f(in []T) T,
 // where length of in is always len(ctIn).
 func (e *Evaluator[T]) PublicFunctionalLWEKeySwitchAssign(ctIn []LWECiphertext[T], f func([]T) T, pfksk PublicFunctionalLWEKeySwitchKey[T], ctOut LWECiphertext[T]) {
-	buffDecomposed := e.vecDecomposed(pfksk.decompParams)
+	vecDecomposed := e.getVecDecomposedBuffer(pfksk.decompParams)
+
 	in := make([]T, len(ctIn))
 
 	for i := 0; i < e.Parameters.lweDimension; i++ {
 		for j, ct := range ctIn {
 			in[j] = ct.Value[i+1]
 		}
-		e.DecomposeAssign(f(in), buffDecomposed, pfksk.decompParams)
+		e.DecomposeAssign(f(in), vecDecomposed, pfksk.decompParams)
 		for j := 0; j < pfksk.decompParams.level; j++ {
 			if i == 0 && j == 0 {
-				e.ScalarMulLWEAssign(pfksk.Value[i].Value[j], -buffDecomposed[j], ctOut)
+				e.ScalarMulLWEAssign(pfksk.Value[i].Value[j], -vecDecomposed[j], ctOut)
 			} else {
-				e.ScalarMulSubLWEAssign(pfksk.Value[i].Value[j], buffDecomposed[j], ctOut)
+				e.ScalarMulSubLWEAssign(pfksk.Value[i].Value[j], vecDecomposed[j], ctOut)
 			}
 		}
 	}
@@ -108,7 +110,8 @@ func (e *Evaluator[T]) PublicFunctionalGLWEKeySwitch(ctIn []LWECiphertext[T], f 
 // where length of in is always inputCount.
 // The initial value of out is undefined.
 func (e *Evaluator[T]) PublicFunctionalGLWEKeySwitchAssign(ctIn []LWECiphertext[T], f func([]T, poly.Poly[T]), pfksk PublicFunctionalGLWEKeySwitchKey[T], ctOut GLWECiphertext[T]) {
-	buffDecomposed := e.polyDecomposed(pfksk.decompParams)
+	polyDecomposed := e.getPolyDecomposedBuffer(pfksk.decompParams)
+
 	in := make([]T, len(ctIn))
 	out := poly.New[T](e.Parameters.polyDegree)
 
@@ -118,13 +121,13 @@ func (e *Evaluator[T]) PublicFunctionalGLWEKeySwitchAssign(ctIn []LWECiphertext[
 			in[j] = ct.Value[i+1]
 		}
 		f(in, out)
-		e.DecomposePolyAssign(out, buffDecomposed, pfksk.decompParams)
+		e.DecomposePolyAssign(out, polyDecomposed, pfksk.decompParams)
 		for j := 0; j < pfksk.decompParams.level; j++ {
 			if i == 0 && j == 0 {
-				e.PolyMulFourierGLWEAssign(pfksk.Value[i].Value[j], buffDecomposed[j], fourierCtOut)
+				e.PolyMulFourierGLWEAssign(pfksk.Value[i].Value[j], polyDecomposed[j], fourierCtOut)
 				e.NegFourierGLWEAssign(fourierCtOut, fourierCtOut)
 			} else {
-				e.PolyMulSubFourierGLWEAssign(pfksk.Value[i].Value[j], buffDecomposed[j], fourierCtOut)
+				e.PolyMulSubFourierGLWEAssign(pfksk.Value[i].Value[j], polyDecomposed[j], fourierCtOut)
 			}
 		}
 	}

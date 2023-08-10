@@ -123,16 +123,16 @@ func (e *Evaluator[T]) BlindRotate(ct LWECiphertext[T], lut LookUpTable[T]) GLWE
 
 // BlindRotateAssign calculates the blind rotation of LWE ciphertext with respect to LUT.
 func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
-	buffDecomposed := e.polyDecomposed(e.Parameters.bootstrapParameters)
+	polyDecomposed := e.getPolyDecomposedBuffer(e.Parameters.bootstrapParameters)
 
 	e.MonomialMulGLWEAssign(GLWECiphertext[T](lut), -e.ModSwitch(ct.Value[0]), ctOut)
 
 	// Implementation of Algorithm 2 and Section 5.1 from https://eprint.iacr.org/2023/958.pdf
 	for i := 0; i < e.Parameters.BlockCount(); i++ {
 		for j := 0; j < e.Parameters.glweDimension+1; j++ {
-			e.DecomposePolyAssign(ctOut.Value[j], buffDecomposed, e.Parameters.bootstrapParameters)
+			e.DecomposePolyAssign(ctOut.Value[j], polyDecomposed, e.Parameters.bootstrapParameters)
 			for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
-				e.FourierTransformer.ToFourierPolyAssign(buffDecomposed[k], e.buffer.accDecomposed[j][k])
+				e.FourierTransformer.ToFourierPolyAssign(polyDecomposed[k], e.buffer.accDecomposed[j][k])
 			}
 		}
 
@@ -177,15 +177,15 @@ func (e *Evaluator[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchKey[T]) LWECi
 
 // KeySwitchAssign switches key of ct, and saves it to ctOut.
 func (e *Evaluator[T]) KeySwitchAssign(ct LWECiphertext[T], ksk KeySwitchKey[T], ctOut LWECiphertext[T]) {
-	buffDecomposed := e.vecDecomposed(ksk.decompParams)
+	vecDecomposed := e.getVecDecomposedBuffer(ksk.decompParams)
 
 	for i := 0; i < ksk.InputLWEDimension(); i++ {
-		e.DecomposeAssign(ct.Value[i+1], buffDecomposed, ksk.decompParams)
+		e.DecomposeAssign(ct.Value[i+1], vecDecomposed, ksk.decompParams)
 		for j := 0; j < ksk.decompParams.level; j++ {
 			if i == 0 && j == 0 {
-				e.ScalarMulLWEAssign(ksk.Value[i].Value[j], -buffDecomposed[j], ctOut)
+				e.ScalarMulLWEAssign(ksk.Value[i].Value[j], -vecDecomposed[j], ctOut)
 			} else {
-				e.ScalarMulSubLWEAssign(ksk.Value[i].Value[j], buffDecomposed[j], ctOut)
+				e.ScalarMulSubLWEAssign(ksk.Value[i].Value[j], vecDecomposed[j], ctOut)
 			}
 		}
 	}

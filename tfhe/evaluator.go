@@ -19,23 +19,15 @@ type Evaluator[T Tint] struct {
 	buffer evaluationBuffer[T]
 }
 
-const (
-	// maxBufferDecomposedLevel represents the length of
-	// initial buffer for decomposed values.
-	// You can get buffer of appropriate length
-	// by using vecDecomposedBuffer() and polyDecomposedBuffer().
-	maxBufferDecomposedLevel = 5
-)
-
 // evaluationBuffer contains buffer values for Evaluator.
 type evaluationBuffer[T Tint] struct {
 	// polyDecomposed holds the decomposed polynomial.
-	// Initially has length MaxBufferDecomposedLevel.
-	// Use polyDecomposed() to get appropriate length of buffer.
+	// Initially has length bootstrapParameters.level.
+	// Use getPolyDecomposedBuffer() to get appropriate length of buffer.
 	polyDecomposed []poly.Poly[T]
 	// vecDecomposed holds the decomposed scalar.
-	// Initially has length MaxBufferDecomposedLevel.
-	// Use vecDecomposed() to get appropriate length of buffer.
+	// Initially has length keyswitchParameters.level.
+	// Use getVecDecomposedBuffer() to get appropriate length of buffer.
 	vecDecomposed []T
 
 	// fpOut holds the fourier transformed polynomial for multiplications.
@@ -80,7 +72,7 @@ func NewEvaluator[T Tint](params Parameters[T], evkey EvaluationKey[T]) *Evaluat
 
 // newEvaluationBuffer allocates an empty evaluationBuffer.
 func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
-	polyDecomposed := make([]poly.Poly[T], maxBufferDecomposedLevel)
+	polyDecomposed := make([]poly.Poly[T], params.bootstrapParameters.level)
 	for i := range polyDecomposed {
 		polyDecomposed[i] = poly.New[T](params.polyDegree)
 	}
@@ -95,7 +87,7 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 
 	return evaluationBuffer[T]{
 		polyDecomposed: polyDecomposed,
-		vecDecomposed:  make([]T, maxBufferDecomposedLevel),
+		vecDecomposed:  make([]T, params.keyswitchParameters.level),
 
 		fpOut:         poly.NewFourierPoly(params.polyDegree),
 		ctFourierProd: NewFourierGLWECiphertext(params),
