@@ -82,11 +82,11 @@ fmt.Println(enc.DecryptLWEBool(ctOut))
 ```
 
 ## Benchmarks
-All results were measured from Apple M2. `ParamsBoolean` and `ParamsUint6` are used. Currently, TFHE-go is ~1.8x slower than TFHE-rs.
-|Operation|TFHE-go|TFHE-rs|
-|---------|-------|-------|
-|Programmable Bootstrapping|169.5ms|96.3ms|
-|Gate Bootstrapping|19.46ms|10.70ms|
+All results were measured from Apple M2. `ParamsBoolean` and `ParamsUint6` are used.
+|Operation|Timing|
+|---------|-------|
+|Programmable Bootstrapping|163.0ms ± 0%|
+|Gate Bootstrapping|18.74ms ± 0%|
 
 ## References
 - TFHE: Fast Fully Homomorphic Encryption over the Torus (https://eprint.iacr.org/2018/421)

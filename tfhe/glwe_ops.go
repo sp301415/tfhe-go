@@ -135,3 +135,12 @@ func (e *Evaluator[T]) MonomialMulGLWEInPlace(ct0 GLWECiphertext[T], d int) {
 		e.PolyEvaluator.MonomialMulInPlace(ct0.Value[i], d)
 	}
 }
+
+// MonomialMulMinusOneGLWEAssign multplies X^d-1 to ct0, and adds it to ctOut.
+// This operation is frequently used in Blind Rotation,
+// so we implement it as a special function.
+func (e *Evaluator[T]) MonomialMulMinusOneAddGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.PolyEvaluator.MonomialMulMinusOneAddAssign(ct0.Value[i], d, ctOut.Value[i])
+	}
+}
