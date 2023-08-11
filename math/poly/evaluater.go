@@ -9,8 +9,8 @@ import (
 //   - Add(p0, p1) is equivalent to var p = p0 + p1.
 //   - AddAssign(p0, p1, pOut) is equivalent to pOut = p0 + p1.
 //
-// For some operations, InPlace method is implemented, where it
-// transforms the input directly.
+// Note that usually calling Assign(p0, pOut, pOut) is valid.
+// However, for some operations, InPlace methods are implemented seperately.
 //
 // # Warning
 //
@@ -26,7 +26,6 @@ type Evaluator[T num.Integer] struct {
 // evaluationBuffer contains buffer values for Evaluator.
 type evaluationBuffer[T num.Integer] struct {
 	// karatsubaBuffer holds the intermediate buffers used in karatsuba multiplication.
-	// Each buffer can be indexed as ((3^depth - 1)/2) + index. (I know, right?)
 	karatsubaBuffer []karatsubaBuffer[T]
 
 	// pOut holds the intermediate polynomial in MulAdd or MulSub type operations.

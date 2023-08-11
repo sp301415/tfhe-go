@@ -4,8 +4,8 @@
 //   - Add(v0, v1) is equivalent to v := v0 + v1.
 //   - AddAssign(v0, v1, vOut) is equivalent to vOut = v0 + v1.
 //
-// For some operations, InPlace method is implemented, where it
-// transforms the input directly.
+// Note that usually calling Assign(p0, pOut, pOut) is valid.
+// However, for some operations, InPlace methods are implemented seperately.
 //
 // # Warning
 //

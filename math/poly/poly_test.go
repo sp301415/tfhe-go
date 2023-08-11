@@ -31,9 +31,9 @@ func BenchmarkOperations(b *testing.B) {
 		}
 	})
 
-	b.Run("Mul", func(b *testing.B) {
+	b.Run("Neg", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			eval.MulAssign(p0, p1, pOut)
+			eval.NegAssign(p0, pOut)
 		}
 	})
 
@@ -49,9 +49,9 @@ func BenchmarkOperations(b *testing.B) {
 		}
 	})
 
-	b.Run("MulAdd", func(b *testing.B) {
+	b.Run("Mul", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			eval.MulAddAssign(p0, p1, pOut)
+			eval.MulAssign(p0, p1, pOut)
 		}
 	})
 
@@ -69,4 +69,47 @@ func BenchmarkOperations(b *testing.B) {
 			fft.PolyMulAssign(fp0, p1, fpOut)
 		}
 	})
+}
+
+func BenchmarkFFT(b *testing.B) {
+	p := poly.New[uint64](N)
+	sampler.SampleSliceAssign(p.Coeffs)
+	fp := fft.ToFourierPoly(p)
+
+	b.Run("FFT", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			fft.FFTInPlace(fp)
+		}
+	})
+
+	b.Run("ToFourierPoly", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			fft.ToFourierPolyAssign(p, fpOut)
+		}
+	})
+
+	b.Run("ToScaledFourierPoly", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			fft.ToScaledFourierPolyAssign(p, fpOut)
+		}
+	})
+
+	b.Run("InvFFT", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			fft.InvFFTInPlace(fp)
+		}
+	})
+
+	b.Run("ToStandardPoly", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			fft.ToStandardPolyAssign(fp, pOut)
+		}
+	})
+
+	b.Run("ToScaledStandardPoly", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			fft.ToScaledStandardPolyAssign(fp, pOut)
+		}
+	})
+
 }

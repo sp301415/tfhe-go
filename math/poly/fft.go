@@ -13,6 +13,18 @@ import (
 //
 // While FFT is much faster than Evaluator's karatsuba multiplication,
 // in TFHE it is used sparsely because of float64 precision.
+//
+// Operations usually take two forms: for example,
+//   - Add(p0, p1) is equivalent to var p = p0 + p1.
+//   - AddAssign(p0, p1, pOut) is equivalent to pOut = p0 + p1.
+//
+// Note that usually calling Assign(p0, pOut, pOut) is valid.
+// However, for some operations, InPlace methods are implemented seperately.
+//
+// # Warning
+//
+// For performance reasons, functions in this package usually don't implement bound checks.
+// If length mismatch happens, usually the result is wrong.
 type FourierTransformer[T num.Integer] struct {
 	// degree is the degree of polynomial that this transformer can handle.
 	degree int
