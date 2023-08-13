@@ -8,17 +8,17 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: [ '1.18', '1.19', '1.20' ]
+        go: [ '1.18', '1.19', '1.20', '1.21' ]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Setup Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go }}
 
       - name: Run Tests
         run: |
-          go test ./tfhe/ -v -timeout=0
-          go test ./tfheb/ -v -timeout=0
+          go test ./tfhe/ -timeout=0
+          go test ./tfheb/ -timeout=0
