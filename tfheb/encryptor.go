@@ -86,6 +86,34 @@ func (e *Encryptor) DecryptLWEBits(cts []tfhe.LWECiphertext[uint32]) int {
 	return msg
 }
 
+// GenBootstrapKey samples a new bootstrapping key.
+//
+// This can take a long time.
+// Use GenBootstrapKeyParallel for better key generation performance.
+func (e *Encryptor) GenBootstrapKey() tfhe.BootstrapKey[uint32] {
+	return e.BaseEncryptor.GenBootstrapKey()
+}
+
+// GenBootstrapKeyParallel samples a new bootstrapping key in parallel.
+func (e *Encryptor) GenBootstrapKeyParallel() tfhe.BootstrapKey[uint32] {
+	return e.BaseEncryptor.GenBootstrapKeyParallel()
+}
+
+// GenKeySwitchKeyForBootstrap samples a new keyswitch key LWELargeKey -> LWEKey,
+// used for bootstrapping.
+//
+// This can take a long time.
+// Use GenKeySwitchKeyForBootstrapParallel for better key generation performance.
+func (e *Encryptor) GenKeySwitchKeyForBootstrap() tfhe.KeySwitchKey[uint32] {
+	return e.BaseEncryptor.GenKeySwitchKeyForBootstrap()
+}
+
+// GenKeySwitchKeyForBootstrapParallel samples a new keyswitch key LWELargeKey -> LWEKey in parallel,
+// used for bootstrapping.
+func (e *Encryptor) GenKeySwitchKeyForBootstrapParallel() tfhe.KeySwitchKey[uint32] {
+	return e.BaseEncryptor.GenKeySwitchKeyForBootstrapParallel()
+}
+
 // GenEvaluationKey samples a new evaluation key for bootstrapping.
 //
 // This can take a long time.
