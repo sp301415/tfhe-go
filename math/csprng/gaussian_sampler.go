@@ -79,23 +79,69 @@ func (s GaussianSampler[T]) normFloat2() (float64, float64) {
 	}
 }
 
-// sample2 returns a pair of numbers sampled from rounded gaussian distribution.
-func (s GaussianSampler[T]) sample2() (T, T) {
-	u, v := s.normFloat2()
-	return num.FromFloat64[T](u * s.StdDev), num.FromFloat64[T](v * s.StdDev)
-}
-
 // Sample returns a number sampled from rounded gaussian distribution.
 func (s GaussianSampler[T]) Sample() T {
-	u, _ := s.sample2()
-	return u
+	u, _ := s.normFloat2()
+	u = math.Round(u)
+
+	var z T
+	switch any(z).(type) {
+	case uint, uintptr:
+		return T(int(u))
+	case uint8:
+		return T(int8(u))
+	case uint16:
+		return T(int16(u))
+	case uint32:
+		return T(int32(u))
+	case uint64:
+		return T(int64(u))
+	}
+	return T(u)
 }
 
 // SampleSliceAssign samples rounded gaussian values to v.
 func (s GaussianSampler[T]) SampleSliceAssign(v []T) {
-	for i := 0; i < len(v); i += 2 {
-		v[i], v[i+1] = s.sample2()
+	var z T
+	switch any(z).(type) {
+	case uint, uintptr:
+		for i := 0; i < len(v); i += 2 {
+			x, y := s.normFloat2()
+			v[i] = T(int(math.Round(x)))
+			v[i+1] = T(int(math.Round(y)))
+		}
+	case uint8:
+		for i := 0; i < len(v); i += 2 {
+			x, y := s.normFloat2()
+			v[i] = T(int8(math.Round(x)))
+			v[i+1] = T(int8(math.Round(y)))
+		}
+	case uint16:
+		for i := 0; i < len(v); i += 2 {
+			x, y := s.normFloat2()
+			v[i] = T(int16(math.Round(x)))
+			v[i+1] = T(int16(math.Round(y)))
+		}
+	case uint32:
+		for i := 0; i < len(v); i += 2 {
+			x, y := s.normFloat2()
+			v[i] = T(int32(math.Round(x)))
+			v[i+1] = T(int32(math.Round(y)))
+		}
+	case uint64:
+		for i := 0; i < len(v); i += 2 {
+			x, y := s.normFloat2()
+			v[i] = T(int64(math.Round(x)))
+			v[i+1] = T(int64(math.Round(y)))
+		}
+	default:
+		for i := 0; i < len(v); i += 2 {
+			x, y := s.normFloat2()
+			v[i] = T(math.Round(x))
+			v[i+1] = T(math.Round(y))
+		}
 	}
+
 	if len(v)%2 != 0 {
 		v[len(v)-1] = s.Sample()
 	}
@@ -104,11 +150,46 @@ func (s GaussianSampler[T]) SampleSliceAssign(v []T) {
 // SampleSliceAddAssign samples rounded gaussian values and adds to v.
 // Mostly used in EncryptBody functions, adding noise to the message.
 func (s GaussianSampler[T]) SampleSliceAddAssign(v []T) {
-	for i := 0; i < len(v); i += 2 {
-		x, y := s.sample2()
-		v[i] += x
-		v[i+1] += y
+	var z T
+	switch any(z).(type) {
+	case uint, uintptr:
+		for i := 0; i < len(v); i += 2 {
+			x, y := s.normFloat2()
+			v[i] += T(int(math.Round(x)))
+			v[i+1] += T(int(math.Round(y)))
+		}
+	case uint8:
+		for i := 0; i < len(v); i += 2 {
+			x, y := s.normFloat2()
+			v[i] += T(int8(math.Round(x)))
+			v[i+1] += T(int8(math.Round(y)))
+		}
+	case uint16:
+		for i := 0; i < len(v); i += 2 {
+			x, y := s.normFloat2()
+			v[i] += T(int16(math.Round(x)))
+			v[i+1] += T(int16(math.Round(y)))
+		}
+	case uint32:
+		for i := 0; i < len(v); i += 2 {
+			x, y := s.normFloat2()
+			v[i] += T(int32(math.Round(x)))
+			v[i+1] += T(int32(math.Round(y)))
+		}
+	case uint64:
+		for i := 0; i < len(v); i += 2 {
+			x, y := s.normFloat2()
+			v[i] += T(int64(math.Round(x)))
+			v[i+1] += T(int64(math.Round(y)))
+		}
+	default:
+		for i := 0; i < len(v); i += 2 {
+			x, y := s.normFloat2()
+			v[i] += T(math.Round(x))
+			v[i+1] += T(math.Round(y))
+		}
 	}
+
 	if len(v)%2 != 0 {
 		v[len(v)-1] += s.Sample()
 	}
