@@ -172,21 +172,21 @@ func (e *Evaluator[T]) ExternalProductFourierSubAssign(ctFourierGGSW FourierGGSW
 
 // ExternalProductHoisted calculates the external product between
 // ctFourierGGSW and decomposed ctGLWE, and returns it.
-func (e *Evaluator[T]) ExternalProductHoisted(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE [][]poly.FourierPoly) GLWECiphertext[T] {
+func (e *Evaluator[T]) ExternalProductHoisted(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWEDecomposed [][]poly.FourierPoly) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
-	e.ExternalProductHoistedAssign(ctFourierGGSW, ctGLWE, ctOut)
+	e.ExternalProductHoistedAssign(ctFourierGGSW, ctGLWEDecomposed, ctOut)
 	return ctOut
 }
 
 // ExternalProductHoistedAssign calculates the external product between
 // ctFourierGGSW and decomposed ctGLWE, and writes it to ctGLWEOut.
-func (e *Evaluator[T]) ExternalProductHoistedAssign(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE [][]poly.FourierPoly, ctGLWEOut GLWECiphertext[T]) {
+func (e *Evaluator[T]) ExternalProductHoistedAssign(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWEDecomposed [][]poly.FourierPoly, ctGLWEOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		for j := 0; j < ctFourierGGSW.decompParams.level; j++ {
 			if i == 0 && j == 0 {
-				e.FourierPolyMulFourierGLWEAssign(ctFourierGGSW.Value[i].Value[j], ctGLWE[i][j], e.buffer.ctFourierProd)
+				e.FourierPolyMulFourierGLWEAssign(ctFourierGGSW.Value[i].Value[j], ctGLWEDecomposed[i][j], e.buffer.ctFourierProd)
 			} else {
-				e.FourierPolyMulAddFourierGLWEAssign(ctFourierGGSW.Value[i].Value[j], ctGLWE[i][j], e.buffer.ctFourierProd)
+				e.FourierPolyMulAddFourierGLWEAssign(ctFourierGGSW.Value[i].Value[j], ctGLWEDecomposed[i][j], e.buffer.ctFourierProd)
 			}
 		}
 	}
