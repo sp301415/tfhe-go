@@ -86,6 +86,16 @@ func NewGLWECiphertext[T Tint](params Parameters[T]) GLWECiphertext[T] {
 	return GLWECiphertext[T]{Value: ct}
 }
 
+// NewGLWECiphertextCustom allocates an empty GLWECiphertext with given dimension and polyDegree.
+// Note that the resulting ciphertext has length glweDimension + 1.
+func NewGLWECiphertextCustom[T Tint](glweDimension, polyDegree int) GLWECiphertext[T] {
+	ct := make([]poly.Poly[T], glweDimension+1)
+	for i := 0; i < glweDimension+1; i++ {
+		ct[i] = poly.New[T](polyDegree)
+	}
+	return GLWECiphertext[T]{Value: ct}
+}
+
 // Copy returns a copy of the ciphertext.
 func (ct GLWECiphertext[T]) Copy() GLWECiphertext[T] {
 	ctCopy := make([]poly.Poly[T], len(ct.Value))
@@ -115,6 +125,16 @@ func NewGLevCiphertext[T Tint](params Parameters[T], decompParams DecompositionP
 	ct := make([]GLWECiphertext[T], decompParams.level)
 	for i := 0; i < decompParams.level; i++ {
 		ct[i] = NewGLWECiphertext(params)
+	}
+	return GLevCiphertext[T]{Value: ct, decompParams: decompParams}
+}
+
+// NewGLevCiphertextCustom allocates an empty GLevCiphertext with given dimension and polyDegree.
+// Note that the each GLWE ciphertext has length glweDimension + 1.
+func NewGLevCiphertextCustom[T Tint](glweDimension, polyDegree int, decompParams DecompositionParameters[T]) GLevCiphertext[T] {
+	ct := make([]GLWECiphertext[T], decompParams.level)
+	for i := 0; i < decompParams.level; i++ {
+		ct[i] = NewGLWECiphertextCustom[T](glweDimension, polyDegree)
 	}
 	return GLevCiphertext[T]{Value: ct, decompParams: decompParams}
 }
@@ -155,6 +175,16 @@ func NewGGSWCiphertext[T Tint](params Parameters[T], decompParams DecompositionP
 	ct := make([]GLevCiphertext[T], params.glweDimension+1)
 	for i := 0; i < params.glweDimension+1; i++ {
 		ct[i] = NewGLevCiphertext(params, decompParams)
+	}
+	return GGSWCiphertext[T]{Value: ct, decompParams: decompParams}
+}
+
+// NewGGSWCiphertextCustom allocates an empty GGSW ciphertext with given dimension and polyDegree.
+// Note that each GLWE ciphertext has length glweDimension + 1.
+func NewGGSWCiphertextCustom[T Tint](glweDimension, polyDegree int, decompParams DecompositionParameters[T]) GGSWCiphertext[T] {
+	ct := make([]GLevCiphertext[T], glweDimension+1)
+	for i := 0; i < glweDimension+1; i++ {
+		ct[i] = NewGLevCiphertextCustom[T](glweDimension, polyDegree, decompParams)
 	}
 	return GGSWCiphertext[T]{Value: ct, decompParams: decompParams}
 }

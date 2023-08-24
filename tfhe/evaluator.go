@@ -97,8 +97,8 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 		acc:           NewGLWECiphertext(params),
 
 		ctRotate:    NewGLWECiphertext(params),
-		ctExtract:   LWECiphertext[T]{Value: make([]T, params.LargeLWEDimension()+1)},
-		ctKeySwitch: LWECiphertext[T]{Value: make([]T, params.LargeLWEDimension()-params.lweDimension+1)},
+		ctExtract:   NewLWECiphertextCustom[T](params.LargeLWEDimension()),
+		ctKeySwitch: NewLWECiphertextCustom[T](params.LargeLWEDimension() - params.lweDimension),
 
 		lut: NewLookUpTable(params),
 	}

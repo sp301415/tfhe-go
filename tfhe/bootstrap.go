@@ -167,7 +167,7 @@ func (e *Evaluator[T]) SampleExtractAssign(ct GLWECiphertext[T], index int, ctOu
 
 // KeySwitch switches key of ct, and returns a new ciphertext.
 func (e *Evaluator[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchKey[T]) LWECiphertext[T] {
-	ctOut := LWECiphertext[T]{Value: make([]T, ksk.OutputLWEDimension()+1)}
+	ctOut := NewLWECiphertextCustom[T](ksk.OutputLWEDimension())
 	e.KeySwitchAssign(ct, ksk, ctOut)
 	return ctOut
 }

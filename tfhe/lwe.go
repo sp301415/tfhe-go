@@ -59,6 +59,12 @@ func NewLWECiphertext[T Tint](params Parameters[T]) LWECiphertext[T] {
 	return LWECiphertext[T]{Value: make([]T, params.lweDimension+1)}
 }
 
+// NewLWECiphertextCustom allocates an empty LWECiphertext with given dimension.
+// Note that thre resulting ciphertext has length lweDimension + 1.
+func NewLWECiphertextCustom[T Tint](lweDimension int) LWECiphertext[T] {
+	return LWECiphertext[T]{Value: make([]T, lweDimension+1)}
+}
+
 // Copy returns a copy of the ciphertext.
 func (ct LWECiphertext[T]) Copy() LWECiphertext[T] {
 	return LWECiphertext[T]{Value: vec.Copy(ct.Value)}
@@ -82,6 +88,16 @@ func NewLevCiphertext[T Tint](params Parameters[T], decompParams DecompositionPa
 	ct := make([]LWECiphertext[T], decompParams.level)
 	for i := 0; i < decompParams.level; i++ {
 		ct[i] = NewLWECiphertext(params)
+	}
+	return LevCiphertext[T]{Value: ct, decompParams: decompParams}
+}
+
+// NewLevCiphertextCustom allocates an empty LevCiphertext with given dimension.
+// Note that thre resulting ciphertext has length lweDimension + 1.
+func NewLevCiphertextCustom[T Tint](lweDimension int, decompParams DecompositionParameters[T]) LevCiphertext[T] {
+	ct := make([]LWECiphertext[T], decompParams.level)
+	for i := 0; i < decompParams.level; i++ {
+		ct[i] = NewLWECiphertextCustom[T](lweDimension)
 	}
 	return LevCiphertext[T]{Value: ct, decompParams: decompParams}
 }
@@ -122,6 +138,16 @@ func NewGSWCiphertext[T Tint](params Parameters[T], decompParams DecompositionPa
 	ct := make([]LevCiphertext[T], params.lweDimension+1)
 	for i := 0; i < params.lweDimension+1; i++ {
 		ct[i] = NewLevCiphertext(params, decompParams)
+	}
+	return GSWCiphertext[T]{Value: ct, decompParams: decompParams}
+}
+
+// NewGSWCiphertextCustom allocates an empty GSW ciphertext with given dimension.
+// Note that thre resulting ciphertext has length lweDimension + 1.
+func NewGSWCiphertextCustom[T Tint](lweDimension int, decompParams DecompositionParameters[T]) GSWCiphertext[T] {
+	ct := make([]LevCiphertext[T], lweDimension+1)
+	for i := 0; i < lweDimension+1; i++ {
+		ct[i] = NewLevCiphertextCustom[T](lweDimension, decompParams)
 	}
 	return GSWCiphertext[T]{Value: ct, decompParams: decompParams}
 }

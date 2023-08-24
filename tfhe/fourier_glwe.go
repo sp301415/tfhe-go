@@ -19,6 +19,16 @@ func NewFourierGLWECiphertext[T Tint](params Parameters[T]) FourierGLWECiphertex
 	return FourierGLWECiphertext[T]{Value: ct}
 }
 
+// NewFourierGLWECiphertextCustom allocates an empty FourierGLWECiphertext with given dimension and polyDegree.
+// Note that the resulting ciphertext has length glweDimension + 1.
+func NewFourierGLWECiphertextCustom[T Tint](glweDimension, polyDegree int) FourierGLWECiphertext[T] {
+	ct := make([]poly.FourierPoly, glweDimension+1)
+	for i := range ct {
+		ct[i] = poly.NewFourierPoly(polyDegree)
+	}
+	return FourierGLWECiphertext[T]{Value: ct}
+}
+
 // Copy returns a copy of the ciphertext.
 func (ct FourierGLWECiphertext[T]) Copy() FourierGLWECiphertext[T] {
 	ctCopy := make([]poly.FourierPoly, len(ct.Value))
@@ -48,6 +58,16 @@ func NewFourierGLevCiphertext[T Tint](params Parameters[T], decompParams Decompo
 	ct := make([]FourierGLWECiphertext[T], decompParams.level)
 	for i := 0; i < decompParams.level; i++ {
 		ct[i] = NewFourierGLWECiphertext(params)
+	}
+	return FourierGLevCiphertext[T]{Value: ct, decompParams: decompParams}
+}
+
+// NewFourierGLevCiphertextCustom allocates an empty FourierGLevCiphertext with given dimension and polyDegree.
+// Note that each GLWE ciphertext has length glweDimension + 1.
+func NewFourierGLevCiphertextCustom[T Tint](glweDimension, polyDegree int, decompParams DecompositionParameters[T]) FourierGLevCiphertext[T] {
+	ct := make([]FourierGLWECiphertext[T], decompParams.level)
+	for i := 0; i < decompParams.level; i++ {
+		ct[i] = NewFourierGLWECiphertextCustom[T](glweDimension, polyDegree)
 	}
 	return FourierGLevCiphertext[T]{Value: ct, decompParams: decompParams}
 }
@@ -87,6 +107,16 @@ func NewFourierGGSWCiphertext[T Tint](params Parameters[T], decompParams Decompo
 	ct := make([]FourierGLevCiphertext[T], params.glweDimension+1)
 	for i := 0; i < params.glweDimension+1; i++ {
 		ct[i] = NewFourierGLevCiphertext(params, decompParams)
+	}
+	return FourierGGSWCiphertext[T]{Value: ct, decompParams: decompParams}
+}
+
+// NewFourierGGSWCiphertextCustom allocates an empty GGSW ciphertext with given dimension and polyDegree.
+// Note that each GLWE ciphertext has length glweDimension + 1.
+func NewFourierGGSWCiphertextCustom[T Tint](glweDimension, polyDegree int, decompParams DecompositionParameters[T]) FourierGGSWCiphertext[T] {
+	ct := make([]FourierGLevCiphertext[T], glweDimension+1)
+	for i := 0; i < glweDimension+1; i++ {
+		ct[i] = NewFourierGLevCiphertextCustom[T](glweDimension, polyDegree, decompParams)
 	}
 	return FourierGGSWCiphertext[T]{Value: ct, decompParams: decompParams}
 }
