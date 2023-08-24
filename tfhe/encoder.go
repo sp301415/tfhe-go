@@ -89,9 +89,11 @@ func (e *Encoder[T]) EncodeGLWE(messages []int) GLWEPlaintext[T] {
 // If len(messages) < PolyDegree, the leftovers are padded with zero.
 // If len(messages) > PolyDegree, the leftovers are discarded.
 func (e *Encoder[T]) EncodeGLWEAssign(messages []int, pt GLWEPlaintext[T]) {
-	for i := 0; i < e.Parameters.polyDegree && i < len(messages); i++ {
+	length := num.Min(e.Parameters.polyDegree, len(messages))
+	for i := 0; i < length; i++ {
 		pt.Value.Coeffs[i] = (T(messages[i]) % e.Parameters.messageModulus) << e.Parameters.deltaLog
 	}
+	vec.Fill(pt.Value.Coeffs[length:], 0)
 }
 
 // EncodeGLWECustom encodes integer message to GLWE plaintext
@@ -102,14 +104,26 @@ func (e *Encoder[T]) EncodeGLWEAssign(messages []int, pt GLWEPlaintext[T]) {
 //	-If len(messages) > PolyDegree, the leftovers are discarded.
 func (e *Encoder[T]) EncodeGLWECustom(messages []int, messageModulus, delta T) GLWEPlaintext[T] {
 	pt := NewGLWEPlaintext(e.Parameters)
-	for i := 0; i < e.Parameters.polyDegree && i < len(messages); i++ {
+	e.EncodeGLWECustomAssign(messages, messageModulus, delta, pt)
+	return pt
+}
+
+// EncodeGLWECustomAssign encodes integer message to GLWE plaintext
+// using custom MessageModulus and Delta.
+//
+//	-If MessageModulus = 0, then no modulus reduction is performed.
+//	-If len(messages) < PolyDegree, the leftovers are padded with zero.
+//	-If len(messages) > PolyDegree, the leftovers are discarded.
+func (e *Encoder[T]) EncodeGLWECustomAssign(messages []int, messageModulus, delta T, pt GLWEPlaintext[T]) {
+	length := num.Min(e.Parameters.polyDegree, len(messages))
+	for i := 0; i < length; i++ {
 		pt.Value.Coeffs[i] = T(messages[i])
 		if messageModulus != 0 {
 			pt.Value.Coeffs[i] %= messageModulus
 		}
 		pt.Value.Coeffs[i] *= delta
 	}
-	return pt
+	vec.Fill(pt.Value.Coeffs[length:], 0)
 }
 
 // DecodeGLWE decodes GLWE plaintext to integer message.
@@ -153,5 +167,8 @@ func (e *Encoder[T]) EncodeGLWECiphertext(messages []int) GLWECiphertext[T] {
 // with zero mask and no error.
 // Resulting ciphertext is cryptographically insecure.
 func (e *Encoder[T]) EncodeGLWECiphertextAssign(messages []int, ct GLWECiphertext[T]) {
+	for i := 1; i < e.Parameters.glweDimension+1; i++ {
+		ct.Value[i].Clear()
+	}
 	e.EncodeGLWEAssign(messages, GLWEPlaintext[T]{Value: ct.Value[0]})
 }

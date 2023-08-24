@@ -65,7 +65,7 @@ func NewKeySwitchKey[T Tint](inputDimension, outputDimension int, decompParams D
 	for i := 0; i < inputDimension; i++ {
 		kswKey[i] = LevCiphertext[T]{Value: make([]LWECiphertext[T], decompParams.level), decompParams: decompParams}
 		for j := 0; j < decompParams.level; j++ {
-			kswKey[i].Value[j] = LWECiphertext[T]{Value: make([]T, outputDimension+1)}
+			kswKey[i].Value[j] = NewLWECiphertextCustom[T](outputDimension)
 		}
 	}
 	return KeySwitchKey[T]{Value: kswKey, decompParams: decompParams}

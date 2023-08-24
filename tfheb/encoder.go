@@ -1,6 +1,9 @@
 package tfheb
 
-import "github.com/sp301415/tfhe/tfhe"
+import (
+	"github.com/sp301415/tfhe/math/vec"
+	"github.com/sp301415/tfhe/tfhe"
+)
 
 const (
 	// PlaintextFalse is a plaintext value corresponding to false.
@@ -27,7 +30,7 @@ func NewEncoder(params tfhe.Parameters[uint32]) *Encoder {
 
 // EncodeLWEBool encodes boolean message to LWE plaintext.
 //
-// Note that this is DIFFERENT from calling EncodeLWE with 0 or 1.
+// Note that this is different from calling EncodeLWE with 0 or 1.
 func (e *Encoder) EncodeLWEBool(message bool) tfhe.LWEPlaintext[uint32] {
 	if message {
 		return tfhe.LWEPlaintext[uint32]{Value: PlaintextTrue}
@@ -57,5 +60,6 @@ func (e *Encoder) EncodeLWEBoolCiphertext(message bool) tfhe.LWECiphertext[uint3
 //
 // Note that this is different from calling EncodeLWE with 0 or 1.
 func (e *Encoder) EncodeLWEBoolCiphertextAssign(message bool, ct tfhe.LWECiphertext[uint32]) {
+	vec.Fill(ct.Value[1:], 0)
 	ct.Value[0] = e.EncodeLWEBool(message).Value
 }
