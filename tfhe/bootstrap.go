@@ -8,27 +8,21 @@ import (
 
 // LookUpTable is a trivially encrypted GLWE ciphertext that holds
 // the lookup table for function evaluations during programmable bootstrapping.
-type LookUpTable[T Tint] GLWECiphertext[T]
+type LookUpTable[T Tint] poly.Poly[T]
 
 // NewLookUpTable allocates an empty lookup table.
 func NewLookUpTable[T Tint](params Parameters[T]) LookUpTable[T] {
-	return LookUpTable[T](NewGLWECiphertext(params))
+	return LookUpTable[T](poly.New[T](params.polyDegree))
 }
 
 // Copy returns a copy of the LUT.
 func (lut LookUpTable[T]) Copy() LookUpTable[T] {
-	lutCopy := make([]poly.Poly[T], len(lut.Value))
-	for i := range lutCopy {
-		lutCopy[i] = lut.Value[i].Copy()
-	}
-	return LookUpTable[T]{Value: lutCopy}
+	return LookUpTable[T](poly.Poly[T](lut).Copy())
 }
 
 // CopyFrom copies values from a LUT.
 func (lut *LookUpTable[T]) CopyFrom(lutIn LookUpTable[T]) {
-	for i := range lut.Value {
-		lut.Value[i].CopyFrom(lut.Value[i])
-	}
+	vec.CopyAssign(lutIn.Coeffs, lut.Coeffs)
 }
 
 // GenLookUpTable generates a lookup table based on function f and returns it.
@@ -46,14 +40,14 @@ func (e *Evaluator[T]) GenLookUpTableAssign(f func(int) int, lutOut LookUpTable[
 	for x := 0; x < int(e.Parameters.messageModulus); x++ {
 		fx := (T(f(x)) % e.Parameters.messageModulus) << e.Parameters.deltaLog
 		for i := x * boxSize; i < (x+1)*boxSize; i++ {
-			lutOut.Value[0].Coeffs[i] = fx
+			lutOut.Coeffs[i] = fx
 		}
 	}
 
 	for i := 0; i < boxSize/2; i++ {
-		lutOut.Value[0].Coeffs[i] = -lutOut.Value[0].Coeffs[i]
+		lutOut.Coeffs[i] = -lutOut.Coeffs[i]
 	}
-	vec.RotateInPlace(lutOut.Value[0].Coeffs, -boxSize/2)
+	vec.RotateInPlace(lutOut.Coeffs, -boxSize/2)
 }
 
 // GenLookUpTableFullAssign generates a lookup table based on function f and writes it to lutOut.
@@ -63,14 +57,14 @@ func (e *Evaluator[T]) GenLookUpTableFullAssign(f func(int) T, lutOut LookUpTabl
 	for x := 0; x < int(e.Parameters.messageModulus); x++ {
 		fx := f(x)
 		for i := x * boxSize; i < (x+1)*boxSize; i++ {
-			lutOut.Value[0].Coeffs[i] = fx
+			lutOut.Coeffs[i] = fx
 		}
 	}
 
 	for i := 0; i < boxSize/2; i++ {
-		lutOut.Value[0].Coeffs[i] = -lutOut.Value[0].Coeffs[i]
+		lutOut.Coeffs[i] = -lutOut.Coeffs[i]
 	}
-	vec.RotateInPlace(lutOut.Value[0].Coeffs, -boxSize/2)
+	vec.RotateInPlace(lutOut.Coeffs, -boxSize/2)
 }
 
 // Bootstrap returns a bootstrapped LWE ciphertext.
@@ -125,7 +119,10 @@ func (e *Evaluator[T]) BlindRotate(ct LWECiphertext[T], lut LookUpTable[T]) GLWE
 func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
 	polyDecomposed := e.getPolyDecomposedBuffer(e.Parameters.bootstrapParameters)
 
-	e.MonomialMulGLWEAssign(GLWECiphertext[T](lut), -e.ModSwitch(ct.Value[0]), ctOut)
+	e.PolyEvaluator.MonomialMulAssign(poly.Poly[T](lut), -e.ModSwitch(ct.Value[0]), ctOut.Value[0])
+	for i := 1; i < e.Parameters.glweDimension+1; i++ {
+		ctOut.Value[i].Clear()
+	}
 
 	// Implementation of Algorithm 2 and Section 5.1 from https://eprint.iacr.org/2023/958.pdf
 	for i := 0; i < e.Parameters.BlockCount(); i++ {

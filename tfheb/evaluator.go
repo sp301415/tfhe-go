@@ -19,7 +19,7 @@ type Evaluator struct {
 func NewEvaluator(params tfhe.Parameters[uint32], evkey tfhe.EvaluationKey[uint32]) *Evaluator {
 	signLUT := tfhe.NewLookUpTable[uint32](params)
 	for i := 0; i < params.PolyDegree(); i++ {
-		signLUT.Value[0].Coeffs[i] = 1 << (32 - 3)
+		signLUT.Coeffs[i] = 1 << (32 - 3)
 	}
 	return &Evaluator{
 		Encoder:       NewEncoder(params),
