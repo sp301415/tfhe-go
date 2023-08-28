@@ -126,7 +126,7 @@ func (e *Encryptor[T]) GenPrivateFunctionalGLWEKeySwitchKey(inputCount int, f fu
 	return pfksk
 }
 
-// GenPrivateFunctionalLWEKeySwitchKeyParallel samples a new private functional keyswitch key
+// GenPrivateFunctionalGLWEKeySwitchKeyParallel samples a new private functional keyswitch key
 // for GLWE private keyswitching in parallel.
 //
 // The function f has the form f(in []T, out Poly[T]),

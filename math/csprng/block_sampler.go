@@ -31,7 +31,7 @@ func NewBlockSampler[T num.Integer](blockSize int) BlockSampler[T] {
 	return NewBlockSamplerWithSeed[T](seed, blockSize)
 }
 
-// NewBinarySamplerWithSeed creates a new BlockSampler, with user supplied seed.
+// NewBlockSamplerWithSeed creates a new BlockSampler, with user supplied seed.
 // Note that retreiving the seed after initialization is not possible.
 //
 // Panics when blake2b initialization fails,

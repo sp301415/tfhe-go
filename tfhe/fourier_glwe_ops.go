@@ -1,6 +1,8 @@
 package tfhe
 
-import "github.com/sp301415/tfhe/math/poly"
+import (
+	"github.com/sp301415/tfhe/math/poly"
+)
 
 // AddFourierGLWE adds two FourierGLWE cipheretexts ct0, ct1 and returns the result.
 func (e *Evaluator[T]) AddFourierGLWE(ct0, ct1 FourierGLWECiphertext[T]) FourierGLWECiphertext[T] {

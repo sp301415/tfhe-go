@@ -12,7 +12,7 @@ func (e *Evaluator[T]) Decompose(x T, decompParams DecompositionParameters[T]) [
 	return decomposed
 }
 
-// DecomposeInplace decomposes x with respect to decompParams, and writes it to d.
+// DecomposeAssign decomposes x with respect to decompParams, and writes it to d.
 func (e *Evaluator[T]) DecomposeAssign(x T, d []T, decompParams DecompositionParameters[T]) {
 	lastScaledBaseLog := decompParams.scaledBasesLog[decompParams.level-1]
 	u := num.ClosestMultipleBits(x, lastScaledBaseLog) >> lastScaledBaseLog

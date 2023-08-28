@@ -10,7 +10,7 @@ type Tint interface {
 	uint32 | uint64
 }
 
-// DecompositionParameters is a Parameter for gadget decomposition,
+// DecompositionParametersLiteral is a Parameter Literal for gadget decomposition,
 // used in GSW and GGSW encryptions.
 type DecompositionParametersLiteral[T Tint] struct {
 	// Base is a base of gadget. It must be power of two.

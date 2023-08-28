@@ -40,14 +40,14 @@ func (e *Evaluator[T]) NegLWEAssign(ct0, ctOut LWECiphertext[T]) {
 	vec.NegAssign(ct0.Value, ctOut.Value)
 }
 
-// ScalarAddLWE adds pt to ct0 and returns the result.
+// PlaintextAddLWE adds pt to ct0 and returns the result.
 func (e *Evaluator[T]) PlaintextAddLWE(ct0 LWECiphertext[T], pt LWEPlaintext[T]) LWECiphertext[T] {
 	ctOut := NewLWECiphertext(e.Parameters)
 	e.PlaintextAddLWEAssign(ct0, pt, ctOut)
 	return ctOut
 }
 
-// ScalarMulAddAssign adds pt to ct0 and writes it to ctOut.
+// PlaintextAddLWEAssign adds pt to ct0 and writes it to ctOut.
 func (e *Evaluator[T]) PlaintextAddLWEAssign(ct0 LWECiphertext[T], pt LWEPlaintext[T], ctOut LWECiphertext[T]) {
 	ctOut.Value[0] += pt.Value
 }

@@ -94,7 +94,7 @@ func (ct FourierGLevCiphertext[T]) DecompositionParameters() DecompositionParame
 	return ct.decompParams
 }
 
-// GGSWCiphertext represents an encrypted GGSW ciphertext in Fourier domain.
+// FourierGGSWCiphertext represents an encrypted GGSW ciphertext in Fourier domain.
 type FourierGGSWCiphertext[T Tint] struct {
 	// Value has length GLWEDimension + 1.
 	Value []FourierGLevCiphertext[T]

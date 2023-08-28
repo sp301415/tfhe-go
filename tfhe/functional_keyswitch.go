@@ -4,7 +4,7 @@ import (
 	"github.com/sp301415/tfhe/math/poly"
 )
 
-// PrivataeFunctionalLWEKeySwitch applies LWE private functional keyswitching on ctIn and returns the result.
+// PrivateFunctionalLWEKeySwitch applies LWE private functional keyswitching on ctIn and returns the result.
 func (e *Evaluator[T]) PrivateFunctionalLWEKeySwitch(ctIn []LWECiphertext[T], pfksk PrivateFunctionalLWEKeySwitchKey[T]) LWECiphertext[T] {
 	ctOut := NewLWECiphertext(e.Parameters)
 	e.PrivateFunctionalLWEKeySwitchAssign(ctIn, pfksk, ctOut)

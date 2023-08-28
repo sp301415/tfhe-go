@@ -11,7 +11,7 @@ type Poly[T num.Integer] struct {
 	Coeffs []T
 }
 
-// NewPoly creates a polynomial with degree N with empty coefficients.
+// New creates a polynomial with degree N with empty coefficients.
 // N should be power of two. Otherwise, it panics.
 func New[T num.Integer](N int) Poly[T] {
 	if !num.IsPowerOfTwo(N) {
