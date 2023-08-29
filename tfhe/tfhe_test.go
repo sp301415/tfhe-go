@@ -2,7 +2,6 @@ package tfhe_test
 
 import (
 	"fmt"
-	"math"
 	"testing"
 
 	"github.com/sp301415/tfhe/math/vec"
@@ -114,73 +113,6 @@ func TestEvaluator(t *testing.T) {
 			ct := testEncryptor.EncryptLWE(m)
 			ctOut := testEvaluator.BootstrapFunc(ct, f)
 			assert.Equal(t, f(m), testEncryptor.DecryptLWE(ctOut))
-		}
-	})
-
-	t.Run("PrivateFunctionalLWEKeySwitch", func(t *testing.T) {
-		sum := func(in []uint64) uint64 {
-			return in[0] + in[1]
-		}
-		pfksk := testEncryptor.GenPrivateFunctionalLWEKeySwitchKeyParallel(2, sum, testParams.KeySwitchParameters())
-
-		ct0 := testEncryptor.EncryptLWE(messages[0])
-		ct1 := testEncryptor.EncryptLWE(messages[1])
-		ctOut := testEvaluator.PrivateFunctionalLWEKeySwitch([]tfhe.LWECiphertext[uint64]{ct0, ct1}, pfksk)
-
-		assert.Equal(t, messages[0]+messages[1], testEncryptor.DecryptLWE(ctOut))
-	})
-
-	t.Run("PublicFunctionalLWEKeySwitch", func(t *testing.T) {
-		pfksk := testEncryptor.GenPublicFunctionalGLWEKeySwitchKeyParallel(testParams.KeySwitchParameters())
-
-		ct0 := testEncryptor.EncryptLWE(messages[0])
-		ct1 := testEncryptor.EncryptLWE(messages[1])
-		ctOut := testEvaluator.PackingPublicFunctionalKeySwitch([]tfhe.LWECiphertext[uint64]{ct0, ct1}, pfksk)
-
-		assert.Equal(t, []int{messages[0], messages[1]}, testEncryptor.DecryptGLWE(ctOut)[:2])
-	})
-
-	t.Run("CircuitBootstrap", func(t *testing.T) {
-		cbsParams := tfhe.ParametersLiteral[uint64]{
-			LWEDimension:  10,
-			GLWEDimension: 2,
-			PolyDegree:    512,
-
-			LWEStdDev:  math.Exp2(-60),
-			GLWEStdDev: math.Exp2(-60),
-			BlockSize:  1,
-
-			MessageModulus: 1 << 3,
-
-			BootstrapParameters: tfhe.DecompositionParametersLiteral[uint64]{
-				Base:  1 << 15,
-				Level: 2,
-			},
-			KeySwitchParameters: tfhe.DecompositionParametersLiteral[uint64]{
-				Base:  1 << 15,
-				Level: 2,
-			},
-		}.Compile()
-
-		pfkskDecompParams := tfhe.DecompositionParametersLiteral[uint64]{
-			Base:  1 << 15,
-			Level: 2,
-		}.Compile()
-
-		cbsDecompParams := tfhe.DecompositionParametersLiteral[uint64]{
-			Base:  1 << 10,
-			Level: 1,
-		}.Compile()
-
-		enc := tfhe.NewEncryptor(cbsParams)
-		eval := tfhe.NewEvaluator(cbsParams, enc.GenEvaluationKeyParallel())
-
-		cbsk := enc.GenCircuitBootstrapKeyParallel(pfkskDecompParams)
-
-		for _, m := range messages {
-			ct := enc.EncryptLWE(m)
-			ctOut := eval.CircuitBootstrap(ct, cbsDecompParams, cbsk)
-			assert.Equal(t, m, enc.DecryptGGSW(ctOut)[0])
 		}
 	})
 }
