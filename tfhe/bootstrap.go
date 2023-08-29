@@ -50,33 +50,6 @@ func (e *Evaluator[T]) GenLookUpTableAssign(f func(int) int, lutOut LookUpTable[
 	vec.RotateInPlace(lutOut.Coeffs, -boxSize/2)
 }
 
-// GenLookUpTableFullAssign generates a lookup table based on function f and writes it to lutOut.
-// Input of f is cut by MessageModulus, but output of f is encoded as-is.
-func (e *Evaluator[T]) GenLookUpTableFullAssign(f func(int) T, lutOut LookUpTable[T]) {
-	boxSize := e.Parameters.polyDegree / int(e.Parameters.messageModulus)
-	for x := 0; x < int(e.Parameters.messageModulus); x++ {
-		fx := f(x)
-		for i := x * boxSize; i < (x+1)*boxSize; i++ {
-			lutOut.Coeffs[i] = fx
-		}
-	}
-
-	for i := 0; i < boxSize/2; i++ {
-		lutOut.Coeffs[i] = -lutOut.Coeffs[i]
-	}
-	vec.RotateInPlace(lutOut.Coeffs, -boxSize/2)
-}
-
-// Bootstrap returns a bootstrapped LWE ciphertext.
-func (e *Evaluator[T]) Bootstrap(ct LWECiphertext[T]) LWECiphertext[T] {
-	return e.BootstrapFunc(ct, func(x int) int { return x })
-}
-
-// BootstrapAssign bootstraps LWE ciphertext and writes it to ctOut.
-func (e *Evaluator[T]) BootstrapAssign(ct, ctOut LWECiphertext[T]) {
-	e.BootstrapFuncAssign(ct, func(x int) int { return x }, ctOut)
-}
-
 // BootstrapFunc returns a bootstrapped LWE ciphertext with resepect to given function.
 func (e *Evaluator[T]) BootstrapFunc(ct LWECiphertext[T], f func(int) int) LWECiphertext[T] {
 	e.GenLookUpTableAssign(f, e.buffer.lut)
