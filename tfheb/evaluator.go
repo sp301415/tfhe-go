@@ -21,6 +21,7 @@ func NewEvaluator(params tfhe.Parameters[uint32], evkey tfhe.EvaluationKey[uint3
 	for i := 0; i < params.PolyDegree(); i++ {
 		signLUT.Coeffs[i] = 1 << (32 - 3)
 	}
+
 	return &Evaluator{
 		Encoder:       NewEncoder(params),
 		Parameters:    params,

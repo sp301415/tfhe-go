@@ -75,8 +75,8 @@ func (e *Encoder[T]) DecodeLWECustom(pt LWEPlaintext[T], messageModulus, delta T
 // EncodeGLWE encodes up to Parameters.PolyDegree integer messages into one GLWE plaintext.
 // Parameter's MessageModulus and Delta are used.
 //
-// If len(messages) < PolyDegree, the leftovers are padded with zero.
-// If len(messages) > PolyDegree, the leftovers are discarded.
+//   - If len(messages) < PolyDegree, the leftovers are padded with zero.
+//   - If len(messages) > PolyDegree, the leftovers are discarded.
 func (e *Encoder[T]) EncodeGLWE(messages []int) GLWEPlaintext[T] {
 	pt := NewGLWEPlaintext(e.Parameters)
 	e.EncodeGLWEAssign(messages, pt)
@@ -86,8 +86,8 @@ func (e *Encoder[T]) EncodeGLWE(messages []int) GLWEPlaintext[T] {
 // EncodeGLWEAssign encodes up to Parameters.PolyDegree integer messages into one GLWE plaintext.
 // Parameter's MessageModulus and Delta are used.
 //
-// If len(messages) < PolyDegree, the leftovers are padded with zero.
-// If len(messages) > PolyDegree, the leftovers are discarded.
+//   - If len(messages) < PolyDegree, the leftovers are padded with zero.
+//   - If len(messages) > PolyDegree, the leftovers are discarded.
 func (e *Encoder[T]) EncodeGLWEAssign(messages []int, pt GLWEPlaintext[T]) {
 	length := num.Min(e.Parameters.polyDegree, len(messages))
 	for i := 0; i < length; i++ {
@@ -99,9 +99,9 @@ func (e *Encoder[T]) EncodeGLWEAssign(messages []int, pt GLWEPlaintext[T]) {
 // EncodeGLWECustom encodes integer message to GLWE plaintext
 // using custom MessageModulus and Delta.
 //
-//	-If MessageModulus = 0, then no modulus reduction is performed.
-//	-If len(messages) < PolyDegree, the leftovers are padded with zero.
-//	-If len(messages) > PolyDegree, the leftovers are discarded.
+//   - If MessageModulus = 0, then no modulus reduction is performed.
+//   - If len(messages) < PolyDegree, the leftovers are padded with zero.
+//   - If len(messages) > PolyDegree, the leftovers are discarded.
 func (e *Encoder[T]) EncodeGLWECustom(messages []int, messageModulus, delta T) GLWEPlaintext[T] {
 	pt := NewGLWEPlaintext(e.Parameters)
 	e.EncodeGLWECustomAssign(messages, messageModulus, delta, pt)
@@ -111,9 +111,9 @@ func (e *Encoder[T]) EncodeGLWECustom(messages []int, messageModulus, delta T) G
 // EncodeGLWECustomAssign encodes integer message to GLWE plaintext
 // using custom MessageModulus and Delta.
 //
-//	-If MessageModulus = 0, then no modulus reduction is performed.
-//	-If len(messages) < PolyDegree, the leftovers are padded with zero.
-//	-If len(messages) > PolyDegree, the leftovers are discarded.
+//   - If MessageModulus = 0, then no modulus reduction is performed.
+//   - If len(messages) < PolyDegree, the leftovers are padded with zero.
+//   - If len(messages) > PolyDegree, the leftovers are discarded.
 func (e *Encoder[T]) EncodeGLWECustomAssign(messages []int, messageModulus, delta T, pt GLWEPlaintext[T]) {
 	length := num.Min(e.Parameters.polyDegree, len(messages))
 	for i := 0; i < length; i++ {
