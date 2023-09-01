@@ -3,7 +3,7 @@ package csprng
 import (
 	"bufio"
 	"crypto/rand"
-	"encoding/binary"
+	"unsafe"
 
 	"github.com/sp301415/tfhe/math/num"
 	"golang.org/x/crypto/blake2b"
@@ -19,6 +19,9 @@ import (
 // the seed is automatically supplied using NewUniformSampler.
 type UniformSampler[T num.Integer] struct {
 	prng *bufio.Reader
+
+	sizeT int
+	maxT  T
 }
 
 // NewUniformSampler creates a new UniformSampler.
@@ -26,6 +29,9 @@ type UniformSampler[T num.Integer] struct {
 func NewUniformSampler[T num.Integer]() UniformSampler[T] {
 	return UniformSampler[T]{
 		prng: bufio.NewReader(rand.Reader),
+
+		sizeT: num.SizeT[T](),
+		maxT:  T(num.MaxT[T]()),
 	}
 }
 
@@ -42,6 +48,9 @@ func NewUniformSamplerWithSeed[T num.Integer](seed []byte) UniformSampler[T] {
 
 	return UniformSampler[T]{
 		prng: bufio.NewReader(prng),
+
+		sizeT: num.SizeT[T](),
+		maxT:  T(num.MaxT[T]()),
 	}
 }
 
@@ -53,21 +62,20 @@ func (s UniformSampler[T]) Read(b []byte) (n int, err error) {
 
 // Sample uniformly samples a random integer of type T.
 func (s UniformSampler[T]) Sample() T {
-	var buf uint64
-	if err := binary.Read(s, binary.BigEndian, &buf); err != nil {
+	out := make([]byte, s.sizeT/8)
+	if _, err := s.prng.Read(out); err != nil {
 		panic(err)
 	}
-	return T(buf)
+
+	return *(*T)(unsafe.Pointer(&out[0]))
 }
 
 // SampleN uniformly samples a random integer of type T in [0, N).
 func (s UniformSampler[T]) SampleN(N T) T {
-	maxT := T(num.MaxT[T]())
-	bound := maxT - (maxT % N)
-
+	bound := s.maxT - (s.maxT % N)
 	for {
-		res := num.Abs(s.Sample())
-		if res < bound {
+		res := s.Sample()
+		if 0 < res && res < bound {
 			return res % N
 		}
 	}
