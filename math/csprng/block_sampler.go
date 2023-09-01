@@ -8,6 +8,8 @@ import (
 
 // BlockSampler samples values from block binary distribution.
 // It samples one of the vectors from (0, ..., 0), (1, ..., 0), ..., (0, .., 1).
+//
+// See csprng.UniformSampler for more details.
 type BlockSampler[T num.Integer] struct {
 	baseSampler UniformSampler[int]
 
@@ -55,10 +57,7 @@ func (s BlockSampler[T]) SampleSliceAssign(v []T) {
 			v[j] = 0
 		}
 
-		// Sample 0 <= x <= BlockSize
-		// and if x = BlockSize, return zero sample
-		// otherwise, set sample[x] = 1.
-		x := s.baseSampler.SampleRange(0, s.BlockSize+1)
+		x := s.baseSampler.SampleN(s.BlockSize + 1)
 		if x == s.BlockSize {
 			continue
 		}

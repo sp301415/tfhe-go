@@ -1,6 +1,7 @@
 package csprng
 
 import (
+	"bufio"
 	"crypto/rand"
 	"encoding/binary"
 
@@ -9,32 +10,27 @@ import (
 )
 
 // UniformSampler samples values from uniform distribution.
-// It uses Blake2x as the underlying CSPRNG.
+// For NewUniformSampler, this uses crypto/rand,
+// and for NewUniformSamplerWithSeed, this uses blake2b.
 //
 // Methods of UniformSampler may panic when read from
 // crypto/rand or blake2b.XOF fails.
 // In practice, it almost never happens especially when
 // the seed is automatically supplied using NewUniformSampler.
 type UniformSampler[T num.Integer] struct {
-	prng blake2b.XOF
+	prng *bufio.Reader
 }
 
 // NewUniformSampler creates a new UniformSampler.
-// The seed is sampled securely from crypto/rand,
-// so it may panic if read from crypto/rand fails.
+// Unlike WithSeed variant, this function uses crypto/rand.
 func NewUniformSampler[T num.Integer]() UniformSampler[T] {
-	// Sample 512-bit seed
-	seed := make([]byte, 64)
-	if _, err := rand.Read(seed); err != nil {
-		panic(err)
+	return UniformSampler[T]{
+		prng: bufio.NewReader(rand.Reader),
 	}
-
-	// This never panics, because the only case when NewXOF returns error
-	// is when key size is too large.
-	return NewUniformSamplerWithSeed[T](seed)
 }
 
 // NewUniformSamplerWithSeed creates a new UniformSampler, with user supplied seed.
+// This uses blake2b as the underlying CSPRNG.
 // Note that retreiving the seed after initialization is not possible.
 //
 // Panics when blake2b initialization fails.
@@ -45,7 +41,7 @@ func NewUniformSamplerWithSeed[T num.Integer](seed []byte) UniformSampler[T] {
 	}
 
 	return UniformSampler[T]{
-		prng: prng,
+		prng: bufio.NewReader(prng),
 	}
 }
 
@@ -64,19 +60,15 @@ func (s UniformSampler[T]) Sample() T {
 	return T(buf)
 }
 
-// SampleRange uniformly samples a random integer from [a, b).
-func (s UniformSampler[T]) SampleRange(a, b T) T {
-	if a >= b {
-		panic("malformed range")
-	}
-
-	max := uint64(b - a)
-	randMax := num.MaxT[T]() - (num.MaxT[T]() % max)
+// SampleN uniformly samples a random integer of type T in [0, N).
+func (s UniformSampler[T]) SampleN(N T) T {
+	maxT := T(num.MaxT[T]())
+	bound := maxT - (maxT % N)
 
 	for {
-		res := uint64(s.Sample())
-		if res <= randMax {
-			return T(res%max) + a
+		res := num.Abs(s.Sample())
+		if res < bound {
+			return res % N
 		}
 	}
 }

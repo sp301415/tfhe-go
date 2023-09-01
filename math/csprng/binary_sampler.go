@@ -1,41 +1,32 @@
 package csprng
 
 import (
-	"crypto/rand"
-
 	"github.com/sp301415/tfhe/math/num"
 )
 
 // BinarySampler samples values from uniform binary distribution {0, 1}.
-// It uses Blake2x as the underlying CSPRNG.
 //
-// See rand.UniformSampler for more details.
+// See csprng.UniformSampler for more details.
 type BinarySampler[T num.Integer] struct {
 	baseSampler UniformSampler[uint64]
 }
 
 // NewBinarySampler creates a new BinarySampler.
-// The seed is sampled securely from crypto/rand,
-// so it may panic if read from crypto/rand fails.
+// Unlike WithSeed variant, this function uses crypto/rand.
 func NewBinarySampler[T num.Integer]() BinarySampler[T] {
-	// Sample 512-bit seed
-	seed := make([]byte, 64)
-	if _, err := rand.Read(seed); err != nil {
-		panic(err)
+	return BinarySampler[T]{
+		baseSampler: NewUniformSampler[uint64](),
 	}
-
-	// This never panics, because the only case when NewXOF returns error
-	// is when key size is too large.
-	return NewBinarySamplerWithSeed[T](seed)
 }
 
 // NewBinarySamplerWithSeed creates a new BinarySampler, with user supplied seed.
+// This uses blake2b as the underlying CSPRNG.
 // Note that retreiving the seed after initialization is not possible.
 //
 // Panics when blake2b initialization fails.
 func NewBinarySamplerWithSeed[T num.Integer](seed []byte) BinarySampler[T] {
 	return BinarySampler[T]{
-		baseSampler: NewUniformSampler[uint64](),
+		baseSampler: NewUniformSamplerWithSeed[uint64](seed),
 	}
 }
 

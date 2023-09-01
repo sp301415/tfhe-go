@@ -1,7 +1,6 @@
 package csprng
 
 import (
-	"crypto/rand"
 	"math"
 
 	"github.com/sp301415/tfhe/math/num"
@@ -9,7 +8,7 @@ import (
 
 // GaussianSampler samples from Rounded Gaussian Distribution, centered around zero.
 //
-// See rand.UniformSampler for more details.
+// See csprng.UniformSampler for more details.
 type GaussianSampler[T num.Integer] struct {
 	baseSampler UniformSampler[int32]
 
@@ -17,23 +16,22 @@ type GaussianSampler[T num.Integer] struct {
 }
 
 // NewGaussianSampler creates a new GaussianSampler.
-// The seed is sampled securely from crypto/rand,
-// so it may panic if read from crypto/rand fails.
+// Unlike WithSeed variant, this function uses crypto/rand.
 //
 // Also panics when stdDev <= 0.
 func NewGaussianSampler[T num.Integer](stdDev float64) GaussianSampler[T] {
-	// Sample 512-bit seed
-	seed := make([]byte, 64)
-	if _, err := rand.Read(seed); err != nil {
-		panic(err)
+	if stdDev <= 0 {
+		panic("StdDev smaller than zero")
 	}
 
-	// This never panics, because the only case when NewXOF returns error
-	// is when key size is too large.
-	return NewGaussianSamplerWithSeed[T](seed, stdDev)
+	return GaussianSampler[T]{
+		baseSampler: NewUniformSampler[int32](),
+		StdDev:      stdDev,
+	}
 }
 
 // NewGaussianSamplerWithSeed creates a new GaussianSampler, with user supplied seed.
+// This uses blake2b as the underlying CSPRNG.
 // Note that retreiving the seed after initialization is not possible.
 //
 // Panics when blake2b initialization fails,
