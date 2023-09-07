@@ -31,6 +31,7 @@ func (e *Encryptor[T]) EncryptGLWEBody(ct GLWECiphertext[T]) {
 	e.glweSampler.SampleSliceAddAssign(ct.Value[0].Coeffs)
 	for i := 0; i < e.Parameters.glweDimension; i++ {
 		e.PolyEvaluator.MulAddAssign(ct.Value[i+1], e.SecretKey.GLWEKey.Value[i], ct.Value[0])
+		e.PolyEvaluator.NegAssign(ct.Value[i+1], ct.Value[i+1])
 	}
 }
 
@@ -50,7 +51,7 @@ func (e *Encryptor[T]) DecryptGLWEPlaintext(ct GLWECiphertext[T]) GLWEPlaintext[
 func (e *Encryptor[T]) DecryptGLWEPlaintextAssign(ct GLWECiphertext[T], ptOut GLWEPlaintext[T]) {
 	ptOut.Value.CopyFrom(ct.Value[0])
 	for i := 0; i < e.Parameters.glweDimension; i++ {
-		e.PolyEvaluator.MulSubAssign(ct.Value[i+1], e.SecretKey.GLWEKey.Value[i], ptOut.Value)
+		e.PolyEvaluator.MulAddAssign(ct.Value[i+1], e.SecretKey.GLWEKey.Value[i], ptOut.Value)
 	}
 }
 
@@ -123,7 +124,7 @@ func (e *Encryptor[T]) EncryptGGSWPlaintextAssign(pt GLWEPlaintext[T], ctOut GGS
 	for i := 1; i < e.Parameters.glweDimension+1; i++ {
 		e.PolyEvaluator.MulAssign(e.SecretKey.GLWEKey.Value[i-1], pt.Value, e.buffer.ptGGSW)
 		for j := 0; j < ctOut.decompParams.level; j++ {
-			e.PolyEvaluator.ScalarMulAssign(e.buffer.ptGGSW, -ctOut.decompParams.ScaledBase(j), ctOut.Value[i].Value[j].Value[0])
+			e.PolyEvaluator.ScalarMulAssign(e.buffer.ptGGSW, ctOut.decompParams.ScaledBase(j), ctOut.Value[i].Value[j].Value[0])
 			e.EncryptGLWEBody(ctOut.Value[i].Value[j])
 		}
 	}

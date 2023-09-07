@@ -28,6 +28,7 @@ func (e *Encryptor[T]) EncryptLWEPlaintextAssign(pt LWEPlaintext[T], ctOut LWECi
 func (e *Encryptor[T]) EncryptLWEBody(ct LWECiphertext[T]) {
 	e.uniformSampler.SampleSliceAssign(ct.Value[1:])
 	ct.Value[0] += vec.Dot(ct.Value[1:], e.SecretKey.LWEKey.Value) + e.lweSampler.Sample()
+	vec.NegAssign(ct.Value[1:], ct.Value[1:])
 }
 
 // DecryptLWE decrypts and decodes LWE ciphertext to integer message.
@@ -37,7 +38,7 @@ func (e *Encryptor[T]) DecryptLWE(ct LWECiphertext[T]) int {
 
 // DecryptLWEPlaintext decrypts LWE ciphertext to LWE plaintext.
 func (e *Encryptor[T]) DecryptLWEPlaintext(ct LWECiphertext[T]) LWEPlaintext[T] {
-	pt := ct.Value[0] - vec.Dot(ct.Value[1:], e.SecretKey.LWEKey.Value)
+	pt := ct.Value[0] + vec.Dot(ct.Value[1:], e.SecretKey.LWEKey.Value)
 	return LWEPlaintext[T]{Value: pt}
 }
 
@@ -93,7 +94,7 @@ func (e *Encryptor[T]) EncryptGSWPlaintextAssign(pt LWEPlaintext[T], ctOut GSWCi
 
 	for i := 1; i < e.Parameters.lweDimension+1; i++ {
 		for j := 0; j < ctOut.decompParams.level; j++ {
-			ctOut.Value[i].Value[j].Value[0] = -e.SecretKey.LWEKey.Value[i-1] * pt.Value << ctOut.decompParams.ScaledBaseLog(j)
+			ctOut.Value[i].Value[j].Value[0] = e.SecretKey.LWEKey.Value[i-1] * pt.Value << ctOut.decompParams.ScaledBaseLog(j)
 			e.EncryptLWEBody(ctOut.Value[i].Value[j])
 		}
 	}

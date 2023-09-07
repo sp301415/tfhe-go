@@ -108,7 +108,7 @@ func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T]
 
 		for j := i * e.Parameters.blockSize; j < (i+1)*e.Parameters.blockSize; j++ {
 			e.ExternalProductHoistedAssign(e.EvaluationKey.BootstrapKey.Value[j], e.buffer.accDecomposed, e.buffer.acc)
-			e.MonomialMulMinusOneAddGLWEAssign(e.buffer.acc, e.ModSwitch(ct.Value[j+1]), ctOut)
+			e.MonomialMulMinusOneAddGLWEAssign(e.buffer.acc, -e.ModSwitch(ct.Value[j+1]), ctOut)
 		}
 	}
 }
@@ -153,9 +153,9 @@ func (e *Evaluator[T]) KeySwitchAssign(ct LWECiphertext[T], ksk KeySwitchKey[T],
 		e.DecomposeAssign(ct.Value[i+1], vecDecomposed, ksk.decompParams)
 		for j := 0; j < ksk.decompParams.level; j++ {
 			if i == 0 && j == 0 {
-				e.ScalarMulLWEAssign(ksk.Value[i].Value[j], -vecDecomposed[j], ctOut)
+				e.ScalarMulLWEAssign(ksk.Value[i].Value[j], vecDecomposed[j], ctOut)
 			} else {
-				e.ScalarMulSubLWEAssign(ksk.Value[i].Value[j], vecDecomposed[j], ctOut)
+				e.ScalarMulAddLWEAssign(ksk.Value[i].Value[j], vecDecomposed[j], ctOut)
 			}
 		}
 	}
