@@ -179,16 +179,20 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		lweDimension:  p.LWEDimension,
 		glweDimension: p.GLWEDimension,
 		polyDegree:    p.PolyDegree,
+		polyDegreeLog: num.Log2(p.PolyDegree),
 
 		lweStdDev:  p.LWEStdDev,
 		glweStdDev: p.GLWEStdDev,
 
 		blockSize: p.BlockSize,
 
-		delta:             1 << deltaLog,
-		deltaLog:          deltaLog,
 		messageModulus:    p.MessageModulus,
 		messageModulusLog: messageModulusLog,
+		delta:             1 << deltaLog,
+		deltaLog:          deltaLog,
+
+		sizeT: num.SizeT[T](),
+		maxT:  T(num.MaxT[T]()),
 
 		bootstrapParameters: p.BootstrapParameters.Compile(),
 		keyswitchParameters: p.KeySwitchParameters.Compile(),
@@ -205,6 +209,8 @@ type Parameters[T Tint] struct {
 	glweDimension int
 	// PolyDegree is the degree of polynomials in GLWE entities. Usually this is denoted by N.
 	polyDegree int
+	// PolyDegreeLog equals log(PolyDegree).
+	polyDegreeLog int
 
 	// LWEStdDev is the standard deviation used for gaussian error sampling in LWE encryption.
 	lweStdDev float64
@@ -223,6 +229,11 @@ type Parameters[T Tint] struct {
 	delta T
 	// DeltaLog equals log(Delta).
 	deltaLog int
+
+	// maxT is the maximum value of T.
+	maxT T
+	// sizeT is the bit length of T.
+	sizeT int
 
 	// bootstrapParameters is the decomposition parameters for Programmable Bootstrapping.
 	bootstrapParameters DecompositionParameters[T]
@@ -251,6 +262,11 @@ func (p Parameters[T]) GLWEDimension() int {
 // PolyDegree is the degree of polynomials in GLWE entities. Usually this is denoted by N.
 func (p Parameters[T]) PolyDegree() int {
 	return p.polyDegree
+}
+
+// PolyDegreeLog equals log(PolyDegree).
+func (p Parameters[T]) PolyDegreeLog() int {
+	return p.polyDegreeLog
 }
 
 // LWEStdDev is the standard deviation used for gaussian error sampling in LWE encryption.
@@ -292,6 +308,16 @@ func (p Parameters[T]) MessageModulus() T {
 // MessageModulusLog equals log(MessageModulus).
 func (p Parameters[T]) MessageModulusLog() int {
 	return p.messageModulusLog
+}
+
+// MaxT is the maximum value of T.
+func (p Parameters[T]) MaxT() T {
+	return p.maxT
+}
+
+// SizeT is the bit length of T.
+func (p Parameters[T]) SizeT() int {
+	return p.sizeT
 }
 
 // BootstrapParameters is the decomposition parameters for Programmable Bootstrapping.

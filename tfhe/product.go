@@ -1,84 +1,85 @@
 package tfhe
 
 import (
-	"github.com/sp301415/tfhe/math/num"
 	"github.com/sp301415/tfhe/math/poly"
 )
 
-// Decompose decomposes x with respect to decompParams.
-func (e *Evaluator[T]) Decompose(x T, decompParams DecompositionParameters[T]) []T {
-	decomposed := make([]T, decompParams.level)
-	e.DecomposeAssign(x, decomposed, decompParams)
-	return decomposed
+// GadgetProduct calculates the gadget product between
+// ctFourierGLev and p, and returns it.
+func (e *Evaluator[T]) GadgetProduct(ctFourierGLev FourierGLevCiphertext[T], p poly.Poly[T]) GLWECiphertext[T] {
+	ctOut := NewGLWECiphertext(e.Parameters)
+	e.GadgetProductAssign(ctFourierGLev, p, ctOut)
+	return ctOut
 }
 
-// DecomposeAssign decomposes x with respect to decompParams, and writes it to d.
-func (e *Evaluator[T]) DecomposeAssign(x T, d []T, decompParams DecompositionParameters[T]) {
-	lastScaledBaseLog := decompParams.scaledBasesLog[decompParams.level-1]
-	u := num.ClosestMultipleBits(x, lastScaledBaseLog) >> lastScaledBaseLog
-	for i := decompParams.level - 1; i >= 1; i-- {
-		d[i] = u & decompParams.baseMask
-		u >>= decompParams.baseLog
-		u += d[i] >> (decompParams.baseLog - 1)
-		d[i] -= (d[i] & decompParams.baseHalf) << 1
-	}
-	d[0] = u & decompParams.baseMask
-	d[0] -= (d[0] & decompParams.baseHalf) << 1
-}
+// GadgetProductAssign calculates the gadget product between
+// ctFourierGLev and p, and writes it to ctOut.
+func (e *Evaluator[T]) GadgetProductAssign(ctFourierGLev FourierGLevCiphertext[T], p poly.Poly[T], ctOut GLWECiphertext[T]) {
+	e.GadgetProductFourierAssign(ctFourierGLev, p, e.buffer.ctFourierProd)
 
-// DecomposePoly decomposes x with respect to decompParams.
-func (e *Evaluator[T]) DecomposePoly(x poly.Poly[T], decompParams DecompositionParameters[T]) []poly.Poly[T] {
-	decomposed := make([]poly.Poly[T], decompParams.level)
-	for i := 0; i < decompParams.level; i++ {
-		decomposed[i] = poly.New[T](e.Parameters.polyDegree)
-	}
-	e.DecomposePolyAssign(x, decomposed, decompParams)
-	return decomposed
-}
-
-// DecomposePolyAssign decomposes x with respect to decompParams, and writes it to d.
-func (e *Evaluator[T]) DecomposePolyAssign(x poly.Poly[T], d []poly.Poly[T], decompParams DecompositionParameters[T]) {
-	lastScaledBaseLog := decompParams.scaledBasesLog[decompParams.level-1]
-	for i := 0; i < e.Parameters.polyDegree; i++ {
-		c := num.ClosestMultipleBits(x.Coeffs[i], lastScaledBaseLog) >> lastScaledBaseLog
-		for j := decompParams.level - 1; j >= 1; j-- {
-			d[j].Coeffs[i] = c & decompParams.baseMask
-			c >>= decompParams.baseLog
-			c += d[j].Coeffs[i] >> (decompParams.baseLog - 1)
-			d[j].Coeffs[i] -= (d[j].Coeffs[i] & decompParams.baseHalf) << 1
-		}
-		d[0].Coeffs[i] = c & decompParams.baseMask
-		d[0].Coeffs[i] -= (d[0].Coeffs[i] & decompParams.baseHalf) << 1
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.FourierTransformer.ToScaledStandardPolyAssign(e.buffer.ctFourierProd.Value[i], ctOut.Value[i])
 	}
 }
 
-// getPolyDecomposedBuffer returns the polyDecomposed buffer of Evaluator.
-// if len(polyDecomposed) >= Level, it returns the subslice of the buffer.
-// otherwise, it extends the buffer of the Evaluator and returns it.
-func (e *Evaluator[T]) getPolyDecomposedBuffer(decompParams DecompositionParameters[T]) []poly.Poly[T] {
-	if len(e.buffer.polyDecomposed) >= decompParams.level {
-		return e.buffer.polyDecomposed[:decompParams.level]
-	}
+// GadgetProductAddAssign calculates the gadget product between
+// ctFourierGLev and p, and adds it to ctOut.
+func (e *Evaluator[T]) GadgetProductAddAssign(ctFourierGLev FourierGLevCiphertext[T], p poly.Poly[T], ctOut GLWECiphertext[T]) {
+	e.GadgetProductFourierAssign(ctFourierGLev, p, e.buffer.ctFourierProd)
 
-	oldLen := len(e.buffer.polyDecomposed)
-	e.buffer.polyDecomposed = append(e.buffer.polyDecomposed, make([]poly.Poly[T], decompParams.level-oldLen)...)
-	for i := oldLen; i < decompParams.level; i++ {
-		e.buffer.polyDecomposed[i] = poly.New[T](e.Parameters.polyDegree)
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.FourierTransformer.ToScaledStandardPolyAddAssign(e.buffer.ctFourierProd.Value[i], ctOut.Value[i])
 	}
-	return e.buffer.polyDecomposed
 }
 
-// getVecDecomposedBuffer returns the vecDecomposed buffer of Evaluator.
-// if len(vecDecomposed) >= Level, it returns the subslice of the buffer.
-// otherwise, it extends the buffer of the Evaluator and returns it.
-func (e *Evaluator[T]) getVecDecomposedBuffer(decompParams DecompositionParameters[T]) []T {
-	if len(e.buffer.vecDecomposed) >= decompParams.level {
-		return e.buffer.vecDecomposed[:decompParams.level]
-	}
+// GadgetProductSubAssign calculates the gadget product between
+// ctFourierGLev and p, and subtracts it from ctOut.
+func (e *Evaluator[T]) GadgetProductSubAssign(ctFourierGLev FourierGLevCiphertext[T], p poly.Poly[T], ctOut GLWECiphertext[T]) {
+	e.GadgetProductFourierAssign(ctFourierGLev, p, e.buffer.ctFourierProd)
 
-	oldLen := len(e.buffer.vecDecomposed)
-	e.buffer.vecDecomposed = append(e.buffer.vecDecomposed, make([]T, decompParams.level-oldLen)...)
-	return e.buffer.vecDecomposed
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.FourierTransformer.ToScaledStandardPolySubAssign(e.buffer.ctFourierProd.Value[i], ctOut.Value[i])
+	}
+}
+
+// GadgetProductFourier calculates the gadget product between
+// ctFourierGLev and p, and returns it in Fourier form.
+func (e *Evaluator[T]) GadgetProductFourier(ctFourierGLev FourierGLevCiphertext[T], p poly.Poly[T]) FourierGLWECiphertext[T] {
+	ctOut := NewFourierGLWECiphertext(e.Parameters)
+	e.GadgetProductFourierAssign(ctFourierGLev, p, ctOut)
+	return ctOut
+}
+
+// GadgetProductFourierAssign calculates the gadget product between
+// ctFourierGLev and p, and writes it to ctFourierGLWEOut.
+func (e *Evaluator[T]) GadgetProductFourierAssign(ctFourierGLev FourierGLevCiphertext[T], p poly.Poly[T], ctFourierGLWEOut FourierGLWECiphertext[T]) {
+	polyDecomposed := e.getPolyDecomposedBuffer(ctFourierGLev.decompParams)
+
+	e.DecomposePolyAssign(p, polyDecomposed, ctFourierGLev.decompParams)
+	e.PolyMulFourierGLWEAssign(ctFourierGLev.Value[0], polyDecomposed[0], ctFourierGLWEOut)
+	for i := 1; i < ctFourierGLev.decompParams.level; i++ {
+		e.PolyMulAddFourierGLWEAssign(ctFourierGLev.Value[i], polyDecomposed[i], ctFourierGLWEOut)
+	}
+}
+
+// GadgetProductFourierAddAssign calculates the gadget product between
+// ctFourierGLev and p, and adds it to ctOut.
+func (e *Evaluator[T]) GadgetProductFourierAddAssign(ctFourierGLev FourierGLevCiphertext[T], p poly.Poly[T], ctFourierGLWEOut FourierGLWECiphertext[T]) {
+	polyDecomposed := e.getPolyDecomposedBuffer(ctFourierGLev.decompParams)
+
+	for i := 0; i < ctFourierGLev.decompParams.level; i++ {
+		e.PolyMulAddFourierGLWEAssign(ctFourierGLev.Value[i], polyDecomposed[i], ctFourierGLWEOut)
+	}
+}
+
+// GadgetProductFourierSubAssign calculates the gadget product between
+// ctFourierGLev and p, and subtracts it from ctOut.
+func (e *Evaluator[T]) GadgetProductFourierSubAssign(ctFourierGLev FourierGLevCiphertext[T], p poly.Poly[T], ctFourierGLWEOut FourierGLWECiphertext[T]) {
+	polyDecomposed := e.getPolyDecomposedBuffer(ctFourierGLev.decompParams)
+
+	for i := 0; i < ctFourierGLev.decompParams.level; i++ {
+		e.PolyMulSubFourierGLWEAssign(ctFourierGLev.Value[i], polyDecomposed[i], ctFourierGLWEOut)
+	}
 }
 
 // ExternalProduct calculates the external product between
