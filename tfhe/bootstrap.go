@@ -78,7 +78,7 @@ func (e *Evaluator[T]) BootstrapLUTAssign(ct LWECiphertext[T], lut LookUpTable[T
 
 // ModSwitch calculates round(2N * x / Q) mod 2N.
 func (e *Evaluator[T]) ModSwitch(x T) int {
-	return int(num.RoundRatioBits(x, e.Parameters.sizeT+e.Parameters.polyDegreeLog+1)) % (2 * e.Parameters.polyDegree)
+	return int(num.RoundRatioBits(x, e.Parameters.sizeT-(e.Parameters.polyDegreeLog+1))) % (2 * e.Parameters.polyDegree)
 }
 
 // BlindRotate calculates the blind rotation of LWE ciphertext with respect to LUT.
