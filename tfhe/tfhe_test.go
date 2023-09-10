@@ -125,12 +125,11 @@ func BenchmarkEvaluationKeyGen(b *testing.B) {
 
 func BenchmarkBootstrap(b *testing.B) {
 	ct := benchEncryptor.EncryptLWE(3)
-	ctOut := tfhe.NewLWECiphertext(benchParams)
-	lut := testEvaluator.GenLookUpTable(func(x int) int { return 2*x + 1 })
+	lut := benchEvaluator.GenLookUpTable(func(x int) int { return 2*x + 1 })
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		benchEvaluator.BootstrapLUTAssign(ct, lut, ctOut)
+		benchEvaluator.BootstrapLUTAssign(ct, lut, ct)
 	}
 }
 

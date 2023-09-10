@@ -36,18 +36,13 @@ func (e *Evaluator[T]) GenLookUpTable(f func(int) int) LookUpTable[T] {
 // GenLookUpTableAssign generates a lookup table based on function f and writes it to lutOut.
 // Inputs and Outputs of f is cut by MessageModulus.
 func (e *Evaluator[T]) GenLookUpTableAssign(f func(int) int, lutOut LookUpTable[T]) {
-	boxSize := e.Parameters.polyDegree / int(e.Parameters.messageModulus)
-	for x := 0; x < int(e.Parameters.messageModulus); x++ {
-		fx := (T(f(x)) % e.Parameters.messageModulus) << e.Parameters.deltaLog
-		for i := x * boxSize; i < (x+1)*boxSize; i++ {
-			lutOut.Coeffs[i] = fx
+	boxSize := 1 << (e.Parameters.polyDegreeLog - e.Parameters.messageModulusLog)
+	for i := 0; i < 1<<e.Parameters.messageModulusLog; i++ {
+		for j := i * boxSize; j < (i+1)*boxSize; j++ {
+			lutOut.Coeffs[j] = e.EncodeLWE(f(i)).Value
 		}
 	}
-
-	for i := 0; i < boxSize/2; i++ {
-		lutOut.Coeffs[i] = -lutOut.Coeffs[i]
-	}
-	vec.RotateInPlace(lutOut.Coeffs, -boxSize/2)
+	e.PolyEvaluator.MonomialMulInPlace(poly.Poly[T](lutOut), -boxSize/2)
 }
 
 // BootstrapFunc returns a bootstrapped LWE ciphertext with resepect to given function.
