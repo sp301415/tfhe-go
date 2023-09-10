@@ -26,7 +26,7 @@ func (lut *LookUpTable[T]) CopyFrom(lutIn LookUpTable[T]) {
 }
 
 // GenLookUpTable generates a lookup table based on function f and returns it.
-// Inputs and Outputs of f is cut by MessageModulus.
+// Input and output of f is cut by MessageModulus.
 func (e *Evaluator[T]) GenLookUpTable(f func(int) int) LookUpTable[T] {
 	lutOut := NewLookUpTable(e.Parameters)
 	e.GenLookUpTableAssign(f, lutOut)
@@ -34,12 +34,34 @@ func (e *Evaluator[T]) GenLookUpTable(f func(int) int) LookUpTable[T] {
 }
 
 // GenLookUpTableAssign generates a lookup table based on function f and writes it to lutOut.
-// Inputs and Outputs of f is cut by MessageModulus.
+// Input and output of f is cut by MessageModulus.
 func (e *Evaluator[T]) GenLookUpTableAssign(f func(int) int, lutOut LookUpTable[T]) {
 	boxSize := 1 << (e.Parameters.polyDegreeLog - e.Parameters.messageModulusLog)
 	for i := 0; i < 1<<e.Parameters.messageModulusLog; i++ {
+		out := e.EncodeLWE(f(i)).Value
 		for j := i * boxSize; j < (i+1)*boxSize; j++ {
-			lutOut.Coeffs[j] = e.EncodeLWE(f(i)).Value
+			lutOut.Coeffs[j] = out
+		}
+	}
+	e.PolyEvaluator.MonomialMulInPlace(poly.Poly[T](lutOut), -boxSize/2)
+}
+
+// GenLookUpTableFull generates a lookup table based on function f and returns it.
+// Output of f is encoded as-is.
+func (e *Evaluator[T]) GenLookUpTableFull(f func(int) T) LookUpTable[T] {
+	lutOut := NewLookUpTable(e.Parameters)
+	e.GenLookUpTableFullAssign(f, lutOut)
+	return lutOut
+}
+
+// GenLookUpTableFullAssign generates a lookup table based on function f and writes it to lutOut.
+// Output of f is encoded as-is.
+func (e *Evaluator[T]) GenLookUpTableFullAssign(f func(int) T, lutOut LookUpTable[T]) {
+	boxSize := 1 << (e.Parameters.polyDegreeLog - e.Parameters.messageModulusLog)
+	for i := 0; i < 1<<e.Parameters.messageModulusLog; i++ {
+		out := f(i)
+		for j := i * boxSize; j < (i+1)*boxSize; j++ {
+			lutOut.Coeffs[j] = out
 		}
 	}
 	e.PolyEvaluator.MonomialMulInPlace(poly.Poly[T](lutOut), -boxSize/2)
