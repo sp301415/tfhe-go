@@ -10,13 +10,7 @@ import (
 )
 
 // UniformSampler samples values from uniform distribution.
-// For NewUniformSampler, this uses crypto/rand,
-// and for NewUniformSamplerWithSeed, this uses blake2b.
-//
-// Methods of UniformSampler may panic when read from
-// crypto/rand or blake2b.XOF fails.
-// In practice, it almost never happens especially when
-// the seed is automatically supplied using NewUniformSampler.
+// This uses blake2b as a underlying prng.
 type UniformSampler[T num.Integer] struct {
 	prng *bufio.Reader
 
@@ -25,20 +19,16 @@ type UniformSampler[T num.Integer] struct {
 }
 
 // NewUniformSampler creates a new UniformSampler.
-// Unlike WithSeed variant, this function uses crypto/rand.
+// Panics when read from crypto/rand or blake2b initialization fails.
 func NewUniformSampler[T num.Integer]() UniformSampler[T] {
-	return UniformSampler[T]{
-		prng: bufio.NewReader(rand.Reader),
-
-		sizeT: num.SizeT[T](),
-		maxT:  T(num.MaxT[T]()),
+	seed := make([]byte, 64)
+	if _, err := rand.Read(seed); err != nil {
+		panic(err)
 	}
+	return NewUniformSamplerWithSeed[T](seed)
 }
 
 // NewUniformSamplerWithSeed creates a new UniformSampler, with user supplied seed.
-// This uses blake2b as the underlying CSPRNG.
-// Note that retreiving the seed after initialization is not possible.
-//
 // Panics when blake2b initialization fails.
 func NewUniformSamplerWithSeed[T num.Integer](seed []byte) UniformSampler[T] {
 	prng, err := blake2b.NewXOF(blake2b.OutputLengthUnknown, seed)
@@ -55,7 +45,7 @@ func NewUniformSamplerWithSeed[T num.Integer](seed []byte) UniformSampler[T] {
 }
 
 // Read implements the io.Reader interface.
-// This is a simple wrapping of underlying blake2x prng.
+// This is a simple wrapping of underlying blake2b prng.
 func (s UniformSampler[T]) Read(b []byte) (n int, err error) {
 	return s.prng.Read(b)
 }

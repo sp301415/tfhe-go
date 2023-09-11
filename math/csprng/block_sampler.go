@@ -1,8 +1,6 @@
 package csprng
 
 import (
-	"crypto/rand"
-
 	"github.com/sp301415/tfhe/math/num"
 )
 
@@ -17,20 +15,12 @@ type BlockSampler[T num.Integer] struct {
 }
 
 // NewBlockSampler creates a new BlockSampler.
-// The seed is sampled securely from crypto/rand,
-// so it may panic if read from crypto/rand fails.
-//
-// Also panics when blockSize <= 0.
+// Panics when read from crypto/rand or blake2b initialization fails.
 func NewBlockSampler[T num.Integer](blockSize int) BlockSampler[T] {
-	// Sample 512-bit seed
-	seed := make([]byte, 64)
-	if _, err := rand.Read(seed); err != nil {
-		panic(err)
+	return BlockSampler[T]{
+		baseSampler: NewUniformSampler[int](),
+		BlockSize:   blockSize,
 	}
-
-	// This never panics, because the only case when NewXOF returns error
-	// is when key size is too large.
-	return NewBlockSamplerWithSeed[T](seed, blockSize)
 }
 
 // NewBlockSamplerWithSeed creates a new BlockSampler, with user supplied seed.

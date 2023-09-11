@@ -12,7 +12,7 @@ type BinarySampler[T num.Integer] struct {
 }
 
 // NewBinarySampler creates a new BinarySampler.
-// Unlike WithSeed variant, this function uses crypto/rand.
+// Panics when read from crypto/rand or blake2b initialization fails.
 func NewBinarySampler[T num.Integer]() BinarySampler[T] {
 	return BinarySampler[T]{
 		baseSampler: NewUniformSampler[uint64](),
@@ -20,9 +20,6 @@ func NewBinarySampler[T num.Integer]() BinarySampler[T] {
 }
 
 // NewBinarySamplerWithSeed creates a new BinarySampler, with user supplied seed.
-// This uses blake2b as the underlying CSPRNG.
-// Note that retreiving the seed after initialization is not possible.
-//
 // Panics when blake2b initialization fails.
 func NewBinarySamplerWithSeed[T num.Integer](seed []byte) BinarySampler[T] {
 	return BinarySampler[T]{
