@@ -30,8 +30,7 @@ func (e *Encryptor[T]) EncryptGLWEBody(ct GLWECiphertext[T]) {
 	}
 	e.glweSampler.SampleSliceAddAssign(ct.Value[0].Coeffs)
 	for i := 0; i < e.Parameters.glweDimension; i++ {
-		e.PolyEvaluator.MulAddAssign(ct.Value[i+1], e.SecretKey.GLWEKey.Value[i], ct.Value[0])
-		e.PolyEvaluator.NegAssign(ct.Value[i+1], ct.Value[i+1])
+		e.PolyEvaluator.MulSubAssign(ct.Value[i+1], e.SecretKey.GLWEKey.Value[i], ct.Value[0])
 	}
 }
 
