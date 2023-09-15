@@ -15,7 +15,7 @@ func (e *Evaluator[T]) Decompose(x T, decompParams DecompositionParameters[T]) [
 // DecomposeAssign decomposes x with respect to decompParams, and writes it to d.
 func (e *Evaluator[T]) DecomposeAssign(x T, d []T, decompParams DecompositionParameters[T]) {
 	lastScaledBaseLog := decompParams.scaledBasesLog[decompParams.level-1]
-	u := num.ClosestMultipleBits(x, lastScaledBaseLog) >> lastScaledBaseLog
+	u := num.RoundRatioBits(x, lastScaledBaseLog)
 	for i := decompParams.level - 1; i >= 1; i-- {
 		d[i] = u & decompParams.baseMask
 		u >>= decompParams.baseLog
@@ -40,7 +40,7 @@ func (e *Evaluator[T]) DecomposePoly(x poly.Poly[T], decompParams DecompositionP
 func (e *Evaluator[T]) DecomposePolyAssign(x poly.Poly[T], d []poly.Poly[T], decompParams DecompositionParameters[T]) {
 	lastScaledBaseLog := decompParams.scaledBasesLog[decompParams.level-1]
 	for i := 0; i < e.Parameters.polyDegree; i++ {
-		c := num.ClosestMultipleBits(x.Coeffs[i], lastScaledBaseLog) >> lastScaledBaseLog
+		c := num.RoundRatioBits(x.Coeffs[i], lastScaledBaseLog)
 		for j := decompParams.level - 1; j >= 1; j-- {
 			d[j].Coeffs[i] = c & decompParams.baseMask
 			c >>= decompParams.baseLog
