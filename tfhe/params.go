@@ -43,13 +43,13 @@ func (p DecompositionParametersLiteral[T]) Compile() DecompositionParameters[T] 
 	}
 
 	return DecompositionParameters[T]{
-		base:           p.Base,
-		baseHalf:       p.Base / 2,
-		baseMask:       p.Base - 1,
-		baseLog:        baseLog,
-		maxBits:        num.SizeT[T](),
-		level:          p.Level,
-		scaledBasesLog: scaledBasesLog,
+		base:            p.Base,
+		baseHalf:        p.Base / 2,
+		baseMask:        p.Base - 1,
+		baseLog:         baseLog,
+		baseLogMinusOne: baseLog - 1,
+		level:           p.Level,
+		scaledBasesLog:  scaledBasesLog,
 	}
 }
 
@@ -64,8 +64,8 @@ type DecompositionParameters[T Tint] struct {
 	baseMask T
 	// BaseLog equals log(Base).
 	baseLog int
-	// MaxBits equals bit length of T.
-	maxBits int
+	// BaseLogMinusOne equals BaseLog - 1.
+	baseLogMinusOne int
 	// Level is a length of gadget.
 	level int
 	// scaledBasesLog holds the log of scaled gadget: Log(Q / B^l) for l = 1 ~ Level.

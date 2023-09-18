@@ -117,7 +117,7 @@ func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T]
 	// Implementation of Algorithm 2 and Section 5.1 from https://eprint.iacr.org/2023/958.pdf
 	for i := 0; i < e.Parameters.BlockCount(); i++ {
 		for j := 0; j < e.Parameters.glweDimension+1; j++ {
-			e.DecomposePolyAssign(ctOut.Value[j], polyDecomposed, e.Parameters.bootstrapParameters)
+			e.DecomposePolyAssign(ctOut.Value[j], e.Parameters.bootstrapParameters, polyDecomposed)
 			for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
 				e.FourierTransformer.ToFourierPolyAssign(polyDecomposed[k], e.buffer.accDecomposed[j][k])
 			}
@@ -167,7 +167,7 @@ func (e *Evaluator[T]) KeySwitchAssign(ct LWECiphertext[T], ksk KeySwitchKey[T],
 	vecDecomposed := e.getVecDecomposedBuffer(ksk.decompParams)
 
 	for i := 0; i < ksk.InputLWEDimension(); i++ {
-		e.DecomposeAssign(ct.Value[i+1], vecDecomposed, ksk.decompParams)
+		e.DecomposeAssign(ct.Value[i+1], ksk.decompParams, vecDecomposed)
 		for j := 0; j < ksk.decompParams.level; j++ {
 			if i == 0 && j == 0 {
 				e.ScalarMulLWEAssign(ksk.Value[i].Value[j], vecDecomposed[j], ctOut)

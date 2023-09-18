@@ -55,7 +55,7 @@ func (e *Evaluator[T]) GadgetProductFourier(ctFourierGLev FourierGLevCiphertext[
 func (e *Evaluator[T]) GadgetProductFourierAssign(ctFourierGLev FourierGLevCiphertext[T], p poly.Poly[T], ctFourierGLWEOut FourierGLWECiphertext[T]) {
 	polyDecomposed := e.getPolyDecomposedBuffer(ctFourierGLev.decompParams)
 
-	e.DecomposePolyAssign(p, polyDecomposed, ctFourierGLev.decompParams)
+	e.DecomposePolyAssign(p, ctFourierGLev.decompParams, polyDecomposed)
 	e.PolyMulFourierGLWEAssign(ctFourierGLev.Value[0], polyDecomposed[0], ctFourierGLWEOut)
 	for i := 1; i < ctFourierGLev.decompParams.level; i++ {
 		e.PolyMulAddFourierGLWEAssign(ctFourierGLev.Value[i], polyDecomposed[i], ctFourierGLWEOut)
@@ -134,7 +134,7 @@ func (e *Evaluator[T]) ExternalProductFourierAssign(ctFourierGGSW FourierGGSWCip
 	polyDecomposed := e.getPolyDecomposedBuffer(ctFourierGGSW.decompParams)
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.DecomposePolyAssign(ctGLWE.Value[i], polyDecomposed, ctFourierGGSW.decompParams)
+		e.DecomposePolyAssign(ctGLWE.Value[i], ctFourierGGSW.decompParams, polyDecomposed)
 		for j := 0; j < ctFourierGGSW.decompParams.level; j++ {
 			if i == 0 && j == 0 {
 				e.PolyMulFourierGLWEAssign(ctFourierGGSW.Value[i].Value[j], polyDecomposed[j], ctFourierGLWEOut)
@@ -151,7 +151,7 @@ func (e *Evaluator[T]) ExternalProductFourierAddAssign(ctFourierGGSW FourierGGSW
 	polyDecomposed := e.getPolyDecomposedBuffer(ctFourierGGSW.decompParams)
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.DecomposePolyAssign(ctGLWE.Value[i], polyDecomposed, ctFourierGGSW.decompParams)
+		e.DecomposePolyAssign(ctGLWE.Value[i], ctFourierGGSW.decompParams, polyDecomposed)
 		for j := 0; j < ctFourierGGSW.decompParams.level; j++ {
 			e.PolyMulAddFourierGLWEAssign(ctFourierGGSW.Value[i].Value[j], polyDecomposed[j], ctFourierGLWEOut)
 		}
@@ -164,7 +164,7 @@ func (e *Evaluator[T]) ExternalProductFourierSubAssign(ctFourierGGSW FourierGGSW
 	polyDecomposed := e.getPolyDecomposedBuffer(ctFourierGGSW.decompParams)
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.DecomposePolyAssign(ctGLWE.Value[i], polyDecomposed, ctFourierGGSW.decompParams)
+		e.DecomposePolyAssign(ctGLWE.Value[i], ctFourierGGSW.decompParams, polyDecomposed)
 		for j := 0; j < ctFourierGGSW.decompParams.level; j++ {
 			e.PolyMulSubFourierGLWEAssign(ctFourierGGSW.Value[i].Value[j], polyDecomposed[j], ctFourierGLWEOut)
 		}

@@ -7,48 +7,48 @@ import (
 
 // Decompose decomposes x with respect to decompParams.
 func (e *Evaluator[T]) Decompose(x T, decompParams DecompositionParameters[T]) []T {
-	decomposed := make([]T, decompParams.level)
-	e.DecomposeAssign(x, decomposed, decompParams)
-	return decomposed
+	decomposedOut := make([]T, decompParams.level)
+	e.DecomposeAssign(x, decompParams, decomposedOut)
+	return decomposedOut
 }
 
-// DecomposeAssign decomposes x with respect to decompParams, and writes it to d.
-func (e *Evaluator[T]) DecomposeAssign(x T, d []T, decompParams DecompositionParameters[T]) {
+// DecomposeAssign decomposes x with respect to decompParams, and writes it to decomposedOut.
+func (e *Evaluator[T]) DecomposeAssign(x T, decompParams DecompositionParameters[T], decomposedOut []T) {
 	lastScaledBaseLog := decompParams.scaledBasesLog[decompParams.level-1]
 	u := num.RoundRatioBits(x, lastScaledBaseLog)
 	for i := decompParams.level - 1; i >= 1; i-- {
-		d[i] = u & decompParams.baseMask
+		decomposedOut[i] = u & decompParams.baseMask
 		u >>= decompParams.baseLog
-		u += d[i] >> (decompParams.baseLog - 1)
-		d[i] -= (d[i] & decompParams.baseHalf) << 1
+		u += decomposedOut[i] >> decompParams.baseLogMinusOne
+		decomposedOut[i] -= (decomposedOut[i] & decompParams.baseHalf) << 1
 	}
-	d[0] = u & decompParams.baseMask
-	d[0] -= (d[0] & decompParams.baseHalf) << 1
+	decomposedOut[0] = u & decompParams.baseMask
+	decomposedOut[0] -= (decomposedOut[0] & decompParams.baseHalf) << 1
 }
 
-// DecomposePoly decomposes x with respect to decompParams.
-func (e *Evaluator[T]) DecomposePoly(x poly.Poly[T], decompParams DecompositionParameters[T]) []poly.Poly[T] {
-	decomposed := make([]poly.Poly[T], decompParams.level)
+// DecomposePoly decomposes p with respect to decompParams.
+func (e *Evaluator[T]) DecomposePoly(p poly.Poly[T], decompParams DecompositionParameters[T]) []poly.Poly[T] {
+	decomposedOut := make([]poly.Poly[T], decompParams.level)
 	for i := 0; i < decompParams.level; i++ {
-		decomposed[i] = poly.New[T](e.Parameters.polyDegree)
+		decomposedOut[i] = poly.New[T](e.Parameters.polyDegree)
 	}
-	e.DecomposePolyAssign(x, decomposed, decompParams)
-	return decomposed
+	e.DecomposePolyAssign(p, decompParams, decomposedOut)
+	return decomposedOut
 }
 
-// DecomposePolyAssign decomposes x with respect to decompParams, and writes it to d.
-func (e *Evaluator[T]) DecomposePolyAssign(x poly.Poly[T], d []poly.Poly[T], decompParams DecompositionParameters[T]) {
+// DecomposePolyAssign decomposes p with respect to decompParams, and writes it to decompOut.
+func (e *Evaluator[T]) DecomposePolyAssign(p poly.Poly[T], decompParams DecompositionParameters[T], decomposedOut []poly.Poly[T]) {
 	lastScaledBaseLog := decompParams.scaledBasesLog[decompParams.level-1]
 	for i := 0; i < e.Parameters.polyDegree; i++ {
-		c := num.RoundRatioBits(x.Coeffs[i], lastScaledBaseLog)
+		c := num.RoundRatioBits(p.Coeffs[i], lastScaledBaseLog)
 		for j := decompParams.level - 1; j >= 1; j-- {
-			d[j].Coeffs[i] = c & decompParams.baseMask
+			decomposedOut[j].Coeffs[i] = c & decompParams.baseMask
 			c >>= decompParams.baseLog
-			c += d[j].Coeffs[i] >> (decompParams.baseLog - 1)
-			d[j].Coeffs[i] -= (d[j].Coeffs[i] & decompParams.baseHalf) << 1
+			c += decomposedOut[j].Coeffs[i] >> decompParams.baseLogMinusOne
+			decomposedOut[j].Coeffs[i] -= (decomposedOut[j].Coeffs[i] & decompParams.baseHalf) << 1
 		}
-		d[0].Coeffs[i] = c & decompParams.baseMask
-		d[0].Coeffs[i] -= (d[0].Coeffs[i] & decompParams.baseHalf) << 1
+		decomposedOut[0].Coeffs[i] = c & decompParams.baseMask
+		decomposedOut[0].Coeffs[i] -= (decomposedOut[0].Coeffs[i] & decompParams.baseHalf) << 1
 	}
 }
 
