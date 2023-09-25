@@ -1,6 +1,7 @@
 # TFHE-go
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/sp301415/tfhe-go.svg)](https://pkg.go.dev/github.com/sp301415/tfhe-go)
+![CI Test Status](https://github.com/sp301415/tfhe-go/actions/workflows/ci.yml/badge.svg)
 
 ⚠️ TFHE-go is still under heavy devlopment. There may be backward-incompatible changes anytime.
 
