@@ -1,5 +1,7 @@
 # TFHE-go
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/sp301415/tfhe-go.svg)](https://pkg.go.dev/github.com/sp301415/tfhe-go)
+
 ⚠️ TFHE-go is still under heavy devlopment. There may be backward-incompatible changes anytime.
 
 TFHE-go is a pure Go implementation of TFHE[[CGGI16](https://eprint.iacr.org/2016/870)] Scheme. The structure of this library is similar to another great Go-based FHE library, [Lattigo](https://github.com/tuneinsight/lattigo).

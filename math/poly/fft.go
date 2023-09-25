@@ -42,11 +42,11 @@ type FourierTransformer[T num.Integer] struct {
 	// w2NjInv holds the precomputed values of scaled w_2N^-j / (N / 2) where j = 0 ~ N/2.
 	w2NjInv []complex128
 
-	buffer fftBuffer[T]
+	buffer fourierBuffer[T]
 }
 
-// fftBuffer contains buffer values for FourierTransformer.
-type fftBuffer[T num.Integer] struct {
+// fourierBuffer contains buffer values for FourierTransformer.
+type fourierBuffer[T num.Integer] struct {
 	// fp holds the FFT value of p.
 	fp FourierPoly
 	// fpInv holds the InvFFT value of fp.
@@ -87,20 +87,20 @@ func NewFourierTransformer[T num.Integer](N int) *FourierTransformer[T] {
 		w2Nj:    w2Nj,
 		w2NjInv: w2NjInv,
 
-		buffer: newfftBuffer[T](N),
+		buffer: newFourierBuffer[T](N),
 	}
 }
 
-// newFFTBuffer allocates an empty fft buffer.
-func newfftBuffer[T num.Integer](N int) fftBuffer[T] {
-	return fftBuffer[T]{
+// newFourierBuffer allocates an empty fourierBuffer.
+func newFourierBuffer[T num.Integer](N int) fourierBuffer[T] {
+	return fourierBuffer[T]{
 		fp:    NewFourierPoly(N),
 		fpInv: NewFourierPoly(N),
 	}
 }
 
 // ShallowCopy returns a shallow copy of this FourierTransformer.
-// Returned FourierTransformer is safe for concurrent usf.
+// Returned FourierTransformer is safe for concurrent use.
 func (f *FourierTransformer[T]) ShallowCopy() *FourierTransformer[T] {
 	return &FourierTransformer[T]{
 		degree: f.degree,
@@ -111,7 +111,7 @@ func (f *FourierTransformer[T]) ShallowCopy() *FourierTransformer[T] {
 		w2Nj:    f.w2Nj,
 		w2NjInv: f.w2NjInv,
 
-		buffer: newfftBuffer[T](f.degree),
+		buffer: newFourierBuffer[T](f.degree),
 	}
 }
 
