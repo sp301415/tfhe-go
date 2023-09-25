@@ -1,7 +1,7 @@
 package poly
 
 import (
-	"github.com/sp301415/tfhe/math/num"
+	"github.com/sp301415/tfhe-go/math/num"
 )
 
 const (

@@ -1,8 +1,8 @@
 package tfhe
 
 import (
-	"github.com/sp301415/tfhe/math/num"
-	"github.com/sp301415/tfhe/math/poly"
+	"github.com/sp301415/tfhe-go/math/num"
+	"github.com/sp301415/tfhe-go/math/poly"
 )
 
 // Decompose decomposes x with respect to decompParams.

@@ -2,8 +2,8 @@
 package poly
 
 import (
-	"github.com/sp301415/tfhe/math/num"
-	"github.com/sp301415/tfhe/math/vec"
+	"github.com/sp301415/tfhe-go/math/num"
+	"github.com/sp301415/tfhe-go/math/vec"
 )
 
 // Poly represents the polynomial modulo X^N + 1. N should be power of two.

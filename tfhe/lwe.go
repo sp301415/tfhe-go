@@ -1,6 +1,6 @@
 package tfhe
 
-import "github.com/sp301415/tfhe/math/vec"
+import "github.com/sp301415/tfhe-go/math/vec"
 
 // LWEKey is a LWE secret key, sampled from uniform binary distribution.
 type LWEKey[T Tint] struct {

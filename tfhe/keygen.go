@@ -1,8 +1,8 @@
 package tfhe
 
 import (
-	"github.com/sp301415/tfhe/math/poly"
-	"github.com/sp301415/tfhe/math/vec"
+	"github.com/sp301415/tfhe-go/math/poly"
+	"github.com/sp301415/tfhe-go/math/vec"
 )
 
 // SecretKey is a structure containing LWE and GLWE key.

@@ -1,7 +1,7 @@
 package poly
 
 import (
-	"github.com/sp301415/tfhe/math/vec"
+	"github.com/sp301415/tfhe-go/math/vec"
 )
 
 // Add adds p0, p1 and returns the result.

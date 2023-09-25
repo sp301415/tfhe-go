@@ -1,8 +1,8 @@
 package tfhe
 
 import (
-	"github.com/sp301415/tfhe/math/csprng"
-	"github.com/sp301415/tfhe/math/poly"
+	"github.com/sp301415/tfhe-go/math/csprng"
+	"github.com/sp301415/tfhe-go/math/poly"
 )
 
 // Encryptor encrypts and decrypts TFHE plaintexts and ciphertexts.

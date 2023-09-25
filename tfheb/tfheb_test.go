@@ -3,8 +3,8 @@ package tfheb_test
 import (
 	"testing"
 
-	"github.com/sp301415/tfhe/tfhe"
-	"github.com/sp301415/tfhe/tfheb"
+	"github.com/sp301415/tfhe-go/tfhe"
+	"github.com/sp301415/tfhe-go/tfheb"
 	"github.com/stretchr/testify/assert"
 )
 

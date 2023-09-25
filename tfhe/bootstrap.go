@@ -1,9 +1,9 @@
 package tfhe
 
 import (
-	"github.com/sp301415/tfhe/math/num"
-	"github.com/sp301415/tfhe/math/poly"
-	"github.com/sp301415/tfhe/math/vec"
+	"github.com/sp301415/tfhe-go/math/num"
+	"github.com/sp301415/tfhe-go/math/poly"
+	"github.com/sp301415/tfhe-go/math/vec"
 )
 
 // LookUpTable is a trivially encrypted GLWE ciphertext that holds

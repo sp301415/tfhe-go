@@ -1,7 +1,7 @@
 package tfhe
 
 import (
-	"github.com/sp301415/tfhe/math/poly"
+	"github.com/sp301415/tfhe-go/math/poly"
 )
 
 // GadgetProduct calculates the gadget product between

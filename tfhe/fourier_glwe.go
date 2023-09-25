@@ -1,6 +1,6 @@
 package tfhe
 
-import "github.com/sp301415/tfhe/math/poly"
+import "github.com/sp301415/tfhe-go/math/poly"
 
 // FourierGLWECiphertext is a GLWE ciphertext in Fourier domain.
 type FourierGLWECiphertext[T Tint] struct {

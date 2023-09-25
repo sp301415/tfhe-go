@@ -1,7 +1,7 @@
 package tfheb
 
 import (
-	"github.com/sp301415/tfhe/tfhe"
+	"github.com/sp301415/tfhe-go/tfhe"
 )
 
 // Encryptor encrypts binary TFHE plaintexts and ciphertexts.

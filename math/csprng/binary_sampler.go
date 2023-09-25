@@ -1,7 +1,7 @@
 package csprng
 
 import (
-	"github.com/sp301415/tfhe/math/num"
+	"github.com/sp301415/tfhe-go/math/num"
 )
 
 // BinarySampler samples values from uniform binary distribution {0, 1}.

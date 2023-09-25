@@ -1,7 +1,7 @@
 package tfhe
 
 import (
-	"github.com/sp301415/tfhe/math/vec"
+	"github.com/sp301415/tfhe-go/math/vec"
 )
 
 // AddLWE adds two LWE cipheretexts ct0, ct1 and returns the result.

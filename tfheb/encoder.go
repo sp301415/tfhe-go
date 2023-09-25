@@ -1,8 +1,8 @@
 package tfheb
 
 import (
-	"github.com/sp301415/tfhe/math/vec"
-	"github.com/sp301415/tfhe/tfhe"
+	"github.com/sp301415/tfhe-go/math/vec"
+	"github.com/sp301415/tfhe-go/tfhe"
 )
 
 const (

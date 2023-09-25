@@ -4,8 +4,8 @@ import (
 	"math"
 	"math/cmplx"
 
-	"github.com/sp301415/tfhe/math/num"
-	"github.com/sp301415/tfhe/math/vec"
+	"github.com/sp301415/tfhe-go/math/num"
+	"github.com/sp301415/tfhe-go/math/vec"
 )
 
 // FourierTransformer calculates algorithms related to FFT,

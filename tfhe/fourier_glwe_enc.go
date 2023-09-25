@@ -1,6 +1,6 @@
 package tfhe
 
-import "github.com/sp301415/tfhe/math/num"
+import "github.com/sp301415/tfhe-go/math/num"
 
 // EncryptFourierGLWE encodes and encrypts integer messages to FourierGLWE ciphertext.
 func (e *Encryptor[T]) EncryptFourierGLWE(messages []int) FourierGLWECiphertext[T] {

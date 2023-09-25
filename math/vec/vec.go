@@ -14,7 +14,7 @@
 package vec
 
 import (
-	"github.com/sp301415/tfhe/math/num"
+	"github.com/sp301415/tfhe-go/math/num"
 )
 
 // Equals returns if two vectors are equal.

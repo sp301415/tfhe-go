@@ -3,7 +3,7 @@ package csprng
 import (
 	"math"
 
-	"github.com/sp301415/tfhe/math/num"
+	"github.com/sp301415/tfhe-go/math/num"
 )
 
 // GaussianSampler samples from Rounded Gaussian Distribution, centered around zero.

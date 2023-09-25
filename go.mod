@@ -1,4 +1,4 @@
-module github.com/sp301415/tfhe
+module github.com/sp301415/tfhe-go
 
 go 1.18
 

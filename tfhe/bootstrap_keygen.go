@@ -4,7 +4,7 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/sp301415/tfhe/math/num"
+	"github.com/sp301415/tfhe-go/math/num"
 )
 
 // GenEvaluationKey samples a new evaluation key for bootstrapping.

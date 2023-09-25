@@ -1,6 +1,6 @@
 package tfheb
 
-import "github.com/sp301415/tfhe/tfhe"
+import "github.com/sp301415/tfhe-go/tfhe"
 
 var (
 	// ParamsBoolean is a default parameter set for boolean TFHE.
