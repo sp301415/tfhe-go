@@ -15,6 +15,7 @@ type BlockSampler[T num.Integer] struct {
 }
 
 // NewBlockSampler creates a new BlockSampler.
+//
 // Panics when read from crypto/rand or blake2b initialization fails.
 func NewBlockSampler[T num.Integer](blockSize int) BlockSampler[T] {
 	return BlockSampler[T]{
@@ -36,6 +37,7 @@ func NewBlockSamplerWithSeed[T num.Integer](seed []byte, blockSize int) BlockSam
 }
 
 // SampleSliceAssign samples block binary values to v.
+//
 // Panics when len(v) % BlockSize != 0.
 func (s BlockSampler[T]) SampleSliceAssign(v []T) {
 	if len(v)%s.BlockSize != 0 {

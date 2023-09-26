@@ -16,6 +16,7 @@ type GaussianSampler[T num.Integer] struct {
 }
 
 // NewGaussianSampler creates a new GaussianSampler.
+//
 // Panics when read from crypto/rand or blake2b initialization fails, or StdDev <= 0.
 func NewGaussianSampler[T num.Integer](stdDev float64) GaussianSampler[T] {
 	if stdDev <= 0 {
@@ -29,6 +30,7 @@ func NewGaussianSampler[T num.Integer](stdDev float64) GaussianSampler[T] {
 }
 
 // NewGaussianSamplerWithSeed creates a new GaussianSampler, with user supplied seed.
+//
 // Panics when blake2b initialization fails or StdDev <= 0.
 func NewGaussianSamplerWithSeed[T num.Integer](seed []byte, stdDev float64) GaussianSampler[T] {
 	if stdDev <= 0 {

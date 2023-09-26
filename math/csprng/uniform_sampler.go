@@ -19,9 +19,10 @@ type UniformSampler[T num.Integer] struct {
 }
 
 // NewUniformSampler creates a new UniformSampler.
+//
 // Panics when read from crypto/rand or blake2b initialization fails.
 func NewUniformSampler[T num.Integer]() UniformSampler[T] {
-	seed := make([]byte, 64)
+	seed := make([]byte, 16)
 	if _, err := rand.Read(seed); err != nil {
 		panic(err)
 	}
@@ -29,10 +30,15 @@ func NewUniformSampler[T num.Integer]() UniformSampler[T] {
 }
 
 // NewUniformSamplerWithSeed creates a new UniformSampler, with user supplied seed.
+//
 // Panics when blake2b initialization fails.
 func NewUniformSamplerWithSeed[T num.Integer](seed []byte) UniformSampler[T] {
-	prng, err := blake2b.NewXOF(blake2b.OutputLengthUnknown, seed)
+	prng, err := blake2b.NewXOF(blake2b.OutputLengthUnknown, nil)
 	if err != nil {
+		panic(err)
+	}
+
+	if _, err = prng.Write(seed); err != nil {
 		panic(err)
 	}
 

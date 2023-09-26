@@ -12,6 +12,7 @@ type BinarySampler[T num.Integer] struct {
 }
 
 // NewBinarySampler creates a new BinarySampler.
+//
 // Panics when read from crypto/rand or blake2b initialization fails.
 func NewBinarySampler[T num.Integer]() BinarySampler[T] {
 	return BinarySampler[T]{
@@ -20,6 +21,7 @@ func NewBinarySampler[T num.Integer]() BinarySampler[T] {
 }
 
 // NewBinarySamplerWithSeed creates a new BinarySampler, with user supplied seed.
+//
 // Panics when blake2b initialization fails.
 func NewBinarySamplerWithSeed[T num.Integer](seed []byte) BinarySampler[T] {
 	return BinarySampler[T]{
