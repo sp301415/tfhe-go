@@ -10,7 +10,7 @@ import (
 //   - AddAssign(p0, p1, pOut) is equivalent to pOut = p0 + p1.
 //
 // Note that usually calling Assign(p0, pOut, pOut) is valid.
-// However, for some operations, InPlace methods are implemented seperately.
+// However, for some operations, InPlace methods are implemented separately.
 //
 // # Warning
 //

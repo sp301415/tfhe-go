@@ -19,7 +19,7 @@ import (
 //   - AddAssign(p0, p1, pOut) is equivalent to pOut = p0 + p1.
 //
 // Note that usually calling Assign(p0, pOut, pOut) is valid.
-// However, for some operations, InPlace methods are implemented seperately.
+// However, for some operations, InPlace methods are implemented separately.
 //
 // # Warning
 //
@@ -560,14 +560,14 @@ func (f *FourierTransformer[T]) PolyMulSubAssign(fp0 FourierPoly, p1 Poly[T], fp
 	vec.ElementWiseMulSubAssign(fp0.Coeffs, f.buffer.fp.Coeffs, fpOut.Coeffs)
 }
 
-// ScalarMul multplies c to fp0 and returns the result.
+// ScalarMul multiplies c to fp0 and returns the result.
 func (f *FourierTransformer[T]) ScalarMul(fp0 FourierPoly, c float64) FourierPoly {
 	fp := NewFourierPoly(f.degree)
 	f.ScalarMulAssign(fp0, c, fp)
 	return fp
 }
 
-// ScalarMulAssign multplies c to fp0 and writes it to fpOut.
+// ScalarMulAssign multiplies c to fp0 and writes it to fpOut.
 func (f *FourierTransformer[T]) ScalarMulAssign(fp0 FourierPoly, c float64, fpOut FourierPoly) {
 	vec.ScalarMulAssign(fp0.Coeffs, complex(c, 0), fpOut.Coeffs)
 }

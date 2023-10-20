@@ -46,28 +46,28 @@ func (e *Evaluator[T]) NegGLWEAssign(ct0, ctOut GLWECiphertext[T]) {
 	}
 }
 
-// ScalarMulGLWE multplies c to ct0 and returns the result.
+// ScalarMulGLWE multiplies c to ct0 and returns the result.
 func (e *Evaluator[T]) ScalarMulGLWE(ct0 GLWECiphertext[T], c T) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
 	e.ScalarMulGLWEAssign(ct0, c, ctOut)
 	return ctOut
 }
 
-// ScalarMulGLWEAssign multplies c to ct0 and writes it to ctOut.
+// ScalarMulGLWEAssign multiplies c to ct0 and writes it to ctOut.
 func (e *Evaluator[T]) ScalarMulGLWEAssign(ct0 GLWECiphertext[T], c T, ctOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.PolyEvaluator.ScalarMulAssign(ct0.Value[i], c, ctOut.Value[i])
 	}
 }
 
-// ScalarMulAddGLWEAssign multplies c to ct0 and adds to ctOut.
+// ScalarMulAddGLWEAssign multiplies c to ct0 and adds to ctOut.
 func (e *Evaluator[T]) ScalarMulAddGLWEAssign(ct0 GLWECiphertext[T], c T, ctOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.PolyEvaluator.ScalarMulAddAssign(ct0.Value[i], c, ctOut.Value[i])
 	}
 }
 
-// ScalarMulSubGLWEAssign multplies c to ct0 and subtracts from Out.
+// ScalarMulSubGLWEAssign multiplies c to ct0 and subtracts from Out.
 func (e *Evaluator[T]) ScalarMulSubGLWEAssign(ct0 GLWECiphertext[T], c T, ctOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.PolyEvaluator.ScalarMulSubAssign(ct0.Value[i], c, ctOut.Value[i])
@@ -115,28 +115,28 @@ func (e *Evaluator[T]) PolyMulSubGLWEAssign(ct0 GLWECiphertext[T], p poly.Poly[T
 	}
 }
 
-// MonomialMulGLWE multplies X^d to ct0 and returns the result.
+// MonomialMulGLWE multiplies X^d to ct0 and returns the result.
 func (e *Evaluator[T]) MonomialMulGLWE(ct0 GLWECiphertext[T], d int) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
 	e.MonomialMulGLWEAssign(ct0, d, ctOut)
 	return ctOut
 }
 
-// MonomialMulGLWEAssign multplies X^d to ct0 and writes it to ctOut.
+// MonomialMulGLWEAssign multiplies X^d to ct0 and writes it to ctOut.
 func (e *Evaluator[T]) MonomialMulGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.PolyEvaluator.MonomialMulAssign(ct0.Value[i], d, ctOut.Value[i])
 	}
 }
 
-// MonomialMulGLWEInPlace multplies X^d to ct0.
+// MonomialMulGLWEInPlace multiplies X^d to ct0.
 func (e *Evaluator[T]) MonomialMulGLWEInPlace(ct0 GLWECiphertext[T], d int) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.PolyEvaluator.MonomialMulInPlace(ct0.Value[i], d)
 	}
 }
 
-// MonomialMulMinusOneAddGLWEAssign multplies X^d-1 to ct0, and adds it to ctOut.
+// MonomialMulMinusOneAddGLWEAssign multiplies X^d-1 to ct0, and adds it to ctOut.
 // This operation is frequently used in Blind Rotation,
 // so we implement it as a special function.
 func (e *Evaluator[T]) MonomialMulMinusOneAddGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {

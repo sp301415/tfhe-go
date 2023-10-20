@@ -5,7 +5,7 @@
 //   - AddAssign(v0, v1, vOut) is equivalent to vOut = v0 + v1.
 //
 // Note that usually calling Assign(p0, pOut, pOut) is valid.
-// However, for some operations, InPlace methods are implemented seperately.
+// However, for some operations, InPlace methods are implemented separately.
 //
 // # Warning
 //
@@ -189,14 +189,14 @@ func NegAssign[T num.Number](v0, vOut []T) {
 	}
 }
 
-// ScalarMul multplies c to v0 and returns the result.
+// ScalarMul multiplies c to v0 and returns the result.
 func ScalarMul[T num.Number](v0 []T, c T) []T {
 	v := make([]T, len(v0))
 	ScalarMulAssign(v0, c, v)
 	return v
 }
 
-// ScalarMulAssign multplies c to v0 and writes it to vOut.
+// ScalarMulAssign multiplies c to v0 and writes it to vOut.
 func ScalarMulAssign[T num.Number](v0 []T, c T, vOut []T) {
 	for i := range vOut {
 		vOut[i] = c * v0[i]
@@ -217,14 +217,14 @@ func ScalarMulSubAssign[T num.Number](v0 []T, c T, vOut []T) {
 	}
 }
 
-// ElementWiseMul multplies v0, v1 and returns the result.
+// ElementWiseMul multiplies v0, v1 and returns the result.
 func ElementWiseMul[T num.Number](v0 []T, v1 []T) []T {
 	v := make([]T, len(v0))
 	ElementWiseMulAssign(v0, v1, v)
 	return v
 }
 
-// ElementWiseMulAssign multplies v0, v1 and writes it to vOut.
+// ElementWiseMulAssign multiplies v0, v1 and writes it to vOut.
 func ElementWiseMulAssign[T num.Number](v0 []T, v1 []T, vOut []T) {
 	for i := range vOut {
 		vOut[i] = v0[i] * v1[i]

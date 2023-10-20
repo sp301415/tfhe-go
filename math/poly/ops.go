@@ -68,36 +68,36 @@ func (e *Evaluator[T]) MulSubAssign(p0, p1, pOut Poly[T]) {
 	e.SubAssign(pOut, e.buffer.pOut, pOut)
 }
 
-// ScalarMul multplies c to p0 and returns the result.
+// ScalarMul multiplies c to p0 and returns the result.
 func (e *Evaluator[T]) ScalarMul(p0 Poly[T], c T) Poly[T] {
 	p := New[T](e.degree)
 	e.ScalarMulAssign(p0, c, p)
 	return p
 }
 
-// ScalarMulAssign multplies c to p0 and writes it to pOut.
+// ScalarMulAssign multiplies c to p0 and writes it to pOut.
 func (e *Evaluator[T]) ScalarMulAssign(p0 Poly[T], c T, pOut Poly[T]) {
 	vec.ScalarMulAssign(p0.Coeffs, c, pOut.Coeffs)
 }
 
-// ScalarMulAddAssign multplies c to p0 and adds it to pOut.
+// ScalarMulAddAssign multiplies c to p0 and adds it to pOut.
 func (e *Evaluator[T]) ScalarMulAddAssign(p0 Poly[T], c T, pOut Poly[T]) {
 	vec.ScalarMulAddAssign(p0.Coeffs, c, pOut.Coeffs)
 }
 
-// ScalarMulSubAssign multplies c to p0 and subtracts it from pOut.
+// ScalarMulSubAssign multiplies c to p0 and subtracts it from pOut.
 func (e *Evaluator[T]) ScalarMulSubAssign(p0 Poly[T], c T, pOut Poly[T]) {
 	vec.ScalarMulSubAssign(p0.Coeffs, c, pOut.Coeffs)
 }
 
-// MonomialMul multplies X^d to p0 and returns the result.
+// MonomialMul multiplies X^d to p0 and returns the result.
 func (e *Evaluator[T]) MonomialMul(p0 Poly[T], d int) Poly[T] {
 	p := New[T](e.degree)
 	e.MonomialMulAssign(p0, d, p)
 	return p
 }
 
-// MonomialMulAssign multplies X^d to p0 and writes it to pOut.
+// MonomialMulAssign multiplies X^d to p0 and writes it to pOut.
 func (e *Evaluator[T]) MonomialMulAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	switch k := d % (2 * e.degree); {
 	case e.degree <= k:
@@ -134,7 +134,7 @@ func (e *Evaluator[T]) MonomialMulAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	}
 }
 
-// MonomialMulInPlace multplies X^d to p0.
+// MonomialMulInPlace multiplies X^d to p0.
 func (e *Evaluator[T]) MonomialMulInPlace(p0 Poly[T], d int) {
 	kk := d % e.degree
 	vec.RotateInPlace(p0.Coeffs, kk)

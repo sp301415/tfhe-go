@@ -52,14 +52,14 @@ func (e *Evaluator[T]) PlaintextAddLWEAssign(ct0 LWECiphertext[T], pt LWEPlainte
 	ctOut.Value[0] += pt.Value
 }
 
-// ScalarMulLWE multplies c to ct0 and returns the result.
+// ScalarMulLWE multiplies c to ct0 and returns the result.
 func (e *Evaluator[T]) ScalarMulLWE(ct0 LWECiphertext[T], c T) LWECiphertext[T] {
 	ctOut := NewLWECiphertext(e.Parameters)
 	e.ScalarMulLWEAssign(ct0, c, ctOut)
 	return ctOut
 }
 
-// ScalarMulLWEAssign multplies c to ct0 and writes it to ctOut.
+// ScalarMulLWEAssign multiplies c to ct0 and writes it to ctOut.
 func (e *Evaluator[T]) ScalarMulLWEAssign(ct0 LWECiphertext[T], c T, ctOut LWECiphertext[T]) {
 	vec.ScalarMulAssign(ct0.Value, c, ctOut.Value)
 }
