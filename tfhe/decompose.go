@@ -30,7 +30,7 @@ func (e *Evaluator[T]) DecomposeAssign(x T, decompParams DecompositionParameters
 func (e *Evaluator[T]) DecomposePoly(p poly.Poly[T], decompParams DecompositionParameters[T]) []poly.Poly[T] {
 	decomposedOut := make([]poly.Poly[T], decompParams.level)
 	for i := 0; i < decompParams.level; i++ {
-		decomposedOut[i] = poly.New[T](e.Parameters.polyDegree)
+		decomposedOut[i] = e.PolyEvaluator.NewPoly()
 	}
 	e.DecomposePolyAssign(p, decompParams, decomposedOut)
 	return decomposedOut
@@ -63,7 +63,7 @@ func (e *Evaluator[T]) getPolyDecomposedBuffer(decompParams DecompositionParamet
 	oldLen := len(e.buffer.polyDecomposed)
 	e.buffer.polyDecomposed = append(e.buffer.polyDecomposed, make([]poly.Poly[T], decompParams.level-oldLen)...)
 	for i := oldLen; i < decompParams.level; i++ {
-		e.buffer.polyDecomposed[i] = poly.New[T](e.Parameters.polyDegree)
+		e.buffer.polyDecomposed[i] = e.PolyEvaluator.NewPoly()
 	}
 	return e.buffer.polyDecomposed
 }

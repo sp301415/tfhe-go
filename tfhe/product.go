@@ -24,7 +24,7 @@ func (e *Evaluator[T]) GadgetProductAssign(ctFourierGLev FourierGLevCiphertext[T
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.ToScaledStandardPolyAssign(e.buffer.ctFourierProd.Value[i], ctOut.Value[i])
+		e.FourierEvaluator.ToScaledStandardPolyAssign(e.buffer.ctFourierProd.Value[i], ctOut.Value[i])
 	}
 }
 
@@ -40,7 +40,7 @@ func (e *Evaluator[T]) GadgetProductAddAssign(ctFourierGLev FourierGLevCiphertex
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.ToScaledStandardPolyAddAssign(e.buffer.ctFourierProd.Value[i], ctOut.Value[i])
+		e.FourierEvaluator.ToScaledStandardPolyAddAssign(e.buffer.ctFourierProd.Value[i], ctOut.Value[i])
 	}
 }
 
@@ -56,7 +56,7 @@ func (e *Evaluator[T]) GadgetProductSubAssign(ctFourierGLev FourierGLevCiphertex
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.ToScaledStandardPolySubAssign(e.buffer.ctFourierProd.Value[i], ctOut.Value[i])
+		e.FourierEvaluator.ToScaledStandardPolySubAssign(e.buffer.ctFourierProd.Value[i], ctOut.Value[i])
 	}
 }
 
@@ -85,7 +85,7 @@ func (e *Evaluator[T]) ExternalProductAssign(ctFourierGGSW FourierGGSWCiphertext
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.ToScaledStandardPolyAssign(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierEvaluator.ToScaledStandardPolyAssign(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
@@ -106,7 +106,7 @@ func (e *Evaluator[T]) ExternalProductAddAssign(ctFourierGGSW FourierGGSWCiphert
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.ToScaledStandardPolyAddAssign(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierEvaluator.ToScaledStandardPolyAddAssign(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
@@ -127,7 +127,7 @@ func (e *Evaluator[T]) ExternalProductSubAssign(ctFourierGGSW FourierGGSWCiphert
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.ToScaledStandardPolySubAssign(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierEvaluator.ToScaledStandardPolySubAssign(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
@@ -153,7 +153,7 @@ func (e *Evaluator[T]) ExternalProductHoistedAssign(ctFourierGGSW FourierGGSWCip
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.ToScaledStandardPolyAssign(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierEvaluator.ToScaledStandardPolyAssign(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
@@ -171,7 +171,7 @@ func (e *Evaluator[T]) ExternalProductHoistedAddAssign(ctFourierGGSW FourierGGSW
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.ToScaledStandardPolyAddAssign(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierEvaluator.ToScaledStandardPolyAddAssign(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
@@ -189,7 +189,7 @@ func (e *Evaluator[T]) ExternalProductHoistedSubAssign(ctFourierGGSW FourierGGSW
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.ToScaledStandardPolySubAssign(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierEvaluator.ToScaledStandardPolySubAssign(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 

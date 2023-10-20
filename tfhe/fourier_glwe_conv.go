@@ -10,7 +10,7 @@ func (e *Evaluator[T]) ToFourierGLWECiphertext(ct GLWECiphertext[T]) FourierGLWE
 // ToFourierGLWECiphertextAssign transforms GLWE ciphertext to Fourier GLWE ciphertext, and writes it to ctOut.
 func (e *Evaluator[T]) ToFourierGLWECiphertextAssign(ctIn GLWECiphertext[T], ctOut FourierGLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.ToScaledFourierPolyAssign(ctIn.Value[i], ctOut.Value[i])
+		e.FourierEvaluator.ToScaledFourierPolyAssign(ctIn.Value[i], ctOut.Value[i])
 	}
 }
 
@@ -24,7 +24,7 @@ func (e *Evaluator[T]) ToStandardGLWECiphertext(ct FourierGLWECiphertext[T]) GLW
 // ToStandardGLWECiphertextAssign transforms Fourier GLWE ciphertext to GLWE ciphertext, and writes it to ctOut.
 func (e *Evaluator[T]) ToStandardGLWECiphertextAssign(ctIn FourierGLWECiphertext[T], ctOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.ToScaledStandardPolyAssign(ctIn.Value[i], ctOut.Value[i])
+		e.FourierEvaluator.ToScaledStandardPolyAssign(ctIn.Value[i], ctOut.Value[i])
 	}
 }
 
@@ -96,7 +96,7 @@ func (e *Encryptor[T]) ToFourierGLWECiphertext(ct GLWECiphertext[T]) FourierGLWE
 // ToFourierGLWECiphertextAssign transforms GLWE ciphertext to Fourier GLWE ciphertext, and writes it to ctOut.
 func (e *Encryptor[T]) ToFourierGLWECiphertextAssign(ctIn GLWECiphertext[T], ctOut FourierGLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.ToScaledFourierPolyAssign(ctIn.Value[i], ctOut.Value[i])
+		e.FourierEvaluator.ToScaledFourierPolyAssign(ctIn.Value[i], ctOut.Value[i])
 	}
 }
 
@@ -110,7 +110,7 @@ func (e *Encryptor[T]) ToStandardGLWECiphertext(ct FourierGLWECiphertext[T]) GLW
 // ToStandardGLWECiphertextAssign transforms Fourier GLWE ciphertext to GLWE ciphertext, and writes it to ctOut.
 func (e *Encryptor[T]) ToStandardGLWECiphertextAssign(ctIn FourierGLWECiphertext[T], ctOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierTransformer.ToScaledStandardPolyAssign(ctIn.Value[i], ctOut.Value[i])
+		e.FourierEvaluator.ToScaledStandardPolyAssign(ctIn.Value[i], ctOut.Value[i])
 	}
 }
 

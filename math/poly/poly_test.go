@@ -10,18 +10,18 @@ import (
 var (
 	N = 1 << 10
 
-	pOut  = poly.New[uint64](N)
-	fpOut = poly.NewFourierPoly(N)
-
 	eval = poly.NewEvaluator[uint64](N)
-	fft  = poly.NewFourierTransformer[uint64](N)
+	fft  = poly.NewFourierEvaluator[uint64](N)
+
+	pOut  = eval.NewPoly()
+	fpOut = fft.NewFourierPoly()
 
 	sampler = csprng.NewUniformSamplerWithSeed[uint64](nil)
 )
 
 func BenchmarkOperations(b *testing.B) {
-	p0 := poly.New[uint64](N)
-	p1 := poly.New[uint64](N)
+	p0 := eval.NewPoly()
+	p1 := eval.NewPoly()
 	sampler.SampleSliceAssign(p0.Coeffs)
 	sampler.SampleSliceAssign(p1.Coeffs)
 
@@ -72,7 +72,7 @@ func BenchmarkOperations(b *testing.B) {
 }
 
 func BenchmarkFFT(b *testing.B) {
-	p := poly.New[uint64](N)
+	p := eval.NewPoly()
 	sampler.SampleSliceAssign(p.Coeffs)
 	fp := fft.ToFourierPoly(p)
 

@@ -71,3 +71,8 @@ func (e *Evaluator[T]) ShallowCopy() *Evaluator[T] {
 func (e *Evaluator[T]) Degree() int {
 	return e.degree
 }
+
+// NewPoly creates a new polynomial with the same degree as the evaluator.
+func (e *Evaluator[T]) NewPoly() Poly[T] {
+	return Poly[T]{Coeffs: make([]T, e.degree)}
+}

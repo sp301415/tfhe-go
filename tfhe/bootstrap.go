@@ -119,7 +119,7 @@ func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T]
 		for j := 0; j < e.Parameters.glweDimension+1; j++ {
 			e.DecomposePolyAssign(ctOut.Value[j], e.Parameters.bootstrapParameters, polyDecomposed)
 			for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
-				e.FourierTransformer.ToFourierPolyAssign(polyDecomposed[k], e.buffer.accDecomposed[j][k])
+				e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[k], e.buffer.accDecomposed[j][k])
 			}
 		}
 

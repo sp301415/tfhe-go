@@ -18,8 +18,8 @@ type Encryptor[T Tint] struct {
 	lweSampler     csprng.GaussianSampler[T]
 	glweSampler    csprng.GaussianSampler[T]
 
-	PolyEvaluator      *poly.Evaluator[T]
-	FourierTransformer *poly.FourierTransformer[T]
+	PolyEvaluator    *poly.Evaluator[T]
+	FourierEvaluator *poly.FourierEvaluator[T]
 
 	SecretKey SecretKey[T]
 
@@ -49,8 +49,8 @@ func NewEncryptor[T Tint](params Parameters[T]) *Encryptor[T] {
 		lweSampler:     csprng.NewGaussianSamplerTorus[T](params.lweStdDev),
 		glweSampler:    csprng.NewGaussianSamplerTorus[T](params.glweStdDev),
 
-		PolyEvaluator:      poly.NewEvaluator[T](params.polyDegree),
-		FourierTransformer: poly.NewFourierTransformer[T](params.polyDegree),
+		PolyEvaluator:    poly.NewEvaluator[T](params.polyDegree),
+		FourierEvaluator: poly.NewFourierEvaluator[T](params.polyDegree),
 
 		buffer: newEncryptionBuffer(params),
 	}
@@ -83,8 +83,8 @@ func (e *Encryptor[T]) ShallowCopy() *Encryptor[T] {
 
 		SecretKey: e.SecretKey,
 
-		PolyEvaluator:      e.PolyEvaluator.ShallowCopy(),
-		FourierTransformer: e.FourierTransformer.ShallowCopy(),
+		PolyEvaluator:    e.PolyEvaluator.ShallowCopy(),
+		FourierEvaluator: e.FourierEvaluator.ShallowCopy(),
 
 		buffer: newEncryptionBuffer(e.Parameters),
 	}
