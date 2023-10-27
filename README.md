@@ -12,7 +12,6 @@ This library is heavily influenced by excellent [TFHE-rs](https://github.com/zam
 
 This library was not audited or reviewed by security experts, so I do not recommend this library for any real-world production uses.
 
-
 ## Examples
 ### Encryption
 ```go
@@ -91,6 +90,11 @@ All results were measured from Apple M2. `ParamsBoolean` and `ParamsUint6` are u
 |---------|-------|
 |Programmable Bootstrapping|134.7ms ± 0%|
 |Gate Bootstrapping|15.85ms ± 0%|
+
+## Roadmap
+- [ ] Optimze FFT using AVX2 instructions
+- [ ] Implement NTT instead of Karatsuba
+- [ ] Implement Multi-Key TFHE: [[CCS19](https://eprint.iacr.org/2019/116)], [[KMS23](https://eprint.iacr.org/2022/1460)]
 
 ## References
 - TFHE: Fast Fully Homomorphic Encryption over the Torus (https://eprint.iacr.org/2018/421)
