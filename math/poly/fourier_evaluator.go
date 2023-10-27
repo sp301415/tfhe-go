@@ -14,6 +14,8 @@ import (
 // While FFT is much faster than Evaluator's karatsuba multiplication,
 // in TFHE it is used sparsely because of float64 precision.
 //
+// Some methods use AVX2 instructions, when available.
+//
 // Operations usually take two forms: for example,
 //   - Add(p0, p1) is equivalent to var p = p0 + p1.
 //   - AddAssign(p0, p1, pOut) is equivalent to pOut = p0 + p1.
