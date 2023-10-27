@@ -1,6 +1,6 @@
 //go:build !amd64
 
-package vec
+package asm
 
 // AddCmplx adds v0, v1 and returns the result.
 func AddCmplx(v0, v1 []complex128) []complex128 {

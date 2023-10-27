@@ -1,6 +1,6 @@
 //go:build amd64
 
-package vec
+package asm
 
 import (
 	"golang.org/x/sys/cpu"
