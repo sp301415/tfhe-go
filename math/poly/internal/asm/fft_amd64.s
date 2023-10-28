@@ -207,13 +207,11 @@ m_loop:
 	JMP  i_loop_end
 
 i_loop:
-	// Index wNjInv
+	// Precompute wNjInv[h+i]
 	MOVQ           R9, DX
 	ADDQ           R10, DX
 	VBROADCASTF128 (CX)(DX*8), Y0
-
-	// Precompute wNjInv[h+i]
-	VSHUFPD $0x05, Y0, Y0, Y1
+	VSHUFPD        $0x05, Y0, Y0, Y1
 
 	// j2 := j1 + t
 	MOVQ R8, DX

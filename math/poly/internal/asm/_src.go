@@ -270,13 +270,11 @@ func InvFFT() {
 	JMP(LabelRef("i_loop_end"))
 	Label("i_loop")
 
-	Comment("Index wNjInv")
+	Comment("Precompute wNjInv[h+i]")
 	MOVQ(h, hi)
 	ADDQ(i, hi)
 	W := YMM()
 	VBROADCASTF128(Mem{Base: wNjInvPtr.Base, Index: hi, Scale: 8}, W)
-
-	Comment("Precompute wNjInv[h+i]")
 	WSwap := YMM()
 	VSHUFPD(U8(0b0101), W, W, WSwap)
 
