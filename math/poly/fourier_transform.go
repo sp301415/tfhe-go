@@ -2,6 +2,8 @@ package poly
 
 import (
 	"math"
+
+	"github.com/sp301415/tfhe-go/math/poly/internal/asm"
 )
 
 // FFTInPlace applies FFT to fp.
@@ -9,27 +11,7 @@ import (
 // Note that fp.Degree() should equal f.Degree(),
 // which means that len(fp.Coeffs) should be f.Degree / 2.
 func (f *FourierEvaluator[T]) FFTInPlace(fp FourierPoly) {
-	fftInPlace(fp.Coeffs, f.wNj)
-}
-
-// fftInPlace is a top-level function for FFTInPlace.
-// All internal FFT implementations calls this function for performance.
-func fftInPlace(coeffs, wNj []complex128) {
-	N := len(coeffs)
-
-	// Implementation of Algorithm 1 from https://eprint.iacr.org/2016/504.pdf
-	t := N
-	for m := 1; m < N; m <<= 1 {
-		t >>= 1
-		for i := 0; i < m; i++ {
-			j1 := i * t << 1
-			j2 := j1 + t
-			for j := j1; j < j2; j++ {
-				U, V := coeffs[j], coeffs[j+t]*wNj[m+i]
-				coeffs[j], coeffs[j+t] = U+V, U-V
-			}
-		}
-	}
+	asm.FFTInPlace(fp.Coeffs, f.wNj)
 }
 
 // InvFFTInPlace applies Inverse FFT to fp.
@@ -37,29 +19,7 @@ func fftInPlace(coeffs, wNj []complex128) {
 // Note that fp.Degree() should equal f.Degree(),
 // which means that len(fp.Coeffs) should be f.Degree / 2.
 func (f *FourierEvaluator[T]) InvFFTInPlace(fp FourierPoly) {
-	invfftInPlace(fp.Coeffs, f.wNjInv)
-}
-
-// invfftInPlace is a top-level function for InvFFTInPlace.
-// All internal inverse FFT implementations calls this function for performance.
-func invfftInPlace(coeffs, wNjInv []complex128) {
-	N := len(coeffs)
-
-	// Implementation of Algorithm 2 from https://eprint.iacr.org/2016/504.pdf
-	t := 1
-	for m := N; m > 1; m >>= 1 {
-		j1 := 0
-		h := m >> 1
-		for i := 0; i < h; i++ {
-			j2 := j1 + t
-			for j := j1; j < j2; j++ {
-				U, V := coeffs[j], coeffs[j+t]
-				coeffs[j], coeffs[j+t] = U+V, (U-V)*wNjInv[h+i]
-			}
-			j1 += t << 1
-		}
-		t <<= 1
-	}
+	asm.InvFFTInPlace(fp.Coeffs, f.wNjInv)
 }
 
 // ToFourierPoly transforms Poly to FourierPoly and returns it.
@@ -101,7 +61,7 @@ func (f *FourierEvaluator[T]) ToFourierPolyAssign(p Poly[T], fp FourierPoly) {
 		}
 	}
 
-	fftInPlace(fp.Coeffs, f.wNj)
+	asm.FFTInPlace(fp.Coeffs, f.wNj)
 }
 
 // ToScaledFourierPoly transforms Poly to FourierPoly and returns it.
@@ -145,7 +105,7 @@ func (f *FourierEvaluator[T]) ToScaledFourierPolyAssign(p Poly[T], fp FourierPol
 		}
 	}
 
-	fftInPlace(fp.Coeffs, f.wNj)
+	asm.FFTInPlace(fp.Coeffs, f.wNj)
 }
 
 // scaleFloat64 scales x by 2^sizeT.
@@ -165,7 +125,7 @@ func (f *FourierEvaluator[T]) ToStandardPolyAssign(fp FourierPoly, p Poly[T]) {
 	N := f.degree
 
 	f.buffer.fpInv.CopyFrom(fp)
-	invfftInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
+	asm.InvFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
 
 	var z T
 	switch any(z).(type) {
@@ -222,7 +182,7 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolyAssign(fp FourierPoly, p Poly[
 	N := f.degree
 
 	f.buffer.fpInv.CopyFrom(fp)
-	invfftInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
+	asm.InvFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
 
 	var z T
 	switch any(z).(type) {
@@ -271,7 +231,7 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolyAddAssign(fp FourierPoly, p Po
 	N := f.degree
 
 	f.buffer.fpInv.CopyFrom(fp)
-	invfftInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
+	asm.InvFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
 
 	var z T
 	switch any(z).(type) {
@@ -320,7 +280,7 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolySubAssign(fp FourierPoly, p Po
 	N := f.degree
 
 	f.buffer.fpInv.CopyFrom(fp)
-	invfftInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
+	asm.InvFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
 
 	var z T
 	switch any(z).(type) {
