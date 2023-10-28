@@ -28,7 +28,7 @@ func TestCmplx(t *testing.T) {
 		asm.AddCmplxAssign(v0, v1, vOutAVX2)
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
-				t.Errorf("Add: %v != %v", vOut[i], vOutAVX2[i])
+				t.Fatalf("Add: %v != %v", vOut[i], vOutAVX2[i])
 			}
 		}
 	})
@@ -38,7 +38,7 @@ func TestCmplx(t *testing.T) {
 		asm.SubCmplxAssign(v0, v1, vOutAVX2)
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
-				t.Errorf("Sub: %v != %v", vOut[i], vOutAVX2[i])
+				t.Fatalf("Sub: %v != %v", vOut[i], vOutAVX2[i])
 			}
 		}
 	})
@@ -48,7 +48,7 @@ func TestCmplx(t *testing.T) {
 		asm.NegCmplxAssign(v0, vOutAVX2)
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
-				t.Errorf("Neg: %v != %v", vOut[i], vOutAVX2[i])
+				t.Fatalf("Neg: %v != %v", vOut[i], vOutAVX2[i])
 			}
 		}
 	})
@@ -58,7 +58,7 @@ func TestCmplx(t *testing.T) {
 		asm.ElementWiseMulCmplxAssign(v0, v1, vOutAVX2)
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
-				t.Errorf("Mul: %v != %v", vOut[i], vOutAVX2[i])
+				t.Fatalf("Mul: %v != %v", vOut[i], vOutAVX2[i])
 			}
 		}
 	})
@@ -69,7 +69,7 @@ func TestCmplx(t *testing.T) {
 		asm.ElementWiseMulAddCmplxAssign(v0, v1, vOutAVX2)
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
-				t.Errorf("MulAdd: %v != %v", vOut[i], vOutAVX2[i])
+				t.Fatalf("MulAdd: %v != %v", vOut[i], vOutAVX2[i])
 			}
 		}
 	})
@@ -80,7 +80,7 @@ func TestCmplx(t *testing.T) {
 		asm.ElementWiseMulSubCmplxAssign(v0, v1, vOutAVX2)
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
-				t.Errorf("MulSub: %v != %v", vOut[i], vOutAVX2[i])
+				t.Fatalf("MulSub: %v != %v", vOut[i], vOutAVX2[i])
 			}
 		}
 	})
