@@ -92,7 +92,7 @@ All results were measured from Apple M2. `ParamsBoolean` and `ParamsUint6` are u
 |Gate Bootstrapping|15.85ms ± 0%|
 
 ## Roadmap
-- [ ] Optimze FFT using AVX2 instructions
+- [x] Optimze FFT using AVX2 instructions
 - [ ] Implement NTT instead of Karatsuba
 - [ ] Implement Multi-Key TFHE: [[CCS19](https://eprint.iacr.org/2019/116)], [[KMS23](https://eprint.iacr.org/2022/1460)]
 

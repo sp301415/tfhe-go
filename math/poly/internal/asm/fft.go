@@ -2,6 +2,10 @@
 
 package asm
 
+import (
+	"math"
+)
+
 // FFTInPlace is a top-level function for FFTInPlace.
 // All internal FFT implementations calls this function for performance.
 func FFTInPlace(coeffs, wNj []complex128) {
@@ -42,19 +46,38 @@ func InvFFTInPlace(coeffs, wNjInv []complex128) {
 	}
 }
 
-// UnTwist untwists the coefficients after inverse FFT.
-// Equivalent to coeffs * w2NjInv.
-func UnTwist(coeffs, w2NjInv []complex128) {
-	ElemWiseMulCmplxAssign(coeffs, w2NjInv, coeffs)
+// TwistInPlace twists the coefficients before FFT.
+// Equivalent to coeffs * w2Nj.
+func TwistInPlace(coeffs, w2Nj []complex128) {
+	ElementWiseMulCmplxAssign(coeffs, w2Nj, coeffs)
 }
 
-// UnTwistAndScale untwists the coefficients and scales it with maxT.
-func UnTwistAndScale(coeffs, w2NjInv []complex128, maxT float64) {
+// TwistAndScaleInPlace twists the coefficients before FFT and scales it with maxTInv.
+func TwistAndScaleInPlace(coeffs, w2Nj []complex128, maxTInv float64) {
 	for i := 0; i < len(coeffs); i++ {
-		z := coeffs[i] * w2NjInv[i]
+		coeffs[i] = coeffs[i] * w2Nj[i] * complex(maxTInv, 0)
+	}
+}
 
-		zr := real(z)
-		zi := imag(z)
+// UnTwistAssign untwists the coefficients after inverse FFT.
+// Equivalent to coeffs * w2NjInv.
+func UnTwistAssign(coeffs, w2NjInv []complex128, coeffsOut []float64) {
+	for i, j := 0, 0; i < len(coeffs); i, j = i+1, j+2 {
+		c := coeffs[i] * w2NjInv[i]
+		coeffsOut[j] = real(c)
+		coeffsOut[j+1] = imag(c)
+	}
+}
 
+// UnTwistAndScaleAssign untwists the coefficients and scales it with maxT.
+func UnTwistAndScaleAssign(coeffs, w2NjInv []complex128, maxT float64, coeffsOut []float64) {
+	for i, j := 0, 0; i < len(coeffs); i, j = i+1, j+2 {
+		c := coeffs[i] * w2NjInv[i]
+
+		cr := real(c)
+		ci := imag(c)
+
+		coeffsOut[j] = (cr - math.Round(cr)) * maxT
+		coeffsOut[j+1] = (ci - math.Round(ci)) * maxT
 	}
 }
