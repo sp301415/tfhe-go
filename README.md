@@ -88,8 +88,8 @@ fmt.Println(enc.DecryptLWEBool(ctOut))
 All results were measured from Intel i5-13400F. `ParamsBoolean` and `ParamsUint6` are used.
 |Operation|Timing|
 |---------|-------|
-|Programmable Bootstrapping|91.85ms ± 4%|
-|Gate Bootstrapping|13.95ms ± 1%|
+|Programmable Bootstrapping|92.02ms ± 0%|
+|Gate Bootstrapping|14.15ms ± 0%|
 
 ## Roadmap
 - [x] Optimze FFT using AVX2 instructions
