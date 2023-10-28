@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	N = 1 << 10
+	N = 1 << 15
 
 	eval = poly.NewEvaluator[uint64](N)
 	fft  = poly.NewFourierEvaluator[uint64](N)
@@ -111,5 +111,4 @@ func BenchmarkFFT(b *testing.B) {
 			fft.ToScaledStandardPolyAssign(fp, pOut)
 		}
 	})
-
 }

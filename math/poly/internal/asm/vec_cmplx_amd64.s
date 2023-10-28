@@ -26,6 +26,7 @@ loop_body:
 loop_end:
 	CMPQ SI, DX
 	JL loop_body
+
 	RET
 
 TEXT ·subCmplxAssignAVX2(SB), NOSPLIT, $0-72
@@ -52,6 +53,7 @@ loop_body:
 loop_end:
 	CMPQ SI, DX
 	JL loop_body
+
 	RET
 
 TEXT ·negCmplxAssignAVX2(SB), NOSPLIT, $0-48
@@ -68,7 +70,7 @@ loop_body:
 	VMOVUPD (AX)(SI*8), Y0
 
 	VXORPD Y1, Y1, Y1
-	VSUBPD Y1, Y0, Y2
+	VSUBPD Y0, Y1, Y2
 
 	VMOVUPD Y2, (CX)(SI*8)
 
@@ -77,6 +79,7 @@ loop_body:
 loop_end:
 	CMPQ SI, DX
 	JL loop_body
+
 	RET
 
 TEXT ·elementWiseMulCmplxAssignAVX2(SB), NOSPLIT, $0-72
@@ -108,6 +111,7 @@ loop_body:
 loop_end:
 	CMPQ SI, DX
 	JL loop_body
+
 	RET
 
 TEXT ·elementWiseMulAddCmplxAssignAVX2(SB), NOSPLIT, $0-72
@@ -141,6 +145,7 @@ loop_body:
 loop_end:
 	CMPQ SI, DX
 	JL loop_body
+
 	RET
 
 TEXT ·elementWiseMulSubCmplxAssignAVX2(SB), NOSPLIT, $0-72
@@ -166,7 +171,7 @@ loop_body:
 	VFMADDSUB231PD Y1, Y4, Y5
 
 	VMOVUPD (CX)(SI*8), Y6
-	VSUBPD Y6, Y5, Y6
+	VSUBPD Y5, Y6, Y6
 	VMOVUPD Y6, (CX)(SI*8)
 
 	ADDQ $0x04, SI
@@ -174,4 +179,5 @@ loop_body:
 loop_end:
 	CMPQ SI, DX
 	JL loop_body
+
 	RET

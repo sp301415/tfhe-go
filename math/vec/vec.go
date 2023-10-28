@@ -7,8 +7,6 @@
 // Note that usually calling Assign(p0, pOut, pOut) is valid.
 // However, for some operations, InPlace methods are implemented separately.
 //
-// Functions that ends with "Cmplx" uses AVX2 instructions when available.
-//
 // # Warning
 //
 // For performance reasons, functions in this package usually don't implement bound checks.
