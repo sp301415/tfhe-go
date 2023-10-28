@@ -41,3 +41,20 @@ func InvFFTInPlace(coeffs, wNjInv []complex128) {
 		t <<= 1
 	}
 }
+
+// UnTwist untwists the coefficients after inverse FFT.
+// Equivalent to coeffs * w2NjInv.
+func UnTwist(coeffs, w2NjInv []complex128) {
+	ElemWiseMulCmplxAssign(coeffs, w2NjInv, coeffs)
+}
+
+// UnTwistAndScale untwists the coefficients and scales it with maxT.
+func UnTwistAndScale(coeffs, w2NjInv []complex128, maxT float64) {
+	for i := 0; i < len(coeffs); i++ {
+		z := coeffs[i] * w2NjInv[i]
+
+		zr := real(z)
+		zi := imag(z)
+
+	}
+}

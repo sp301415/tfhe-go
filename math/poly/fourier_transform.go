@@ -37,30 +37,31 @@ func (f *FourierEvaluator[T]) ToFourierPolyAssign(p Poly[T], fp FourierPoly) {
 	switch any(z).(type) {
 	case uint, uintptr:
 		for j := 0; j < N/2; j++ {
-			fp.Coeffs[j] = complex(float64(int(p.Coeffs[j])), float64(int(-p.Coeffs[j+N/2]))) * f.w2Nj[j]
+			fp.Coeffs[j] = complex(float64(int(p.Coeffs[j])), float64(int(-p.Coeffs[j+N/2])))
 		}
 	case uint8:
 		for j := 0; j < N/2; j++ {
-			fp.Coeffs[j] = complex(float64(int8(p.Coeffs[j])), float64(int8(-p.Coeffs[j+N/2]))) * f.w2Nj[j]
+			fp.Coeffs[j] = complex(float64(int8(p.Coeffs[j])), float64(int8(-p.Coeffs[j+N/2])))
 		}
 	case uint16:
 		for j := 0; j < N/2; j++ {
-			fp.Coeffs[j] = complex(float64(int16(p.Coeffs[j])), float64(int16(-p.Coeffs[j+N/2]))) * f.w2Nj[j]
+			fp.Coeffs[j] = complex(float64(int16(p.Coeffs[j])), float64(int16(-p.Coeffs[j+N/2])))
 		}
 	case uint32:
 		for j := 0; j < N/2; j++ {
-			fp.Coeffs[j] = complex(float64(int32(p.Coeffs[j])), float64(int32(-p.Coeffs[j+N/2]))) * f.w2Nj[j]
+			fp.Coeffs[j] = complex(float64(int32(p.Coeffs[j])), float64(int32(-p.Coeffs[j+N/2])))
 		}
 	case uint64:
 		for j := 0; j < N/2; j++ {
-			fp.Coeffs[j] = complex(float64(int64(p.Coeffs[j])), float64(int64(-p.Coeffs[j+N/2]))) * f.w2Nj[j]
+			fp.Coeffs[j] = complex(float64(int64(p.Coeffs[j])), float64(int64(-p.Coeffs[j+N/2])))
 		}
 	default:
 		for j := 0; j < N/2; j++ {
-			fp.Coeffs[j] = complex(float64(p.Coeffs[j]), float64(-p.Coeffs[j+N/2])) * f.w2Nj[j]
+			fp.Coeffs[j] = complex(float64(p.Coeffs[j]), float64(-p.Coeffs[j+N/2]))
 		}
 	}
 
+	asm.TwistInPlace(fp.Coeffs, f.w2Nj)
 	asm.FFTInPlace(fp.Coeffs, f.wNj)
 }
 
@@ -81,30 +82,31 @@ func (f *FourierEvaluator[T]) ToScaledFourierPolyAssign(p Poly[T], fp FourierPol
 	switch any(z).(type) {
 	case uint, uintptr:
 		for j := 0; j < N/2; j++ {
-			fp.Coeffs[j] = complex(float64(int(p.Coeffs[j]))/f.maxT, float64(int(-p.Coeffs[j+N/2]))/f.maxT) * f.w2Nj[j]
+			fp.Coeffs[j] = complex(float64(int(p.Coeffs[j])), float64(int(-p.Coeffs[j+N/2])))
 		}
 	case uint8:
 		for j := 0; j < N/2; j++ {
-			fp.Coeffs[j] = complex(float64(int8(p.Coeffs[j]))/f.maxT, float64(int8(-p.Coeffs[j+N/2]))/f.maxT) * f.w2Nj[j]
+			fp.Coeffs[j] = complex(float64(int8(p.Coeffs[j])), float64(int8(-p.Coeffs[j+N/2])))
 		}
 	case uint16:
 		for j := 0; j < N/2; j++ {
-			fp.Coeffs[j] = complex(float64(int16(p.Coeffs[j]))/f.maxT, float64(int16(-p.Coeffs[j+N/2]))/f.maxT) * f.w2Nj[j]
+			fp.Coeffs[j] = complex(float64(int16(p.Coeffs[j])), float64(int16(-p.Coeffs[j+N/2])))
 		}
 	case uint32:
 		for j := 0; j < N/2; j++ {
-			fp.Coeffs[j] = complex(float64(int32(p.Coeffs[j]))/f.maxT, float64(int32(-p.Coeffs[j+N/2]))/f.maxT) * f.w2Nj[j]
+			fp.Coeffs[j] = complex(float64(int32(p.Coeffs[j])), float64(int32(-p.Coeffs[j+N/2])))
 		}
 	case uint64:
 		for j := 0; j < N/2; j++ {
-			fp.Coeffs[j] = complex(float64(int64(p.Coeffs[j]))/f.maxT, float64(int64(-p.Coeffs[j+N/2]))/f.maxT) * f.w2Nj[j]
+			fp.Coeffs[j] = complex(float64(int64(p.Coeffs[j])), float64(int64(-p.Coeffs[j+N/2])))
 		}
 	default:
 		for j := 0; j < N/2; j++ {
-			fp.Coeffs[j] = complex(float64(p.Coeffs[j])/f.maxT, float64(-p.Coeffs[j+N/2])/f.maxT) * f.w2Nj[j]
+			fp.Coeffs[j] = complex(float64(p.Coeffs[j]), float64(-p.Coeffs[j+N/2]))
 		}
 	}
 
+	asm.TwistAndScaleInPlace(fp.Coeffs, f.w2Nj, 1/f.maxT)
 	asm.FFTInPlace(fp.Coeffs, f.wNj)
 }
 
@@ -126,44 +128,39 @@ func (f *FourierEvaluator[T]) ToStandardPolyAssign(fp FourierPoly, p Poly[T]) {
 
 	f.buffer.fpInv.CopyFrom(fp)
 	asm.InvFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
+	asm.UnTwistAssign(f.buffer.fpInv.Coeffs, f.w2NjInv, f.buffer.floatCoeffs)
 
 	var z T
 	switch any(z).(type) {
 	case uint, uintptr:
 		for j := 0; j < N/2; j++ {
-			c := f.buffer.fpInv.Coeffs[j] * f.w2NjInv[j]
-			p.Coeffs[j] = T(int(real(c)))
-			p.Coeffs[j+N/2] = -T(int(imag(c)))
+			p.Coeffs[j] = T(int(f.buffer.floatCoeffs[2*j]))
+			p.Coeffs[j+N/2] = -T(int(f.buffer.floatCoeffs[2*j+1]))
 		}
 	case uint8:
 		for j := 0; j < N/2; j++ {
-			c := f.buffer.fpInv.Coeffs[j] * f.w2NjInv[j]
-			p.Coeffs[j] = T(int8(real(c)))
-			p.Coeffs[j+N/2] = -T(int8(imag(c)))
+			p.Coeffs[j] = T(int8(f.buffer.floatCoeffs[2*j]))
+			p.Coeffs[j+N/2] = -T(int8(f.buffer.floatCoeffs[2*j+1]))
 		}
 	case uint16:
 		for j := 0; j < N/2; j++ {
-			c := f.buffer.fpInv.Coeffs[j] * f.w2NjInv[j]
-			p.Coeffs[j] = T(int16(real(c)))
-			p.Coeffs[j+N/2] = -T(int16(imag(c)))
+			p.Coeffs[j] = T(int16(f.buffer.floatCoeffs[2*j]))
+			p.Coeffs[j+N/2] = -T(int16(f.buffer.floatCoeffs[2*j+1]))
 		}
 	case uint32:
 		for j := 0; j < N/2; j++ {
-			c := f.buffer.fpInv.Coeffs[j] * f.w2NjInv[j]
-			p.Coeffs[j] = T(int32(real(c)))
-			p.Coeffs[j+N/2] = -T(int32(imag(c)))
+			p.Coeffs[j] = T(int32(f.buffer.floatCoeffs[2*j]))
+			p.Coeffs[j+N/2] = -T(int32(f.buffer.floatCoeffs[2*j+1]))
 		}
 	case uint64:
 		for j := 0; j < N/2; j++ {
-			c := f.buffer.fpInv.Coeffs[j] * f.w2NjInv[j]
-			p.Coeffs[j] = T(int64(real(c)))
-			p.Coeffs[j+N/2] = -T(int64(imag(c)))
+			p.Coeffs[j] = T(int64(f.buffer.floatCoeffs[2*j]))
+			p.Coeffs[j+N/2] = -T(int64(f.buffer.floatCoeffs[2*j+1]))
 		}
 	default:
 		for j := 0; j < N/2; j++ {
-			c := f.buffer.fpInv.Coeffs[j] * f.w2NjInv[j]
-			p.Coeffs[j] = T(real(c))
-			p.Coeffs[j+N/2] = -T(imag(c))
+			p.Coeffs[j] = T(f.buffer.floatCoeffs[2*j])
+			p.Coeffs[j+N/2] = -T(f.buffer.floatCoeffs[2*j+1])
 		}
 	}
 }
@@ -183,44 +180,39 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolyAssign(fp FourierPoly, p Poly[
 
 	f.buffer.fpInv.CopyFrom(fp)
 	asm.InvFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
+	asm.UnTwistAndScaleAssign(f.buffer.fpInv.Coeffs, f.w2NjInv, f.maxT, f.buffer.floatCoeffs)
 
 	var z T
 	switch any(z).(type) {
 	case uint, uintptr:
 		for j := 0; j < N/2; j++ {
-			c := f.buffer.fpInv.Coeffs[j] * f.w2NjInv[j]
-			p.Coeffs[j] = T(int(f.scaleFloat64(real(c))))
-			p.Coeffs[j+N/2] = -T(int(f.scaleFloat64(imag(c))))
+			p.Coeffs[j] = T(int(f.buffer.floatCoeffs[2*j]))
+			p.Coeffs[j+N/2] = -T(int(f.buffer.floatCoeffs[2*j+1]))
 		}
 	case uint8:
 		for j := 0; j < N/2; j++ {
-			c := f.buffer.fpInv.Coeffs[j] * f.w2NjInv[j]
-			p.Coeffs[j] = T(int8(f.scaleFloat64(real(c))))
-			p.Coeffs[j+N/2] = -T(int8(f.scaleFloat64(imag(c))))
+			p.Coeffs[j] = T(int8(f.buffer.floatCoeffs[2*j]))
+			p.Coeffs[j+N/2] = -T(int8(f.buffer.floatCoeffs[2*j+1]))
 		}
 	case uint16:
 		for j := 0; j < N/2; j++ {
-			c := f.buffer.fpInv.Coeffs[j] * f.w2NjInv[j]
-			p.Coeffs[j] = T(int16(f.scaleFloat64(real(c))))
-			p.Coeffs[j+N/2] = -T(int16(f.scaleFloat64(imag(c))))
+			p.Coeffs[j] = T(int16(f.buffer.floatCoeffs[2*j]))
+			p.Coeffs[j+N/2] = -T(int16(f.buffer.floatCoeffs[2*j+1]))
 		}
 	case uint32:
 		for j := 0; j < N/2; j++ {
-			c := f.buffer.fpInv.Coeffs[j] * f.w2NjInv[j]
-			p.Coeffs[j] = T(int32(f.scaleFloat64(real(c))))
-			p.Coeffs[j+N/2] = -T(int32(f.scaleFloat64(imag(c))))
+			p.Coeffs[j] = T(int32(f.buffer.floatCoeffs[2*j]))
+			p.Coeffs[j+N/2] = -T(int32(f.buffer.floatCoeffs[2*j+1]))
 		}
 	case uint64:
 		for j := 0; j < N/2; j++ {
-			c := f.buffer.fpInv.Coeffs[j] * f.w2NjInv[j]
-			p.Coeffs[j] = T(int64(f.scaleFloat64(real(c))))
-			p.Coeffs[j+N/2] = -T(int64(f.scaleFloat64(imag(c))))
+			p.Coeffs[j] = T(int64(f.buffer.floatCoeffs[2*j]))
+			p.Coeffs[j+N/2] = -T(int64(f.buffer.floatCoeffs[2*j+1]))
 		}
 	default:
 		for j := 0; j < N/2; j++ {
-			c := f.buffer.fpInv.Coeffs[j] * f.w2NjInv[j]
-			p.Coeffs[j] = T(f.scaleFloat64(real(c)))
-			p.Coeffs[j+N/2] = -T(f.scaleFloat64(imag(c)))
+			p.Coeffs[j] = T(f.buffer.floatCoeffs[2*j])
+			p.Coeffs[j+N/2] = -T(f.buffer.floatCoeffs[2*j+1])
 		}
 	}
 }
@@ -232,44 +224,39 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolyAddAssign(fp FourierPoly, p Po
 
 	f.buffer.fpInv.CopyFrom(fp)
 	asm.InvFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
+	asm.UnTwistAndScaleAssign(f.buffer.fpInv.Coeffs, f.w2NjInv, f.maxT, f.buffer.floatCoeffs)
 
 	var z T
 	switch any(z).(type) {
 	case uint, uintptr:
 		for j := 0; j < N/2; j++ {
-			c := f.buffer.fpInv.Coeffs[j] * f.w2NjInv[j]
-			p.Coeffs[j] += T(int(f.scaleFloat64(real(c))))
-			p.Coeffs[j+N/2] += -T(int(f.scaleFloat64(imag(c))))
+			p.Coeffs[j] += T(int(f.buffer.floatCoeffs[2*j]))
+			p.Coeffs[j+N/2] += -T(int(f.buffer.floatCoeffs[2*j+1]))
 		}
 	case uint8:
 		for j := 0; j < N/2; j++ {
-			c := f.buffer.fpInv.Coeffs[j] * f.w2NjInv[j]
-			p.Coeffs[j] += T(int8(f.scaleFloat64(real(c))))
-			p.Coeffs[j+N/2] += -T(int8(f.scaleFloat64(imag(c))))
+			p.Coeffs[j] += T(int8(f.buffer.floatCoeffs[2*j]))
+			p.Coeffs[j+N/2] += -T(int8(f.buffer.floatCoeffs[2*j+1]))
 		}
 	case uint16:
 		for j := 0; j < N/2; j++ {
-			c := f.buffer.fpInv.Coeffs[j] * f.w2NjInv[j]
-			p.Coeffs[j] += T(int16(f.scaleFloat64(real(c))))
-			p.Coeffs[j+N/2] += -T(int16(f.scaleFloat64(imag(c))))
+			p.Coeffs[j] += T(int16(f.buffer.floatCoeffs[2*j]))
+			p.Coeffs[j+N/2] += -T(int16(f.buffer.floatCoeffs[2*j+1]))
 		}
 	case uint32:
 		for j := 0; j < N/2; j++ {
-			c := f.buffer.fpInv.Coeffs[j] * f.w2NjInv[j]
-			p.Coeffs[j] += T(int32(f.scaleFloat64(real(c))))
-			p.Coeffs[j+N/2] += -T(int32(f.scaleFloat64(imag(c))))
+			p.Coeffs[j] += T(int32(f.buffer.floatCoeffs[2*j]))
+			p.Coeffs[j+N/2] += -T(int32(f.buffer.floatCoeffs[2*j+1]))
 		}
 	case uint64:
 		for j := 0; j < N/2; j++ {
-			c := f.buffer.fpInv.Coeffs[j] * f.w2NjInv[j]
-			p.Coeffs[j] += T(int64(f.scaleFloat64(real(c))))
-			p.Coeffs[j+N/2] += -T(int64(f.scaleFloat64(imag(c))))
+			p.Coeffs[j] += T(int64(f.buffer.floatCoeffs[2*j]))
+			p.Coeffs[j+N/2] += -T(int64(f.buffer.floatCoeffs[2*j+1]))
 		}
 	default:
 		for j := 0; j < N/2; j++ {
-			c := f.buffer.fpInv.Coeffs[j] * f.w2NjInv[j]
-			p.Coeffs[j] += T(f.scaleFloat64(real(c)))
-			p.Coeffs[j+N/2] += -T(f.scaleFloat64(imag(c)))
+			p.Coeffs[j] += T(f.buffer.floatCoeffs[2*j])
+			p.Coeffs[j+N/2] += -T(f.buffer.floatCoeffs[2*j+1])
 		}
 	}
 }
@@ -281,44 +268,39 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolySubAssign(fp FourierPoly, p Po
 
 	f.buffer.fpInv.CopyFrom(fp)
 	asm.InvFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
+	asm.UnTwistAndScaleAssign(f.buffer.fpInv.Coeffs, f.w2NjInv, f.maxT, f.buffer.floatCoeffs)
 
 	var z T
 	switch any(z).(type) {
 	case uint, uintptr:
 		for j := 0; j < N/2; j++ {
-			c := f.buffer.fpInv.Coeffs[j] * f.w2NjInv[j]
-			p.Coeffs[j] -= T(int(f.scaleFloat64(real(c))))
-			p.Coeffs[j+N/2] -= -T(int(f.scaleFloat64(imag(c))))
+			p.Coeffs[j] -= T(int(f.buffer.floatCoeffs[2*j]))
+			p.Coeffs[j+N/2] -= -T(int(f.buffer.floatCoeffs[2*j+1]))
 		}
 	case uint8:
 		for j := 0; j < N/2; j++ {
-			c := f.buffer.fpInv.Coeffs[j] * f.w2NjInv[j]
-			p.Coeffs[j] -= T(int8(f.scaleFloat64(real(c))))
-			p.Coeffs[j+N/2] -= -T(int8(f.scaleFloat64(imag(c))))
+			p.Coeffs[j] -= T(int8(f.buffer.floatCoeffs[2*j]))
+			p.Coeffs[j+N/2] -= -T(int8(f.buffer.floatCoeffs[2*j+1]))
 		}
 	case uint16:
 		for j := 0; j < N/2; j++ {
-			c := f.buffer.fpInv.Coeffs[j] * f.w2NjInv[j]
-			p.Coeffs[j] -= T(int16(f.scaleFloat64(real(c))))
-			p.Coeffs[j+N/2] -= -T(int16(f.scaleFloat64(imag(c))))
+			p.Coeffs[j] -= T(int16(f.buffer.floatCoeffs[2*j]))
+			p.Coeffs[j+N/2] -= -T(int16(f.buffer.floatCoeffs[2*j+1]))
 		}
 	case uint32:
 		for j := 0; j < N/2; j++ {
-			c := f.buffer.fpInv.Coeffs[j] * f.w2NjInv[j]
-			p.Coeffs[j] -= T(int32(f.scaleFloat64(real(c))))
-			p.Coeffs[j+N/2] -= -T(int32(f.scaleFloat64(imag(c))))
+			p.Coeffs[j] -= T(int32(f.buffer.floatCoeffs[2*j]))
+			p.Coeffs[j+N/2] -= -T(int32(f.buffer.floatCoeffs[2*j+1]))
 		}
 	case uint64:
 		for j := 0; j < N/2; j++ {
-			c := f.buffer.fpInv.Coeffs[j] * f.w2NjInv[j]
-			p.Coeffs[j] -= T(int64(f.scaleFloat64(real(c))))
-			p.Coeffs[j+N/2] -= -T(int64(f.scaleFloat64(imag(c))))
+			p.Coeffs[j] -= T(int64(f.buffer.floatCoeffs[2*j]))
+			p.Coeffs[j+N/2] -= -T(int64(f.buffer.floatCoeffs[2*j+1]))
 		}
 	default:
 		for j := 0; j < N/2; j++ {
-			c := f.buffer.fpInv.Coeffs[j] * f.w2NjInv[j]
-			p.Coeffs[j] -= T(f.scaleFloat64(real(c)))
-			p.Coeffs[j+N/2] -= -T(f.scaleFloat64(imag(c)))
+			p.Coeffs[j] -= T(f.buffer.floatCoeffs[2*j])
+			p.Coeffs[j+N/2] -= -T(f.buffer.floatCoeffs[2*j+1])
 		}
 	}
 }

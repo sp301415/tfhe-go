@@ -53,6 +53,8 @@ type fourierBuffer[T num.Integer] struct {
 	fp FourierPoly
 	// fpInv holds the InvFFT value of fp.
 	fpInv FourierPoly
+	// floatCoeffs holds the untwisted coefficients of fourier polynomial.
+	floatCoeffs []float64
 }
 
 // NewFourierEvaluator creates a new FourierEvaluator with degree N.
@@ -96,8 +98,9 @@ func NewFourierEvaluator[T num.Integer](N int) *FourierEvaluator[T] {
 // newFourierBuffer allocates an empty fourierBuffer.
 func newFourierBuffer[T num.Integer](N int) fourierBuffer[T] {
 	return fourierBuffer[T]{
-		fp:    NewFourierPoly(N),
-		fpInv: NewFourierPoly(N),
+		fp:          NewFourierPoly(N),
+		fpInv:       NewFourierPoly(N),
+		floatCoeffs: make([]float64, N),
 	}
 }
 

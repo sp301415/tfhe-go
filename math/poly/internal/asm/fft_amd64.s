@@ -278,3 +278,108 @@ m_loop_end:
 	CMPQ SI, $0x00000001
 	JG   m_loop
 	RET
+
+TEXT ·twistAndScaleInPlaceAVX2(SB), NOSPLIT, $0-56
+	MOVQ v0+24(FP), AX
+	MOVQ vOut+0(FP), BX
+
+	MOVQ vOut_len+16(FP), DX
+	ADDQ DX, DX
+
+	VBROADCASTSD T+48(FP), Y10
+
+	XORQ SI, SI
+	JMP loop_end
+
+loop_body:
+	VMOVUPD (AX)(SI*8), Y0
+	VMOVUPD (BX)(SI*8), Y1
+
+	VSHUFPD $0b0101, Y1, Y1, Y2
+	VSHUFPD $0b1111, Y0, Y0, Y3
+	VSHUFPD $0b0000, Y0, Y0, Y4
+
+	VMULPD Y2, Y3, Y5
+	VFMADDSUB231PD Y1, Y4, Y5
+
+	VMULPD Y10, Y5, Y5
+
+	VMOVUPD Y5, (BX)(SI*8)
+
+	ADDQ $0x04, SI
+
+loop_end:
+	CMPQ SI, DX
+	JL loop_body
+
+	RET
+
+TEXT ·untwistAssignAVX2(SB), NOSPLIT, $0-72
+	MOVQ v0+0(FP), AX
+	MOVQ v1+24(FP), BX
+	MOVQ vOut+48(FP), CX
+
+	MOVQ vOut_len+56(FP), DX
+	ADDQ DX, DX
+
+	XORQ SI, SI
+	JMP loop_end
+
+loop_body:
+	VMOVUPD (AX)(SI*8), Y0
+	VMOVUPD (BX)(SI*8), Y1
+
+	VSHUFPD $0b0101, Y1, Y1, Y2
+	VSHUFPD $0b1111, Y0, Y0, Y3
+	VSHUFPD $0b0000, Y0, Y0, Y4
+
+	VMULPD Y2, Y3, Y5
+	VFMADDSUB231PD Y1, Y4, Y5
+
+	VMOVUPD Y5, (CX)(SI*8)
+
+	ADDQ $0x04, SI
+
+loop_end:
+	CMPQ SI, DX
+	JL loop_body
+
+	RET
+
+TEXT ·untwistAndScaleAssignAVX2(SB), NOSPLIT, $0-80
+	MOVQ v0+0(FP), AX
+	MOVQ v1+24(FP), BX
+	MOVQ vOut+56(FP), CX
+
+	MOVQ vOut_len+72(FP), DX
+
+	VBROADCASTSD T+48(FP), Y10
+
+	XORQ SI, SI
+	JMP loop_end
+
+loop_body:
+	VMOVUPD (AX)(SI*8), Y0
+	VMOVUPD (BX)(SI*8), Y1
+
+	VSHUFPD $0b0101, Y1, Y1, Y2
+	VSHUFPD $0b1111, Y0, Y0, Y3
+	VSHUFPD $0b0000, Y0, Y0, Y4
+
+	VMULPD Y2, Y3, Y5
+	VFMADDSUB231PD Y1, Y4, Y5
+
+	VROUNDPD $0, Y5, Y6
+	VSUBPD Y6, Y5, Y5
+
+	VMULPD Y5, Y10, Y5
+
+	VMOVUPD Y5, (CX)(SI*8)
+
+	ADDQ $0x04, SI
+
+loop_end:
+	CMPQ SI, DX
+	JL loop_body
+
+	RET
