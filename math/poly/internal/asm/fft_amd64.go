@@ -30,9 +30,16 @@ func FFTInPlace(coeffs, wNj []complex128) {
 	}
 }
 
+func invFFTInPlaceAVX2(coeffs, wNjInv []complex128)
+
 // InvfftInPlace is a top-level function for inverse FFT.
 // All internal inverse FFT implementations calls this function for performance.
 func InvFFTInPlace(coeffs, wNjInv []complex128) {
+	if cpu.X86.HasFMA && cpu.X86.HasAVX2 {
+		invFFTInPlaceAVX2(coeffs, wNjInv)
+		return
+	}
+
 	// Implementation of Algorithm 2 from https://eprint.iacr.org/2016/504.pdf
 	N := len(coeffs)
 	t := 1

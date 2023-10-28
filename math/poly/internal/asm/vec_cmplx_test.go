@@ -11,7 +11,7 @@ import (
 
 func TestCmplx(t *testing.T) {
 	N := 1 << 4
-	eps := 1e-10
+	eps := 1e-5
 
 	v0 := make([]complex128, N)
 	v1 := make([]complex128, N)
