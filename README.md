@@ -88,7 +88,7 @@ fmt.Println(enc.DecryptLWEBool(ctOut))
 All results were measured from Intel i5-13400F. `ParamsBoolean` and `ParamsUint6` are used.
 |Operation|Timing|
 |---------|-------|
-|Programmable Bootstrapping|91.8ms ± 4%|
+|Programmable Bootstrapping|91.85ms ± 4%|
 |Gate Bootstrapping|13.95ms ± 1%|
 
 ## Roadmap
