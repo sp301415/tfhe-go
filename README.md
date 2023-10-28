@@ -85,11 +85,11 @@ fmt.Println(enc.DecryptLWEBool(ctOut))
 ```
 
 ## Benchmarks
-All results were measured from Apple M2. `ParamsBoolean` and `ParamsUint6` are used.
+All results were measured from Intel i5-13400F. `ParamsBoolean` and `ParamsUint6` are used.
 |Operation|Timing|
 |---------|-------|
-|Programmable Bootstrapping|134.7ms ± 0%|
-|Gate Bootstrapping|15.85ms ± 0%|
+|Programmable Bootstrapping|91.8ms ± 4%|
+|Gate Bootstrapping|13.95ms ± 1%|
 
 ## Roadmap
 - [x] Optimze FFT using AVX2 instructions
