@@ -23,13 +23,66 @@ func FFT() {
 	MOVQ(N, NN)
 	ADDQ(N, NN)
 
-	Comment("t := N / 2")
-	t := GP64()
-	MOVQ(N, t)
+	Comment("Move wNj by one index")
+	ADDQ(U8(16), wNjPtr.Base)
 
-	Comment("for m := 1; m < N/2; m <<= 1")
+	Comment("Precompute wNj[1]")
+	WRe := YMM()
+	VBROADCASTSD(Mem{Base: wNjPtr.Base}, WRe)
+	WIm := YMM()
+	VBROADCASTSD(Mem{Base: wNjPtr.Base, Disp: 8}, WIm)
+
+	Comment("First Loop")
+
+	Comment("for j := 0; j < N/2; j++")
+	j := GP64()
+	XORQ(j, j)
+	JMP(LabelRef("first_loop_end"))
+	Label("first_loop")
+
+	Comment("U := coeffs[j]")
+	U := YMM()
+	VMOVUPD(Mem{Base: coeffsPtr.Base, Index: j, Scale: 8}, U)
+
+	Comment("V := coeffs[j+N/2]")
+	jt := GP64()
+	MOVQ(j, jt)
+	ADDQ(N, jt)
+
+	V := YMM()
+	VMOVUPD(Mem{Base: coeffsPtr.Base, Index: jt, Scale: 8}, V)
+
+	Comment("V *= wNj[1]")
+	VSwap := YMM()
+	VSHUFPD(U8(0b0101), V, V, VSwap)
+	VV := YMM()
+	VMULPD(WIm, VSwap, VV)
+	VFMADDSUB231PD(WRe, V, VV)
+
+	Comment("coeffs[j] = U + V")
+	X := YMM()
+	VADDPD(U, VV, X)
+	VMOVUPD(X, Mem{Base: coeffsPtr.Base, Index: j, Scale: 8})
+
+	Comment("coeffs[j+N/2] = U - V")
+	VSUBPD(VV, U, X)
+	VMOVUPD(X, Mem{Base: coeffsPtr.Base, Index: jt, Scale: 8})
+
+	Comment("j++")
+	ADDQ(U8(4), j)
+
+	Comment("j < N/2")
+	Label("first_loop_end")
+	CMPQ(j, N)
+	JL(LabelRef("first_loop"))
+
+	Comment("t := N / 4")
+	t := GP64()
+	MOVQ(NHalf, t)
+
+	Comment("for m := 2; m < N/2; m <<= 1")
 	m := GP64()
-	MOVQ(U32(1), m)
+	MOVQ(U32(2), m)
 	JMP(LabelRef("m_loop_end"))
 	Label("m_loop")
 
@@ -43,10 +96,8 @@ func FFT() {
 	ADDQ(U8(16), wNjPtr.Base)
 
 	Comment("Precompute wNj[m+i]")
-	W := YMM()
-	VBROADCASTF128(Mem{Base: wNjPtr.Base}, W)
-	WSwap := YMM()
-	VSHUFPD(U8(0b0101), W, W, WSwap)
+	VBROADCASTSD(Mem{Base: wNjPtr.Base}, WRe)
+	VBROADCASTSD(Mem{Base: wNjPtr.Base, Disp: 8}, WIm)
 
 	Comment("j1 := i * t << 1")
 	j1 := GP64()
@@ -61,33 +112,24 @@ func FFT() {
 
 	Comment("We increment j by 4 every iteration")
 	Comment("for j := j1; j < j2; j++")
-	j := GP64()
 	MOVQ(j1, j)
 	JMP(LabelRef("j_loop_end"))
 	Label("j_loop")
 
 	Comment("U := coeffs[j]")
-	U := YMM()
 	VMOVUPD(Mem{Base: coeffsPtr.Base, Index: j, Scale: 8}, U)
 
 	Comment("V := coeffs[j+t]")
-	V := YMM()
-	jt := GP64()
 	MOVQ(j, jt)
 	ADDQ(t, jt)
 	VMOVUPD(Mem{Base: coeffsPtr.Base, Index: jt, Scale: 8}, V)
 
 	Comment("V *= wNj[m+i]")
-	VIm := YMM()
-	VSHUFPD(U8(0b1111), V, V, VIm)
-	VRe := YMM()
-	VSHUFPD(U8(0b0000), V, V, VRe)
-	VV := YMM()
-	VMULPD(VIm, WSwap, VV)
-	VFMADDSUB231PD(VRe, W, VV)
+	VSHUFPD(U8(0b0101), V, V, VSwap)
+	VMULPD(WIm, VSwap, VV)
+	VFMADDSUB231PD(WRe, V, VV)
 
 	Comment("coeffs[j] = U + V")
-	X := YMM()
 	VADDPD(U, VV, X)
 	VMOVUPD(X, Mem{Base: coeffsPtr.Base, Index: j, Scale: 8})
 
@@ -203,11 +245,9 @@ func InvFFT() {
 	JMP(LabelRef("first_loop_end"))
 	Label("first_loop")
 
-	Comment("Index wNjInv")
+	Comment("Precompute wNjInv[hi]")
 	W128 := XMM()
 	VMOVUPD(Mem{Base: wNjInvPtr.Base, Index: hi, Scale: 8}, W128)
-
-	Comment("Precompute wNjInv[hi]")
 	WSwap128 := XMM()
 	VSHUFPD(U8(0b01), W128, W128, WSwap128)
 
@@ -250,7 +290,7 @@ func InvFFT() {
 	t := GP64()
 	MOVQ(U32(4), t)
 
-	Comment("for m := N / 2; m > 1; m >>= 1")
+	Comment("for m := N / 2; m > 2; m >>= 1")
 	m := GP64()
 	MOVQ(N2, m)
 	JMP(LabelRef("m_loop_end"))
@@ -273,10 +313,11 @@ func InvFFT() {
 	Comment("Precompute wNjInv[h+i]")
 	MOVQ(h, hi)
 	ADDQ(i, hi)
-	W := YMM()
-	VBROADCASTF128(Mem{Base: wNjInvPtr.Base, Index: hi, Scale: 8}, W)
-	WSwap := YMM()
-	VSHUFPD(U8(0b0101), W, W, WSwap)
+
+	WRe := YMM()
+	VBROADCASTSD(Mem{Base: wNjInvPtr.Base, Index: hi, Scale: 8}, WRe)
+	WIm := YMM()
+	VBROADCASTSD(Mem{Base: wNjInvPtr.Base, Index: hi, Scale: 8, Disp: 8}, WIm)
 
 	Comment("j2 := j1 + t")
 	j2 := GP64()
@@ -294,10 +335,11 @@ func InvFFT() {
 	VMOVUPD(Mem{Base: coeffsPtr.Base, Index: j, Scale: 8}, U)
 
 	Comment("V := coeffs[j+t]")
-	V := YMM()
 	jt := GP64()
 	MOVQ(j, jt)
 	ADDQ(t, jt)
+
+	V := YMM()
 	VMOVUPD(Mem{Base: coeffsPtr.Base, Index: jt, Scale: 8}, V)
 
 	Comment("coeffs[j] = U + V")
@@ -307,13 +349,11 @@ func InvFFT() {
 
 	Comment("coeffs[j+t] = (U - V) * wNjInv[h+i]")
 	VSUBPD(V, U, X)
-	XIm := YMM()
-	VSHUFPD(U8(0b1111), X, X, XIm)
-	XRe := YMM()
-	VSHUFPD(U8(0b0000), X, X, XRe)
+	XSwap := YMM()
+	VSHUFPD(U8(0b0101), X, X, XSwap)
 	XX := YMM()
-	VMULPD(XIm, WSwap, XX)
-	VFMADDSUB231PD(XRe, W, XX)
+	VMULPD(WIm, XSwap, XX)
+	VFMADDSUB231PD(WRe, X, XX)
 	VMOVUPD(XX, Mem{Base: coeffsPtr.Base, Index: jt, Scale: 8})
 
 	Comment("j += 4")
@@ -344,10 +384,53 @@ func InvFFT() {
 	Comment("m >>= 1")
 	SHRQ(U8(1), m)
 
-	Comment("m > 1")
+	Comment("m > 2")
 	Label("m_loop_end")
-	CMPQ(m, U32(1))
+	CMPQ(m, U32(2))
 	JG(LabelRef("m_loop"))
+
+	Comment("Last Loop")
+
+	Comment("Precompute wNjInv[1]")
+	WRe = YMM()
+	VBROADCASTSD(Mem{Base: wNjInvPtr.Base, Disp: 16}, WRe)
+	WIm = YMM()
+	VBROADCASTSD(Mem{Base: wNjInvPtr.Base, Disp: 24}, WIm)
+
+	Comment("for j := 0; j < N/2; j++")
+	XORQ(j, j)
+	JMP(LabelRef("last_loop_end"))
+	Label("last_loop")
+
+	Comment("U := coeffs[j]")
+	U = YMM()
+	VMOVUPD(Mem{Base: coeffsPtr.Base, Index: j, Scale: 8}, U)
+
+	Comment("V := coeffs[j+N/2]")
+	MOVQ(j, jt)
+	ADDQ(N, jt)
+
+	V = YMM()
+	VMOVUPD(Mem{Base: coeffsPtr.Base, Index: jt, Scale: 8}, V)
+
+	Comment("coeffs[j] = U + V")
+	VADDPD(U, V, X)
+	VMOVUPD(X, Mem{Base: coeffsPtr.Base, Index: j, Scale: 8})
+
+	Comment("coeffs[j+N/2] = (U - V) * wNjInv[1]")
+	VSUBPD(V, U, X)
+	VSHUFPD(U8(0b0101), X, X, XSwap)
+	VMULPD(WIm, XSwap, XX)
+	VFMADDSUB231PD(WRe, X, XX)
+	VMOVUPD(XX, Mem{Base: coeffsPtr.Base, Index: jt, Scale: 8})
+
+	Comment("j++")
+	ADDQ(U8(4), j)
+
+	Comment("j < N/2")
+	Label("last_loop_end")
+	CMPQ(j, N)
+	JL(LabelRef("last_loop"))
 
 	RET()
 }
