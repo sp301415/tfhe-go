@@ -4,6 +4,12 @@ import (
 	"github.com/sp301415/tfhe-go/math/num"
 )
 
+const (
+	// MaxPolyDegree is the maximum degree of polynomials in GLWE entities.
+	// We use FFT for GLWE encryption, which limits the maximum degree due to precision loss.
+	MaxPolyDegree = 1 << 20
+)
+
 // Tint represents the integer in the discretized torus.
 // Currently, it supports Q = 2^32 and Q = 2^64 (uint32 and uint64).
 type Tint interface {
@@ -160,6 +166,8 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("GLWEDimension smaller than zero")
 	case p.PolyDegree <= 0:
 		panic("PolyDegree smaller than zero")
+	case p.PolyDegree >= MaxPolyDegree:
+		panic("PolyDegree larger than MaxPolyDegree")
 	case p.LWEStdDev <= 0:
 		panic("LWEStdDev smaller than zero")
 	case p.GLWEStdDev <= 0:

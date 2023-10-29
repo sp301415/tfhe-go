@@ -32,6 +32,11 @@ type encryptionBuffer[T Tint] struct {
 	ctGLWE GLWECiphertext[T]
 	// ptGGSW holds GLWEKey * Pt in GGSW encryption.
 	ptGGSW poly.Poly[T]
+
+	// pSplit is a buffer for split polynomial in mulGLWEKey.
+	pSplit poly.Poly[T]
+	// fpSplit is a buffer for split fourier polynomial in mulGLWEKey.
+	fpSplit poly.FourierPoly
 }
 
 // NewEncryptor returns a initialized Encryptor with given parameters.
@@ -63,8 +68,10 @@ func NewEncryptor[T Tint](params Parameters[T]) *Encryptor[T] {
 // newEncryptionBuffer allocates an empty encryptionBuffer.
 func newEncryptionBuffer[T Tint](params Parameters[T]) encryptionBuffer[T] {
 	return encryptionBuffer[T]{
-		ctGLWE: NewGLWECiphertext(params),
-		ptGGSW: poly.New[T](params.polyDegree),
+		ctGLWE:  NewGLWECiphertext(params),
+		ptGGSW:  poly.New[T](params.polyDegree),
+		pSplit:  poly.New[T](params.polyDegree),
+		fpSplit: poly.NewFourierPoly(params.polyDegree),
 	}
 }
 

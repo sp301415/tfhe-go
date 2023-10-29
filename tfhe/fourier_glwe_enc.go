@@ -106,7 +106,7 @@ func (e *Encryptor[T]) EncryptFourierGGSWPlaintext(pt GLWEPlaintext[T], decompPa
 func (e *Encryptor[T]) EncryptFourierGGSWPlaintextAssign(pt GLWEPlaintext[T], ctOut FourierGGSWCiphertext[T]) {
 	e.EncryptFourierGLevPlaintextAssign(pt, ctOut.Value[0])
 	for i := 1; i < e.Parameters.glweDimension+1; i++ {
-		e.PolyEvaluator.MulAssign(e.SecretKey.GLWEKey.Value[i-1], pt.Value, e.buffer.ptGGSW)
+		e.mulGLWEKeyAssign(pt.Value, e.SecretKey.fourierGLWEKey[i-1], e.buffer.ptGGSW)
 		for j := 0; j < ctOut.decompParams.level; j++ {
 			e.PolyEvaluator.ScalarMulAssign(e.buffer.ptGGSW, ctOut.decompParams.ScaledBase(j), e.buffer.ctGLWE.Value[0])
 			e.EncryptGLWEBody(e.buffer.ctGLWE)

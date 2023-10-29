@@ -14,6 +14,9 @@ type SecretKey[T Tint] struct {
 	LWEKey LWEKey[T]
 	// GLWEKey is a key used for GLWE encryption and decryption.
 	GLWEKey GLWEKey[T]
+	// fourierGLWEKey is a fourier transformed GLWEKey.
+	// Used for GLWE encryption.
+	fourierGLWEKey []poly.FourierPoly
 	// LWELargeKey is GLWE key parsed as LWE key.
 	LWELargeKey LWEKey[T]
 }
@@ -32,10 +35,16 @@ func NewSecretKey[T Tint](params Parameters[T]) SecretKey[T] {
 		glweKey.Value[i].Coeffs = lweLargeKey.Value[i*params.polyDegree : (i+1)*params.polyDegree]
 	}
 
+	fourierGLWEKey := make([]poly.FourierPoly, params.glweDimension)
+	for i := 0; i < params.glweDimension; i++ {
+		fourierGLWEKey[i] = poly.NewFourierPoly(params.polyDegree)
+	}
+
 	return SecretKey[T]{
-		LWEKey:      lweKey,
-		GLWEKey:     glweKey,
-		LWELargeKey: lweLargeKey,
+		LWEKey:         lweKey,
+		GLWEKey:        glweKey,
+		fourierGLWEKey: fourierGLWEKey,
+		LWELargeKey:    lweLargeKey,
 	}
 }
 
@@ -51,16 +60,26 @@ func (sk SecretKey[T]) Copy() SecretKey[T] {
 		glweKey.Value[i].Coeffs = lweLargeKey.Value[i*degree : (i+1)*degree]
 	}
 
+	fourierGLWEKey := make([]poly.FourierPoly, len(sk.fourierGLWEKey))
+	for i := range fourierGLWEKey {
+		fourierGLWEKey[i] = sk.fourierGLWEKey[i].Copy()
+	}
+
 	return SecretKey[T]{
-		LWEKey:      lweKey,
-		GLWEKey:     glweKey,
-		LWELargeKey: lweLargeKey,
+		LWEKey:         lweKey,
+		GLWEKey:        glweKey,
+		fourierGLWEKey: fourierGLWEKey,
+		LWELargeKey:    lweLargeKey,
 	}
 }
 
 // CopyFrom copies values from a key.
 func (sk *SecretKey[T]) CopyFrom(skIn SecretKey[T]) {
+	// This automatically copies LWEKey and GLWEKey.
 	vec.CopyAssign(skIn.LWELargeKey.Value, sk.LWELargeKey.Value)
+	for i := range skIn.fourierGLWEKey {
+		sk.fourierGLWEKey[i].CopyFrom(skIn.fourierGLWEKey[i])
+	}
 }
 
 // GenSecretKey samples a new LWE key.
@@ -72,6 +91,10 @@ func (e *Encryptor[T]) GenSecretKey() SecretKey[T] {
 
 	// Sample the rest from Binary Distribution
 	e.binarySampler.SampleSliceAssign(sk.LWELargeKey.Value[e.Parameters.lweDimension:])
+
+	for i := 0; i < e.Parameters.glweDimension; i++ {
+		e.FourierEvaluator.ToFourierPolyAssign(sk.GLWEKey.Value[i], sk.fourierGLWEKey[i])
+	}
 
 	return sk
 }
