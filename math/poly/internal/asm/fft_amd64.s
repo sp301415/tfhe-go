@@ -359,7 +359,7 @@ TEXT ·twistAndScaleInPlaceAVX2(SB), NOSPLIT, $0-56
 	MOVQ v0+24(FP), AX
 	MOVQ vOut+0(FP), BX
 
-	MOVQ vOut_len+16(FP), DX
+	MOVQ vOut_len+8(FP), DX
 	ADDQ DX, DX
 
 	VBROADCASTSD T+48(FP), Y10
@@ -396,7 +396,6 @@ TEXT ·untwistAssignAVX2(SB), NOSPLIT, $0-72
 	MOVQ vOut+48(FP), CX
 
 	MOVQ vOut_len+56(FP), DX
-	ADDQ DX, DX
 
 	XORQ SI, SI
 	JMP loop_end
@@ -427,7 +426,7 @@ TEXT ·untwistAndScaleAssignAVX2(SB), NOSPLIT, $0-80
 	MOVQ v1+24(FP), BX
 	MOVQ vOut+56(FP), CX
 
-	MOVQ vOut_len+72(FP), DX
+	MOVQ vOut_len+64(FP), DX
 
 	VBROADCASTSD T+48(FP), Y10
 
