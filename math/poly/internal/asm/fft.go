@@ -64,8 +64,8 @@ func TwistAndScaleInPlace(coeffs, w2Nj []complex128, maxTInv float64) {
 func UnTwistAssign(coeffs, w2NjInv []complex128, coeffsOut []float64) {
 	for i, j := 0, 0; i < len(coeffs); i, j = i+1, j+2 {
 		c := coeffs[i] * w2NjInv[i]
-		coeffsOut[j] = real(c)
-		coeffsOut[j+1] = imag(c)
+		coeffsOut[j] = math.Round(real(c))
+		coeffsOut[j+1] = math.Round(imag(c))
 	}
 }
 
