@@ -92,8 +92,7 @@ All results were measured from Intel i5-13400F. `ParamsBoolean` and `ParamsUint6
 |Gate Bootstrapping|14.02ms ± 1%|
 
 ## Roadmap
-- [x] Optimze FFT using AVX2 instructions
-- [ ] Implement NTT instead of Karatsuba
+- [x] Optimize FFT using AVX2 instructions
 - [ ] Implement Multi-Key TFHE: [[CCS19](https://eprint.iacr.org/2019/116)], [[KMS23](https://eprint.iacr.org/2022/1460)]
 
 ## References

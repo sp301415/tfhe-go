@@ -166,7 +166,7 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("GLWEDimension smaller than zero")
 	case p.PolyDegree <= 0:
 		panic("PolyDegree smaller than zero")
-	case p.PolyDegree >= MaxPolyDegree:
+	case p.PolyDegree > MaxPolyDegree:
 		panic("PolyDegree larger than MaxPolyDegree")
 	case p.LWEStdDev <= 0:
 		panic("LWEStdDev smaller than zero")
