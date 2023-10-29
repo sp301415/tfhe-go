@@ -70,7 +70,9 @@ func (e *Evaluator[T]) mulAssignKaratsuba(p, q, pOut Poly[T]) {
 	// Seems like using range-based loops are faster than regular loops.
 
 	N := e.degree
-	buff := e.buffer.karatsubaBuffer[0]
+	karatsubaBuffer := newKaratsubaBuffer[T](N)
+
+	buff := karatsubaBuffer[0]
 
 	// p = p0 * X^N/2 + p1
 	p0, p1 := p.Coeffs[:N/2], p.Coeffs[N/2:]
@@ -78,9 +80,9 @@ func (e *Evaluator[T]) mulAssignKaratsuba(p, q, pOut Poly[T]) {
 	q0, q1 := q.Coeffs[:N/2], q.Coeffs[N/2:]
 
 	// d0 := p0 * q0
-	e.karatsuba(p0, q0, buff.d0, 1)
+	e.karatsuba(p0, q0, buff.d0, 1, karatsubaBuffer)
 	// d1 := p1 * q1
-	e.karatsuba(p1, q1, buff.d1, 1)
+	e.karatsuba(p1, q1, buff.d1, 1, karatsubaBuffer)
 
 	// a0 := p0 + p1
 	for i := range buff.a0 {
@@ -92,7 +94,7 @@ func (e *Evaluator[T]) mulAssignKaratsuba(p, q, pOut Poly[T]) {
 	}
 
 	// d2 := (p0 + p1) * (q0 + q1) = p0*q0 + p0*q1 + p1*q0 + p1*q1 = (p0*q1 + p1*q0) + d0 + d1
-	e.karatsuba(buff.a0, buff.a1, buff.d2, 1)
+	e.karatsuba(buff.a0, buff.a1, buff.d2, 1, karatsubaBuffer)
 
 	// pOut := d0 + (d2 - d0 - d1)*X^N/2 + d1*X^N
 	for i := range pOut.Coeffs {
@@ -106,7 +108,7 @@ func (e *Evaluator[T]) mulAssignKaratsuba(p, q, pOut Poly[T]) {
 
 // karatsuba is a recursive subroutine of karatsuba algorithm.
 // length of pOut is assumed to be twice of length of p and q.
-func (e *Evaluator[T]) karatsuba(p, q, pOut []T, depth int) {
+func (e *Evaluator[T]) karatsuba(p, q, pOut []T, depth int, karatsubaBuffer []karatsubaBuffer[T]) {
 	N := len(p)
 
 	if N <= karatsubaRecurseThreshold {
@@ -123,7 +125,7 @@ func (e *Evaluator[T]) karatsuba(p, q, pOut []T, depth int) {
 		return
 	}
 
-	buff := e.buffer.karatsubaBuffer[depth]
+	buff := karatsubaBuffer[depth]
 
 	// p = p0 * X^N/2 + p1
 	p0, p1 := p[:N/2], p[N/2:]
@@ -131,9 +133,9 @@ func (e *Evaluator[T]) karatsuba(p, q, pOut []T, depth int) {
 	q0, q1 := q[:N/2], q[N/2:]
 
 	// d0 := p0 * q0
-	e.karatsuba(p0, q0, buff.d0, depth+1)
+	e.karatsuba(p0, q0, buff.d0, depth+1, karatsubaBuffer)
 	// d1 := p1 * q1
-	e.karatsuba(p1, q1, buff.d1, depth+1)
+	e.karatsuba(p1, q1, buff.d1, depth+1, karatsubaBuffer)
 
 	// a0 := p0 + p1
 	for i := range buff.a0 {
@@ -145,7 +147,7 @@ func (e *Evaluator[T]) karatsuba(p, q, pOut []T, depth int) {
 	}
 
 	// d2 := (p0 + p1) * (q0 + q1) = p0*q0 + p0*q1 + p1*q0 + p1*q1 = (p0*q1 + p1*q0) + d0 + d1
-	e.karatsuba(buff.a0, buff.a1, buff.d2, depth+1)
+	e.karatsuba(buff.a0, buff.a1, buff.d2, depth+1, karatsubaBuffer)
 
 	// pOut := d0 + (d2 - d0 - d1)*X^N/2 + d1*X^N
 	for i := range pOut {

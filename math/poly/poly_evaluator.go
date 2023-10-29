@@ -34,12 +34,7 @@ type Evaluator[T num.Integer] struct {
 
 // evaluationBuffer contains buffer values for Evaluator.
 type evaluationBuffer[T num.Integer] struct {
-	// karatsubaBuffer holds the intermediate buffers used in karatsuba multiplication.
-	karatsubaBuffer []karatsubaBuffer[T]
-
 	// pOut holds the intermediate polynomial in MulAdd or MulSub type operations.
-	// This may take aditional O(N) loop, but the multiplication itself is a dominating factor,
-	// so it doesn't matter.
 	pOut Poly[T]
 }
 
@@ -65,8 +60,6 @@ func NewEvaluator[T num.Integer](N int) *Evaluator[T] {
 // newEvaluationBuffer allocates an empty evaluation buffer.
 func newEvaluationBuffer[T num.Integer](N int) evaluationBuffer[T] {
 	return evaluationBuffer[T]{
-		karatsubaBuffer: newKaratsubaBuffer[T](N),
-
 		pOut: New[T](N),
 	}
 }
