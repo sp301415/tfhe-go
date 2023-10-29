@@ -4,6 +4,15 @@ import (
 	"github.com/sp301415/tfhe-go/math/num"
 )
 
+const (
+	// MinDegree is the minimum degree of polynomial that Evaluator can handle.
+	// Currently, this is set to 8, because AVX2 implementation of FFT and inverse FFT
+	// handles first and last loop seperately.
+	// This implies that the degree of fourier polynomial should be at least 4,
+	// and the degree of standard polynomial should be at least 8.
+	MinDegree = 8
+)
+
 // Evaluator calculates polynomial algorithms.
 // Operations usually take two forms: for example,
 //   - Add(p0, p1) is equivalent to var p = p0 + p1.
@@ -35,10 +44,15 @@ type evaluationBuffer[T num.Integer] struct {
 }
 
 // NewEvaluator creates a new Evaluator with degree N.
-// N should be power of two.
+// N should be power of two, and at least MinDegree.
+// Otherwise, it panics.
 func NewEvaluator[T num.Integer](N int) *Evaluator[T] {
 	if !num.IsPowerOfTwo(N) {
-		panic("degree should be power of two")
+		panic("degree not power of two")
+	}
+
+	if N < MinDegree {
+		panic("degree smaller than MinDegree")
 	}
 
 	return &Evaluator[T]{

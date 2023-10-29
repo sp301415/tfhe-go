@@ -44,11 +44,11 @@ type FourierEvaluator[T num.Integer] struct {
 	// w2NjInv holds the precomputed values of scaled w_2N^-j / (N / 2) where j = 0 ~ N/2.
 	w2NjInv []complex128
 
-	buffer fourierBuffer[T]
+	buffer fftBuffer[T]
 }
 
-// fourierBuffer contains buffer values for FourierEvaluator.
-type fourierBuffer[T num.Integer] struct {
+// fftBuffer contains buffer values for FourierEvaluator.
+type fftBuffer[T num.Integer] struct {
 	// fp holds the FFT value of p.
 	fp FourierPoly
 	// fpInv holds the InvFFT value of fp.
@@ -58,10 +58,15 @@ type fourierBuffer[T num.Integer] struct {
 }
 
 // NewFourierEvaluator creates a new FourierEvaluator with degree N.
-// N should be power of two.
+// N should be power of two, and at least MinDegree.
+// Otherwise, it panics.
 func NewFourierEvaluator[T num.Integer](N int) *FourierEvaluator[T] {
 	if !num.IsPowerOfTwo(N) {
-		panic("degree should be power of two")
+		panic("degree not power of two")
+	}
+
+	if N < MinDegree {
+		panic("degree smaller than MinDegree")
 	}
 
 	wNj := make([]complex128, N/2)
@@ -91,13 +96,13 @@ func NewFourierEvaluator[T num.Integer](N int) *FourierEvaluator[T] {
 		w2Nj:    w2Nj,
 		w2NjInv: w2NjInv,
 
-		buffer: newFourierBuffer[T](N),
+		buffer: newFFTBuffer[T](N),
 	}
 }
 
-// newFourierBuffer allocates an empty fourierBuffer.
-func newFourierBuffer[T num.Integer](N int) fourierBuffer[T] {
-	return fourierBuffer[T]{
+// newFFTBuffer allocates an empty fftBuffer.
+func newFFTBuffer[T num.Integer](N int) fftBuffer[T] {
+	return fftBuffer[T]{
 		fp:          NewFourierPoly(N),
 		fpInv:       NewFourierPoly(N),
 		floatCoeffs: make([]float64, N),
@@ -116,7 +121,7 @@ func (f *FourierEvaluator[T]) ShallowCopy() *FourierEvaluator[T] {
 		w2Nj:    f.w2Nj,
 		w2NjInv: f.w2NjInv,
 
-		buffer: newFourierBuffer[T](f.degree),
+		buffer: newFFTBuffer[T](f.degree),
 	}
 }
 

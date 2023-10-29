@@ -12,12 +12,18 @@ type Poly[T num.Integer] struct {
 }
 
 // New creates a polynomial with degree N with empty coefficients.
-// N should be power of two. Otherwise, it panics.
+// N should be power of two, and at least MinDegree.
+// Otherwise, it panics.
 func New[T num.Integer](N int) Poly[T] {
 	if !num.IsPowerOfTwo(N) {
 		panic("degree not power of two")
 
 	}
+
+	if N < MinDegree {
+		panic("degree smaller than MinDegree")
+	}
+
 	return Poly[T]{Coeffs: make([]T, N)}
 }
 
@@ -70,6 +76,11 @@ func NewFourierPoly(N int) FourierPoly {
 	if !num.IsPowerOfTwo(N) {
 		panic("degree not power of two")
 	}
+
+	if N < MinDegree {
+		panic("degree smaller than MinDegree")
+	}
+
 	return FourierPoly{Coeffs: make([]complex128, N/2)}
 }
 

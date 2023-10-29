@@ -1,8 +1,6 @@
 package poly
 
 import (
-	"math"
-
 	"github.com/sp301415/tfhe-go/math/poly/internal/asm"
 )
 
@@ -108,11 +106,6 @@ func (f *FourierEvaluator[T]) ToScaledFourierPolyAssign(p Poly[T], fp FourierPol
 
 	asm.TwistAndScaleInPlace(fp.Coeffs, f.w2Nj, 1/f.maxT)
 	asm.FFTInPlace(fp.Coeffs, f.wNj)
-}
-
-// scaleFloat64 scales x by 2^sizeT.
-func (f *FourierEvaluator[T]) scaleFloat64(x float64) float64 {
-	return (x - math.Round(x)) * f.maxT
 }
 
 // ToStandardPoly transforms FourierPoly to Poly and returns it.
