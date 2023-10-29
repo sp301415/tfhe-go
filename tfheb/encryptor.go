@@ -54,10 +54,9 @@ func (e *Encryptor) DecryptLWEBool(ct tfhe.LWECiphertext[uint32]) bool {
 }
 
 // EncryptLWEBits encrypts each bits of an integer message.
-// The resulting slice of LWE ciphertexts always has length 64.
 // The order of the bits are little-endian.
-func (e *Encryptor) EncryptLWEBits(message int) []tfhe.LWECiphertext[uint32] {
-	cts := make([]tfhe.LWECiphertext[uint32], 64)
+func (e *Encryptor) EncryptLWEBits(message, bits int) []tfhe.LWECiphertext[uint32] {
+	cts := make([]tfhe.LWECiphertext[uint32], bits)
 	e.EncryptLWEBitsAssign(message, cts)
 	return cts
 }

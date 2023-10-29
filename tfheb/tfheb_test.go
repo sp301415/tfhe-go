@@ -65,10 +65,10 @@ func TestEvaluator(t *testing.T) {
 
 	t.Run("Bits", func(t *testing.T) {
 		msg0, msg1 := 0b01, 0b10
-		ct0 := enc.EncryptLWEBits(msg0)[:4]
-		ct1 := enc.EncryptLWEBits(msg1)[:4]
+		ct0 := enc.EncryptLWEBits(msg0, 4)
+		ct1 := enc.EncryptLWEBits(msg1, 4)
 
-		ctOut := enc.EncryptLWEBits(0)[:4]
+		ctOut := enc.EncryptLWEBits(0, 4)
 		for i := range ctOut {
 			eval.XORAssign(ct0[i], ct1[i], ctOut[i])
 		}

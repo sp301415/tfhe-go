@@ -71,12 +71,13 @@ enc := tfheb.NewEncryptor(params)
 eval := tfheb.NewEvaluator(params, enc.GenEvaluationKeyParallel())
 
 // Change these values yourself!
-ct0 := enc.EncryptLWEBits(3)
-ct1 := enc.EncryptLWEBits(3)
+bits := 16
+ct0 := enc.EncryptLWEBits(3, bits)
+ct1 := enc.EncryptLWEBits(3, bits)
 
 ctXNOR := tfhe.NewLWECiphertext(params)
 ctOut := eval.XNOR(ct0[0], ct1[0])
-for i := 1; i < 64; i++ {
+for i := 1; i < bits; i++ {
 	eval.XNORAssign(ct0[i], ct1[i], ctXNOR)
 	eval.ANDAssign(ctXNOR, ctOut, ctOut)
 }
