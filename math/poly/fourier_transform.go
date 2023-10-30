@@ -1,7 +1,7 @@
 package poly
 
 import (
-	"github.com/sp301415/tfhe-go/math/poly/internal/asm"
+	"github.com/sp301415/tfhe-go/internal/asm"
 )
 
 // FFTInPlace applies FFT to fp.

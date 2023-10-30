@@ -1,6 +1,6 @@
 package poly
 
-import "github.com/sp301415/tfhe-go/math/poly/internal/asm"
+import "github.com/sp301415/tfhe-go/internal/asm"
 
 // Add adds fp0, fp1 and returns the result.
 func (f *FourierEvaluator[T]) Add(fp0, fp1 FourierPoly) FourierPoly {

@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/sp301415/tfhe-go/math/poly/internal/asm"
+	"github.com/sp301415/tfhe-go/internal/asm"
 )
 
 func fftInPlaceGeneric(coeffs, wNj []complex128) {
