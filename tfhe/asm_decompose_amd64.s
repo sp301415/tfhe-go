@@ -37,13 +37,16 @@ N_loop:
     // x := p[i]
     VMOVDQU (AX)(SI*4), Y1
 
-    // c := ((x >> lsbl) + ((x >> (lsbl - 1)) & 1)) << lsbl
+    // c := ((x >> lsbl) + ((x >> (lsbl - 1)) & 1))
     // x >> (lsbl - 1)
     VPSRLVD Y9, Y1, Y3
+
     // c := x >> lsbl
     VPSRLD $1, Y3, Y2
+
     // (x >> (lsbl - 1) & 1)
     VANDPD Y3, Y0, Y3
+
     // c := (x >> lsbl) + (x >> (lsbl - 1) & 1)
     VPADDD Y2, Y3, Y1
 
@@ -58,11 +61,14 @@ N_loop:
     level_loop:
         // d[j].Coeffs[i] = c & baseMask
         VANDPD Y1, Y13, Y2 // d[j].Coeffs[i]
+
         // c >>= baseLog
         VPSRLVD Y11, Y1, Y1
+
         // c += d[j].Coeffs[i] >> (baseLog - 1)
         VPSRLVD Y15, Y2, Y3
         VPADDD Y3, Y1, Y1
+
         // d[j].Coeffs[i] -= (d[j].Coeffs[i] & baseHalf) << 1
         VANDPD Y2, Y14, Y3
         VPSLLD $1, Y3, Y3
@@ -118,10 +124,13 @@ N_loop:
     // c := ((x >> lsbl) + ((x >> (lsbl - 1)) & 1)) << lsbl
     // x >> (lsbl - 1)
     VPSRLVQ Y9, Y1, Y3
+
     // c := x >> lsbl
     VPSRLQ $1, Y3, Y2
+
     // (x >> (lsbl - 1) & 1)
     VANDPD Y3, Y0, Y3
+
     // c := (x >> lsbl) + (x >> (lsbl - 1) & 1)
     VPADDQ Y2, Y3, Y1
 
@@ -136,11 +145,14 @@ N_loop:
     level_loop:
         // d[j].Coeffs[i] = c & baseMask
         VANDPD Y1, Y13, Y2 // d[j].Coeffs[i]
+
         // c >>= baseLog
         VPSRLVQ Y11, Y1, Y1
+
         // c += d[j].Coeffs[i] >> (baseLog - 1)
         VPSRLVQ Y15, Y2, Y3
         VPADDQ Y3, Y1, Y1
+
         // d[j].Coeffs[i] -= (d[j].Coeffs[i] & baseHalf) << 1
         VANDPD Y2, Y14, Y3
         VPSLLQ $1, Y3, Y3
