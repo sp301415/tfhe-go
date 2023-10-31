@@ -2,24 +2,28 @@
 
 #include "textflag.h"
 
+DATA one32<>+0(SB)/4, $0x1
+GLOBL one32<>+0(SB), RODATA, $4
+DATA one64<>+0(SB)/8, $0x1
+GLOBL one64<>+0(SB), RODATA, $8
+
+
 TEXT ·DecomposeUint32PolyAssignAVX2(SB), NOSPLIT, $0-48
-	MOVQ p+0(FP), AX
-	MOVQ d+40(FP), BX
+	MOVQ pPtr+0(FP), AX
+	MOVQ dPtr+40(FP), BX
+
+    MOVQ (AX), AX
+    MOVQ (BX), BX
 
     MOVQ N+8(FP), CX
 	MOVQ level+16(FP), DX
 
-    MOVD base+24(FP), R10
-    MOVD baseLog+28(FP), R11
-    MOVD lastScaledBaseLog+32(FP), R12
-
-    VPBROADCASTD R10, Y10 // base
-    VPBROADCASTD R11, Y11 // baseLog
-    VPBROADCASTD R12, Y12 // lastScaledBaseLog
+    VPBROADCASTD base+24(FP), Y10               // base
+    VPBROADCASTD baseLog+28(FP), Y11            // baseLog
+    VPBROADCASTD lastScaledBaseLog+32(FP), Y12  // lastScaledBaseLog
 
     // Create (1, 1, 1, ..., 1)
-    MOVD $1, R8
-    VPBROADCASTD R8, Y0 // ONE
+    VPBROADCASTD one32<>(SB), Y0 // ONE
 
     VPSUBD Y0, Y10, Y13 // baseMask = base - 1
     VPSRLD $1, Y10, Y14 // baseHalf = base / 2
@@ -39,7 +43,7 @@ N_loop:
     // c := x >> lsbl
     VPSRLD $1, Y3, Y2
     // (x >> (lsbl - 1) & 1)
-    VPANDD Y3, Y0, Y3
+    VANDPD Y3, Y0, Y3
     // c := (x >> lsbl) + (x >> (lsbl - 1) & 1)
     VPADDD Y2, Y3, Y1
 
@@ -47,19 +51,20 @@ N_loop:
     DECQ DI
 
     MOVQ DI, R10
-    IMULQ $3, R10
+    ADDQ DI, R10
+    ADDQ DI, R10 // R10 = DI * 3
     JMP level_loop_end
 
     level_loop:
         // d[j].Coeffs[i] = c & baseMask
-        VPANDD Y1, Y13, Y2 // d[j].Coeffs[i]
+        VANDPD Y1, Y13, Y2 // d[j].Coeffs[i]
         // c >>= baseLog
         VPSRLVD Y11, Y1, Y1
         // c += d[j].Coeffs[i] >> (baseLog - 1)
         VPSRLVD Y15, Y2, Y3
         VPADDD Y3, Y1, Y1
         // d[j].Coeffs[i] -= (d[j].Coeffs[i] & baseHalf) << 1
-        VPANDD Y2, Y14, Y3
+        VANDPD Y2, Y14, Y3
         VPSLLD $1, Y3, Y3
         VPSUBD Y3, Y2, Y2
 
@@ -82,23 +87,21 @@ N_loop_end:
 	RET
 
 TEXT ·DecomposeUint64PolyAssignAVX2(SB), NOSPLIT, $0-56
-	MOVQ p+0(FP), AX
-	MOVQ d+48(FP), BX
+	MOVQ pPtr+0(FP), AX
+	MOVQ dPtr+48(FP), BX
+
+    MOVQ (AX), AX
+    MOVQ (BX), BX
 
     MOVQ N+8(FP), CX
 	MOVQ level+16(FP), DX
 
-    MOVQ base+24(FP), R10
-    MOVQ baseLog+32(FP), R11
-    MOVQ lastScaledBaseLog+40(FP), R12
-
-    VPBROADCASTQ R10, Y10 // base
-    VPBROADCASTQ R11, Y11 // baseLog
-    VPBROADCASTQ R12, Y12 // lastScaledBaseLog
+    VPBROADCASTQ base+24(FP), Y10               // base
+    VPBROADCASTQ baseLog+32(FP), Y11            // baseLog
+    VPBROADCASTQ lastScaledBaseLog+40(FP), Y12  // lastScaledBaseLog
 
     // Create (1, 1, 1, ..., 1)
-    MOVQ $1, R8
-    VPBROADCASTQ R8, Y0 // ONE
+    VPBROADCASTQ one64<>(SB), Y0 // ONE
 
     VPSUBQ Y0, Y10, Y13 // baseMask = base - 1
     VPSRLQ $1, Y10, Y14 // baseHalf = base / 2
@@ -118,7 +121,7 @@ N_loop:
     // c := x >> lsbl
     VPSRLQ $1, Y3, Y2
     // (x >> (lsbl - 1) & 1)
-    VPANDQ Y3, Y0, Y3
+    VANDPD Y3, Y0, Y3
     // c := (x >> lsbl) + (x >> (lsbl - 1) & 1)
     VPADDQ Y2, Y3, Y1
 
@@ -126,19 +129,20 @@ N_loop:
     DECQ DI
 
     MOVQ DI, R10
-    IMULQ $3, R10
+    ADDQ DI, R10
+    ADDQ DI, R10 // R10 = DI * 3
     JMP level_loop_end
 
     level_loop:
         // d[j].Coeffs[i] = c & baseMask
-        VPANDQ Y1, Y13, Y2 // d[j].Coeffs[i]
+        VANDPD Y1, Y13, Y2 // d[j].Coeffs[i]
         // c >>= baseLog
         VPSRLVQ Y11, Y1, Y1
         // c += d[j].Coeffs[i] >> (baseLog - 1)
         VPSRLVQ Y15, Y2, Y3
         VPADDQ Y3, Y1, Y1
         // d[j].Coeffs[i] -= (d[j].Coeffs[i] & baseHalf) << 1
-        VPANDQ Y2, Y14, Y3
+        VANDPD Y2, Y14, Y3
         VPSLLQ $1, Y3, Y3
         VPSUBQ Y3, Y2, Y2
 
