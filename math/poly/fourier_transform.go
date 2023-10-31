@@ -1,15 +1,11 @@
 package poly
 
-import (
-	"github.com/sp301415/tfhe-go/internal/asm"
-)
-
 // FFTInPlace applies FFT to fp.
 //
 // Note that fp.Degree() should equal f.Degree(),
 // which means that len(fp.Coeffs) should be f.Degree / 2.
 func (f *FourierEvaluator[T]) FFTInPlace(fp FourierPoly) {
-	asm.FFTInPlace(fp.Coeffs, f.wNj)
+	fftInPlace(fp.Coeffs, f.wNj)
 }
 
 // InvFFTInPlace applies Inverse FFT to fp.
@@ -17,7 +13,7 @@ func (f *FourierEvaluator[T]) FFTInPlace(fp FourierPoly) {
 // Note that fp.Degree() should equal f.Degree(),
 // which means that len(fp.Coeffs) should be f.Degree / 2.
 func (f *FourierEvaluator[T]) InvFFTInPlace(fp FourierPoly) {
-	asm.InvFFTInPlace(fp.Coeffs, f.wNjInv)
+	invFFTInPlace(fp.Coeffs, f.wNjInv)
 }
 
 // ToFourierPoly transforms Poly to FourierPoly and returns it.
@@ -59,8 +55,8 @@ func (f *FourierEvaluator[T]) ToFourierPolyAssign(p Poly[T], fp FourierPoly) {
 		}
 	}
 
-	asm.TwistInPlace(fp.Coeffs, f.w2Nj)
-	asm.FFTInPlace(fp.Coeffs, f.wNj)
+	twistInPlace(fp.Coeffs, f.w2Nj)
+	fftInPlace(fp.Coeffs, f.wNj)
 }
 
 // ToScaledFourierPoly transforms Poly to FourierPoly and returns it.
@@ -104,8 +100,8 @@ func (f *FourierEvaluator[T]) ToScaledFourierPolyAssign(p Poly[T], fp FourierPol
 		}
 	}
 
-	asm.TwistAndScaleInPlace(fp.Coeffs, f.w2Nj, 1/f.maxT)
-	asm.FFTInPlace(fp.Coeffs, f.wNj)
+	twistAndScaleInPlace(fp.Coeffs, f.w2Nj, 1/f.maxT)
+	fftInPlace(fp.Coeffs, f.wNj)
 }
 
 // ToStandardPoly transforms FourierPoly to Poly and returns it.
@@ -120,8 +116,8 @@ func (f *FourierEvaluator[T]) ToStandardPolyAssign(fp FourierPoly, p Poly[T]) {
 	N := f.degree
 
 	f.buffer.fpInv.CopyFrom(fp)
-	asm.InvFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
-	asm.UnTwistAssign(f.buffer.fpInv.Coeffs, f.w2NjInv, f.buffer.floatCoeffs)
+	invFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
+	unTwistAssign(f.buffer.fpInv.Coeffs, f.w2NjInv, f.buffer.floatCoeffs)
 
 	var z T
 	switch any(z).(type) {
@@ -163,8 +159,8 @@ func (f *FourierEvaluator[T]) ToStandardPolyAddAssign(fp FourierPoly, p Poly[T])
 	N := f.degree
 
 	f.buffer.fpInv.CopyFrom(fp)
-	asm.InvFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
-	asm.UnTwistAssign(f.buffer.fpInv.Coeffs, f.w2NjInv, f.buffer.floatCoeffs)
+	invFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
+	unTwistAssign(f.buffer.fpInv.Coeffs, f.w2NjInv, f.buffer.floatCoeffs)
 
 	var z T
 	switch any(z).(type) {
@@ -206,8 +202,8 @@ func (f *FourierEvaluator[T]) ToStandardPolySubAssign(fp FourierPoly, p Poly[T])
 	N := f.degree
 
 	f.buffer.fpInv.CopyFrom(fp)
-	asm.InvFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
-	asm.UnTwistAssign(f.buffer.fpInv.Coeffs, f.w2NjInv, f.buffer.floatCoeffs)
+	invFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
+	unTwistAssign(f.buffer.fpInv.Coeffs, f.w2NjInv, f.buffer.floatCoeffs)
 
 	var z T
 	switch any(z).(type) {
@@ -258,8 +254,8 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolyAssign(fp FourierPoly, p Poly[
 	N := f.degree
 
 	f.buffer.fpInv.CopyFrom(fp)
-	asm.InvFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
-	asm.UnTwistAndScaleAssign(f.buffer.fpInv.Coeffs, f.w2NjInv, f.maxT, f.buffer.floatCoeffs)
+	invFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
+	unTwistAndScaleAssign(f.buffer.fpInv.Coeffs, f.w2NjInv, f.maxT, f.buffer.floatCoeffs)
 
 	var z T
 	switch any(z).(type) {
@@ -302,8 +298,8 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolyAddAssign(fp FourierPoly, p Po
 	N := f.degree
 
 	f.buffer.fpInv.CopyFrom(fp)
-	asm.InvFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
-	asm.UnTwistAndScaleAssign(f.buffer.fpInv.Coeffs, f.w2NjInv, f.maxT, f.buffer.floatCoeffs)
+	invFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
+	unTwistAndScaleAssign(f.buffer.fpInv.Coeffs, f.w2NjInv, f.maxT, f.buffer.floatCoeffs)
 
 	var z T
 	switch any(z).(type) {
@@ -346,8 +342,8 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolySubAssign(fp FourierPoly, p Po
 	N := f.degree
 
 	f.buffer.fpInv.CopyFrom(fp)
-	asm.InvFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
-	asm.UnTwistAndScaleAssign(f.buffer.fpInv.Coeffs, f.w2NjInv, f.maxT, f.buffer.floatCoeffs)
+	invFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
+	unTwistAndScaleAssign(f.buffer.fpInv.Coeffs, f.w2NjInv, f.maxT, f.buffer.floatCoeffs)
 
 	var z T
 	switch any(z).(type) {

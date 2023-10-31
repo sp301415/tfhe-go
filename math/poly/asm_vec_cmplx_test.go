@@ -1,15 +1,14 @@
-package asm_test
+package poly
 
 import (
 	"math/cmplx"
 	"math/rand"
 	"testing"
 
-	"github.com/sp301415/tfhe-go/internal/asm"
 	"github.com/sp301415/tfhe-go/math/vec"
 )
 
-func TestCmplx(t *testing.T) {
+func TestVecCmplxAssembly(t *testing.T) {
 	N := 1 << 4
 	eps := 1e-5
 
@@ -25,7 +24,7 @@ func TestCmplx(t *testing.T) {
 
 	t.Run("Add", func(t *testing.T) {
 		vec.AddAssign(v0, v1, vOut)
-		asm.AddCmplxAssign(v0, v1, vOutAVX2)
+		addCmplxAssign(v0, v1, vOutAVX2)
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
 				t.Fatalf("Add: %v != %v", vOut[i], vOutAVX2[i])
@@ -35,7 +34,7 @@ func TestCmplx(t *testing.T) {
 
 	t.Run("Sub", func(t *testing.T) {
 		vec.SubAssign(v0, v1, vOut)
-		asm.SubCmplxAssign(v0, v1, vOutAVX2)
+		subCmplxAssign(v0, v1, vOutAVX2)
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
 				t.Fatalf("Sub: %v != %v", vOut[i], vOutAVX2[i])
@@ -45,7 +44,7 @@ func TestCmplx(t *testing.T) {
 
 	t.Run("Neg", func(t *testing.T) {
 		vec.NegAssign(v0, vOut)
-		asm.NegCmplxAssign(v0, vOutAVX2)
+		negCmplxAssign(v0, vOutAVX2)
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
 				t.Fatalf("Neg: %v != %v", vOut[i], vOutAVX2[i])
@@ -55,7 +54,7 @@ func TestCmplx(t *testing.T) {
 
 	t.Run("Mul", func(t *testing.T) {
 		vec.ElementWiseMulAssign(v0, v1, vOut)
-		asm.ElementWiseMulCmplxAssign(v0, v1, vOutAVX2)
+		elementWiseMulCmplxAssign(v0, v1, vOutAVX2)
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
 				t.Fatalf("Mul: %v != %v", vOut[i], vOutAVX2[i])
@@ -66,7 +65,7 @@ func TestCmplx(t *testing.T) {
 	t.Run("MulAdd", func(t *testing.T) {
 		copy(vOut, vOutAVX2)
 		vec.ElementWiseMulAddAssign(v0, v1, vOut)
-		asm.ElementWiseMulAddCmplxAssign(v0, v1, vOutAVX2)
+		elementWiseMulAddCmplxAssign(v0, v1, vOutAVX2)
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
 				t.Fatalf("MulAdd: %v != %v", vOut[i], vOutAVX2[i])
@@ -77,7 +76,7 @@ func TestCmplx(t *testing.T) {
 	t.Run("MulSub", func(t *testing.T) {
 		copy(vOut, vOutAVX2)
 		vec.ElementWiseMulSubAssign(v0, v1, vOut)
-		asm.ElementWiseMulSubCmplxAssign(v0, v1, vOutAVX2)
+		elementWiseMulSubCmplxAssign(v0, v1, vOutAVX2)
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
 				t.Fatalf("MulSub: %v != %v", vOut[i], vOutAVX2[i])
@@ -86,7 +85,7 @@ func TestCmplx(t *testing.T) {
 	})
 }
 
-func BenchmarkCmplx(b *testing.B) {
+func BenchmarkVecCmplxAssembly(b *testing.B) {
 	N := 1 << 10
 
 	v0 := make([]complex128, N)
@@ -106,7 +105,7 @@ func BenchmarkCmplx(b *testing.B) {
 
 	b.Run("AddAVX2", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			asm.AddCmplxAssign(v0, v1, vOut)
+			addCmplxAssign(v0, v1, vOut)
 		}
 	})
 
@@ -118,7 +117,7 @@ func BenchmarkCmplx(b *testing.B) {
 
 	b.Run("MulAVX2", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			asm.ElementWiseMulCmplxAssign(v0, v1, vOut)
+			elementWiseMulCmplxAssign(v0, v1, vOut)
 		}
 	})
 
@@ -130,7 +129,7 @@ func BenchmarkCmplx(b *testing.B) {
 
 	b.Run("MulAddAVX2", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			asm.ElementWiseMulAddCmplxAssign(v0, v1, vOut)
+			elementWiseMulAddCmplxAssign(v0, v1, vOut)
 		}
 	})
 }

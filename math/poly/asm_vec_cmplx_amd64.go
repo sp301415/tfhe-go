@@ -1,6 +1,6 @@
 //go:build amd64
 
-package asm
+package poly
 
 import (
 	"golang.org/x/sys/cpu"
@@ -8,8 +8,8 @@ import (
 
 func addCmplxAssignAVX2(v0, v1, vOut []complex128)
 
-// AddCmplxAssign adds v0, v1 and writes it to vOut.
-func AddCmplxAssign(v0, v1, vOut []complex128) {
+// addCmplxAssign adds v0, v1 and writes it to vOut.
+func addCmplxAssign(v0, v1, vOut []complex128) {
 	if cpu.X86.HasAVX2 {
 		addCmplxAssignAVX2(v0, v1, vOut)
 		return
@@ -22,8 +22,8 @@ func AddCmplxAssign(v0, v1, vOut []complex128) {
 
 func subCmplxAssignAVX2(v0, v1, vOut []complex128)
 
-// SubCmplxAssign subtracts v0, v1 and writes it to vOut.
-func SubCmplxAssign(v0, v1, vOut []complex128) {
+// subCmplxAssign subtracts v0, v1 and writes it to vOut.
+func subCmplxAssign(v0, v1, vOut []complex128) {
 	if cpu.X86.HasAVX2 {
 		subCmplxAssignAVX2(v0, v1, vOut)
 		return
@@ -36,8 +36,8 @@ func SubCmplxAssign(v0, v1, vOut []complex128) {
 
 func negCmplxAssignAVX2(v0, vOut []complex128)
 
-// NegCmplxAssign negates v0 and writes it to vOut.
-func NegCmplxAssign(v0, vOut []complex128) {
+// negCmplxAssign negates v0 and writes it to vOut.
+func negCmplxAssign(v0, vOut []complex128) {
 	if cpu.X86.HasAVX2 {
 		negCmplxAssignAVX2(v0, vOut)
 		return
@@ -50,8 +50,8 @@ func NegCmplxAssign(v0, vOut []complex128) {
 
 func elementWiseMulCmplxAssignAVX2(v0, v1, vOut []complex128)
 
-// ElementWiseMulCmplxAssign multiplies v0, v1 and writes it to vOut.
-func ElementWiseMulCmplxAssign(v0 []complex128, v1 []complex128, vOut []complex128) {
+// elementWiseMulCmplxAssign multiplies v0, v1 and writes it to vOut.
+func elementWiseMulCmplxAssign(v0 []complex128, v1 []complex128, vOut []complex128) {
 	if cpu.X86.HasFMA && cpu.X86.HasAVX2 {
 		elementWiseMulCmplxAssignAVX2(v0, v1, vOut)
 		return
@@ -64,8 +64,8 @@ func ElementWiseMulCmplxAssign(v0 []complex128, v1 []complex128, vOut []complex1
 
 func elementWiseMulAddCmplxAssignAVX2(v0, v1, vOut []complex128)
 
-// ElementWiseMulAddCmplxAssign multiplies v0, v1 and adds to vOut.
-func ElementWiseMulAddCmplxAssign(v0 []complex128, v1 []complex128, vOut []complex128) {
+// elementWiseMulAddCmplxAssign multiplies v0, v1 and adds to vOut.
+func elementWiseMulAddCmplxAssign(v0 []complex128, v1 []complex128, vOut []complex128) {
 	if cpu.X86.HasFMA && cpu.X86.HasAVX2 {
 		elementWiseMulAddCmplxAssignAVX2(v0, v1, vOut)
 		return
@@ -78,8 +78,8 @@ func ElementWiseMulAddCmplxAssign(v0 []complex128, v1 []complex128, vOut []compl
 
 func elementWiseMulSubCmplxAssignAVX2(v0, v1, vOut []complex128)
 
-// ElementWiseMulSubCmplxAssign multiplies v0, v1 and subtracts from vOut.
-func ElementWiseMulSubCmplxAssign(v0 []complex128, v1 []complex128, vOut []complex128) {
+// elementWiseMulSubCmplxAssign multiplies v0, v1 and subtracts from vOut.
+func elementWiseMulSubCmplxAssign(v0 []complex128, v1 []complex128, vOut []complex128) {
 	if cpu.X86.HasFMA && cpu.X86.HasAVX2 {
 		elementWiseMulSubCmplxAssignAVX2(v0, v1, vOut)
 		return

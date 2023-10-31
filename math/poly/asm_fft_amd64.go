@@ -1,6 +1,6 @@
 //go:build amd64
 
-package asm
+package poly
 
 import (
 	"math"
@@ -10,9 +10,9 @@ import (
 
 func fftInPlaceAVX2(coeffs, wNj []complex128)
 
-// FFTInPlace is a top-level function for FFT.
+// fftInPlace is a top-level function for FFT.
 // All internal FFT implementations calls this function for performance.
-func FFTInPlace(coeffs, wNj []complex128) {
+func fftInPlace(coeffs, wNj []complex128) {
 	if cpu.X86.HasFMA && cpu.X86.HasAVX2 {
 		fftInPlaceAVX2(coeffs, wNj)
 		return
@@ -38,7 +38,7 @@ func invFFTInPlaceAVX2(coeffs, wNjInv []complex128)
 
 // InvfftInPlace is a top-level function for inverse FFT.
 // All internal inverse FFT implementations calls this function for performance.
-func InvFFTInPlace(coeffs, wNjInv []complex128) {
+func invFFTInPlace(coeffs, wNjInv []complex128) {
 	if cpu.X86.HasFMA && cpu.X86.HasAVX2 {
 		invFFTInPlaceAVX2(coeffs, wNjInv)
 		return
@@ -62,16 +62,16 @@ func InvFFTInPlace(coeffs, wNjInv []complex128) {
 	}
 }
 
-// TwistInPlace twists the coefficients before FFT.
+// twistInPlace twists the coefficients before FFT.
 // Equivalent to coeffs * w2Nj.
-func TwistInPlace(coeffs, w2Nj []complex128) {
-	ElementWiseMulCmplxAssign(coeffs, w2Nj, coeffs)
+func twistInPlace(coeffs, w2Nj []complex128) {
+	elementWiseMulCmplxAssign(coeffs, w2Nj, coeffs)
 }
 
 func twistAndScaleInPlaceAVX2(coeffs, w2Nj []complex128, maxTInv float64)
 
-// TwistAndScaleInPlace twists the coefficients before FFT and scales it with maxTInv.
-func TwistAndScaleInPlace(coeffs, w2Nj []complex128, maxTInv float64) {
+// twistAndScaleInPlace twists the coefficients before FFT and scales it with maxTInv.
+func twistAndScaleInPlace(coeffs, w2Nj []complex128, maxTInv float64) {
 	if cpu.X86.HasFMA && cpu.X86.HasAVX2 {
 		twistAndScaleInPlaceAVX2(coeffs, w2Nj, maxTInv)
 		return
@@ -84,9 +84,9 @@ func TwistAndScaleInPlace(coeffs, w2Nj []complex128, maxTInv float64) {
 
 func untwistAssignAVX2(coeffs, w2NjInv []complex128, coeffsOut []float64)
 
-// UnTwistAssign untwists the coefficients after inverse FFT.
+// unTwistAssign untwists the coefficients after inverse FFT.
 // Equivalent to coeffs * w2NjInv.
-func UnTwistAssign(coeffs, w2NjInv []complex128, coeffsOut []float64) {
+func unTwistAssign(coeffs, w2NjInv []complex128, coeffsOut []float64) {
 	if cpu.X86.HasFMA && cpu.X86.HasAVX2 {
 		untwistAssignAVX2(coeffs, w2NjInv, coeffsOut)
 		return
@@ -101,8 +101,8 @@ func UnTwistAssign(coeffs, w2NjInv []complex128, coeffsOut []float64) {
 
 func untwistAndScaleAssignAVX2(coeffs, w2NjInv []complex128, maxT float64, coeffsOut []float64)
 
-// UnTwistAndScaleAssign untwists the coefficients and scales it with maxT.
-func UnTwistAndScaleAssign(coeffs, w2NjInv []complex128, maxT float64, coeffsOut []float64) {
+// unTwistAndScaleAssign untwists the coefficients and scales it with maxT.
+func unTwistAndScaleAssign(coeffs, w2NjInv []complex128, maxT float64, coeffsOut []float64) {
 	if cpu.X86.HasFMA && cpu.X86.HasAVX2 {
 		untwistAndScaleAssignAVX2(coeffs, w2NjInv, maxT, coeffsOut)
 		return
