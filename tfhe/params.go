@@ -5,7 +5,12 @@ import (
 )
 
 const (
-	// MaxPolyDegree is the maximum degree of polynomials in GLWE entities.
+	// MinPolyDegree is the minimum degree of polynomials allowed in parameters.
+	// Currently polynomial decomposition is implemented using AVX2,
+	// which requires degree at least 256/32 = 8.
+	MinPolyDegree = 1 << 3
+
+	// MaxPolyDegree is the maximum degree of polynomials allowed in parameters.
 	// We use FFT for GLWE encryption, which limits the maximum degree due to precision loss.
 	MaxPolyDegree = 1 << 20
 )
@@ -164,8 +169,8 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("LWEDimension smaller than zero")
 	case p.GLWEDimension <= 0:
 		panic("GLWEDimension smaller than zero")
-	case p.PolyDegree <= 0:
-		panic("PolyDegree smaller than zero")
+	case p.PolyDegree <= MinPolyDegree:
+		panic("PolyDegree smaller than MinPolyDegree")
 	case p.PolyDegree > MaxPolyDegree:
 		panic("PolyDegree larger than MaxPolyDegree")
 	case p.LWEStdDev <= 0:

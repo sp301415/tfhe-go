@@ -8,7 +8,7 @@ DATA one64<>+0(SB)/8, $0x1
 GLOBL one64<>+0(SB), RODATA, $8
 
 
-TEXT ·DecomposeUint32PolyAssignAVX2(SB), NOSPLIT, $0-48
+TEXT ·decomposeUint32PolyAssignAVX2(SB), NOSPLIT, $0-48
 	MOVQ pPtr+0(FP), AX
 	MOVQ dPtr+40(FP), BX
 
@@ -86,7 +86,7 @@ N_loop_end:
 
 	RET
 
-TEXT ·DecomposeUint64PolyAssignAVX2(SB), NOSPLIT, $0-56
+TEXT ·decomposeUint64PolyAssignAVX2(SB), NOSPLIT, $0-56
 	MOVQ pPtr+0(FP), AX
 	MOVQ dPtr+48(FP), BX
 

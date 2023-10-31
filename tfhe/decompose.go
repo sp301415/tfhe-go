@@ -38,7 +38,7 @@ func (e *Evaluator[T]) DecomposePoly(p poly.Poly[T], decompParams DecompositionP
 
 // DecomposePolyAssign decomposes p with respect to decompParams, and writes it to decompOut.
 func (e *Evaluator[T]) DecomposePolyAssign(p poly.Poly[T], decompParams DecompositionParameters[T], decomposedOut []poly.Poly[T]) {
-	DecomposePolyAssign(p, decompParams, decomposedOut)
+	decomposePolyAssign(p, decompParams, decomposedOut)
 }
 
 // getPolyDecomposedBuffer returns the polyDecomposed buffer of Evaluator.

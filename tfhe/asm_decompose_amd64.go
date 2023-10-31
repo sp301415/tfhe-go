@@ -10,17 +10,16 @@ import (
 	"golang.org/x/sys/cpu"
 )
 
-func DecomposeUint32PolyAssignAVX2(p unsafe.Pointer, N int, level int, base uint32, baseLog uint32, lastScaledBaseLog uint32, d unsafe.Pointer)
-func DecomposeUint64PolyAssignAVX2(p unsafe.Pointer, N int, level int, base uint64, baseLog uint64, lastScaledBaseLog uint64, d unsafe.Pointer)
+func decomposeUint32PolyAssignAVX2(p unsafe.Pointer, N int, level int, base uint32, baseLog uint32, lastScaledBaseLog uint32, d unsafe.Pointer)
+func decomposeUint64PolyAssignAVX2(p unsafe.Pointer, N int, level int, base uint64, baseLog uint64, lastScaledBaseLog uint64, d unsafe.Pointer)
 
-// DecomposePolyAssign decomposes p with respect to decompParams, and writes it to decompOut.
-func DecomposePolyAssign[T Tint](p poly.Poly[T], decompParams DecompositionParameters[T], decomposedOut []poly.Poly[T]) {
+// decomposePolyAssign decomposes p with respect to decompParams, and writes it to decompOut.
+func decomposePolyAssign[T Tint](p poly.Poly[T], decompParams DecompositionParameters[T], decomposedOut []poly.Poly[T]) {
 	if cpu.X86.HasAVX2 {
-		// Shallow copy decomposedOut to double slice
 		var z T
 		switch any(z).(type) {
 		case uint32:
-			DecomposeUint32PolyAssignAVX2(
+			decomposeUint32PolyAssignAVX2(
 				unsafe.Pointer(&p),
 				p.Degree(),
 				decompParams.level,
@@ -30,7 +29,7 @@ func DecomposePolyAssign[T Tint](p poly.Poly[T], decompParams DecompositionParam
 				unsafe.Pointer(&decomposedOut),
 			)
 		case uint64:
-			DecomposeUint64PolyAssignAVX2(
+			decomposeUint64PolyAssignAVX2(
 				unsafe.Pointer(&p),
 				p.Degree(),
 				decompParams.level,

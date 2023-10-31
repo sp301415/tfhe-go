@@ -10,7 +10,7 @@ const (
 	// handles first and last loop seperately.
 	// This implies that the degree of fourier polynomial should be at least 4,
 	// and the degree of standard polynomial should be at least 8.
-	MinDegree = 8
+	MinDegree = 1 << 3
 )
 
 // Evaluator calculates polynomial algorithms.
