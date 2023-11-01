@@ -76,12 +76,6 @@ func BenchmarkFFT(b *testing.B) {
 	sampler.SampleSliceAssign(p.Coeffs)
 	fp := fft.ToFourierPoly(p)
 
-	b.Run("FFT", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			fft.FFTInPlace(fp)
-		}
-	})
-
 	b.Run("ToFourierPoly", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			fft.ToFourierPolyAssign(p, fpOut)
@@ -91,12 +85,6 @@ func BenchmarkFFT(b *testing.B) {
 	b.Run("ToScaledFourierPoly", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			fft.ToScaledFourierPolyAssign(p, fpOut)
-		}
-	})
-
-	b.Run("InvFFT", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			fft.InvFFTInPlace(fp)
 		}
 	})
 

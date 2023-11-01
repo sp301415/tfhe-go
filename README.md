@@ -94,7 +94,7 @@ All results were measured from Intel i5-13400F. `ParamsBoolean` and `ParamsUint6
 
 ## Roadmap
 - [x] Optimize FFT using AVX2 instructions
-- [ ] Implement Multi-Key TFHE: [[CCS19](https://eprint.iacr.org/2019/116)], [[KMS23](https://eprint.iacr.org/2022/1460)]
+- [ ] Implement Multi-Key TFHE: [[CCS19](https://eprint.iacr.org/2019/116)], [[KMS22](https://eprint.iacr.org/2022/1460)]
 
 ## References
 - TFHE: Fast Fully Homomorphic Encryption over the Torus (https://eprint.iacr.org/2018/421)

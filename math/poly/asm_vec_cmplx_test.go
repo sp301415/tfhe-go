@@ -86,7 +86,7 @@ func TestVecCmplxAssembly(t *testing.T) {
 }
 
 func BenchmarkVecCmplxAssembly(b *testing.B) {
-	N := 1 << 10
+	N := 1 << 15
 
 	v0 := make([]complex128, N)
 	v1 := make([]complex128, N)

@@ -1,21 +1,5 @@
 package poly
 
-// FFTInPlace applies FFT to fp.
-//
-// Note that fp.Degree() should equal f.Degree(),
-// which means that len(fp.Coeffs) should be f.Degree / 2.
-func (f *FourierEvaluator[T]) FFTInPlace(fp FourierPoly) {
-	fftInPlace(fp.Coeffs, f.wNj)
-}
-
-// InvFFTInPlace applies Inverse FFT to fp.
-//
-// Note that fp.Degree() should equal f.Degree(),
-// which means that len(fp.Coeffs) should be f.Degree / 2.
-func (f *FourierEvaluator[T]) InvFFTInPlace(fp FourierPoly) {
-	invFFTInPlace(fp.Coeffs, f.wNjInv)
-}
-
 // ToFourierPoly transforms Poly to FourierPoly and returns it.
 func (f *FourierEvaluator[T]) ToFourierPoly(p Poly[T]) FourierPoly {
 	fp := NewFourierPoly(f.degree)
