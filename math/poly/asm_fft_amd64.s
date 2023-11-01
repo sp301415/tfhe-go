@@ -2,357 +2,353 @@
 
 #include "textflag.h"
 
-// func fftInPlaceAVX2(coeffs []complex128, wNj []complex128)
-// Requires: AVX, FMA3
 TEXT ·fftInPlaceAVX2(SB), NOSPLIT, $0-48
-	MOVQ coeffs_base+0(FP), AX
-	MOVQ wNj_base+24(FP), CX
-	MOVQ coeffs_len+8(FP), DX
-	MOVQ DX, BX
-	SHRQ $0x01, BX
-	MOVQ DX, SI
-	ADDQ DX, SI
+	MOVQ coeffs+0(FP), AX
+	MOVQ wNj+24(FP), BX
 
-	// Move wNj by one index
-	ADDQ $0x10, CX
-
-	// Precompute wNj[1]
-	VBROADCASTSD (CX), Y0
-	VBROADCASTSD 8(CX), Y1
+	MOVQ coeffs_len+8(FP), CX
 
 	// First Loop
-	// for j := 0; j < N/2; j++
-	XORQ DI, DI
-	JMP  first_loop_end
+	// U, V := coeffs[j], coeffs[j+N]*wNj[1]
+	// coeffs[j], coeffs[j+N] = U+V, U-V
+
+	// Load wNj[1]
+	VBROADCASTSD 16(BX), Y0
+	VBROADCASTSD 24(BX), Y1
+
+	XORQ SI, SI // j
+	MOVQ SI, DI
+	ADDQ CX, DI // j+N
+	JMP first_loop_end
 
 first_loop:
 	// U := coeffs[j]
-	VMOVUPD (AX)(DI*8), Y2
+	VMOVUPD (AX)(SI*8), Y2
 
-	// V := coeffs[j+N/2]
-	MOVQ    DI, R8
-	ADDQ    DX, R8
-	VMOVUPD (AX)(R8*8), Y3
+	// V := coeffs[j+N]
+	VMOVUPD (AX)(DI*8), Y3
 
-	// V *= wNj[1]
-	VSHUFPD        $0x05, Y3, Y3, Y4
+	// V = V * wNj[1]
+	VSHUFPD        $0b0101, Y3, Y3, Y4
 	VMULPD         Y1, Y4, Y4
 	VFMADDSUB231PD Y0, Y3, Y4
 
 	// coeffs[j] = U + V
-	VADDPD  Y2, Y4, Y3
-	VMOVUPD Y3, (AX)(DI*8)
+	VADDPD Y4, Y2, Y5
+	VMOVUPD Y5, (AX)(SI*8)
 
-	// coeffs[j+N/2] = U - V
-	VSUBPD  Y4, Y2, Y3
-	VMOVUPD Y3, (AX)(R8*8)
+	// coeffs[j] = U - V
+	VSUBPD Y4, Y2, Y5
+	VMOVUPD Y5, (AX)(DI*8)
 
-	// j++
-	ADDQ $0x04, DI
+	ADDQ $4, SI
+	ADDQ $4, DI
 
-	// j < N/2
 first_loop_end:
-	CMPQ DI, DX
-	JL   first_loop
+	CMPQ SI, CX
+	JL first_loop
 
-	// t := N / 4
-	MOVQ BX, DX
+	// Main Loop
+	// t := 2N
+	MOVQ CX, R8
 
-	// for m := 2; m < N/2; m <<= 1
-	MOVQ $0x00000002, R9
-	JMP  m_loop_end
+	MOVQ CX, DX
+	SHRQ $1, DX // N/2
+
+	MOVQ $2, R10 // m
+	JMP m_loop_end
 
 m_loop:
-	// for i := 0; i < m; i++
-	XORQ R10, R10
-	JMP  i_loop_end
-
-i_loop:
-	// Move wNj by one index
-	ADDQ $0x10, CX
-
-	// Precompute wNj[m+i]
-	VBROADCASTSD (CX), Y0
-	VBROADCASTSD 8(CX), Y1
-
-	// j1 := i * t << 1
-	MOVQ  R10, DI
-	IMULQ DX, DI
-	SHLQ  $0x01, DI
-
-	// j2 := j1 + t
-	MOVQ DI, R11
-	ADDQ DX, R11
-
-	// We increment j by 4 every iteration
-	// for j := j1; j < j2; j++
-	JMP j_loop_end
-
-j_loop:
-	// U := coeffs[j]
-	VMOVUPD (AX)(DI*8), Y2
-
-	// V := coeffs[j+t]
-	MOVQ    DI, R8
-	ADDQ    DX, R8
-	VMOVUPD (AX)(R8*8), Y3
-
-	// V *= wNj[m+i]
-	VSHUFPD        $0x05, Y3, Y3, Y4
-	VMULPD         Y1, Y4, Y4
-	VFMADDSUB231PD Y0, Y3, Y4
-
-	// coeffs[j] = U + V
-	VADDPD  Y2, Y4, Y3
-	VMOVUPD Y3, (AX)(DI*8)
-
-	// coeffs[j+t] = U - V
-	VSUBPD  Y4, Y2, Y3
-	VMOVUPD Y3, (AX)(R8*8)
-
-	// j += 4
-	ADDQ $0x04, DI
-
-	// j < j2
-j_loop_end:
-	CMPQ DI, R11
-	JL   j_loop
-
-	// i++
-	INCQ R10
-
-	// i < m
-i_loop_end:
-	CMPQ R10, R9
-	JL   i_loop
-
 	// t >>= 1
-	SHRQ $0x01, DX
+	SHRQ $1, R8
+
+	XORQ R11, R11 // i
+	JMP i_loop_end
+
+	i_loop:
+		// m + i
+		MOVQ R10, R12
+		ADDQ R11, R12
+
+		// Load wNj[m+i]
+		SHLQ $1, R12
+		VBROADCASTSD (BX)(R12*8), Y0
+		VBROADCASTSD 8(BX)(R12*8), Y1
+
+		// j1 := i*t << 1
+		MOVQ R11, R13
+		IMULQ R8, R13
+		SHLQ $1, R13
+
+		// j2 := j1 + t
+		MOVQ R13, R14
+		ADDQ R8, R14
+
+		MOVQ R13, R12 // j
+		JMP j_loop_end
+
+		j_loop:
+			// U := coeffs[j]
+			VMOVUPD (AX)(R12*8), Y2
+
+			// V := coeffs[j+t]
+			MOVQ R12, R15
+			ADDQ R8, R15
+			VMOVUPD (AX)(R15*8), Y3
+
+			// V = V * wNj[m+i]
+			VSHUFPD        $0b0101, Y3, Y3, Y4
+			VMULPD         Y1, Y4, Y4
+			VFMADDSUB231PD Y0, Y3, Y4
+
+			// coeffs[j] = U + V
+			VADDPD Y4, Y2, Y5
+			VMOVUPD Y5, (AX)(R12*8)
+
+			// coeffs[j] = U - V
+			VSUBPD Y4, Y2, Y5
+			VMOVUPD Y5, (AX)(R15*8)
+
+			ADDQ $4, R12
+
+		j_loop_end:
+			CMPQ R12, R14
+			JL j_loop
+
+		ADDQ $1, R11
+
+	i_loop_end:
+		CMPQ R11, R10
+		JL i_loop
 
 	// m <<= 1
-	SHLQ $0x01, R9
+	SHLQ $1, R10
 
-	// m < N/2
 m_loop_end:
-	CMPQ R9, BX
-	JL   m_loop
+	CMPQ R10, DX
+	JL m_loop
 
 	// Last Loop
-	// for j := 0; j < N; j += 2
-	XORQ DI, DI
-	JMP  last_loop_end
+	// U, V := coeffs[j], coeffs[j+1]*wNj[j+N]
+	// coeffs[j], coeffs[j+1] = U+V, U-V
+
+	MOVQ CX, DX
+	ADDQ CX, DX // 2N
+
+	XORQ SI, SI // j
+	MOVQ SI, DI
+	ADDQ CX, DI // j+N
+	JMP last_loop_end
 
 last_loop:
-	// Move wNj by one index
-	ADDQ $0x10, CX
-
-	// Precompute wNj[m+i]
-	VMOVUPD (CX), X0
-	VSHUFPD $0x01, X0, X0, X1
+	// Load wNj[j+N]
+	VMOVUPD (BX)(DI*8), X2
+	VSHUFPD $0b00, X2, X2, X0
+	VSHUFPD $0b11, X2, X2, X1
 
 	// U := coeffs[j]
-	VMOVUPD (AX)(DI*8), X2
+	VMOVUPD (AX)(SI*8), X2
 
 	// V := coeffs[j+1]
-	VMOVUPD 16(AX)(DI*8), X3
+	VMOVUPD 16(AX)(SI*8), X3
 
-	// V *= wNj[m+i]
-	VSHUFPD        $0x03, X3, X3, X4
-	VSHUFPD        $0x00, X3, X3, X3
-	VMULPD         X4, X1, X1
-	VFMADDSUB231PD X3, X0, X1
+	// V = V * wNj[j+N]
+	VSHUFPD        $0b01, X3, X3, X4
+	VMULPD         X1, X4, X4
+	VFMADDSUB231PD X0, X3, X4
 
 	// coeffs[j] = U + V
-	VADDPD  X2, X1, X0
-	VMOVUPD X0, (AX)(DI*8)
+	VADDPD X4, X2, X5
+	VMOVUPD X5, (AX)(SI*8)
 
 	// coeffs[j+1] = U - V
-	VSUBPD  X1, X2, X0
-	VMOVUPD X0, 16(AX)(DI*8)
+	VSUBPD X4, X2, X5
+	VMOVUPD X5, 16(AX)(SI*8)
 
-	// j += 2
-	ADDQ $0x04, DI
+	ADDQ $4, SI
+	ADDQ $2, DI
 
-	// j < N
 last_loop_end:
-	CMPQ DI, SI
-	JL   last_loop
+	CMPQ DI, DX
+	JL last_loop
+
 	RET
 
-// func invFFTInPlaceAVX2(coeffs []complex128, wNjInv []complex128)
-// Requires: AVX, FMA3
 TEXT ·invFFTInPlaceAVX2(SB), NOSPLIT, $0-48
-	MOVQ coeffs_base+0(FP), AX
-	MOVQ wNjInv_base+24(FP), CX
-	MOVQ coeffs_len+8(FP), DX
-	MOVQ DX, BX
-	ADDQ DX, BX
-	MOVQ DX, SI
-	SHRQ $0x01, SI
+	MOVQ coeffs+0(FP), AX
+	MOVQ wNjInv+24(FP), BX
+
+	MOVQ coeffs_len+8(FP), CX
 
 	// First Loop
-	// hi := N / 2
-	MOVQ DX, DI
+	// U, V := coeffs[j], coeffs[j+1]
+	// coeffs[j], coeffs[j+1] = U+V, (U-V)*wNj[j+N]
 
-	// for j := 0; j < N; j += 2
-	XORQ R8, R8
-	JMP  first_loop_end
+	MOVQ CX, DX
+	ADDQ CX, DX // 2N
+
+	XORQ SI, SI // j
+	MOVQ SI, DI
+	ADDQ CX, DI // j+N
+	JMP first_loop_end
 
 first_loop:
-	// Precompute wNjInv[hi]
-	VMOVUPD (CX)(DI*8), X0
-	VSHUFPD $0x01, X0, X0, X1
+	// Load wNj[j+N]
+	VMOVUPD (BX)(DI*8), X2
+	VSHUFPD $0b00, X2, X2, X0
+	VSHUFPD $0b11, X2, X2, X1
 
 	// U := coeffs[j]
-	VMOVUPD (AX)(R8*8), X2
+	VMOVUPD (AX)(SI*8), X2
 
 	// V := coeffs[j+1]
-	VMOVUPD 16(AX)(R8*8), X3
+	VMOVUPD 16(AX)(SI*8), X3
 
 	// coeffs[j] = U + V
-	VADDPD  X2, X3, X4
-	VMOVUPD X4, (AX)(R8*8)
+	VADDPD X3, X2, X4
+	VMOVUPD X4, (AX)(SI*8)
 
-	// coeffs[j+1] = (U - V) * wNjInv[hi]
-	VSUBPD         X3, X2, X4
-	VSHUFPD        $0x03, X4, X4, X2
-	VSHUFPD        $0x00, X4, X4, X3
-	VMULPD         X2, X1, X1
-	VFMADDSUB231PD X3, X0, X1
-	VMOVUPD        X1, 16(AX)(R8*8)
+	// coeffs[j+1] = U - V
+	VSUBPD X3, X2, X4
 
-	// hi++
-	ADDQ $0x02, DI
+	// coeffs[j+1] = coeffs[j+1] * wNj[j+N]
+	VSHUFPD        $0b01, X4, X4, X5
+	VMULPD         X1, X5, X5
+	VFMADDSUB231PD X0, X4, X5
+	VMOVUPD X5, 16(AX)(SI*8)
 
-	// j += 2
-	ADDQ $0x04, R8
+	ADDQ $4, SI
+	ADDQ $2, DI
 
-	// j < N
 first_loop_end:
-	CMPQ R8, BX
-	JL   first_loop
+	CMPQ DI, DX
+	JL first_loop
 
-	// t := 2
-	MOVQ $0x00000004, BX
+	// Main Loop
+	// t := 4
+	MOVQ $4, R8
 
-	// for m := N / 2; m > 2; m >>= 1
+	MOVQ CX, DX
+	SHRQ $1, DX // N/2
+
+	MOVQ DX, R10 // m
 	JMP m_loop_end
 
 m_loop:
 	// j1 := 0
-	XORQ R9, R9
+	XORQ R13, R13
 
 	// h := m >> 1
-	MOVQ SI, R10
+	MOVQ R10, R9
+	SHRQ $1, R9
 
-	// for i := 0; i < h; i++
-	XORQ R11, R11
-	JMP  i_loop_end
+	XORQ R11, R11 // i
+	JMP i_loop_end
 
-i_loop:
-	// Precompute wNjInv[h+i]
-	MOVQ         R10, DI
-	ADDQ         R11, DI
-	VBROADCASTSD (CX)(DI*8), Y0
-	VBROADCASTSD 8(CX)(DI*8), Y1
+	i_loop:
+		// h + i
+		MOVQ R9, R15
+		ADDQ R11, R15
 
-	// j2 := j1 + t
-	MOVQ R9, DI
-	ADDQ BX, DI
+		// Load wNjInv[h+i]
+		SHLQ $1, R15
+		VBROADCASTSD (BX)(R15*8), Y0
+		VBROADCASTSD 8(BX)(R15*8), Y1
 
-	// We increment j by 4 every iteration
-	// for j := j1; j < j2; j++
-	MOVQ R9, R8
-	JMP  j_loop_end
+		// j2 := j1 + t
+		MOVQ R13, R14
+		ADDQ R8, R14
 
-j_loop:
-	// U := coeffs[j]
-	VMOVUPD (AX)(R8*8), Y2
+		MOVQ R13, R12 // j
+		JMP j_loop_end
 
-	// V := coeffs[j+t]
-	MOVQ    R8, R12
-	ADDQ    BX, R12
-	VMOVUPD (AX)(R12*8), Y3
+		j_loop:
+			// U := coeffs[j]
+			VMOVUPD (AX)(R12*8), Y2
 
-	// coeffs[j] = U + V
-	VADDPD  Y2, Y3, Y4
-	VMOVUPD Y4, (AX)(R8*8)
+			// V := coeffs[j+t]
+			MOVQ R12, R15
+			ADDQ R8, R15
+			VMOVUPD (AX)(R15*8), Y3
 
-	// coeffs[j+t] = (U - V) * wNjInv[h+i]
-	VSUBPD         Y3, Y2, Y4
-	VSHUFPD        $0x05, Y4, Y4, Y2
-	VMULPD         Y1, Y2, Y2
-	VFMADDSUB231PD Y0, Y4, Y2
-	VMOVUPD        Y2, (AX)(R12*8)
+			// coeffs[j] = U + V
+			VADDPD Y3, Y2, Y4
+			VMOVUPD Y4, (AX)(R12*8)
 
-	// j += 4
-	ADDQ $0x04, R8
+			// U - V
+			VSUBPD Y3, Y2, Y4
 
-	// j < j2
-j_loop_end:
-	CMPQ R8, DI
-	JL   j_loop
+			// coeffs[j+t] = (U - V) * wNjInv[h+i]
+			VSHUFPD        $0b0101, Y4, Y4, Y5
+			VMULPD         Y1, Y5, Y5
+			VFMADDSUB231PD Y0, Y4, Y5
+			VMOVUPD Y5, (AX)(R15*8)
 
-	// j1 += t << 1
-	MOVQ BX, DI
-	SHLQ $0x01, DI
-	ADDQ DI, R9
+			ADDQ $4, R12
 
-	// i++
-	ADDQ $0x02, R11
+		j_loop_end:
+			CMPQ R12, R14
+			JL j_loop
 
-	// i < h
-i_loop_end:
-	CMPQ R11, R10
-	JL   i_loop
+		// j1 += t << 1
+		ADDQ R8, R13
+		ADDQ R8, R13
+
+		ADDQ $1, R11
+
+	i_loop_end:
+		CMPQ R11, R9
+		JL i_loop
 
 	// t <<= 1
-	SHLQ $0x01, BX
+	SHLQ $1, R8
 
-	// m >>= 1
-	SHRQ $0x01, SI
+	SHRQ $1, R10
 
-	// m > 2
 m_loop_end:
-	CMPQ SI, $0x00000002
-	JG   m_loop
+	CMPQ R10, $2
+	JG m_loop
 
 	// Last Loop
-	// Precompute wNjInv[1]
-	VBROADCASTSD 16(CX), Y0
-	VBROADCASTSD 24(CX), Y1
+	// U, V := coeffs[j], coeffs[j+N]
+	// coeffs[j], coeffs[j+N] = U+V, (U-V)*wNjInv[1]
 
-	// for j := 0; j < N/2; j++
-	XORQ R8, R8
-	JMP  last_loop_end
+	// Load wNjInv[1]
+	VBROADCASTSD 16(BX), Y0
+	VBROADCASTSD 24(BX), Y1
+
+	XORQ SI, SI // j
+	MOVQ SI, DI
+	ADDQ CX, DI // j+N
+	JMP last_loop_end
 
 last_loop:
 	// U := coeffs[j]
-	VMOVUPD (AX)(R8*8), Y2
+	VMOVUPD (AX)(SI*8), Y2
 
-	// V := coeffs[j+N/2]
-	MOVQ    R8, R12
-	ADDQ    DX, R12
-	VMOVUPD (AX)(R12*8), Y3
+	// V := coeffs[j+N]
+	VMOVUPD (AX)(DI*8), Y3
 
 	// coeffs[j] = U + V
-	VADDPD  Y2, Y3, Y4
-	VMOVUPD Y4, (AX)(R8*8)
+	VADDPD Y3, Y2, Y4
+	VMOVUPD Y4, (AX)(SI*8)
 
-	// coeffs[j+N/2] = (U - V) * wNjInv[1]
-	VSUBPD         Y3, Y2, Y4
-	VSHUFPD        $0x05, Y4, Y4, Y2
-	VMULPD         Y1, Y2, Y2
-	VFMADDSUB231PD Y0, Y4, Y2
-	VMOVUPD        Y2, (AX)(R12*8)
+	// U - V
+	VSUBPD Y3, Y2, Y4
 
-	// j++
-	ADDQ $0x04, R8
+	// coeffs[j+N] = (U - V) * wNjInv[1]
+	VSHUFPD        $0b0101, Y4, Y4, Y5
+	VMULPD         Y1, Y5, Y5
+	VFMADDSUB231PD Y0, Y4, Y5
+	VMOVUPD Y5, (AX)(DI*8)
 
-	// j < N/2
+	ADDQ $4, SI
+	ADDQ $4, DI
+
 last_loop_end:
-	CMPQ R8, DX
-	JL   last_loop
+	CMPQ SI, CX
+	JL last_loop
+
 	RET
 
 TEXT ·twistAndScaleInPlaceAVX2(SB), NOSPLIT, $0-56
