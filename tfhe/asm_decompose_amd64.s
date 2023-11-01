@@ -37,7 +37,7 @@ N_loop:
     // x := p[i]
     VMOVDQU (AX)(SI*4), Y1
 
-    // c := ((x >> lsbl) + ((x >> (lsbl - 1)) & 1))
+    // c := (x >> lsbl) + ((x >> (lsbl - 1)) & 1)
     // x >> (lsbl - 1)
     VPSRLVD Y9, Y1, Y3
 
@@ -121,7 +121,7 @@ N_loop:
     // x := p[i]
     VMOVDQU (AX)(SI*8), Y1
 
-    // c := ((x >> lsbl) + ((x >> (lsbl - 1)) & 1)) << lsbl
+    // c := (x >> lsbl) + ((x >> (lsbl - 1)) & 1)
     // x >> (lsbl - 1)
     VPSRLVQ Y9, Y1, Y3
 
