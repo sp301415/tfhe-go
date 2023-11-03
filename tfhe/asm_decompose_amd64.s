@@ -8,15 +8,12 @@ DATA one64<>+0(SB)/8, $0x1
 GLOBL one64<>+0(SB), RODATA, $8
 
 
-TEXT ·decomposeUint32PolyAssignAVX2(SB), NOSPLIT, $0-48
-	MOVQ pPtr+0(FP), AX
-	MOVQ dPtr+40(FP), BX
+TEXT ·decomposeUint32PolyAssignAVX2(SB), NOSPLIT, $0-64
+	MOVQ p+0(FP), AX
+	MOVQ dOut+40(FP), BX
 
-    MOVQ (AX), AX
-    MOVQ (BX), BX
-
-    MOVQ N+8(FP), CX
-	MOVQ level+16(FP), DX
+    MOVQ p_len+8(FP), CX        // N
+	MOVQ dOut_len+48(FP), DX    // level
 
     VPBROADCASTD base+24(FP), Y10               // base
     VPBROADCASTD baseLog+28(FP), Y11            // baseLog
@@ -92,15 +89,12 @@ N_loop_end:
 
 	RET
 
-TEXT ·decomposeUint64PolyAssignAVX2(SB), NOSPLIT, $0-56
-	MOVQ pPtr+0(FP), AX
-	MOVQ dPtr+48(FP), BX
+TEXT ·decomposeUint64PolyAssignAVX2(SB), NOSPLIT, $0-72
+	MOVQ p+0(FP), AX
+	MOVQ dOut+48(FP), BX
 
-    MOVQ (AX), AX
-    MOVQ (BX), BX
-
-    MOVQ N+8(FP), CX
-	MOVQ level+16(FP), DX
+    MOVQ p_len+8(FP), CX        // N
+	MOVQ dOut_len+56(FP), DX    // level
 
     VPBROADCASTQ base+24(FP), Y10               // base
     VPBROADCASTQ baseLog+32(FP), Y11            // baseLog

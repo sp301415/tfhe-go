@@ -25,10 +25,10 @@ type evaluationBuffer[T Tint] struct {
 	// Initially has length bootstrapParameters.level.
 	// Use getPolyDecomposedBuffer() to get appropriate length of buffer.
 	polyDecomposed []poly.Poly[T]
-	// vecDecomposed holds the decomposed scalar.
+	// decomposed holds the decomposed scalar.
 	// Initially has length keyswitchParameters.level.
-	// Use getVecDecomposedBuffer() to get appropriate length of buffer.
-	vecDecomposed []T
+	// Use getDecomposedBuffer() to get appropriate length of buffer.
+	decomposed []T
 
 	// fpOut holds the fourier transformed polynomial for multiplications.
 	fpOut poly.FourierPoly
@@ -87,7 +87,7 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 
 	return evaluationBuffer[T]{
 		polyDecomposed: polyDecomposed,
-		vecDecomposed:  make([]T, params.keyswitchParameters.level),
+		decomposed:     make([]T, params.keyswitchParameters.level),
 
 		fpOut:         poly.NewFourierPoly(params.polyDegree),
 		ctFourierProd: NewFourierGLWECiphertext(params),

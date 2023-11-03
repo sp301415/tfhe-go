@@ -164,15 +164,15 @@ func (e *Evaluator[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchKey[T]) LWECi
 
 // KeySwitchAssign switches key of ct, and saves it to ctOut.
 func (e *Evaluator[T]) KeySwitchAssign(ct LWECiphertext[T], ksk KeySwitchKey[T], ctOut LWECiphertext[T]) {
-	vecDecomposed := e.getVecDecomposedBuffer(ksk.decompParams)
+	decomposed := e.getDecomposedBuffer(ksk.decompParams)
 
 	for i := 0; i < ksk.InputLWEDimension(); i++ {
-		e.DecomposeAssign(ct.Value[i+1], ksk.decompParams, vecDecomposed)
+		e.DecomposeAssign(ct.Value[i+1], ksk.decompParams, decomposed)
 		for j := 0; j < ksk.decompParams.level; j++ {
 			if i == 0 && j == 0 {
-				e.ScalarMulLWEAssign(ksk.Value[i].Value[j], vecDecomposed[j], ctOut)
+				e.ScalarMulLWEAssign(ksk.Value[i].Value[j], decomposed[j], ctOut)
 			} else {
-				e.ScalarMulAddLWEAssign(ksk.Value[i].Value[j], vecDecomposed[j], ctOut)
+				e.ScalarMulAddLWEAssign(ksk.Value[i].Value[j], decomposed[j], ctOut)
 			}
 		}
 	}

@@ -36,7 +36,7 @@ func (e *Evaluator[T]) DecomposePoly(p poly.Poly[T], decompParams DecompositionP
 	return decomposedOut
 }
 
-// DecomposePolyAssign decomposes p with respect to decompParams, and writes it to decompOut.
+// DecomposePolyAssign decomposes p with respect to decompParams, and writes it to decomposedOut.
 func (e *Evaluator[T]) DecomposePolyAssign(p poly.Poly[T], decompParams DecompositionParameters[T], decomposedOut []poly.Poly[T]) {
 	decomposePolyAssign(p, decompParams, decomposedOut)
 }
@@ -57,15 +57,15 @@ func (e *Evaluator[T]) getPolyDecomposedBuffer(decompParams DecompositionParamet
 	return e.buffer.polyDecomposed
 }
 
-// getVecDecomposedBuffer returns the vecDecomposed buffer of Evaluator.
-// if len(vecDecomposed) >= Level, it returns the subslice of the buffer.
+// getDecomposedBuffer returns the decomposed buffer of Evaluator.
+// if len(decomposed) >= Level, it returns the subslice of the buffer.
 // otherwise, it extends the buffer of the Evaluator and returns it.
-func (e *Evaluator[T]) getVecDecomposedBuffer(decompParams DecompositionParameters[T]) []T {
-	if len(e.buffer.vecDecomposed) >= decompParams.level {
-		return e.buffer.vecDecomposed[:decompParams.level]
+func (e *Evaluator[T]) getDecomposedBuffer(decompParams DecompositionParameters[T]) []T {
+	if len(e.buffer.decomposed) >= decompParams.level {
+		return e.buffer.decomposed[:decompParams.level]
 	}
 
-	oldLen := len(e.buffer.vecDecomposed)
-	e.buffer.vecDecomposed = append(e.buffer.vecDecomposed, make([]T, decompParams.level-oldLen)...)
-	return e.buffer.vecDecomposed
+	oldLen := len(e.buffer.decomposed)
+	e.buffer.decomposed = append(e.buffer.decomposed, make([]T, decompParams.level-oldLen)...)
+	return e.buffer.decomposed
 }

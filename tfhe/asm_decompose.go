@@ -7,7 +7,7 @@ import (
 	"github.com/sp301415/tfhe-go/math/poly"
 )
 
-// decomposePolyAssign decomposes p with respect to decompParams, and writes it to decompOut.
+// decomposePolyAssign decomposes p with respect to decompParams, and writes it to decomposedOut.
 func decomposePolyAssign[T Tint](p poly.Poly[T], decompParams DecompositionParameters[T], decomposedOut []poly.Poly[T]) {
 	lastScaledBaseLog := decompParams.scaledBasesLog[decompParams.level-1]
 	for i := 0; i < p.Degree(); i++ {
