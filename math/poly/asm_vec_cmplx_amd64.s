@@ -21,7 +21,7 @@ loop_body:
 
 	VMOVUPD Y2, (CX)(SI*8)
 
-	ADDQ $0x04, SI
+	ADDQ $4, SI
 
 loop_end:
 	CMPQ SI, DX
@@ -48,7 +48,7 @@ loop_body:
 
 	VMOVUPD Y2, (CX)(SI*8)
 
-	ADDQ $0x04, SI
+	ADDQ $4, SI
 
 loop_end:
 	CMPQ SI, DX
@@ -74,7 +74,7 @@ loop_body:
 
 	VMOVUPD Y2, (CX)(SI*8)
 
-	ADDQ $0x04, SI
+	ADDQ $4, SI
 
 loop_end:
 	CMPQ SI, DX
@@ -106,7 +106,7 @@ loop_body:
 
 	VMOVUPD Y5, (CX)(SI*8)
 
-	ADDQ $0x04, SI
+	ADDQ $4, SI
 
 loop_end:
 	CMPQ SI, DX
@@ -140,7 +140,7 @@ loop_body:
 	VADDPD Y5, Y6, Y6
 	VMOVUPD Y6, (CX)(SI*8)
 
-	ADDQ $0x04, SI
+	ADDQ $4, SI
 
 loop_end:
 	CMPQ SI, DX
@@ -174,7 +174,7 @@ loop_body:
 	VSUBPD Y5, Y6, Y6
 	VMOVUPD Y6, (CX)(SI*8)
 
-	ADDQ $0x04, SI
+	ADDQ $4, SI
 
 loop_end:
 	CMPQ SI, DX

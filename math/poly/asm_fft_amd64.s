@@ -378,7 +378,7 @@ loop_body:
 
 	VMOVUPD Y5, (BX)(SI*8)
 
-	ADDQ $0x04, SI
+	ADDQ $4, SI
 
 loop_end:
 	CMPQ SI, DX
@@ -411,7 +411,7 @@ loop_body:
 
 	VMOVUPD Y5, (CX)(SI*8)
 
-	ADDQ $0x04, SI
+	ADDQ $4, SI
 
 loop_end:
 	CMPQ SI, DX
@@ -444,12 +444,11 @@ loop_body:
 
 	VROUNDPD $0, Y5, Y6
 	VSUBPD Y6, Y5, Y5
-
 	VMULPD Y5, Y10, Y5
 
 	VMOVUPD Y5, (CX)(SI*8)
 
-	ADDQ $0x04, SI
+	ADDQ $4, SI
 
 loop_end:
 	CMPQ SI, DX
