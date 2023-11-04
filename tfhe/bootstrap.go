@@ -130,7 +130,7 @@ func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T]
 	}
 }
 
-// SampleExtract extracts LWE ciphertext of index i from GLWE ciphertext and returns it.
+// SampleExtract extracts LWE ciphertext of given index from GLWE ciphertext and returns it.
 // The output ciphertext has length GLWEDimension * PolyDegree + 1.
 func (e *Evaluator[T]) SampleExtract(ct GLWECiphertext[T], index int) LWECiphertext[T] {
 	ctOut := NewLWECiphertextCustom[T](e.Parameters.LargeLWEDimension())
@@ -138,7 +138,7 @@ func (e *Evaluator[T]) SampleExtract(ct GLWECiphertext[T], index int) LWECiphert
 	return ctOut
 }
 
-// SampleExtractAssign extracts LWE ciphertext of index from GLWE ciphertext.
+// SampleExtractAssign extracts LWE ciphertext of given index from GLWE ciphertext.
 // The output ciphertext should have length GLWEDimension * PolyDegree + 1.
 func (e *Evaluator[T]) SampleExtractAssign(ct GLWECiphertext[T], index int, ctOut LWECiphertext[T]) {
 	ctOut.Value[0] = ct.Value[0].Coeffs[index]
@@ -162,7 +162,7 @@ func (e *Evaluator[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchKey[T]) LWECi
 	return ctOut
 }
 
-// KeySwitchAssign switches key of ct, and saves it to ctOut.
+// KeySwitchAssign switches key of ct, and writes it to ctOut.
 func (e *Evaluator[T]) KeySwitchAssign(ct LWECiphertext[T], ksk KeySwitchKey[T], ctOut LWECiphertext[T]) {
 	decomposed := e.getDecomposedBuffer(ksk.decompParams)
 
