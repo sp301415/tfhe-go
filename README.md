@@ -4,13 +4,20 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/sp301415/tfhe-go)](https://goreportcard.com/report/github.com/sp301415/tfhe-go)
 ![CI Test Status](https://github.com/sp301415/tfhe-go/actions/workflows/ci.yml/badge.svg)
 
-⚠️ TFHE-go is still under heavy devlopment. There may be backward-incompatible changes anytime.
+⚠️ TFHE-go is still under heavy development. There may be backward-incompatible changes at any time.
 
-TFHE-go is a pure Go implementation of TFHE[[CGGI16](https://eprint.iacr.org/2016/870)] Scheme. The structure of this library is similar to another great Go-based FHE library, [Lattigo](https://github.com/tuneinsight/lattigo).
+TFHE-go is a pure Go implementation of TFHE[[CGGI16](https://eprint.iacr.org/2016/870)] scheme. The structure of this library is similar to another great Go-based FHE library, [Lattigo](https://github.com/tuneinsight/lattigo).
 
-This library is heavily influenced by excellent [TFHE-rs](https://github.com/zama-ai/tfhe-rs), developed by [Zama](https://www.zama.ai). The goal is to implement most of the functionalities that TFHE-rs provides, with readable code and minimal performance overhead.
+This library is heavily influenced by the excellent [TFHE-rs](https://github.com/zama-ai/tfhe-rs), developed by [Zama](https://www.zama.ai). The goal is to implement most of the functionalities that TFHE-rs provides, with readable code and minimal performance overhead.
 
-This library was not audited or reviewed by security experts, so I do not recommend this library for any real-world production uses.
+Please note that this library has not been audited or reviewed by security experts, so I do not recommend using it for any real-world production purposes.
+
+## Installation
+You can install TFHE-go in your project using `go get`:
+```
+$ go get -u github.com/sp301415/tfhe-go
+```
+TFHE-go uses `unsafe` and Go Assembly for SIMD operations in amd64 platform. To disable this, you can pass `purego` [build tag](https://pkg.go.dev/go/build#hdr-Build_Constraints).
 
 ## Examples
 ### Encryption
@@ -82,19 +89,15 @@ for i := 1; i < bits; i++ {
 	eval.ANDAssign(ctXNOR, ctOut, ctOut)
 }
 
-fmt.Println(enc.DecryptLWEBool(ctOut))
+fmt.Println(enc.DecryptLWEBool(ctOut)) // true
 ```
 
 ## Benchmarks
-All results were measured from Intel i5-13400F. `ParamsBoolean` and `ParamsUint6` are used.
-|Operation|Timing|
+All results were measured from Intel i5-13400F. `ParamsBoolean` and `ParamsUint6` were used.
+|Operation|Time|
 |---------|-------|
 |Programmable Bootstrapping|87.26ms ± 1%|
 |Gate Bootstrapping|11.89ms ± 1%|
-
-## Roadmap
-- [x] Optimize FFT using AVX2 instructions
-- [ ] Implement Multi-Key TFHE: [[CCS19](https://eprint.iacr.org/2019/116)], [[KMS22](https://eprint.iacr.org/2022/1460)]
 
 ## References
 - TFHE: Fast Fully Homomorphic Encryption over the Torus (https://eprint.iacr.org/2018/421)
