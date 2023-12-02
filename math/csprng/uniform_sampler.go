@@ -14,8 +14,8 @@ import (
 type UniformSampler[T num.Integer] struct {
 	prng *bufio.Reader
 
-	sizeT int
-	maxT  T
+	maxT T
+	buf  []byte
 }
 
 // NewUniformSampler creates a new UniformSampler.
@@ -45,19 +45,18 @@ func NewUniformSamplerWithSeed[T num.Integer](seed []byte) UniformSampler[T] {
 	return UniformSampler[T]{
 		prng: bufio.NewReader(prng),
 
-		sizeT: num.SizeT[T](),
-		maxT:  T(num.MaxT[T]()),
+		maxT: T(num.MaxT[T]()),
+		buf:  make([]byte, num.SizeT[T]()/8),
 	}
 }
 
 // Sample uniformly samples a random integer of type T.
 func (s UniformSampler[T]) Sample() T {
-	out := make([]byte, s.sizeT/8)
-	if _, err := s.prng.Read(out); err != nil {
+	if _, err := s.prng.Read(s.buf); err != nil {
 		panic(err)
 	}
 
-	return *(*T)(unsafe.Pointer(&out[0]))
+	return *(*T)(unsafe.Pointer(&s.buf[0]))
 }
 
 // SampleN uniformly samples a random integer of type T in [0, N).
@@ -65,7 +64,7 @@ func (s UniformSampler[T]) SampleN(N T) T {
 	bound := s.maxT - (s.maxT % N)
 	for {
 		res := s.Sample()
-		if 0 < res && res < bound {
+		if 0 <= res && res < bound {
 			return res % N
 		}
 	}

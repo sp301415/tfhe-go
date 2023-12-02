@@ -2,12 +2,11 @@ package csprng
 
 import (
 	"github.com/sp301415/tfhe-go/math/num"
+	"github.com/sp301415/tfhe-go/math/vec"
 )
 
 // BlockSampler samples values from block binary distribution.
 // It samples one of the vectors from (0, ..., 0), (1, ..., 0), ..., (0, .., 1).
-//
-// See csprng.UniformSampler for more details.
 type BlockSampler[T num.Integer] struct {
 	baseSampler UniformSampler[int]
 
@@ -45,14 +44,11 @@ func (s BlockSampler[T]) SampleSliceAssign(v []T) {
 	}
 
 	for i := 0; i < len(v); i += s.BlockSize {
-		for j := i; j < i+s.BlockSize; j++ {
-			v[j] = 0
-		}
-
-		x := s.baseSampler.SampleN(s.BlockSize + 1)
-		if x == s.BlockSize {
+		vec.Fill(v[i:i+s.BlockSize], 0)
+		offset := s.baseSampler.SampleN(s.BlockSize + 1)
+		if offset == s.BlockSize {
 			continue
 		}
-		v[i+x] = 1
+		v[i+offset] = 1
 	}
 }

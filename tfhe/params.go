@@ -10,7 +10,7 @@ import (
 
 const (
 	// MinPolyDegree is the minimum degree of polynomials allowed in parameters.
-	// Currently polynomial gadget is implemented using AVX2,
+	// Currently polynomial decomposition is implemented using AVX2,
 	// which requires degree at least 256/32 = 8.
 	MinPolyDegree = 1 << 3
 
@@ -25,8 +25,8 @@ type Tint interface {
 	uint32 | uint64
 }
 
-// GadgetParametersLiteral is a Parameter Literal for gadget gadget,
-// used in GSW and GGSW encryptions.
+// GadgetParametersLiteral is a structure for Gadget Decomposition,
+// which is used in Lev, GSW, GLev and GGSW encryptions.
 type GadgetParametersLiteral[T Tint] struct {
 	// Base is a base of gadget. It must be power of two.
 	Base T

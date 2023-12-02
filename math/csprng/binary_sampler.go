@@ -5,8 +5,6 @@ import (
 )
 
 // BinarySampler samples values from uniform binary distribution {0, 1}.
-//
-// See csprng.UniformSampler for more details.
 type BinarySampler[T num.Integer] struct {
 	baseSampler UniformSampler[uint64]
 }
@@ -36,14 +34,12 @@ func (s BinarySampler[T]) Sample() T {
 
 // SampleSliceAssign samples uniform binary values to v.
 func (s BinarySampler[T]) SampleSliceAssign(v []T) {
-	for i := 0; i < len(v); i += 64 {
-		buf := s.baseSampler.Sample()
-		for j := i; j < i+64; j++ {
-			if j >= len(v) {
-				break
-			}
-			v[j] = T(buf & 1)
-			buf >>= 1
+	var buf uint64
+	for i := 0; i < len(v); i++ {
+		if i&63 == 0 {
+			buf = s.baseSampler.Sample()
 		}
+		v[i] = T(buf & 1)
+		buf >>= 1
 	}
 }
