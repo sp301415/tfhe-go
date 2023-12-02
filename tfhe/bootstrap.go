@@ -25,6 +25,11 @@ func (lut *LookUpTable[T]) CopyFrom(lutIn LookUpTable[T]) {
 	vec.CopyAssign(lutIn.Coeffs, lut.Coeffs)
 }
 
+// Clear clears the LUT.
+func (lut *LookUpTable[T]) Clear() {
+	vec.Fill(lut.Coeffs, 0)
+}
+
 // GenLookUpTable generates a lookup table based on function f and returns it.
 // Input and output of f is cut by MessageModulus.
 func (e *Evaluator[T]) GenLookUpTable(f func(int) int) LookUpTable[T] {
@@ -112,7 +117,7 @@ func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T]
 
 	e.PolyEvaluator.MonomialMulAssign(poly.Poly[T](lut), -e.ModSwitch(ct.Value[0]), ctOut.Value[0])
 
-	// Implementation of Algorithm 2 and Section 5.1 from https://eprint.iacr.org/2023/958.pdf
+	// Implementation of Algorithm 2 and Section 5.1 from https://eprint.iacr.org/2023/958
 	for i := 0; i < e.Parameters.BlockCount(); i++ {
 		for j := 0; j < e.Parameters.glweDimension+1; j++ {
 			e.DecomposePolyAssign(ctOut.Value[j], e.Parameters.bootstrapParameters, polyDecomposed)

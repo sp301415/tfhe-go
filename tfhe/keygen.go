@@ -9,6 +9,7 @@ import (
 //
 // LWEKey and GLWEKey is sampled together, as explained in https://eprint.iacr.org/2023/958.
 // Therefore, values of LWEKey and GLWEKey are always assumed to be reslice of LWELargeKey.
+// FourierGLWEKey is also assumed to be a correct Fourier transform of GLWEKey.
 type SecretKey[T Tint] struct {
 	// LWEKey is a key used for LWE encryption and decryption.
 	LWEKey LWEKey[T]
@@ -16,7 +17,7 @@ type SecretKey[T Tint] struct {
 	GLWEKey GLWEKey[T]
 	// FourierGLWEKey is a fourier transformed GLWEKey.
 	// Used for GLWE encryption.
-	FourierGLWEKey []poly.FourierPoly
+	FourierGLWEKey FourierGLWEKey[T]
 	// LWELargeKey is GLWE key parsed as LWE key.
 	LWELargeKey LWEKey[T]
 }
@@ -33,10 +34,7 @@ func NewSecretKey[T Tint](params Parameters[T]) SecretKey[T] {
 		glweKey.Value[i].Coeffs = lweLargeKey.Value[i*params.polyDegree : (i+1)*params.polyDegree]
 	}
 
-	fourierGLWEKey := make([]poly.FourierPoly, params.glweDimension)
-	for i := 0; i < params.glweDimension; i++ {
-		fourierGLWEKey[i] = poly.NewFourierPoly(params.polyDegree)
-	}
+	fourierGLWEKey := NewFourierGLWEKey(params)
 
 	return SecretKey[T]{
 		LWEKey:         lweKey,
@@ -58,10 +56,7 @@ func (sk SecretKey[T]) Copy() SecretKey[T] {
 		glweKey.Value[i].Coeffs = lweLargeKey.Value[i*degree : (i+1)*degree]
 	}
 
-	fourierGLWEKey := make([]poly.FourierPoly, len(sk.FourierGLWEKey))
-	for i := range fourierGLWEKey {
-		fourierGLWEKey[i] = sk.FourierGLWEKey[i].Copy()
-	}
+	fourierGLWEKey := sk.FourierGLWEKey.Copy()
 
 	return SecretKey[T]{
 		LWEKey:         lweKey,
@@ -74,17 +69,13 @@ func (sk SecretKey[T]) Copy() SecretKey[T] {
 // CopyFrom copies values from a key.
 func (sk *SecretKey[T]) CopyFrom(skIn SecretKey[T]) {
 	vec.CopyAssign(skIn.LWELargeKey.Value, sk.LWELargeKey.Value)
-	for i := range skIn.FourierGLWEKey {
-		sk.FourierGLWEKey[i].CopyFrom(skIn.FourierGLWEKey[i])
-	}
+	sk.FourierGLWEKey.CopyFrom(skIn.FourierGLWEKey)
 }
 
 // Clear clears the key.
 func (sk *SecretKey[T]) Clear() {
 	vec.Fill(sk.LWELargeKey.Value, 0)
-	for i := range sk.FourierGLWEKey {
-		sk.FourierGLWEKey[i].Clear()
-	}
+	sk.FourierGLWEKey.Clear()
 }
 
 // GenSecretKey samples a new LWE key.
@@ -93,9 +84,7 @@ func (e *Encryptor[T]) GenSecretKey() SecretKey[T] {
 
 	e.blockSampler.SampleSliceAssign(sk.LWELargeKey.Value[:e.Parameters.lweDimension])
 	e.binarySampler.SampleSliceAssign(sk.LWELargeKey.Value[e.Parameters.lweDimension:])
-	for i := 0; i < e.Parameters.glweDimension; i++ {
-		e.FourierEvaluator.ToFourierPolyAssign(sk.GLWEKey.Value[i], sk.FourierGLWEKey[i])
-	}
+	e.ToFourierGLWEKeyAssign(sk.GLWEKey, sk.FourierGLWEKey)
 
 	return sk
 }

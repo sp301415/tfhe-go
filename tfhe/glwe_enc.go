@@ -5,10 +5,8 @@ import (
 	"github.com/sp301415/tfhe-go/math/poly"
 )
 
-// mulGLWEKeyAssign multiplies p with GLWE key element fp1.
-// This assumes fp1 is a binary polynomial,
-// and "splits" p into 3 polynomials to use FFT without precision loss.
-func (e *Encryptor[T]) mulGLWEKeyAssign(p0 poly.Poly[T], fp1 poly.FourierPoly, pOut poly.Poly[T]) {
+// mulFourierGLWEKeyAssign multiplies p with Fourier GLWE key element fp.
+func (e *Encryptor[T]) mulFourierGLWEKeyAssign(p0 poly.Poly[T], fp poly.FourierPoly, pOut poly.Poly[T]) {
 	// We split by 22 bits.
 	const bits = 22
 	const mask = (1 << bits) - 1
@@ -17,14 +15,14 @@ func (e *Encryptor[T]) mulGLWEKeyAssign(p0 poly.Poly[T], fp1 poly.FourierPoly, p
 		e.buffer.pSplit.Coeffs[i] = p0.Coeffs[i] & mask
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
-	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp1, e.buffer.fpSplit)
+	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp, e.buffer.fpSplit)
 	e.FourierEvaluator.ToStandardPolyAssign(e.buffer.fpSplit, pOut)
 
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		e.buffer.pSplit.Coeffs[i] = (p0.Coeffs[i] >> bits) & mask
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
-	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp1, e.buffer.fpSplit)
+	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp, e.buffer.fpSplit)
 	e.FourierEvaluator.ToStandardPolyAssign(e.buffer.fpSplit, e.buffer.pSplit)
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		pOut.Coeffs[i] += e.buffer.pSplit.Coeffs[i] << bits
@@ -38,17 +36,15 @@ func (e *Encryptor[T]) mulGLWEKeyAssign(p0 poly.Poly[T], fp1 poly.FourierPoly, p
 		e.buffer.pSplit.Coeffs[i] = (p0.Coeffs[i] >> bits) >> bits
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
-	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp1, e.buffer.fpSplit)
+	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp, e.buffer.fpSplit)
 	e.FourierEvaluator.ToStandardPolyAssign(e.buffer.fpSplit, e.buffer.pSplit)
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		pOut.Coeffs[i] += (e.buffer.pSplit.Coeffs[i] << bits) << bits
 	}
 }
 
-// mulGLWEKeyAddAssign multiplies p with GLWE key element fp1 and adds it to pOut.
-// This assumes fp1 is a binary polynomial,
-// and "splits" p into 3 polynomials to use FFT without precision loss.
-func (e *Encryptor[T]) mulGLWEKeyAddAssign(p0 poly.Poly[T], fp1 poly.FourierPoly, pOut poly.Poly[T]) {
+// mulFourierGLWEKeyAddAssign multiplies p with Fourier GLWE key element fp and adds it to pOut.
+func (e *Encryptor[T]) mulFourierGLWEKeyAddAssign(p0 poly.Poly[T], fp poly.FourierPoly, pOut poly.Poly[T]) {
 	// We split by 22 bits.
 	const bits = 22
 	const mask = (1 << bits) - 1
@@ -57,14 +53,14 @@ func (e *Encryptor[T]) mulGLWEKeyAddAssign(p0 poly.Poly[T], fp1 poly.FourierPoly
 		e.buffer.pSplit.Coeffs[i] = p0.Coeffs[i] & mask
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
-	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp1, e.buffer.fpSplit)
+	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp, e.buffer.fpSplit)
 	e.FourierEvaluator.ToStandardPolyAddAssign(e.buffer.fpSplit, pOut)
 
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		e.buffer.pSplit.Coeffs[i] = (p0.Coeffs[i] >> bits) & mask
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
-	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp1, e.buffer.fpSplit)
+	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp, e.buffer.fpSplit)
 	e.FourierEvaluator.ToStandardPolyAssign(e.buffer.fpSplit, e.buffer.pSplit)
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		pOut.Coeffs[i] += e.buffer.pSplit.Coeffs[i] << bits
@@ -78,17 +74,15 @@ func (e *Encryptor[T]) mulGLWEKeyAddAssign(p0 poly.Poly[T], fp1 poly.FourierPoly
 		e.buffer.pSplit.Coeffs[i] = (p0.Coeffs[i] >> bits) >> bits
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
-	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp1, e.buffer.fpSplit)
+	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp, e.buffer.fpSplit)
 	e.FourierEvaluator.ToStandardPolyAssign(e.buffer.fpSplit, e.buffer.pSplit)
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		pOut.Coeffs[i] += (e.buffer.pSplit.Coeffs[i] << bits) << bits
 	}
 }
 
-// mulGLWEKeySubAssign multiplies p with GLWE key element fp1 and subtracts it from pOut.
-// This assumes fp1 is a binary polynomial,
-// and "splits" p into 3 polynomials to use FFT without precision loss.
-func (e *Encryptor[T]) mulGLWEKeySubAssign(p0 poly.Poly[T], fp1 poly.FourierPoly, pOut poly.Poly[T]) {
+// mulFourierGLWEKeySubAssign multiplies p with Fourier GLWE key element fp and subtracts it from pOut.
+func (e *Encryptor[T]) mulFourierGLWEKeySubAssign(p0 poly.Poly[T], fp poly.FourierPoly, pOut poly.Poly[T]) {
 	// We split by 22 bits.
 	const bits = 22
 	const mask = (1 << bits) - 1
@@ -97,14 +91,14 @@ func (e *Encryptor[T]) mulGLWEKeySubAssign(p0 poly.Poly[T], fp1 poly.FourierPoly
 		e.buffer.pSplit.Coeffs[i] = p0.Coeffs[i] & mask
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
-	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp1, e.buffer.fpSplit)
+	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp, e.buffer.fpSplit)
 	e.FourierEvaluator.ToStandardPolySubAssign(e.buffer.fpSplit, pOut)
 
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		e.buffer.pSplit.Coeffs[i] = (p0.Coeffs[i] >> bits) & mask
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
-	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp1, e.buffer.fpSplit)
+	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp, e.buffer.fpSplit)
 	e.FourierEvaluator.ToStandardPolyAssign(e.buffer.fpSplit, e.buffer.pSplit)
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		pOut.Coeffs[i] -= e.buffer.pSplit.Coeffs[i] << bits
@@ -118,7 +112,7 @@ func (e *Encryptor[T]) mulGLWEKeySubAssign(p0 poly.Poly[T], fp1 poly.FourierPoly
 		e.buffer.pSplit.Coeffs[i] = (p0.Coeffs[i] >> bits) >> bits
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
-	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp1, e.buffer.fpSplit)
+	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp, e.buffer.fpSplit)
 	e.FourierEvaluator.ToStandardPolyAssign(e.buffer.fpSplit, e.buffer.pSplit)
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		pOut.Coeffs[i] -= (e.buffer.pSplit.Coeffs[i] << bits) << bits
@@ -151,7 +145,7 @@ func (e *Encryptor[T]) EncryptGLWEBody(ct GLWECiphertext[T]) {
 	}
 	e.glweSampler.SampleSliceAddAssign(ct.Value[0].Coeffs)
 	for i := 0; i < e.Parameters.glweDimension; i++ {
-		e.mulGLWEKeySubAssign(ct.Value[i+1], e.SecretKey.FourierGLWEKey[i], ct.Value[0])
+		e.mulFourierGLWEKeySubAssign(ct.Value[i+1], e.SecretKey.FourierGLWEKey.Value[i], ct.Value[0])
 	}
 }
 
@@ -171,7 +165,7 @@ func (e *Encryptor[T]) DecryptGLWEPlaintext(ct GLWECiphertext[T]) GLWEPlaintext[
 func (e *Encryptor[T]) DecryptGLWEPlaintextAssign(ct GLWECiphertext[T], ptOut GLWEPlaintext[T]) {
 	ptOut.Value.CopyFrom(ct.Value[0])
 	for i := 0; i < e.Parameters.glweDimension; i++ {
-		e.mulGLWEKeyAddAssign(ct.Value[i+1], e.SecretKey.FourierGLWEKey[i], ptOut.Value)
+		e.mulFourierGLWEKeyAddAssign(ct.Value[i+1], e.SecretKey.FourierGLWEKey.Value[i], ptOut.Value)
 	}
 }
 
@@ -242,7 +236,7 @@ func (e *Encryptor[T]) EncryptGGSWPlaintext(pt GLWEPlaintext[T], gadgetParams Ga
 func (e *Encryptor[T]) EncryptGGSWPlaintextAssign(pt GLWEPlaintext[T], ctOut GGSWCiphertext[T]) {
 	e.EncryptGLevPlaintextAssign(pt, ctOut.Value[0])
 	for i := 1; i < e.Parameters.glweDimension+1; i++ {
-		e.mulGLWEKeyAssign(pt.Value, e.SecretKey.FourierGLWEKey[i-1], e.buffer.ptGGSW)
+		e.mulFourierGLWEKeyAssign(pt.Value, e.SecretKey.FourierGLWEKey.Value[i-1], e.buffer.ptGGSW)
 		for j := 0; j < ctOut.GadgetParameters.level; j++ {
 			e.PolyEvaluator.ScalarMulAssign(e.buffer.ptGGSW, ctOut.GadgetParameters.ScaledBase(j), ctOut.Value[i].Value[j].Value[0])
 			e.EncryptGLWEBody(ctOut.Value[i].Value[j])

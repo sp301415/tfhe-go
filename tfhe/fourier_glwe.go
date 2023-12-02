@@ -2,6 +2,44 @@ package tfhe
 
 import "github.com/sp301415/tfhe-go/math/poly"
 
+// FourierGLWEKey is a GLWE key in Fourier domain.
+type FourierGLWEKey[T Tint] struct {
+	// Value has length GLWEDimension.
+	Value []poly.FourierPoly
+}
+
+// NewFourierGLWEKey allocates an empty FourierGLWEKey.
+func NewFourierGLWEKey[T Tint](params Parameters[T]) FourierGLWEKey[T] {
+	sk := make([]poly.FourierPoly, params.glweDimension)
+	for i := range sk {
+		sk[i] = poly.NewFourierPoly(params.polyDegree)
+	}
+	return FourierGLWEKey[T]{Value: sk}
+}
+
+// Copy returns a copy of the key.
+func (sk FourierGLWEKey[T]) Copy() FourierGLWEKey[T] {
+	skCopy := make([]poly.FourierPoly, len(sk.Value))
+	for i := range skCopy {
+		skCopy[i] = sk.Value[i].Copy()
+	}
+	return FourierGLWEKey[T]{Value: skCopy}
+}
+
+// CopyFrom copies values from a key.
+func (sk *FourierGLWEKey[T]) CopyFrom(skIn FourierGLWEKey[T]) {
+	for i := range sk.Value {
+		sk.Value[i].CopyFrom(skIn.Value[i])
+	}
+}
+
+// Clear clears the key.
+func (sk *FourierGLWEKey[T]) Clear() {
+	for i := range sk.Value {
+		sk.Value[i].Clear()
+	}
+}
+
 // FourierGLWECiphertext is a GLWE ciphertext in Fourier domain.
 type FourierGLWECiphertext[T Tint] struct {
 	// Value is ordered as [body, mask],
