@@ -195,15 +195,3 @@ func MinN[T Real](x ...T) T {
 func Sqrt[T Integer](x T) T {
 	return T(math.Round(math.Sqrt(float64(x))))
 }
-
-var (
-	exp52 = math.Exp2(52)
-	exp51 = math.Exp2(51)
-)
-
-// RoundSmall rounds x to the nearest integer.
-// This function is only correct for values between [-2^51, 2^51].
-// On the other hand, it is much faster than math.Round.
-func RoundSmall(x float64) float64 {
-	return (x + (exp52 + exp51)) - (exp52 + exp51)
-}

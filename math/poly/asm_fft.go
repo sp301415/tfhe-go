@@ -4,8 +4,6 @@ package poly
 
 import (
 	"math"
-
-	"github.com/sp301415/tfhe-go/math/num"
 )
 
 // fftInPlace is a top-level function for FFT.
@@ -66,7 +64,7 @@ func twistAndScaleInPlace(coeffs, w2Nj []complex128, maxTInv float64) {
 func unTwistAssign(coeffs, w2NjInv []complex128, coeffsOut []float64) {
 	for i, j := 0, 0; i < len(coeffs); i, j = i+1, j+2 {
 		c := coeffs[i] * w2NjInv[i]
-		// Use math.Round here, since c can be large
+
 		coeffsOut[j] = math.Round(real(c))
 		coeffsOut[j+1] = math.Round(imag(c))
 	}
@@ -76,11 +74,10 @@ func unTwistAssign(coeffs, w2NjInv []complex128, coeffsOut []float64) {
 func unTwistAndScaleAssign(coeffs, w2NjInv []complex128, maxT float64, coeffsOut []float64) {
 	for i, j := 0, 0; i < len(coeffs); i, j = i+1, j+2 {
 		c := coeffs[i] * w2NjInv[i]
-
 		cr := real(c)
 		ci := imag(c)
 
-		coeffsOut[j] = (cr - num.RoundSmall(cr)) * maxT
-		coeffsOut[j+1] = (ci - num.RoundSmall(ci)) * maxT
+		coeffsOut[j] = (cr - math.Round(cr)) * maxT
+		coeffsOut[j+1] = (ci - math.Round(ci)) * maxT
 	}
 }
