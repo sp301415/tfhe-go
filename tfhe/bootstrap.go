@@ -107,12 +107,10 @@ func (e *Evaluator[T]) BlindRotate(ct LWECiphertext[T], lut LookUpTable[T]) GLWE
 
 // BlindRotateAssign calculates the blind rotation of LWE ciphertext with respect to LUT.
 func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
+	ctOut.Clear()
 	polyDecomposed := e.getPolyDecomposedBuffer(e.Parameters.bootstrapParameters)
 
 	e.PolyEvaluator.MonomialMulAssign(poly.Poly[T](lut), -e.ModSwitch(ct.Value[0]), ctOut.Value[0])
-	for i := 1; i < e.Parameters.glweDimension+1; i++ {
-		ctOut.Value[i].Clear()
-	}
 
 	// Implementation of Algorithm 2 and Section 5.1 from https://eprint.iacr.org/2023/958.pdf
 	for i := 0; i < e.Parameters.BlockCount(); i++ {
@@ -164,11 +162,11 @@ func (e *Evaluator[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchKey[T]) LWECi
 
 // KeySwitchAssign switches key of ct, and writes it to ctOut.
 func (e *Evaluator[T]) KeySwitchAssign(ct LWECiphertext[T], ksk KeySwitchKey[T], ctOut LWECiphertext[T]) {
-	decomposed := e.getDecomposedBuffer(ksk.decompParams)
+	decomposed := e.getDecomposedBuffer(ksk.GadgetParameters)
 
 	for i := 0; i < ksk.InputLWEDimension(); i++ {
-		e.DecomposeAssign(ct.Value[i+1], ksk.decompParams, decomposed)
-		for j := 0; j < ksk.decompParams.level; j++ {
+		e.DecomposeAssign(ct.Value[i+1], ksk.GadgetParameters, decomposed)
+		for j := 0; j < ksk.GadgetParameters.level; j++ {
 			if i == 0 && j == 0 {
 				e.ScalarMulLWEAssign(ksk.Value[i].Value[j], decomposed[j], ctOut)
 			} else {

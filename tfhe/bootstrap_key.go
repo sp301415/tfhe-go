@@ -9,14 +9,42 @@ type EvaluationKey[T Tint] struct {
 	KeySwitchKey KeySwitchKey[T]
 }
 
+// NewEvaluationKey allocates an empty EvaluationKey.
+func NewEvaluationKey[T Tint](params Parameters[T]) EvaluationKey[T] {
+	return EvaluationKey[T]{
+		BootstrapKey: NewBootstrapKey(params),
+		KeySwitchKey: NewKeySwitchKeyForBootstrap(params),
+	}
+}
+
+// Copy returns a copy of the key.
+func (evk EvaluationKey[T]) Copy() EvaluationKey[T] {
+	return EvaluationKey[T]{
+		BootstrapKey: evk.BootstrapKey.Copy(),
+		KeySwitchKey: evk.KeySwitchKey.Copy(),
+	}
+}
+
+// CopyFrom copies values from key.
+func (evk *EvaluationKey[T]) CopyFrom(evkIn EvaluationKey[T]) {
+	evk.BootstrapKey.CopyFrom(evkIn.BootstrapKey)
+	evk.KeySwitchKey.CopyFrom(evkIn.KeySwitchKey)
+}
+
+// Clear clears the key.
+func (evk *EvaluationKey[T]) Clear() {
+	evk.BootstrapKey.Clear()
+	evk.KeySwitchKey.Clear()
+}
+
 // BootstrapKey is a key for bootstrapping.
 // Essentially, this is a GGSW encryption of LWE key with GLWE key.
 // However, FFT is already applied for fast external product.
 type BootstrapKey[T Tint] struct {
+	GadgetParameters GadgetParameters[T]
+
 	// Value has length LWEDimension.
 	Value []FourierGGSWCiphertext[T]
-
-	decompParams DecompositionParameters[T]
 }
 
 // NewBootstrapKey allocates an empty BootstrappingKey.
@@ -25,7 +53,7 @@ func NewBootstrapKey[T Tint](params Parameters[T]) BootstrapKey[T] {
 	for i := 0; i < params.lweDimension; i++ {
 		bsk[i] = NewFourierGGSWCiphertext(params, params.bootstrapParameters)
 	}
-	return BootstrapKey[T]{Value: bsk, decompParams: params.bootstrapParameters}
+	return BootstrapKey[T]{Value: bsk, GadgetParameters: params.bootstrapParameters}
 }
 
 // Copy returns a copy of the key.
@@ -34,7 +62,7 @@ func (bsk BootstrapKey[T]) Copy() BootstrapKey[T] {
 	for i := range bsk.Value {
 		bskCopy[i] = bsk.Value[i].Copy()
 	}
-	return BootstrapKey[T]{Value: bskCopy, decompParams: bsk.decompParams}
+	return BootstrapKey[T]{Value: bskCopy, GadgetParameters: bsk.GadgetParameters}
 }
 
 // CopyFrom copies values from key.
@@ -42,33 +70,40 @@ func (bsk *BootstrapKey[T]) CopyFrom(bskIn BootstrapKey[T]) {
 	for i := range bsk.Value {
 		bsk.Value[i].CopyFrom(bskIn.Value[i])
 	}
-	bsk.decompParams = bskIn.decompParams
+	bsk.GadgetParameters = bskIn.GadgetParameters
 }
 
-// DecompositionParameters returns the decomposition parameters of the key.
-func (bsk BootstrapKey[T]) DecompositionParameters() DecompositionParameters[T] {
-	return bsk.decompParams
+// Clear clears the key.
+func (bsk *BootstrapKey[T]) Clear() {
+	for i := range bsk.Value {
+		bsk.Value[i].Clear()
+	}
 }
 
 // KeySwitchKey is a LWE keyswitch key from GLWE secret key to LWE secret key.
 // Essentially, this is a GSW encryption of GLWE key with LWE key.
 type KeySwitchKey[T Tint] struct {
+	GadgetParameters GadgetParameters[T]
+
 	// Value has length InputLWEDimension.
 	Value []LevCiphertext[T]
-
-	decompParams DecompositionParameters[T]
 }
 
 // NewKeySwitchKey allocates an empty KeySwitchingKey.
-func NewKeySwitchKey[T Tint](inputDimension, outputDimension int, decompParams DecompositionParameters[T]) KeySwitchKey[T] {
+func NewKeySwitchKey[T Tint](inputDimension, outputDimension int, gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
 	kswKey := make([]LevCiphertext[T], inputDimension)
 	for i := 0; i < inputDimension; i++ {
-		kswKey[i] = LevCiphertext[T]{Value: make([]LWECiphertext[T], decompParams.level), decompParams: decompParams}
-		for j := 0; j < decompParams.level; j++ {
+		kswKey[i] = LevCiphertext[T]{Value: make([]LWECiphertext[T], gadgetParams.level), GadgetParameters: gadgetParams}
+		for j := 0; j < gadgetParams.level; j++ {
 			kswKey[i].Value[j] = NewLWECiphertextCustom[T](outputDimension)
 		}
 	}
-	return KeySwitchKey[T]{Value: kswKey, decompParams: decompParams}
+	return KeySwitchKey[T]{Value: kswKey, GadgetParameters: gadgetParams}
+}
+
+// NewKeySwitchKeyForBootstrap allocates an empty KeySwitchingKey for bootstrapping.
+func NewKeySwitchKeyForBootstrap[T Tint](params Parameters[T]) KeySwitchKey[T] {
+	return NewKeySwitchKey[T](params.lweDimension, params.LargeLWEDimension()-params.lweDimension, params.keyswitchParameters)
 }
 
 // InputLWEDimension returns the input LWEDimension of this key.
@@ -87,7 +122,7 @@ func (ksk KeySwitchKey[T]) Copy() KeySwitchKey[T] {
 	for i := range ksk.Value {
 		kskCopy[i] = ksk.Value[i].Copy()
 	}
-	return KeySwitchKey[T]{Value: kskCopy, decompParams: ksk.decompParams}
+	return KeySwitchKey[T]{Value: kskCopy, GadgetParameters: ksk.GadgetParameters}
 }
 
 // CopyFrom copies values from key.
@@ -95,10 +130,12 @@ func (ksk *KeySwitchKey[T]) CopyFrom(kskIn KeySwitchKey[T]) {
 	for i := range ksk.Value {
 		ksk.Value[i].CopyFrom(kskIn.Value[i])
 	}
-	ksk.decompParams = kskIn.decompParams
+	ksk.GadgetParameters = kskIn.GadgetParameters
 }
 
-// DecompositionParameters returns the decomposition parameters of the key.
-func (ct KeySwitchKey[T]) DecompositionParameters() DecompositionParameters[T] {
-	return ct.decompParams
+// Clear clears the key.
+func (ksk *KeySwitchKey[T]) Clear() {
+	for i := range ksk.Value {
+		ksk.Value[i].Clear()
+	}
 }

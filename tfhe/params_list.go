@@ -14,11 +14,11 @@ var (
 
 		MessageModulus: 1 << 2,
 
-		BootstrapParameters: DecompositionParametersLiteral[uint64]{
+		BootstrapParameters: GadgetParametersLiteral[uint64]{
 			Base:  1 << 8,
 			Level: 2,
 		},
-		KeySwitchParameters: DecompositionParametersLiteral[uint64]{
+		KeySwitchParameters: GadgetParametersLiteral[uint64]{
 			Base:  1 << 3,
 			Level: 4,
 		},
@@ -37,11 +37,11 @@ var (
 
 		MessageModulus: 1 << 3,
 
-		BootstrapParameters: DecompositionParametersLiteral[uint64]{
+		BootstrapParameters: GadgetParametersLiteral[uint64]{
 			Base:  1 << 23,
 			Level: 1,
 		},
-		KeySwitchParameters: DecompositionParametersLiteral[uint64]{
+		KeySwitchParameters: GadgetParametersLiteral[uint64]{
 			Base:  1 << 4,
 			Level: 3,
 		},
@@ -60,11 +60,11 @@ var (
 
 		MessageModulus: 1 << 4,
 
-		BootstrapParameters: DecompositionParametersLiteral[uint64]{
+		BootstrapParameters: GadgetParametersLiteral[uint64]{
 			Base:  1 << 23,
 			Level: 1,
 		},
-		KeySwitchParameters: DecompositionParametersLiteral[uint64]{
+		KeySwitchParameters: GadgetParametersLiteral[uint64]{
 			Base:  1 << 3,
 			Level: 5,
 		},
@@ -83,11 +83,11 @@ var (
 
 		MessageModulus: 1 << 5,
 
-		BootstrapParameters: DecompositionParametersLiteral[uint64]{
+		BootstrapParameters: GadgetParametersLiteral[uint64]{
 			Base:  1 << 22,
 			Level: 1,
 		},
-		KeySwitchParameters: DecompositionParametersLiteral[uint64]{
+		KeySwitchParameters: GadgetParametersLiteral[uint64]{
 			Base:  1 << 3,
 			Level: 5,
 		},
@@ -106,11 +106,11 @@ var (
 
 		MessageModulus: 1 << 6,
 
-		BootstrapParameters: DecompositionParametersLiteral[uint64]{
+		BootstrapParameters: GadgetParametersLiteral[uint64]{
 			Base:  1 << 22,
 			Level: 1,
 		},
-		KeySwitchParameters: DecompositionParametersLiteral[uint64]{
+		KeySwitchParameters: GadgetParametersLiteral[uint64]{
 			Base:  1 << 4,
 			Level: 4,
 		},
@@ -129,11 +129,11 @@ var (
 
 		MessageModulus: 1 << 7,
 
-		BootstrapParameters: DecompositionParametersLiteral[uint64]{
+		BootstrapParameters: GadgetParametersLiteral[uint64]{
 			Base:  1 << 15,
 			Level: 2,
 		},
-		KeySwitchParameters: DecompositionParametersLiteral[uint64]{
+		KeySwitchParameters: GadgetParametersLiteral[uint64]{
 			Base:  1 << 3,
 			Level: 6,
 		},
@@ -152,11 +152,11 @@ var (
 
 		MessageModulus: 1 << 8,
 
-		BootstrapParameters: DecompositionParametersLiteral[uint64]{
+		BootstrapParameters: GadgetParametersLiteral[uint64]{
 			Base:  1 << 15,
 			Level: 2,
 		},
-		KeySwitchParameters: DecompositionParametersLiteral[uint64]{
+		KeySwitchParameters: GadgetParametersLiteral[uint64]{
 			Base:  1 << 4,
 			Level: 5,
 		},

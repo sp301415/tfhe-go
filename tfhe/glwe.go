@@ -36,6 +36,13 @@ func (sk *GLWEKey[T]) CopyFrom(skIn GLWEKey[T]) {
 	}
 }
 
+// Clear clears the key.
+func (sk *GLWEKey[T]) Clear() {
+	for i := range sk.Value {
+		sk.Value[i].Clear()
+	}
+}
+
 // ToLWEKey returns a new LWE secret key derived from the GLWE secret key.
 func (sk GLWEKey[T]) ToLWEKey() LWEKey[T] {
 	glweDimension := len(sk.Value)
@@ -112,31 +119,38 @@ func (ct *GLWECiphertext[T]) CopyFrom(ctIn GLWECiphertext[T]) {
 	}
 }
 
-// GLevCiphertext is a leveled GLWE ciphertext, decomposed according to DecompositionParameters.
+// Clear clears the ciphertext.
+func (ct *GLWECiphertext[T]) Clear() {
+	for i := range ct.Value {
+		ct.Value[i].Clear()
+	}
+}
+
+// GLevCiphertext is a leveled GLWE ciphertext, decomposed according to GadgetParameters.
 type GLevCiphertext[T Tint] struct {
+	GadgetParameters GadgetParameters[T]
+
 	// Value has length Level.
 	Value []GLWECiphertext[T]
-
-	decompParams DecompositionParameters[T]
 }
 
 // NewGLevCiphertext allocates an empty GLevCiphertext.
-func NewGLevCiphertext[T Tint](params Parameters[T], decompParams DecompositionParameters[T]) GLevCiphertext[T] {
-	ct := make([]GLWECiphertext[T], decompParams.level)
-	for i := 0; i < decompParams.level; i++ {
+func NewGLevCiphertext[T Tint](params Parameters[T], gadgetParams GadgetParameters[T]) GLevCiphertext[T] {
+	ct := make([]GLWECiphertext[T], gadgetParams.level)
+	for i := 0; i < gadgetParams.level; i++ {
 		ct[i] = NewGLWECiphertext(params)
 	}
-	return GLevCiphertext[T]{Value: ct, decompParams: decompParams}
+	return GLevCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
 }
 
 // NewGLevCiphertextCustom allocates an empty GLevCiphertext with given dimension and polyDegree.
 // Note that the each GLWE ciphertext has length glweDimension + 1.
-func NewGLevCiphertextCustom[T Tint](glweDimension, polyDegree int, decompParams DecompositionParameters[T]) GLevCiphertext[T] {
-	ct := make([]GLWECiphertext[T], decompParams.level)
-	for i := 0; i < decompParams.level; i++ {
+func NewGLevCiphertextCustom[T Tint](glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) GLevCiphertext[T] {
+	ct := make([]GLWECiphertext[T], gadgetParams.level)
+	for i := 0; i < gadgetParams.level; i++ {
 		ct[i] = NewGLWECiphertextCustom[T](glweDimension, polyDegree)
 	}
-	return GLevCiphertext[T]{Value: ct, decompParams: decompParams}
+	return GLevCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
 }
 
 // Copy returns a copy of the ciphertext.
@@ -145,7 +159,7 @@ func (ct GLevCiphertext[T]) Copy() GLevCiphertext[T] {
 	for i := range ct.Value {
 		ctCopy[i] = ct.Value[i].Copy()
 	}
-	return GLevCiphertext[T]{Value: ctCopy, decompParams: ct.decompParams}
+	return GLevCiphertext[T]{Value: ctCopy, GadgetParameters: ct.GadgetParameters}
 }
 
 // CopyFrom copies values from ciphertext.
@@ -153,40 +167,42 @@ func (ct *GLevCiphertext[T]) CopyFrom(ctIn GLevCiphertext[T]) {
 	for i := range ct.Value {
 		ct.Value[i].CopyFrom(ctIn.Value[i])
 	}
-	ct.decompParams = ctIn.decompParams
+	ct.GadgetParameters = ctIn.GadgetParameters
 }
 
-// DecompositionParameters returns the decomposition parameters of the ciphertext.
-func (ct GLevCiphertext[T]) DecompositionParameters() DecompositionParameters[T] {
-	return ct.decompParams
+// Clear clears the ciphertext.
+func (ct *GLevCiphertext[T]) Clear() {
+	for i := range ct.Value {
+		ct.Value[i].Clear()
+	}
 }
 
 // GGSWCiphertext represents an encrypted GGSW ciphertext,
 // which is a GLWEDimension+1 collection of GLev ciphertexts.
 type GGSWCiphertext[T Tint] struct {
+	GadgetParameters GadgetParameters[T]
+
 	// Value has length GLWEDimension + 1.
 	Value []GLevCiphertext[T]
-
-	decompParams DecompositionParameters[T]
 }
 
 // NewGGSWCiphertext allocates an empty GGSW ciphertext.
-func NewGGSWCiphertext[T Tint](params Parameters[T], decompParams DecompositionParameters[T]) GGSWCiphertext[T] {
+func NewGGSWCiphertext[T Tint](params Parameters[T], gadgetParams GadgetParameters[T]) GGSWCiphertext[T] {
 	ct := make([]GLevCiphertext[T], params.glweDimension+1)
 	for i := 0; i < params.glweDimension+1; i++ {
-		ct[i] = NewGLevCiphertext(params, decompParams)
+		ct[i] = NewGLevCiphertext(params, gadgetParams)
 	}
-	return GGSWCiphertext[T]{Value: ct, decompParams: decompParams}
+	return GGSWCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
 }
 
 // NewGGSWCiphertextCustom allocates an empty GGSW ciphertext with given dimension and polyDegree.
 // Note that each GLWE ciphertext has length glweDimension + 1.
-func NewGGSWCiphertextCustom[T Tint](glweDimension, polyDegree int, decompParams DecompositionParameters[T]) GGSWCiphertext[T] {
+func NewGGSWCiphertextCustom[T Tint](glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) GGSWCiphertext[T] {
 	ct := make([]GLevCiphertext[T], glweDimension+1)
 	for i := 0; i < glweDimension+1; i++ {
-		ct[i] = NewGLevCiphertextCustom[T](glweDimension, polyDegree, decompParams)
+		ct[i] = NewGLevCiphertextCustom[T](glweDimension, polyDegree, gadgetParams)
 	}
-	return GGSWCiphertext[T]{Value: ct, decompParams: decompParams}
+	return GGSWCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
 }
 
 // Copy returns a copy of the ciphertext.
@@ -195,7 +211,7 @@ func (ct GGSWCiphertext[T]) Copy() GGSWCiphertext[T] {
 	for i := range ct.Value {
 		ctCopy[i] = ct.Value[i].Copy()
 	}
-	return GGSWCiphertext[T]{Value: ctCopy, decompParams: ct.decompParams}
+	return GGSWCiphertext[T]{Value: ctCopy, GadgetParameters: ct.GadgetParameters}
 }
 
 // CopyFrom copies values from a ciphertext.
@@ -203,10 +219,12 @@ func (ct *GGSWCiphertext[T]) CopyFrom(ctIn GGSWCiphertext[T]) {
 	for i := range ct.Value {
 		ct.Value[i].CopyFrom(ctIn.Value[i])
 	}
-	ct.decompParams = ctIn.decompParams
+	ct.GadgetParameters = ctIn.GadgetParameters
 }
 
-// DecompositionParameters returns the decomposition parameters of the ciphertext.
-func (ct GGSWCiphertext[T]) DecompositionParameters() DecompositionParameters[T] {
-	return ct.decompParams
+// Clear clears the ciphertext.
+func (ct *GGSWCiphertext[T]) Clear() {
+	for i := range ct.Value {
+		ct.Value[i].Clear()
+	}
 }

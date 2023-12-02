@@ -65,6 +65,30 @@ func NewEncryptor[T Tint](params Parameters[T]) *Encryptor[T] {
 	return &encryptor
 }
 
+// NewEncryptorWithKey returns a initialized Encryptor with given parameters,
+// with the supplied SecretKey.
+// This does not copy the secret key.
+func NewEncryptorWithKey[T Tint](params Parameters[T], sk SecretKey[T]) *Encryptor[T] {
+	return &Encryptor[T]{
+		Encoder: NewEncoder(params),
+
+		Parameters: params,
+
+		uniformSampler: csprng.NewUniformSampler[T](),
+		binarySampler:  csprng.NewBinarySampler[T](),
+		blockSampler:   csprng.NewBlockSampler[T](params.blockSize),
+		lweSampler:     csprng.NewGaussianSamplerTorus[T](params.lweStdDev),
+		glweSampler:    csprng.NewGaussianSamplerTorus[T](params.glweStdDev),
+
+		PolyEvaluator:    poly.NewEvaluator[T](params.polyDegree),
+		FourierEvaluator: poly.NewFourierEvaluator[T](params.polyDegree),
+
+		SecretKey: sk,
+
+		buffer: newEncryptionBuffer(params),
+	}
+}
+
 // newEncryptionBuffer allocates an empty encryptionBuffer.
 func newEncryptionBuffer[T Tint](params Parameters[T]) encryptionBuffer[T] {
 	return encryptionBuffer[T]{

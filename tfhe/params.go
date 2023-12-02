@@ -1,12 +1,16 @@
 package tfhe
 
 import (
+	"encoding/binary"
+	"errors"
+	"math"
+
 	"github.com/sp301415/tfhe-go/math/num"
 )
 
 const (
 	// MinPolyDegree is the minimum degree of polynomials allowed in parameters.
-	// Currently polynomial decomposition is implemented using AVX2,
+	// Currently polynomial gadget is implemented using AVX2,
 	// which requires degree at least 256/32 = 8.
 	MinPolyDegree = 1 << 3
 
@@ -21,21 +25,21 @@ type Tint interface {
 	uint32 | uint64
 }
 
-// DecompositionParametersLiteral is a Parameter Literal for gadget decomposition,
+// GadgetParametersLiteral is a Parameter Literal for gadget gadget,
 // used in GSW and GGSW encryptions.
-type DecompositionParametersLiteral[T Tint] struct {
+type GadgetParametersLiteral[T Tint] struct {
 	// Base is a base of gadget. It must be power of two.
 	Base T
 	// Level is a length of gadget.
 	Level int
 }
 
-// Compile transforms DecompositionParametersLiteral to read-only DecompositionParameters.
+// Compile transforms GadgetParametersLiteral to read-only GadgetParameters.
 // If Level = 0, it still compiles, but you will have runtime panics when trying to use this parameter.
 // If there is any invalid parameter in the literal, it panics.
-func (p DecompositionParametersLiteral[T]) Compile() DecompositionParameters[T] {
+func (p GadgetParametersLiteral[T]) Compile() GadgetParameters[T] {
 	if p.Level == 0 {
-		return DecompositionParameters[T]{}
+		return GadgetParameters[T]{}
 	}
 
 	switch {
@@ -53,7 +57,7 @@ func (p DecompositionParametersLiteral[T]) Compile() DecompositionParameters[T] 
 		scaledBasesLog[i] = num.SizeT[T]() - (i+1)*baseLog
 	}
 
-	return DecompositionParameters[T]{
+	return GadgetParameters[T]{
 		base:            p.Base,
 		baseHalf:        p.Base / 2,
 		baseMask:        p.Base - 1,
@@ -64,8 +68,8 @@ func (p DecompositionParametersLiteral[T]) Compile() DecompositionParameters[T] 
 	}
 }
 
-// DecompositionParameters is a read-only, compiled parameters based on DecompositionParametersLiteral.
-type DecompositionParameters[T Tint] struct {
+// GadgetParameters is a read-only, compiled parameters based on GadgetParametersLiteral.
+type GadgetParameters[T Tint] struct {
 	// Base is a base of gadget. It must be power of two.
 	base T
 	// BaseHalf equals Base / 2.
@@ -84,50 +88,82 @@ type DecompositionParameters[T Tint] struct {
 }
 
 // Base is a base of gadget. It must be power of two.
-func (p DecompositionParameters[T]) Base() T {
+func (p GadgetParameters[T]) Base() T {
 	return p.base
 }
 
 // BaseLog equals log(Base).
-func (p DecompositionParameters[T]) BaseLog() int {
+func (p GadgetParameters[T]) BaseLog() int {
 	return p.baseLog
 }
 
 // Level is a length of gadget.
-func (p DecompositionParameters[T]) Level() int {
+func (p GadgetParameters[T]) Level() int {
 	return p.level
 }
 
 // ScaledBase returns Q / Base^(i+1) for 0 <= i < Level.
 // For the most common usages i = 0 and i = Level-1, use FirstScaledBase() and LastScaledBase().
-func (p DecompositionParameters[T]) ScaledBase(i int) T {
+func (p GadgetParameters[T]) ScaledBase(i int) T {
 	return T(1 << p.scaledBasesLog[i])
 }
 
 // FirstScaledBase returns Q / Base.
-func (p DecompositionParameters[T]) FirstScaledBase() T {
+func (p GadgetParameters[T]) FirstScaledBase() T {
 	return p.ScaledBase(0)
 }
 
 // LastScaledBase returns Q / Base^Level.
-func (p DecompositionParameters[T]) LastScaledBase() T {
+func (p GadgetParameters[T]) LastScaledBase() T {
 	return p.ScaledBase(p.level - 1)
 }
 
 // ScaledBaseLog returns log(Q / Base^(i+1)) for 0 <= i < Level.
 // For the most common usages i = 0 and i = Level-1, use FirstScaledBaseLog() and LastScaledBaseLog().
-func (p DecompositionParameters[T]) ScaledBaseLog(i int) int {
+func (p GadgetParameters[T]) ScaledBaseLog(i int) int {
 	return p.scaledBasesLog[i]
 }
 
 // FirstScaledBaseLog returns log(Q / Base).
-func (p DecompositionParameters[T]) FirstScaledBaseLog() int {
+func (p GadgetParameters[T]) FirstScaledBaseLog() int {
 	return p.ScaledBaseLog(0)
 }
 
 // LastScaledBaseLog returns log(Q / Base^Level).
-func (p DecompositionParameters[T]) LastScaledBaseLog() int {
+func (p GadgetParameters[T]) LastScaledBaseLog() int {
 	return p.ScaledBaseLog(p.level - 1)
+}
+
+// MarshalBinary implements the encoding.BinaryMarshaler interface.
+// This never returns an error.
+func (p GadgetParameters[T]) MarshalBinary() (data []byte, err error) {
+	base := uint64(p.base)
+	level := uint64(p.level)
+
+	data = make([]byte, 0, 16)
+	data = binary.BigEndian.AppendUint64(data, base)
+	data = binary.BigEndian.AppendUint64(data, level)
+
+	return
+}
+
+// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
+// If the data is invalid, it returns an error.
+// If the parameters are invalid, it panics.
+func (p *GadgetParameters[T]) UnmarshalBinary(data []byte) error {
+	if len(data) != 16 {
+		return errors.New("data length mismatch")
+	}
+
+	base := binary.BigEndian.Uint64(data[:8])
+	level := binary.BigEndian.Uint64(data[8:16])
+
+	*p = GadgetParametersLiteral[T]{
+		Base:  T(base),
+		Level: int(level),
+	}.Compile()
+
+	return nil
 }
 
 // ParametersLiteral is a structure for TFHE parameters.
@@ -155,10 +191,10 @@ type ParametersLiteral[T Tint] struct {
 	// MessageModulus is the modulus of the encoded message.
 	MessageModulus T
 
-	// BootstrapParameters is the decomposition parameters for Programmable Bootstrapping.
-	BootstrapParameters DecompositionParametersLiteral[T]
-	// KeySwitchParameters is the decomposition parameters for KeySwitching.
-	KeySwitchParameters DecompositionParametersLiteral[T]
+	// BootstrapParameters is the gadget parameters for Programmable Bootstrapping.
+	BootstrapParameters GadgetParametersLiteral[T]
+	// KeySwitchParameters is the gadget parameters for KeySwitching.
+	KeySwitchParameters GadgetParametersLiteral[T]
 }
 
 // Compile transforms ParametersLiteral to read-only Parameters.
@@ -248,10 +284,10 @@ type Parameters[T Tint] struct {
 	// sizeT is the bit length of T.
 	sizeT int
 
-	// bootstrapParameters is the decomposition parameters for Programmable Bootstrapping.
-	bootstrapParameters DecompositionParameters[T]
-	// keyswitchParameters is the decomposition parameters for KeySwitching.
-	keyswitchParameters DecompositionParameters[T]
+	// bootstrapParameters is the gadget parameters for Programmable Bootstrapping.
+	bootstrapParameters GadgetParameters[T]
+	// keyswitchParameters is the gadget parameters for KeySwitching.
+	keyswitchParameters GadgetParameters[T]
 }
 
 // LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
@@ -333,12 +369,82 @@ func (p Parameters[T]) SizeT() int {
 	return p.sizeT
 }
 
-// BootstrapParameters is the decomposition parameters for Programmable Bootstrapping.
-func (p Parameters[T]) BootstrapParameters() DecompositionParameters[T] {
+// BootstrapParameters is the gadget parameters for Programmable Bootstrapping.
+func (p Parameters[T]) BootstrapParameters() GadgetParameters[T] {
 	return p.bootstrapParameters
 }
 
-// KeySwitchParameters is the decomposition parameters for KeySwitching.
-func (p Parameters[T]) KeySwitchParameters() DecompositionParameters[T] {
+// KeySwitchParameters is the gadget parameters for KeySwitching.
+func (p Parameters[T]) KeySwitchParameters() GadgetParameters[T] {
 	return p.keyswitchParameters
+}
+
+// MarshalBinary implements the encoding.BinaryMarshaler interface.
+// This never returns an error.
+func (p Parameters[T]) MarshalBinary() (data []byte, err error) {
+	lweDimension := uint64(p.lweDimension)
+	glweDimension := uint64(p.glweDimension)
+	polyDegree := uint64(p.polyDegree)
+	lweStdDev := math.Float64bits(p.lweStdDev)
+	glweStdDev := math.Float64bits(p.glweStdDev)
+	blockSize := uint64(p.blockSize)
+	messageModulus := uint64(p.messageModulus)
+
+	data = make([]byte, 0, 3*8+2*8+8+8+16+16)
+
+	data = binary.BigEndian.AppendUint64(data, lweDimension)
+	data = binary.BigEndian.AppendUint64(data, glweDimension)
+	data = binary.BigEndian.AppendUint64(data, polyDegree)
+	data = binary.BigEndian.AppendUint64(data, lweStdDev)
+	data = binary.BigEndian.AppendUint64(data, glweStdDev)
+	data = binary.BigEndian.AppendUint64(data, blockSize)
+	data = binary.BigEndian.AppendUint64(data, messageModulus)
+
+	bootstrapParameters, _ := p.bootstrapParameters.MarshalBinary()
+	keyswitchParameters, _ := p.keyswitchParameters.MarshalBinary()
+
+	data = append(data, bootstrapParameters...)
+	data = append(data, keyswitchParameters...)
+
+	return
+}
+
+// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
+// If the data is invalid, it returns an error.
+// If the parameters are invalid, it panics.
+func (p *Parameters[T]) UnmarshalBinary(data []byte) error {
+	if len(data) != 3*8+2*8+8+8+16+16 {
+		return errors.New("data length mismatch")
+	}
+
+	lweDimension := binary.BigEndian.Uint64(data[:8])
+	glweDimension := binary.BigEndian.Uint64(data[8:16])
+	polyDegree := binary.BigEndian.Uint64(data[16:24])
+	lweStdDev := math.Float64frombits(binary.BigEndian.Uint64(data[24:32]))
+	glweStdDev := math.Float64frombits(binary.BigEndian.Uint64(data[32:40]))
+	blockSize := binary.BigEndian.Uint64(data[40:48])
+	messageModulus := binary.BigEndian.Uint64(data[48:56])
+
+	bootstrapParameters := GadgetParametersLiteral[T]{
+		Base:  T(binary.BigEndian.Uint64(data[56:64])),
+		Level: int(binary.BigEndian.Uint64(data[64:72])),
+	}
+	keyswitchParameters := GadgetParametersLiteral[T]{
+		Base:  T(binary.BigEndian.Uint64(data[72:80])),
+		Level: int(binary.BigEndian.Uint64(data[80:88])),
+	}
+
+	*p = ParametersLiteral[T]{
+		LWEDimension:        int(lweDimension),
+		GLWEDimension:       int(glweDimension),
+		PolyDegree:          int(polyDegree),
+		LWEStdDev:           lweStdDev,
+		GLWEStdDev:          glweStdDev,
+		BlockSize:           int(blockSize),
+		MessageModulus:      T(messageModulus),
+		BootstrapParameters: bootstrapParameters,
+		KeySwitchParameters: keyswitchParameters,
+	}.Compile()
+
+	return nil
 }

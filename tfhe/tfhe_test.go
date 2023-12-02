@@ -22,7 +22,7 @@ var (
 
 func TestEncryptor(t *testing.T) {
 	messages := []int{1, 2, 3}
-	decompParams := testParams.KeySwitchParameters()
+	gadgetParams := testParams.KeySwitchParameters()
 
 	t.Run("LWE", func(t *testing.T) {
 		for _, m := range messages {
@@ -33,14 +33,14 @@ func TestEncryptor(t *testing.T) {
 
 	t.Run("Lev", func(t *testing.T) {
 		for _, m := range messages {
-			ct := testEncryptor.EncryptLev(m, decompParams)
+			ct := testEncryptor.EncryptLev(m, gadgetParams)
 			assert.Equal(t, m, testEncryptor.DecryptLev(ct))
 		}
 	})
 
 	t.Run("GSW", func(t *testing.T) {
 		for _, m := range messages {
-			ct := testEncryptor.EncryptGSW(m, decompParams)
+			ct := testEncryptor.EncryptGSW(m, gadgetParams)
 			assert.Equal(t, m, testEncryptor.DecryptGSW(ct))
 		}
 	})
@@ -51,12 +51,12 @@ func TestEncryptor(t *testing.T) {
 	})
 
 	t.Run("GLev", func(t *testing.T) {
-		ct := testEncryptor.EncryptGLev(messages, decompParams)
+		ct := testEncryptor.EncryptGLev(messages, gadgetParams)
 		assert.Equal(t, messages, testEncryptor.DecryptGLev(ct)[:len(messages)])
 	})
 
 	t.Run("GGSW", func(t *testing.T) {
-		ct := testEncryptor.EncryptGGSW(messages, decompParams)
+		ct := testEncryptor.EncryptGGSW(messages, gadgetParams)
 		assert.Equal(t, messages, testEncryptor.DecryptGGSW(ct)[:len(messages)])
 	})
 
@@ -66,12 +66,12 @@ func TestEncryptor(t *testing.T) {
 	})
 
 	t.Run("FourierGLev", func(t *testing.T) {
-		ct := testEncryptor.EncryptFourierGLev(messages, decompParams)
+		ct := testEncryptor.EncryptFourierGLev(messages, gadgetParams)
 		assert.Equal(t, messages, testEncryptor.DecryptFourierGLev(ct)[:len(messages)])
 	})
 
 	t.Run("FourierGGSW", func(t *testing.T) {
-		ct := testEncryptor.EncryptFourierGGSW(messages, decompParams)
+		ct := testEncryptor.EncryptFourierGGSW(messages, gadgetParams)
 		assert.Equal(t, messages, testEncryptor.DecryptFourierGGSW(ct)[:len(messages)])
 	})
 }
@@ -148,7 +148,7 @@ func ExampleEncryptor() {
 
 func ExampleEvaluator_CMux() {
 	params := tfhe.ParamsUint4.Compile()
-	decompParams := tfhe.DecompositionParametersLiteral[uint64]{
+	gadgetParams := tfhe.GadgetParametersLiteral[uint64]{
 		Base:  1 << 3,
 		Level: 6,
 	}.Compile()
@@ -157,7 +157,7 @@ func ExampleEvaluator_CMux() {
 
 	ct0 := enc.EncryptGLWE([]int{2})
 	ct1 := enc.EncryptGLWE([]int{5})
-	ctFlag := enc.EncryptFourierGGSW([]int{1}, decompParams)
+	ctFlag := enc.EncryptFourierGGSW([]int{1}, gadgetParams)
 
 	// We don't need evaluation key for CMUX,
 	// so we can just supply empty key.

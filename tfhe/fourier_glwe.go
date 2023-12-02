@@ -45,31 +45,38 @@ func (ct *FourierGLWECiphertext[T]) CopyFrom(ctIn FourierGLWECiphertext[T]) {
 	}
 }
 
+// Clear clears the ciphertext.
+func (ct *FourierGLWECiphertext[T]) Clear() {
+	for i := range ct.Value {
+		ct.Value[i].Clear()
+	}
+}
+
 // FourierGLevCiphertext is a leveled GLWE ciphertext in Fourier domain.
 type FourierGLevCiphertext[T Tint] struct {
+	GadgetParameters GadgetParameters[T]
+
 	// Value has length Level.
 	Value []FourierGLWECiphertext[T]
-
-	decompParams DecompositionParameters[T]
 }
 
 // NewFourierGLevCiphertext allocates an empty FourierGLevCiphertext.
-func NewFourierGLevCiphertext[T Tint](params Parameters[T], decompParams DecompositionParameters[T]) FourierGLevCiphertext[T] {
-	ct := make([]FourierGLWECiphertext[T], decompParams.level)
-	for i := 0; i < decompParams.level; i++ {
+func NewFourierGLevCiphertext[T Tint](params Parameters[T], gadgetParams GadgetParameters[T]) FourierGLevCiphertext[T] {
+	ct := make([]FourierGLWECiphertext[T], gadgetParams.level)
+	for i := 0; i < gadgetParams.level; i++ {
 		ct[i] = NewFourierGLWECiphertext(params)
 	}
-	return FourierGLevCiphertext[T]{Value: ct, decompParams: decompParams}
+	return FourierGLevCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
 }
 
 // NewFourierGLevCiphertextCustom allocates an empty FourierGLevCiphertext with given dimension and polyDegree.
 // Note that each GLWE ciphertext has length glweDimension + 1.
-func NewFourierGLevCiphertextCustom[T Tint](glweDimension, polyDegree int, decompParams DecompositionParameters[T]) FourierGLevCiphertext[T] {
-	ct := make([]FourierGLWECiphertext[T], decompParams.level)
-	for i := 0; i < decompParams.level; i++ {
+func NewFourierGLevCiphertextCustom[T Tint](glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) FourierGLevCiphertext[T] {
+	ct := make([]FourierGLWECiphertext[T], gadgetParams.level)
+	for i := 0; i < gadgetParams.level; i++ {
 		ct[i] = NewFourierGLWECiphertextCustom[T](glweDimension, polyDegree)
 	}
-	return FourierGLevCiphertext[T]{Value: ct, decompParams: decompParams}
+	return FourierGLevCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
 }
 
 // Copy returns a copy of the ciphertext.
@@ -78,7 +85,7 @@ func (ct FourierGLevCiphertext[T]) Copy() FourierGLevCiphertext[T] {
 	for i := range ct.Value {
 		ctCopy[i] = ct.Value[i].Copy()
 	}
-	return FourierGLevCiphertext[T]{Value: ctCopy, decompParams: ct.decompParams}
+	return FourierGLevCiphertext[T]{Value: ctCopy, GadgetParameters: ct.GadgetParameters}
 }
 
 // CopyFrom copies values from a ciphertext.
@@ -86,39 +93,41 @@ func (ct *FourierGLevCiphertext[T]) CopyFrom(ctIn FourierGLevCiphertext[T]) {
 	for i := range ct.Value {
 		ct.Value[i].CopyFrom(ctIn.Value[i])
 	}
-	ct.decompParams = ctIn.decompParams
+	ct.GadgetParameters = ctIn.GadgetParameters
 }
 
-// DecompositionParameters returns the decomposition parameters of the ciphertext.
-func (ct FourierGLevCiphertext[T]) DecompositionParameters() DecompositionParameters[T] {
-	return ct.decompParams
+// Clear clears the ciphertext.
+func (ct *FourierGLevCiphertext[T]) Clear() {
+	for i := range ct.Value {
+		ct.Value[i].Clear()
+	}
 }
 
 // FourierGGSWCiphertext represents an encrypted GGSW ciphertext in Fourier domain.
 type FourierGGSWCiphertext[T Tint] struct {
+	GadgetParameters GadgetParameters[T]
+
 	// Value has length GLWEDimension + 1.
 	Value []FourierGLevCiphertext[T]
-
-	decompParams DecompositionParameters[T]
 }
 
 // NewFourierGGSWCiphertext allocates an empty GGSW ciphertext.
-func NewFourierGGSWCiphertext[T Tint](params Parameters[T], decompParams DecompositionParameters[T]) FourierGGSWCiphertext[T] {
+func NewFourierGGSWCiphertext[T Tint](params Parameters[T], gadgetParams GadgetParameters[T]) FourierGGSWCiphertext[T] {
 	ct := make([]FourierGLevCiphertext[T], params.glweDimension+1)
 	for i := 0; i < params.glweDimension+1; i++ {
-		ct[i] = NewFourierGLevCiphertext(params, decompParams)
+		ct[i] = NewFourierGLevCiphertext(params, gadgetParams)
 	}
-	return FourierGGSWCiphertext[T]{Value: ct, decompParams: decompParams}
+	return FourierGGSWCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
 }
 
 // NewFourierGGSWCiphertextCustom allocates an empty GGSW ciphertext with given dimension and polyDegree.
 // Note that each GLWE ciphertext has length glweDimension + 1.
-func NewFourierGGSWCiphertextCustom[T Tint](glweDimension, polyDegree int, decompParams DecompositionParameters[T]) FourierGGSWCiphertext[T] {
+func NewFourierGGSWCiphertextCustom[T Tint](glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) FourierGGSWCiphertext[T] {
 	ct := make([]FourierGLevCiphertext[T], glweDimension+1)
 	for i := 0; i < glweDimension+1; i++ {
-		ct[i] = NewFourierGLevCiphertextCustom[T](glweDimension, polyDegree, decompParams)
+		ct[i] = NewFourierGLevCiphertextCustom[T](glweDimension, polyDegree, gadgetParams)
 	}
-	return FourierGGSWCiphertext[T]{Value: ct, decompParams: decompParams}
+	return FourierGGSWCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
 }
 
 // Copy returns a copy of the ciphertext.
@@ -127,7 +136,7 @@ func (ct FourierGGSWCiphertext[T]) Copy() FourierGGSWCiphertext[T] {
 	for i := range ct.Value {
 		ctCopy[i] = ct.Value[i].Copy()
 	}
-	return FourierGGSWCiphertext[T]{Value: ctCopy, decompParams: ct.decompParams}
+	return FourierGGSWCiphertext[T]{Value: ctCopy, GadgetParameters: ct.GadgetParameters}
 }
 
 // CopyFrom copies values from a ciphertext.
@@ -135,10 +144,12 @@ func (ct *FourierGGSWCiphertext[T]) CopyFrom(ctIn FourierGGSWCiphertext[T]) {
 	for i := range ct.Value {
 		ct.Value[i].CopyFrom(ctIn.Value[i])
 	}
-	ct.decompParams = ctIn.decompParams
+	ct.GadgetParameters = ctIn.GadgetParameters
 }
 
-// DecompositionParameters returns the decomposition parameters of the ciphertext.
-func (ct FourierGGSWCiphertext[T]) DecompositionParameters() DecompositionParameters[T] {
-	return ct.decompParams
+// Clear clears the ciphertext.
+func (ct *FourierGGSWCiphertext[T]) Clear() {
+	for i := range ct.Value {
+		ct.Value[i].Clear()
+	}
 }

@@ -37,7 +37,7 @@ fmt.Println(enc.DecryptGLWE(ctGLWE)[:4]) // [1, 2, 3, 4]
 ### CMUX
 ```go
 params := tfhe.ParamsUint4.Compile()
-decompParams := tfhe.DecompositionParametersLiteral[uint64]{
+gadgetParams := tfhe.GadgetParametersLiteral[uint64]{
 	Base:  1 << 3,
 	Level: 6,
 }.Compile()
@@ -46,7 +46,7 @@ enc := tfhe.NewEncryptor(params)
 
 ct0 := enc.EncryptGLWE([]int{2})
 ct1 := enc.EncryptGLWE([]int{5})
-ctFlag := enc.EncryptFourierGGSW([]int{1}, decompParams)
+ctFlag := enc.EncryptFourierGGSW([]int{1}, gadgetParams)
 
 // We don't need evaluation key for CMUX,
 // so we can just supply empty key.

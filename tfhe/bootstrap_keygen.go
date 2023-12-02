@@ -107,12 +107,12 @@ func (e *Encryptor[T]) GenBootstrapKeyParallel() BootstrapKey[T] {
 //
 // This can take a long time.
 // Use GenKeySwitchKeyParallel for better key generation performance.
-func (e *Encryptor[T]) GenKeySwitchKey(skIn LWEKey[T], decompParams DecompositionParameters[T]) KeySwitchKey[T] {
-	ksk := NewKeySwitchKey(len(skIn.Value), len(e.SecretKey.LWEKey.Value), decompParams)
+func (e *Encryptor[T]) GenKeySwitchKey(skIn LWEKey[T], gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
+	ksk := NewKeySwitchKey(len(skIn.Value), len(e.SecretKey.LWEKey.Value), gadgetParams)
 
 	for i := 0; i < ksk.InputLWEDimension(); i++ {
-		for j := 0; j < decompParams.level; j++ {
-			ksk.Value[i].Value[j].Value[0] = skIn.Value[i] << decompParams.ScaledBaseLog(j)
+		for j := 0; j < gadgetParams.level; j++ {
+			ksk.Value[i].Value[j].Value[0] = skIn.Value[i] << gadgetParams.ScaledBaseLog(j)
 			e.EncryptLWEBody(ksk.Value[i].Value[j])
 		}
 	}
@@ -121,10 +121,10 @@ func (e *Encryptor[T]) GenKeySwitchKey(skIn LWEKey[T], decompParams Decompositio
 }
 
 // GenKeySwitchKeyParallel samples a new keyswitch key skIn -> e.SecretKey.LWEKey in parallel.
-func (e *Encryptor[T]) GenKeySwitchKeyParallel(skIn LWEKey[T], decompParams DecompositionParameters[T]) KeySwitchKey[T] {
-	ksk := NewKeySwitchKey(len(skIn.Value), len(e.SecretKey.LWEKey.Value), decompParams)
+func (e *Encryptor[T]) GenKeySwitchKeyParallel(skIn LWEKey[T], gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
+	ksk := NewKeySwitchKey(len(skIn.Value), len(e.SecretKey.LWEKey.Value), gadgetParams)
 
-	workSize := ksk.InputLWEDimension() * decompParams.level
+	workSize := ksk.InputLWEDimension() * gadgetParams.level
 	chunkCount := num.Min(runtime.NumCPU(), num.Sqrt(workSize))
 
 	encryptorPool := make([]*Encryptor[T], chunkCount)
@@ -136,7 +136,7 @@ func (e *Encryptor[T]) GenKeySwitchKeyParallel(skIn LWEKey[T], decompParams Deco
 	go func() {
 		defer close(jobs)
 		for i := 0; i < ksk.InputLWEDimension(); i++ {
-			for j := 0; j < decompParams.level; j++ {
+			for j := 0; j < gadgetParams.level; j++ {
 				jobs <- [2]int{i, j}
 			}
 		}
@@ -151,7 +151,7 @@ func (e *Encryptor[T]) GenKeySwitchKeyParallel(skIn LWEKey[T], decompParams Deco
 
 			for jobs := range jobs {
 				i, j := jobs[0], jobs[1]
-				ksk.Value[i].Value[j].Value[0] = skIn.Value[i] << decompParams.ScaledBaseLog(j)
+				ksk.Value[i].Value[j].Value[0] = skIn.Value[i] << gadgetParams.ScaledBaseLog(j)
 				e.EncryptLWEBody(ksk.Value[i].Value[j])
 			}
 		}(i)

@@ -30,35 +30,35 @@ func (e *Evaluator[T]) ToStandardGLWECiphertextAssign(ctIn FourierGLWECiphertext
 
 // ToFourierGLevCiphertext transforms GLev ciphertext to Fourier GLev ciphertext.
 func (e *Evaluator[T]) ToFourierGLevCiphertext(ct GLevCiphertext[T]) FourierGLevCiphertext[T] {
-	ctOut := NewFourierGLevCiphertext(e.Parameters, ct.decompParams)
+	ctOut := NewFourierGLevCiphertext(e.Parameters, ct.GadgetParameters)
 	e.ToFourierGLevCiphertextAssign(ct, ctOut)
 	return ctOut
 }
 
 // ToFourierGLevCiphertextAssign transforms GLev ciphertext to Fourier GLev ciphertext, and writes it to ctOut.
 func (e *Evaluator[T]) ToFourierGLevCiphertextAssign(ctIn GLevCiphertext[T], ctOut FourierGLevCiphertext[T]) {
-	for i := 0; i < ctIn.decompParams.level; i++ {
+	for i := 0; i < ctIn.GadgetParameters.level; i++ {
 		e.ToFourierGLWECiphertextAssign(ctIn.Value[i], ctOut.Value[i])
 	}
 }
 
 // ToStandardGLevCiphertext transforms Fourier GLev ciphertext to GLev ciphertext.
 func (e *Evaluator[T]) ToStandardGLevCiphertext(ct FourierGLevCiphertext[T]) GLevCiphertext[T] {
-	ctOut := NewGLevCiphertext(e.Parameters, ct.decompParams)
+	ctOut := NewGLevCiphertext(e.Parameters, ct.GadgetParameters)
 	e.ToStandardGLevCiphertextAssign(ct, ctOut)
 	return ctOut
 }
 
 // ToStandardGLevCiphertextAssign transforms Fourier GLev ciphertext to GLev ciphertext, and writes it to ctOut.
 func (e *Evaluator[T]) ToStandardGLevCiphertextAssign(ctIn FourierGLevCiphertext[T], ctOut GLevCiphertext[T]) {
-	for i := 0; i < ctIn.decompParams.level; i++ {
+	for i := 0; i < ctIn.GadgetParameters.level; i++ {
 		e.ToStandardGLWECiphertextAssign(ctIn.Value[i], ctOut.Value[i])
 	}
 }
 
 // ToFourierGGSWCiphertext transforms GGSW ciphertext to Fourier GGSW ciphertext.
 func (e *Evaluator[T]) ToFourierGGSWCiphertext(ct GGSWCiphertext[T]) FourierGGSWCiphertext[T] {
-	ctOut := NewFourierGGSWCiphertext(e.Parameters, ct.decompParams)
+	ctOut := NewFourierGGSWCiphertext(e.Parameters, ct.GadgetParameters)
 	e.ToFourierGGSWCiphertextAssign(ct, ctOut)
 	return ctOut
 }
@@ -72,7 +72,7 @@ func (e *Evaluator[T]) ToFourierGGSWCiphertextAssign(ctIn GGSWCiphertext[T], ctO
 
 // ToStandardGGSWCiphertext transforms Fourier GGSW ciphertext to GGSW ciphertext.
 func (e *Evaluator[T]) ToStandardGGSWCiphertext(ct FourierGGSWCiphertext[T]) GGSWCiphertext[T] {
-	ctOut := NewGGSWCiphertext(e.Parameters, ct.decompParams)
+	ctOut := NewGGSWCiphertext(e.Parameters, ct.GadgetParameters)
 	e.ToStandardGGSWCiphertextAssign(ct, ctOut)
 	return ctOut
 }
@@ -116,35 +116,35 @@ func (e *Encryptor[T]) ToStandardGLWECiphertextAssign(ctIn FourierGLWECiphertext
 
 // ToFourierGLevCiphertext transforms GLev ciphertext to Fourier GLev ciphertext.
 func (e *Encryptor[T]) ToFourierGLevCiphertext(ct GLevCiphertext[T]) FourierGLevCiphertext[T] {
-	ctOut := NewFourierGLevCiphertext(e.Parameters, ct.decompParams)
+	ctOut := NewFourierGLevCiphertext(e.Parameters, ct.GadgetParameters)
 	e.ToFourierGLevCiphertextAssign(ct, ctOut)
 	return ctOut
 }
 
 // ToFourierGLevCiphertextAssign transforms GLev ciphertext to Fourier GLev ciphertext, and writes it to ctOut.
 func (e *Encryptor[T]) ToFourierGLevCiphertextAssign(ctIn GLevCiphertext[T], ctOut FourierGLevCiphertext[T]) {
-	for i := 0; i < ctIn.decompParams.level; i++ {
+	for i := 0; i < ctIn.GadgetParameters.level; i++ {
 		e.ToFourierGLWECiphertextAssign(ctIn.Value[i], ctOut.Value[i])
 	}
 }
 
 // ToStandardGLevCiphertext transforms Fourier GLev ciphertext to GLev ciphertext.
 func (e *Encryptor[T]) ToStandardGLevCiphertext(ct FourierGLevCiphertext[T]) GLevCiphertext[T] {
-	ctOut := NewGLevCiphertext(e.Parameters, ct.decompParams)
+	ctOut := NewGLevCiphertext(e.Parameters, ct.GadgetParameters)
 	e.ToStandardGLevCiphertextAssign(ct, ctOut)
 	return ctOut
 }
 
 // ToStandardGLevCiphertextAssign transforms Fourier GLev ciphertext to GLev ciphertext, and writes it to ctOut.
 func (e *Encryptor[T]) ToStandardGLevCiphertextAssign(ctIn FourierGLevCiphertext[T], ctOut GLevCiphertext[T]) {
-	for i := 0; i < ctIn.decompParams.level; i++ {
+	for i := 0; i < ctIn.GadgetParameters.level; i++ {
 		e.ToStandardGLWECiphertextAssign(ctIn.Value[i], ctOut.Value[i])
 	}
 }
 
 // ToFourierGGSWCiphertext transforms GGSW ciphertext to Fourier GGSW ciphertext.
 func (e *Encryptor[T]) ToFourierGGSWCiphertext(ct GGSWCiphertext[T]) FourierGGSWCiphertext[T] {
-	ctOut := NewFourierGGSWCiphertext(e.Parameters, ct.decompParams)
+	ctOut := NewFourierGGSWCiphertext(e.Parameters, ct.GadgetParameters)
 	e.ToFourierGGSWCiphertextAssign(ct, ctOut)
 	return ctOut
 }
@@ -158,7 +158,7 @@ func (e *Encryptor[T]) ToFourierGGSWCiphertextAssign(ctIn GGSWCiphertext[T], ctO
 
 // ToStandardGGSWCiphertext transforms Fourier GGSW ciphertext to GGSW ciphertext.
 func (e *Encryptor[T]) ToStandardGGSWCiphertext(ct FourierGGSWCiphertext[T]) GGSWCiphertext[T] {
-	ctOut := NewGGSWCiphertext(e.Parameters, ct.decompParams)
+	ctOut := NewGGSWCiphertext(e.Parameters, ct.GadgetParameters)
 	e.ToStandardGGSWCiphertextAssign(ct, ctOut)
 	return ctOut
 }

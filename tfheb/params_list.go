@@ -16,11 +16,11 @@ var (
 
 		MessageModulus: 1 << 2,
 
-		BootstrapParameters: tfhe.DecompositionParametersLiteral[uint32]{
+		BootstrapParameters: tfhe.GadgetParametersLiteral[uint32]{
 			Base:  1 << 6,
 			Level: 3,
 		},
-		KeySwitchParameters: tfhe.DecompositionParametersLiteral[uint32]{
+		KeySwitchParameters: tfhe.GadgetParametersLiteral[uint32]{
 			Base:  1 << 3,
 			Level: 4,
 		},
@@ -39,11 +39,11 @@ var (
 
 		MessageModulus: 1 << 2,
 
-		BootstrapParameters: tfhe.DecompositionParametersLiteral[uint32]{
+		BootstrapParameters: tfhe.GadgetParametersLiteral[uint32]{
 			Base:  1 << 7,
 			Level: 3,
 		},
-		KeySwitchParameters: tfhe.DecompositionParametersLiteral[uint32]{
+		KeySwitchParameters: tfhe.GadgetParametersLiteral[uint32]{
 			Base:  1 << 2,
 			Level: 8,
 		},
