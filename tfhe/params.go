@@ -141,8 +141,8 @@ func (p GadgetParameters[T]) MarshalBinary() (data []byte, err error) {
 	level := uint64(p.level)
 
 	data = make([]byte, 0, 16)
-	data = binary.BigEndian.AppendUint64(data, base)
-	data = binary.BigEndian.AppendUint64(data, level)
+	binary.BigEndian.PutUint64(data[0:8], base)
+	binary.BigEndian.PutUint64(data[8:16], level)
 
 	return
 }
@@ -392,13 +392,13 @@ func (p Parameters[T]) MarshalBinary() (data []byte, err error) {
 
 	data = make([]byte, 0, 3*8+2*8+8+8+16+16)
 
-	data = binary.BigEndian.AppendUint64(data, lweDimension)
-	data = binary.BigEndian.AppendUint64(data, glweDimension)
-	data = binary.BigEndian.AppendUint64(data, polyDegree)
-	data = binary.BigEndian.AppendUint64(data, lweStdDev)
-	data = binary.BigEndian.AppendUint64(data, glweStdDev)
-	data = binary.BigEndian.AppendUint64(data, blockSize)
-	data = binary.BigEndian.AppendUint64(data, messageModulus)
+	binary.BigEndian.PutUint64(data[0:8], lweDimension)
+	binary.BigEndian.PutUint64(data[8:16], glweDimension)
+	binary.BigEndian.PutUint64(data[16:24], polyDegree)
+	binary.BigEndian.PutUint64(data[24:32], lweStdDev)
+	binary.BigEndian.PutUint64(data[32:40], glweStdDev)
+	binary.BigEndian.PutUint64(data[40:48], blockSize)
+	binary.BigEndian.PutUint64(data[48:56], messageModulus)
 
 	bootstrapParameters, _ := p.bootstrapParameters.MarshalBinary()
 	keyswitchParameters, _ := p.keyswitchParameters.MarshalBinary()
@@ -417,7 +417,7 @@ func (p *Parameters[T]) UnmarshalBinary(data []byte) error {
 		return errors.New("data length mismatch")
 	}
 
-	lweDimension := binary.BigEndian.Uint64(data[:8])
+	lweDimension := binary.BigEndian.Uint64(data[0:8])
 	glweDimension := binary.BigEndian.Uint64(data[8:16])
 	polyDegree := binary.BigEndian.Uint64(data[16:24])
 	lweStdDev := math.Float64frombits(binary.BigEndian.Uint64(data[24:32]))
