@@ -76,7 +76,7 @@ func (s GaussianSampler[T]) normFloat2() (float64, float64) {
 // Sample returns a number sampled from rounded gaussian distribution.
 func (s GaussianSampler[T]) Sample() T {
 	u, _ := s.normFloat2()
-	u = math.Round(u)
+	u = math.Round(u * s.StdDev)
 
 	var z T
 	switch any(z).(type) {
@@ -101,38 +101,38 @@ func (s GaussianSampler[T]) SampleSliceAssign(v []T) {
 	case uint, uintptr:
 		for i := 0; i < len(v); i += 2 {
 			x, y := s.normFloat2()
-			v[i] = T(int(math.Round(x)))
-			v[i+1] = T(int(math.Round(y)))
+			v[i] = T(int(math.Round(x * s.StdDev)))
+			v[i+1] = T(int(math.Round(y * s.StdDev)))
 		}
 	case uint8:
 		for i := 0; i < len(v); i += 2 {
 			x, y := s.normFloat2()
-			v[i] = T(int8(math.Round(x)))
-			v[i+1] = T(int8(math.Round(y)))
+			v[i] = T(int8(math.Round(x * s.StdDev)))
+			v[i+1] = T(int8(math.Round(y * s.StdDev)))
 		}
 	case uint16:
 		for i := 0; i < len(v); i += 2 {
 			x, y := s.normFloat2()
-			v[i] = T(int16(math.Round(x)))
-			v[i+1] = T(int16(math.Round(y)))
+			v[i] = T(int16(math.Round(x * s.StdDev)))
+			v[i+1] = T(int16(math.Round(y * s.StdDev)))
 		}
 	case uint32:
 		for i := 0; i < len(v); i += 2 {
 			x, y := s.normFloat2()
-			v[i] = T(int32(math.Round(x)))
-			v[i+1] = T(int32(math.Round(y)))
+			v[i] = T(int32(math.Round(x * s.StdDev)))
+			v[i+1] = T(int32(math.Round(y * s.StdDev)))
 		}
 	case uint64:
 		for i := 0; i < len(v); i += 2 {
 			x, y := s.normFloat2()
-			v[i] = T(int64(math.Round(x)))
-			v[i+1] = T(int64(math.Round(y)))
+			v[i] = T(int64(math.Round(x * s.StdDev)))
+			v[i+1] = T(int64(math.Round(y * s.StdDev)))
 		}
 	default:
 		for i := 0; i < len(v); i += 2 {
 			x, y := s.normFloat2()
-			v[i] = T(math.Round(x))
-			v[i+1] = T(math.Round(y))
+			v[i] = T(math.Round(x * s.StdDev))
+			v[i+1] = T(math.Round(y * s.StdDev))
 		}
 	}
 
@@ -142,45 +142,45 @@ func (s GaussianSampler[T]) SampleSliceAssign(v []T) {
 }
 
 // SampleSliceAddAssign samples rounded gaussian values and adds to v.
-// Mostly used in EncryptBody functions, adding noise to the message.
+// Mostly used in EncryptBody functions, adding error to the message.
 func (s GaussianSampler[T]) SampleSliceAddAssign(v []T) {
 	var z T
 	switch any(z).(type) {
 	case uint, uintptr:
 		for i := 0; i < len(v); i += 2 {
 			x, y := s.normFloat2()
-			v[i] += T(int(math.Round(x)))
-			v[i+1] += T(int(math.Round(y)))
+			v[i] += T(int(math.Round(x * s.StdDev)))
+			v[i+1] += T(int(math.Round(y * s.StdDev)))
 		}
 	case uint8:
 		for i := 0; i < len(v); i += 2 {
 			x, y := s.normFloat2()
-			v[i] += T(int8(math.Round(x)))
-			v[i+1] += T(int8(math.Round(y)))
+			v[i] += T(int8(math.Round(x * s.StdDev)))
+			v[i+1] += T(int8(math.Round(y * s.StdDev)))
 		}
 	case uint16:
 		for i := 0; i < len(v); i += 2 {
 			x, y := s.normFloat2()
-			v[i] += T(int16(math.Round(x)))
-			v[i+1] += T(int16(math.Round(y)))
+			v[i] += T(int16(math.Round(x * s.StdDev)))
+			v[i+1] += T(int16(math.Round(y * s.StdDev)))
 		}
 	case uint32:
 		for i := 0; i < len(v); i += 2 {
 			x, y := s.normFloat2()
-			v[i] += T(int32(math.Round(x)))
-			v[i+1] += T(int32(math.Round(y)))
+			v[i] += T(int32(math.Round(x * s.StdDev)))
+			v[i+1] += T(int32(math.Round(y * s.StdDev)))
 		}
 	case uint64:
 		for i := 0; i < len(v); i += 2 {
 			x, y := s.normFloat2()
-			v[i] += T(int64(math.Round(x)))
-			v[i+1] += T(int64(math.Round(y)))
+			v[i] += T(int64(math.Round(x * s.StdDev)))
+			v[i+1] += T(int64(math.Round(y * s.StdDev)))
 		}
 	default:
 		for i := 0; i < len(v); i += 2 {
 			x, y := s.normFloat2()
-			v[i] += T(math.Round(x))
-			v[i+1] += T(math.Round(y))
+			v[i] += T(math.Round(x * s.StdDev))
+			v[i+1] += T(math.Round(y * s.StdDev))
 		}
 	}
 

@@ -29,19 +29,6 @@ func NewBinarySamplerWithSeed[T num.Integer](seed []byte) BinarySampler[T] {
 	}
 }
 
-// Read implements the io.Reader interface.
-func (s BinarySampler[T]) Read(b []byte) (n int, err error) {
-	n, err = s.baseSampler.Read(b)
-	if err != nil {
-		return
-	}
-
-	for i := range b {
-		b[i] = b[i] & 1
-	}
-	return
-}
-
 // Sample uniformly samples a random binary integer.
 func (s BinarySampler[T]) Sample() T {
 	return T(s.baseSampler.Sample() & 1)

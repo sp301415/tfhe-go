@@ -35,13 +35,8 @@ type GadgetParametersLiteral[T Tint] struct {
 }
 
 // Compile transforms GadgetParametersLiteral to read-only GadgetParameters.
-// If Level = 0, it still compiles, but you will have runtime panics when trying to use this parameter.
 // If there is any invalid parameter in the literal, it panics.
 func (p GadgetParametersLiteral[T]) Compile() GadgetParameters[T] {
-	if p.Level == 0 {
-		return GadgetParameters[T]{}
-	}
-
 	switch {
 	case !num.IsPowerOfTwo(p.Base):
 		panic("base not power of two")
@@ -168,6 +163,8 @@ func (p *GadgetParameters[T]) UnmarshalBinary(data []byte) error {
 
 // ParametersLiteral is a structure for TFHE parameters.
 //
+// # Warning
+//
 // Unless you are a cryptographic expert, DO NOT set these by yourself;
 // always use the default parameters provided.
 type ParametersLiteral[T Tint] struct {
@@ -199,6 +196,14 @@ type ParametersLiteral[T Tint] struct {
 
 // Compile transforms ParametersLiteral to read-only Parameters.
 // If there is any invalid parameter in the literal, it panics.
+// Default parameters are guaranteed to be compiled without panics.
+//
+// # Warning
+//
+// This method performs only basic sanity checks.
+// Just because a parameter compiles does not necessarily mean it is safe or correct.
+// Unless you are a cryptographic expert, DO NOT set parameters by yourself;
+// always use the default parameters provided.
 func (p ParametersLiteral[T]) Compile() Parameters[T] {
 	switch {
 	case p.LWEDimension <= 0:

@@ -50,12 +50,6 @@ func NewUniformSamplerWithSeed[T num.Integer](seed []byte) UniformSampler[T] {
 	}
 }
 
-// Read implements the io.Reader interface.
-// This is a simple wrapping of underlying blake2b prng.
-func (s UniformSampler[T]) Read(b []byte) (n int, err error) {
-	return s.prng.Read(b)
-}
-
 // Sample uniformly samples a random integer of type T.
 func (s UniformSampler[T]) Sample() T {
 	out := make([]byte, s.sizeT/8)
