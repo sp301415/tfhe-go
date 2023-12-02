@@ -167,8 +167,6 @@ func (e *Encoder[T]) EncodeGLWECiphertext(messages []int) GLWECiphertext[T] {
 // with zero mask and no error.
 // Resulting ciphertext is cryptographically insecure.
 func (e *Encoder[T]) EncodeGLWECiphertextAssign(messages []int, ct GLWECiphertext[T]) {
-	for i := 1; i < e.Parameters.glweDimension+1; i++ {
-		ct.Value[i].Clear()
-	}
+	ct.Clear()
 	e.EncodeGLWEAssign(messages, GLWEPlaintext[T]{Value: ct.Value[0]})
 }
