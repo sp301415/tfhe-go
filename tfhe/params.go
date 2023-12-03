@@ -135,7 +135,7 @@ func (p GadgetParameters[T]) MarshalBinary() (data []byte, err error) {
 	base := uint64(p.base)
 	level := uint64(p.level)
 
-	data = make([]byte, 0, 16)
+	data = make([]byte, 16)
 	binary.BigEndian.PutUint64(data[0:8], base)
 	binary.BigEndian.PutUint64(data[8:16], level)
 
@@ -395,7 +395,7 @@ func (p Parameters[T]) MarshalBinary() (data []byte, err error) {
 	blockSize := uint64(p.blockSize)
 	messageModulus := uint64(p.messageModulus)
 
-	data = make([]byte, 0, 3*8+2*8+8+8+16+16)
+	data = make([]byte, 3*8+2*8+8+8+16+16)
 
 	binary.BigEndian.PutUint64(data[0:8], lweDimension)
 	binary.BigEndian.PutUint64(data[8:16], glweDimension)
