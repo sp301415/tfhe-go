@@ -20,6 +20,15 @@ func NewGLWEKey[T Tint](params Parameters[T]) GLWEKey[T] {
 	return GLWEKey[T]{Value: sk}
 }
 
+// NewGLWEKeyCustom allocates an empty GLWESecretKey with given dimension and polyDegree.
+func NewGLWEKeyCustom[T Tint](glweDimension, polyDegree int) GLWEKey[T] {
+	sk := make([]poly.Poly[T], glweDimension)
+	for i := range sk {
+		sk[i] = poly.New[T](polyDegree)
+	}
+	return GLWEKey[T]{Value: sk}
+}
+
 // Copy returns a copy of the key.
 func (sk GLWEKey[T]) Copy() GLWEKey[T] {
 	skCopy := make([]poly.Poly[T], len(sk.Value))
@@ -74,6 +83,11 @@ func (pt GLWEPlaintext[T]) Copy() GLWEPlaintext[T] {
 // CopyFrom copies values from a plaintext.
 func (pt *GLWEPlaintext[T]) CopyFrom(ptIn GLWEPlaintext[T]) {
 	pt.Value.CopyFrom(ptIn.Value)
+}
+
+// Clear clears the plaintext.
+func (pt *GLWEPlaintext[T]) Clear() {
+	pt.Value.Clear()
 }
 
 // GLWECiphertext represents an encrypted GLWE ciphertext.

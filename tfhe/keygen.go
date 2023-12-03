@@ -44,6 +44,28 @@ func NewSecretKey[T Tint](params Parameters[T]) SecretKey[T] {
 	}
 }
 
+// NewSecretKeyCustom allocates an empty secret key with given dimension and polyDegree.
+// Each key shares the same backing slice, held by LWELargeKey.
+func NewSecretKeyCustom[T Tint](lweDimension, glweDimension, polyDegree int) SecretKey[T] {
+	lweLargeKey := LWEKey[T]{Value: make([]T, glweDimension*polyDegree)}
+
+	lweKey := LWEKey[T]{Value: lweLargeKey.Value[:lweDimension]}
+
+	glweKey := GLWEKey[T]{Value: make([]poly.Poly[T], glweDimension)}
+	for i := 0; i < glweDimension; i++ {
+		glweKey.Value[i].Coeffs = lweLargeKey.Value[i*polyDegree : (i+1)*polyDegree]
+	}
+
+	fourierGLWEKey := NewFourierGLWEKeyCustom[T](glweDimension, polyDegree)
+
+	return SecretKey[T]{
+		LWEKey:         lweKey,
+		GLWEKey:        glweKey,
+		FourierGLWEKey: fourierGLWEKey,
+		LWELargeKey:    lweLargeKey,
+	}
+}
+
 // Copy returns a copy of the key.
 func (sk SecretKey[T]) Copy() SecretKey[T] {
 	lweLargeKey := LWEKey[T]{Value: vec.Copy(sk.LWELargeKey.Value)}

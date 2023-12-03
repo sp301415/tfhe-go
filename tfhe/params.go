@@ -2,7 +2,7 @@ package tfhe
 
 import (
 	"encoding/binary"
-	"errors"
+	"io"
 	"math"
 
 	"github.com/sp301415/tfhe-go/math/num"
@@ -132,22 +132,19 @@ func (p GadgetParameters[T]) LastScaledBaseLog() int {
 // MarshalBinary implements the encoding.BinaryMarshaler interface.
 // This never returns an error.
 func (p GadgetParameters[T]) MarshalBinary() (data []byte, err error) {
-	base := uint64(p.base)
-	level := uint64(p.level)
-
 	data = make([]byte, 16)
-	binary.BigEndian.PutUint64(data[0:8], base)
-	binary.BigEndian.PutUint64(data[8:16], level)
+	binary.BigEndian.PutUint64(data[0:8], uint64(p.base))
+	binary.BigEndian.PutUint64(data[8:16], uint64(p.level))
 
 	return
 }
 
 // UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
-// If the data is invalid, it returns an error.
-// If the parameters are invalid, it panics.
+// Returns io.ErrUnexpectedEOF if the data is too short,
+// and truncates if the data is too long.
 func (p *GadgetParameters[T]) UnmarshalBinary(data []byte) error {
-	if len(data) != 16 {
-		return errors.New("data length mismatch")
+	if len(data) < 16 {
+		return io.ErrUnexpectedEOF
 	}
 
 	base := binary.BigEndian.Uint64(data[:8])
@@ -415,11 +412,11 @@ func (p Parameters[T]) MarshalBinary() (data []byte, err error) {
 }
 
 // UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
-// If the data is invalid, it returns an error.
-// If the parameters are invalid, it panics.
+// Returns io.ErrUnexpectedEOF if the data is too short,
+// and truncates if the data is too long.
 func (p *Parameters[T]) UnmarshalBinary(data []byte) error {
-	if len(data) != 3*8+2*8+8+8+16+16 {
-		return errors.New("data length mismatch")
+	if len(data) < 3*8+2*8+8+8+16+16 {
+		return io.ErrUnexpectedEOF
 	}
 
 	lweDimension := binary.BigEndian.Uint64(data[0:8])

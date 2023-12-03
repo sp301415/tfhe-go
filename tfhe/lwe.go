@@ -15,6 +15,11 @@ func NewLWEKey[T Tint](params Parameters[T]) LWEKey[T] {
 	return LWEKey[T]{Value: make([]T, params.lweDimension)}
 }
 
+// NewLWEKeyCustom allocates an empty LWEKey with given dimension.
+func NewLWEKeyCustom[T Tint](lweDimension int) LWEKey[T] {
+	return LWEKey[T]{Value: make([]T, lweDimension)}
+}
+
 // Copy returns a copy of the key.
 func (sk LWEKey[T]) Copy() LWEKey[T] {
 	return LWEKey[T]{Value: vec.Copy(sk.Value)}

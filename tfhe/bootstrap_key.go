@@ -17,6 +17,14 @@ func NewEvaluationKey[T Tint](params Parameters[T]) EvaluationKey[T] {
 	}
 }
 
+// NewEvaluationKeyCustom allocates an empty EvaluationKey with custom parameters.
+func NewEvaluationKeyCustom[T Tint](lweDimension, glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) EvaluationKey[T] {
+	return EvaluationKey[T]{
+		BootstrapKey: NewBootstrapKeyCustom(lweDimension, glweDimension, polyDegree, gadgetParams),
+		KeySwitchKey: NewKeySwitchKeyForBootstrapCustom(lweDimension, glweDimension, polyDegree, gadgetParams),
+	}
+}
+
 // Copy returns a copy of the key.
 func (evk EvaluationKey[T]) Copy() EvaluationKey[T] {
 	return EvaluationKey[T]{
@@ -54,6 +62,15 @@ func NewBootstrapKey[T Tint](params Parameters[T]) BootstrapKey[T] {
 		bsk[i] = NewFourierGGSWCiphertext(params, params.bootstrapParameters)
 	}
 	return BootstrapKey[T]{Value: bsk, GadgetParameters: params.bootstrapParameters}
+}
+
+// NewBootstrapKeyCustom allocates an empty BootstrappingKey with custom parameters.
+func NewBootstrapKeyCustom[T Tint](lweDimension, glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) BootstrapKey[T] {
+	bsk := make([]FourierGGSWCiphertext[T], lweDimension)
+	for i := 0; i < lweDimension; i++ {
+		bsk[i] = NewFourierGGSWCiphertextCustom[T](glweDimension, polyDegree, gadgetParams)
+	}
+	return BootstrapKey[T]{Value: bsk, GadgetParameters: gadgetParams}
 }
 
 // Copy returns a copy of the key.
@@ -103,7 +120,12 @@ func NewKeySwitchKey[T Tint](inputDimension, outputDimension int, gadgetParams G
 
 // NewKeySwitchKeyForBootstrap allocates an empty KeySwitchingKey for bootstrapping.
 func NewKeySwitchKeyForBootstrap[T Tint](params Parameters[T]) KeySwitchKey[T] {
-	return NewKeySwitchKey[T](params.lweDimension, params.LargeLWEDimension()-params.lweDimension, params.keyswitchParameters)
+	return NewKeySwitchKey[T](params.LargeLWEDimension()-params.lweDimension, params.lweDimension, params.keyswitchParameters)
+}
+
+// NewKeySwitchKeyForBootstrapCustom allocates an empty KeySwitchingKey with custom parameters.
+func NewKeySwitchKeyForBootstrapCustom[T Tint](lweDimension, glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
+	return NewKeySwitchKey[T](glweDimension*polyDegree-lweDimension, lweDimension, gadgetParams)
 }
 
 // InputLWEDimension returns the input LWEDimension of this key.

@@ -17,6 +17,15 @@ func NewFourierGLWEKey[T Tint](params Parameters[T]) FourierGLWEKey[T] {
 	return FourierGLWEKey[T]{Value: sk}
 }
 
+// NewFourierGLWEKeyCustom allocates an empty FourierGLWEKey with given dimension and polyDegree.
+func NewFourierGLWEKeyCustom[T Tint](glweDimension, polyDegree int) FourierGLWEKey[T] {
+	sk := make([]poly.FourierPoly, glweDimension)
+	for i := range sk {
+		sk[i] = poly.NewFourierPoly(polyDegree)
+	}
+	return FourierGLWEKey[T]{Value: sk}
+}
+
 // Copy returns a copy of the key.
 func (sk FourierGLWEKey[T]) Copy() FourierGLWEKey[T] {
 	skCopy := make([]poly.FourierPoly, len(sk.Value))
