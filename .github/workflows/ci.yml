@@ -20,7 +20,6 @@ jobs:
 
       - name: Run Tests
         run: |
-          go test ./tfhe/ -timeout=0
-          go test ./tfheb/ -timeout=0
-          go test ./tfhe/ -timeout=0 -tags=purego
-          go test ./tfheb/ -timeout=0 -tags=purego
+          go test ./math/poly -timeout=0
+          go test ./tfhe ./tfheb -timeout=0
+          go test ./tfhe ./tfheb -timeout=0 -tags=purego

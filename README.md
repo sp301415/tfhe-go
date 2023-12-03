@@ -17,7 +17,7 @@ You can install TFHE-go in your project using `go get`:
 ```
 $ go get -u github.com/sp301415/tfhe-go
 ```
-TFHE-go uses `unsafe` and Go Assembly for SIMD operations in amd64 platform. To disable this, you can pass `purego` [build tag](https://pkg.go.dev/go/build#hdr-Build_Constraints).
+TFHE-go uses Go Assembly for SIMD operations in amd64 platform. To disable this, you can pass `purego` [build tag](https://pkg.go.dev/go/build#hdr-Build_Constraints).
 
 ## Examples
 ### Encryption
@@ -75,12 +75,13 @@ fmt.Println(enc.DecryptLWE(ctOut)) // 7 = 2*3+1
 params := tfheb.ParamsBoolean.Compile()
 
 enc := tfheb.NewEncryptor(params)
-eval := tfheb.NewEvaluator(params, enc.GenEvaluationKeyParallel())
 
 // Change these values yourself!
 bits := 16
 ct0 := enc.EncryptLWEBits(3, bits)
 ct1 := enc.EncryptLWEBits(3, bits)
+
+eval := tfheb.NewEvaluator(params, enc.GenEvaluationKeyParallel())
 
 ctXNOR := tfhe.NewLWECiphertext(params)
 ctOut := eval.XNOR(ct0[0], ct1[0])
