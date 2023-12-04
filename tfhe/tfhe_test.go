@@ -117,6 +117,24 @@ func TestEvaluator(t *testing.T) {
 
 func TestMarshal(t *testing.T) {
 	var buf bytes.Buffer
+
+	t.Run("Parameters", func(t *testing.T) {
+		var paramsIn, paramsOut tfhe.Parameters[uint64]
+
+		paramsIn = testParams
+		if n, err := paramsIn.WriteTo(&buf); err != nil {
+			assert.Equal(t, int(n), paramsIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		if n, err := paramsOut.ReadFrom(&buf); err != nil {
+			assert.Equal(t, int(n), paramsIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		assert.Equal(t, paramsIn, paramsOut)
+	})
+
 	t.Run("LWECiphertext", func(t *testing.T) {
 		var ctIn, ctOut tfhe.LWECiphertext[uint64]
 
