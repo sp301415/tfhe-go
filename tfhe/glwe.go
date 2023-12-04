@@ -75,6 +75,11 @@ func NewGLWEPlaintext[T Tint](params Parameters[T]) GLWEPlaintext[T] {
 	return GLWEPlaintext[T]{Value: poly.New[T](params.polyDegree)}
 }
 
+// NewGLWEPlaintextCustom allocates an empty GLWEPlaintext with given polyDegree.
+func NewGLWEPlaintextCustom[T Tint](polyDegree int) GLWEPlaintext[T] {
+	return GLWEPlaintext[T]{Value: poly.New[T](polyDegree)}
+}
+
 // Copy returns a copy of the plaintext.
 func (pt GLWEPlaintext[T]) Copy() GLWEPlaintext[T] {
 	return GLWEPlaintext[T]{Value: pt.Value.Copy()}

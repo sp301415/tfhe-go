@@ -120,3 +120,14 @@ func (e *Encryptor[T]) ShallowCopy() *Encryptor[T] {
 		buffer: newEncryptionBuffer(e.Parameters),
 	}
 }
+
+// GenSecretKey samples a new LWE key.
+func (e *Encryptor[T]) GenSecretKey() SecretKey[T] {
+	sk := NewSecretKey(e.Parameters)
+
+	e.blockSampler.SampleSliceAssign(sk.LWELargeKey.Value[:e.Parameters.lweDimension])
+	e.binarySampler.SampleSliceAssign(sk.LWELargeKey.Value[e.Parameters.lweDimension:])
+	e.ToFourierGLWEKeyAssign(sk.GLWEKey, sk.FourierGLWEKey)
+
+	return sk
+}

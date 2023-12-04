@@ -1,6 +1,7 @@
 package tfhe
 
 import (
+	"bytes"
 	"encoding/binary"
 	"io"
 	"math"
@@ -129,33 +130,66 @@ func (p GadgetParameters[T]) LastScaledBaseLog() int {
 	return p.ScaledBaseLog(p.level - 1)
 }
 
-// MarshalBinary implements the encoding.BinaryMarshaler interface.
-// This never returns an error.
-func (p GadgetParameters[T]) MarshalBinary() (data []byte, err error) {
-	data = make([]byte, 16)
-	binary.BigEndian.PutUint64(data[0:8], uint64(p.base))
-	binary.BigEndian.PutUint64(data[8:16], uint64(p.level))
+// ByteSize returns the byte size of the gadget parameters.
+func (p GadgetParameters[T]) ByteSize() int {
+	return 16
+}
+
+// WriteTo implements the io.WriterTo interface.
+//
+// The encoded form is as follows:
+//
+//	   8       8
+//	Base | Level
+func (p GadgetParameters[T]) WriteTo(w io.Writer) (n int64, err error) {
+	var buf [16]byte
+	binary.BigEndian.PutUint64(buf[0:8], uint64(p.base))
+	binary.BigEndian.PutUint64(buf[8:16], uint64(p.level))
+
+	nn, err := w.Write(buf[:])
+	n += int64(nn)
+	if err != nil {
+		return
+	}
+
+	if n < int64(p.ByteSize()) {
+		return n, io.ErrShortWrite
+	}
 
 	return
 }
 
-// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
-// Returns io.ErrUnexpectedEOF if the data is too short,
-// and truncates if the data is too long.
-func (p *GadgetParameters[T]) UnmarshalBinary(data []byte) error {
-	if len(data) < 16 {
-		return io.ErrUnexpectedEOF
+// ReadFrom implements the io.ReaderFrom interface.
+func (p *GadgetParameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
+	var buf [16]byte
+	nn, err := io.ReadFull(r, buf[:])
+	n += int64(nn)
+	if err != nil {
+		return
 	}
 
-	base := binary.BigEndian.Uint64(data[:8])
-	level := binary.BigEndian.Uint64(data[8:16])
+	base := binary.BigEndian.Uint64(buf[0:8])
+	level := binary.BigEndian.Uint64(buf[8:16])
 
 	*p = GadgetParametersLiteral[T]{
 		Base:  T(base),
 		Level: int(level),
 	}.Compile()
 
-	return nil
+	return
+}
+
+// MarshalBinary implements the encoding.BinaryMarshaler interface.
+func (p GadgetParameters[T]) MarshalBinary() (data []byte, err error) {
+	buf := bytes.NewBuffer(make([]byte, 0, p.ByteSize()))
+	_, err = p.WriteTo(buf)
+	return buf.Bytes(), err
+}
+
+// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
+func (p *GadgetParameters[T]) UnmarshalBinary(data []byte) error {
+	_, err := p.ReadFrom(bytes.NewReader(data))
+	return err
 }
 
 // ParametersLiteral is a structure for TFHE parameters.
@@ -381,59 +415,71 @@ func (p Parameters[T]) KeySwitchParameters() GadgetParameters[T] {
 	return p.keyswitchParameters
 }
 
-// MarshalBinary implements the encoding.BinaryMarshaler interface.
-// This never returns an error.
-func (p Parameters[T]) MarshalBinary() (data []byte, err error) {
-	lweDimension := uint64(p.lweDimension)
-	glweDimension := uint64(p.glweDimension)
-	polyDegree := uint64(p.polyDegree)
-	lweStdDev := math.Float64bits(p.lweStdDev)
-	glweStdDev := math.Float64bits(p.glweStdDev)
-	blockSize := uint64(p.blockSize)
-	messageModulus := uint64(p.messageModulus)
+// ByteSize returns the byte size of the parameters.
+func (p Parameters[T]) ByteSize() int {
+	return 3*8 + 2*8 + 8 + 8 + 16 + 16
+}
 
-	data = make([]byte, 3*8+2*8+8+8+16+16)
+// WriteTo implements the io.WriterTo interface.
+//
+// The encoded form is as follows:
+//
+//	           8               8            8           8            8           8                8                    16                    16
+//	LWEDimension | GLWEDimension | PolyDegree | LWEStdDev | GLWEStdDev | BlockSize | MessageModulus | BootstrapParameters | KeySwitchParameters
+func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
+	var buf [3*8 + 2*8 + 8 + 8 + 16 + 16]byte
 
-	binary.BigEndian.PutUint64(data[0:8], lweDimension)
-	binary.BigEndian.PutUint64(data[8:16], glweDimension)
-	binary.BigEndian.PutUint64(data[16:24], polyDegree)
-	binary.BigEndian.PutUint64(data[24:32], lweStdDev)
-	binary.BigEndian.PutUint64(data[32:40], glweStdDev)
-	binary.BigEndian.PutUint64(data[40:48], blockSize)
-	binary.BigEndian.PutUint64(data[48:56], messageModulus)
+	binary.BigEndian.PutUint64(buf[0:8], uint64(p.lweDimension))
+	binary.BigEndian.PutUint64(buf[8:16], uint64(p.glweDimension))
+	binary.BigEndian.PutUint64(buf[16:24], uint64(p.polyDegree))
+	binary.BigEndian.PutUint64(buf[24:32], math.Float64bits(p.lweStdDev))
+	binary.BigEndian.PutUint64(buf[32:40], math.Float64bits(p.glweStdDev))
+	binary.BigEndian.PutUint64(buf[40:48], uint64(p.blockSize))
+	binary.BigEndian.PutUint64(buf[48:56], uint64(p.messageModulus))
 
-	bootstrapParameters, _ := p.bootstrapParameters.MarshalBinary()
-	keyswitchParameters, _ := p.keyswitchParameters.MarshalBinary()
+	binary.BigEndian.PutUint64(buf[56:64], uint64(p.bootstrapParameters.base))
+	binary.BigEndian.PutUint64(buf[64:72], uint64(p.bootstrapParameters.level))
 
-	data = append(data, bootstrapParameters...)
-	data = append(data, keyswitchParameters...)
+	binary.BigEndian.PutUint64(buf[72:80], uint64(p.keyswitchParameters.base))
+	binary.BigEndian.PutUint64(buf[80:88], uint64(p.keyswitchParameters.level))
+
+	nn, err := w.Write(buf[:])
+	n += int64(nn)
+	if err != nil {
+		return
+	}
+
+	if n < int64(p.ByteSize()) {
+		return n, io.ErrShortWrite
+	}
 
 	return
 }
 
-// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
-// Returns io.ErrUnexpectedEOF if the data is too short,
-// and truncates if the data is too long.
-func (p *Parameters[T]) UnmarshalBinary(data []byte) error {
-	if len(data) < 3*8+2*8+8+8+16+16 {
-		return io.ErrUnexpectedEOF
+// ReadFrom implements the io.ReaderFrom interface.
+func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
+	var buf [3*8 + 2*8 + 8 + 8 + 16 + 16]byte
+	nn, err := io.ReadFull(r, buf[:])
+	n += int64(nn)
+	if err != nil {
+		return
 	}
 
-	lweDimension := binary.BigEndian.Uint64(data[0:8])
-	glweDimension := binary.BigEndian.Uint64(data[8:16])
-	polyDegree := binary.BigEndian.Uint64(data[16:24])
-	lweStdDev := math.Float64frombits(binary.BigEndian.Uint64(data[24:32]))
-	glweStdDev := math.Float64frombits(binary.BigEndian.Uint64(data[32:40]))
-	blockSize := binary.BigEndian.Uint64(data[40:48])
-	messageModulus := binary.BigEndian.Uint64(data[48:56])
+	lweDimension := binary.BigEndian.Uint64(buf[0:8])
+	glweDimension := binary.BigEndian.Uint64(buf[8:16])
+	polyDegree := binary.BigEndian.Uint64(buf[16:24])
+	lweStdDev := math.Float64frombits(binary.BigEndian.Uint64(buf[24:32]))
+	glweStdDev := math.Float64frombits(binary.BigEndian.Uint64(buf[32:40]))
+	blockSize := binary.BigEndian.Uint64(buf[40:48])
+	messageModulus := binary.BigEndian.Uint64(buf[48:56])
 
 	bootstrapParameters := GadgetParametersLiteral[T]{
-		Base:  T(binary.BigEndian.Uint64(data[56:64])),
-		Level: int(binary.BigEndian.Uint64(data[64:72])),
+		Base:  T(binary.BigEndian.Uint64(buf[56:64])),
+		Level: int(binary.BigEndian.Uint64(buf[64:72])),
 	}
 	keyswitchParameters := GadgetParametersLiteral[T]{
-		Base:  T(binary.BigEndian.Uint64(data[72:80])),
-		Level: int(binary.BigEndian.Uint64(data[80:88])),
+		Base:  T(binary.BigEndian.Uint64(buf[72:80])),
+		Level: int(binary.BigEndian.Uint64(buf[80:88])),
 	}
 
 	*p = ParametersLiteral[T]{
@@ -448,5 +494,18 @@ func (p *Parameters[T]) UnmarshalBinary(data []byte) error {
 		KeySwitchParameters: keyswitchParameters,
 	}.Compile()
 
-	return nil
+	return
+}
+
+// MarshalBinary implements the encoding.BinaryMarshaler interface.
+func (p Parameters[T]) MarshalBinary() (data []byte, err error) {
+	buf := bytes.NewBuffer(make([]byte, 0, p.ByteSize()))
+	_, err = p.WriteTo(buf)
+	return buf.Bytes(), err
+}
+
+// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
+func (p *Parameters[T]) UnmarshalBinary(data []byte) error {
+	_, err := p.ReadFrom(bytes.NewReader(data))
+	return err
 }

@@ -1,6 +1,7 @@
 package tfheb_test
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/sp301415/tfhe-go/tfhe"
@@ -74,6 +75,196 @@ func TestEvaluator(t *testing.T) {
 		}
 
 		assert.Equal(t, enc.DecryptLWEBits(ctOut), msg0^msg1)
+	})
+}
+
+func TestMarshal(t *testing.T) {
+	var buf bytes.Buffer
+	t.Run("LWECiphertext", func(t *testing.T) {
+		var ctIn, ctOut tfhe.LWECiphertext[uint32]
+
+		ctIn = enc.BaseEncryptor.EncryptLWE(0)
+		if n, err := ctIn.WriteTo(&buf); err != nil {
+			assert.Equal(t, int(n), ctIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		if n, err := ctOut.ReadFrom(&buf); err != nil {
+			assert.Equal(t, int(n), ctIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		assert.Equal(t, ctIn, ctOut)
+	})
+
+	t.Run("LevCiphertext", func(t *testing.T) {
+		var ctIn, ctOut tfhe.LevCiphertext[uint32]
+
+		ctIn = enc.BaseEncryptor.EncryptLev(0, testParams.KeySwitchParameters())
+		if n, err := ctIn.WriteTo(&buf); err != nil {
+			assert.Equal(t, int(n), ctIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		if n, err := ctOut.ReadFrom(&buf); err != nil {
+			assert.Equal(t, int(n), ctIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		assert.Equal(t, ctIn, ctOut)
+	})
+
+	t.Run("GSWCiphertext", func(t *testing.T) {
+		var ctIn, ctOut tfhe.GSWCiphertext[uint32]
+
+		ctIn = enc.BaseEncryptor.EncryptGSW(0, testParams.KeySwitchParameters())
+		if n, err := ctIn.WriteTo(&buf); err != nil {
+			assert.Equal(t, int(n), ctIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		if n, err := ctOut.ReadFrom(&buf); err != nil {
+			assert.Equal(t, int(n), ctIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		assert.Equal(t, ctIn, ctOut)
+	})
+
+	t.Run("GLWECiphertext", func(t *testing.T) {
+		var ctIn, ctOut tfhe.GLWECiphertext[uint32]
+
+		ctIn = enc.BaseEncryptor.EncryptGLWE([]int{0})
+		if n, err := ctIn.WriteTo(&buf); err != nil {
+			assert.Equal(t, int(n), ctIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		if n, err := ctOut.ReadFrom(&buf); err != nil {
+			assert.Equal(t, int(n), ctIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		assert.Equal(t, ctIn, ctOut)
+	})
+
+	t.Run("GLevCiphertext", func(t *testing.T) {
+		var ctIn, ctOut tfhe.GLevCiphertext[uint32]
+
+		ctIn = enc.BaseEncryptor.EncryptGLev([]int{0}, testParams.KeySwitchParameters())
+		if n, err := ctIn.WriteTo(&buf); err != nil {
+			assert.Equal(t, int(n), ctIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		if n, err := ctOut.ReadFrom(&buf); err != nil {
+			assert.Equal(t, int(n), ctIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		assert.Equal(t, ctIn, ctOut)
+	})
+
+	t.Run("GGSWCiphertext", func(t *testing.T) {
+		var ctIn, ctOut tfhe.GGSWCiphertext[uint32]
+
+		ctIn = enc.BaseEncryptor.EncryptGGSW([]int{0}, testParams.KeySwitchParameters())
+		if n, err := ctIn.WriteTo(&buf); err != nil {
+			assert.Equal(t, int(n), ctIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		if n, err := ctOut.ReadFrom(&buf); err != nil {
+			assert.Equal(t, int(n), ctIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		assert.Equal(t, ctIn, ctOut)
+	})
+
+	t.Run("FourierGLWECiphertext", func(t *testing.T) {
+		var ctIn, ctOut tfhe.FourierGLWECiphertext[uint32]
+
+		ctIn = enc.BaseEncryptor.EncryptFourierGLWE([]int{0})
+		if n, err := ctIn.WriteTo(&buf); err != nil {
+			assert.Equal(t, int(n), ctIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		if n, err := ctOut.ReadFrom(&buf); err != nil {
+			assert.Equal(t, int(n), ctIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		assert.Equal(t, ctIn, ctOut)
+	})
+
+	t.Run("FourierGLevCiphertext", func(t *testing.T) {
+		var ctIn, ctOut tfhe.FourierGLevCiphertext[uint32]
+
+		ctIn = enc.BaseEncryptor.EncryptFourierGLev([]int{0}, testParams.KeySwitchParameters())
+		if n, err := ctIn.WriteTo(&buf); err != nil {
+			assert.Equal(t, int(n), ctIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		if n, err := ctOut.ReadFrom(&buf); err != nil {
+			assert.Equal(t, int(n), ctIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		assert.Equal(t, ctIn, ctOut)
+	})
+
+	t.Run("FourierGGSWCiphertext", func(t *testing.T) {
+		var ctIn, ctOut tfhe.FourierGGSWCiphertext[uint32]
+
+		ctIn = enc.BaseEncryptor.EncryptFourierGGSW([]int{0}, testParams.KeySwitchParameters())
+		if n, err := ctIn.WriteTo(&buf); err != nil {
+			assert.Equal(t, int(n), ctIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		if n, err := ctOut.ReadFrom(&buf); err != nil {
+			assert.Equal(t, int(n), ctIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		assert.Equal(t, ctIn, ctOut)
+	})
+
+	t.Run("SecretKey", func(t *testing.T) {
+		var skIn, skOut tfhe.SecretKey[uint32]
+
+		skIn = enc.BaseEncryptor.SecretKey
+		if n, err := skIn.WriteTo(&buf); err != nil {
+			assert.Equal(t, int(n), skIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		if n, err := skOut.ReadFrom(&buf); err != nil {
+			assert.Equal(t, int(n), skIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		assert.Equal(t, skIn, skOut)
+	})
+
+	t.Run("EvaluationKey", func(t *testing.T) {
+		var evkIn, evkOut tfhe.EvaluationKey[uint32]
+
+		evkIn = eval.BaseEvaluator.EvaluationKey
+		if n, err := evkIn.WriteTo(&buf); err != nil {
+			assert.Equal(t, int(n), evkIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		if n, err := evkOut.ReadFrom(&buf); err != nil {
+			assert.Equal(t, int(n), evkIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		assert.Equal(t, evkIn, evkOut)
 	})
 }
 
