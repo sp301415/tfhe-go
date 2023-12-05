@@ -168,11 +168,9 @@ func (sk SecretKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	}
 
 	for _, fp := range sk.FourierGLWEKey.Value {
-		var b int
-		for i := range fp.Coeffs {
+		for i, b := 0, 0; i < len(fp.Coeffs); i, b = i+1, b+2 {
 			binary.BigEndian.PutUint64(buf[(b+0)*8:(b+1)*8], math.Float64bits(real(fp.Coeffs[i])))
 			binary.BigEndian.PutUint64(buf[(b+1)*8:(b+2)*8], math.Float64bits(imag(fp.Coeffs[i])))
-			b += 2
 		}
 
 		nn, err = w.Write(buf)
@@ -244,12 +242,11 @@ func (sk *SecretKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 			return
 		}
 
-		var b int
-		for i := range fp.Coeffs {
+		for i, b := 0, 0; i < len(fp.Coeffs); i, b = i+1, b+2 {
 			fp.Coeffs[i] = complex(
 				math.Float64frombits(binary.BigEndian.Uint64(buf[(b+0)*8:(b+1)*8])),
-				math.Float64frombits(binary.BigEndian.Uint64(buf[(b+1)*8:(b+2)*8])))
-			b += 2
+				math.Float64frombits(binary.BigEndian.Uint64(buf[(b+1)*8:(b+2)*8])),
+			)
 		}
 	}
 

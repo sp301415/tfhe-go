@@ -39,11 +39,9 @@ func (sk FourierGLWEKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	buf := make([]byte, polyDegree*8)
 
 	for _, p := range sk.Value {
-		var b int
-		for i := range p.Coeffs {
+		for i, b := 0, 0; i < len(p.Coeffs); i, b = i+1, b+2 {
 			binary.BigEndian.PutUint64(buf[(b+0)*8:(b+1)*8], math.Float64bits(real(p.Coeffs[i])))
 			binary.BigEndian.PutUint64(buf[(b+1)*8:(b+2)*8], math.Float64bits(imag(p.Coeffs[i])))
-			b += 2
 		}
 
 		nn, err = w.Write(buf)
@@ -85,12 +83,11 @@ func (sk *FourierGLWEKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 			return
 		}
 
-		var b int
-		for i := range p.Coeffs {
+		for i, b := 0, 0; i < len(p.Coeffs); i, b = i+1, b+2 {
 			p.Coeffs[i] = complex(
 				math.Float64frombits(binary.BigEndian.Uint64(buf[(b+0)*8:(b+1)*8])),
-				math.Float64frombits(binary.BigEndian.Uint64(buf[(b+1)*8:(b+2)*8])))
-			b += 2
+				math.Float64frombits(binary.BigEndian.Uint64(buf[(b+1)*8:(b+2)*8])),
+			)
 		}
 	}
 
@@ -143,11 +140,9 @@ func (ct FourierGLWECiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	buf := make([]byte, polyDegree*8)
 
 	for _, p := range ct.Value {
-		var b int
-		for i := range p.Coeffs {
+		for i, b := 0, 0; i < len(p.Coeffs); i, b = i+1, b+2 {
 			binary.BigEndian.PutUint64(buf[(b+0)*8:(b+1)*8], math.Float64bits(real(p.Coeffs[i])))
 			binary.BigEndian.PutUint64(buf[(b+1)*8:(b+2)*8], math.Float64bits(imag(p.Coeffs[i])))
-			b += 2
 		}
 
 		nn, err = w.Write(buf)
@@ -189,12 +184,11 @@ func (ct *FourierGLWECiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 			return
 		}
 
-		var b int
-		for i := range p.Coeffs {
+		for i, b := 0, 0; i < len(p.Coeffs); i, b = i+1, b+2 {
 			p.Coeffs[i] = complex(
 				math.Float64frombits(binary.BigEndian.Uint64(buf[(b+0)*8:(b+1)*8])),
-				math.Float64frombits(binary.BigEndian.Uint64(buf[(b+1)*8:(b+2)*8])))
-			b += 2
+				math.Float64frombits(binary.BigEndian.Uint64(buf[(b+1)*8:(b+2)*8])),
+			)
 		}
 	}
 
@@ -252,11 +246,9 @@ func (ct FourierGLevCiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 
 	for _, fglwe := range ct.Value {
 		for _, p := range fglwe.Value {
-			var b int
-			for i := range p.Coeffs {
+			for i, b := 0, 0; i < len(p.Coeffs); i, b = i+1, b+2 {
 				binary.BigEndian.PutUint64(buf[(b+0)*8:(b+1)*8], math.Float64bits(real(p.Coeffs[i])))
 				binary.BigEndian.PutUint64(buf[(b+1)*8:(b+2)*8], math.Float64bits(imag(p.Coeffs[i])))
-				b += 2
 			}
 
 			nn, err = w.Write(buf)
@@ -302,12 +294,11 @@ func (ct *FourierGLevCiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 				return
 			}
 
-			var b int
-			for i := range p.Coeffs {
+			for i, b := 0, 0; i < len(p.Coeffs); i, b = i+1, b+2 {
 				p.Coeffs[i] = complex(
 					math.Float64frombits(binary.BigEndian.Uint64(buf[(b+0)*8:(b+1)*8])),
-					math.Float64frombits(binary.BigEndian.Uint64(buf[(b+1)*8:(b+2)*8])))
-				b += 2
+					math.Float64frombits(binary.BigEndian.Uint64(buf[(b+1)*8:(b+2)*8])),
+				)
 			}
 		}
 	}
@@ -367,11 +358,9 @@ func (ct FourierGGSWCiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	for _, fglev := range ct.Value {
 		for _, fglwe := range fglev.Value {
 			for _, p := range fglwe.Value {
-				var b int
-				for i := range p.Coeffs {
+				for i, b := 0, 0; i < len(p.Coeffs); i, b = i+1, b+2 {
 					binary.BigEndian.PutUint64(buf[(b+0)*8:(b+1)*8], math.Float64bits(real(p.Coeffs[i])))
 					binary.BigEndian.PutUint64(buf[(b+1)*8:(b+2)*8], math.Float64bits(imag(p.Coeffs[i])))
-					b += 2
 				}
 
 				nn, err = w.Write(buf)
@@ -419,12 +408,11 @@ func (ct *FourierGGSWCiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 					return
 				}
 
-				var b int
-				for i := range p.Coeffs {
+				for i, b := 0, 0; i < len(p.Coeffs); i, b = i+1, b+2 {
 					p.Coeffs[i] = complex(
 						math.Float64frombits(binary.BigEndian.Uint64(buf[(b+0)*8:(b+1)*8])),
-						math.Float64frombits(binary.BigEndian.Uint64(buf[(b+1)*8:(b+2)*8])))
-					b += 2
+						math.Float64frombits(binary.BigEndian.Uint64(buf[(b+1)*8:(b+2)*8])),
+					)
 				}
 			}
 		}

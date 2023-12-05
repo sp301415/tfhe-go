@@ -210,9 +210,14 @@ func (e *Evaluator[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[
 // KeySwitchForBootstrapAssign performs the keyswitching using evaulater's bootstrap key.
 // Output ciphertext should be of dimension LWESmallDimension + 1.
 func (e *Evaluator[T]) KeySwitchForBootstrapAssign(ct, ctOut LWECiphertext[T]) {
-	e.buffer.ctKeySwitch.Value[0] = 0
-	vec.CopyAssign(ct.Value[e.Parameters.lweSmallDimension+1:], e.buffer.ctKeySwitch.Value[1:])
+	vec.CopyAssign(ct.Value[:e.Parameters.lweSmallDimension+1], ctOut.Value)
 
-	e.KeySwitchAssign(e.buffer.ctKeySwitch, e.EvaluationKey.KeySwitchKey, ctOut)
-	vec.AddAssign(ctOut.Value, ct.Value[:e.Parameters.lweSmallDimension+1], ctOut.Value)
+	decomposed := e.getDecomposedBuffer(e.Parameters.keyswitchParameters)
+
+	for i, ii := e.Parameters.lweSmallDimension, 0; i < e.Parameters.lweDimension; i, ii = i+1, ii+1 {
+		e.DecomposeAssign(ct.Value[i+1], e.Parameters.keyswitchParameters, decomposed)
+		for j := 0; j < e.Parameters.keyswitchParameters.level; j++ {
+			e.ScalarMulAddLWEAssign(e.EvaluationKey.KeySwitchKey.Value[ii].Value[j], decomposed[j], ctOut)
+		}
+	}
 }
