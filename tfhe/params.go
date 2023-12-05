@@ -249,8 +249,6 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("LWEStdDev smaller than zero")
 	case p.GLWEStdDev <= 0:
 		panic("GLWEStdDev smaller than zero")
-	case p.LWEDimension%p.BlockSize != 0:
-		panic("LWEDimension not multiple of BlockSize")
 	case !num.IsPowerOfTwo(p.PolyDegree):
 		panic("PolyDegree not power of two")
 	case !num.IsPowerOfTwo(p.MessageModulus):

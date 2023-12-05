@@ -26,7 +26,7 @@ var (
 
 	// ParamsUint3 ensures 3 bits of message precision.
 	ParamsUint3 = ParametersLiteral[uint64]{
-		LWEDimension:  741,
+		LWEDimension:  742,
 		GLWEDimension: 2,
 		PolyDegree:    1024,
 
@@ -49,7 +49,7 @@ var (
 
 	// ParamsUint4 ensures 4 bits of message precision.
 	ParamsUint4 = ParametersLiteral[uint64]{
-		LWEDimension:  741,
+		LWEDimension:  742,
 		GLWEDimension: 1,
 		PolyDegree:    2048,
 
@@ -72,7 +72,7 @@ var (
 
 	// ParamsUint5 ensures 5 bits of message precision.
 	ParamsUint5 = ParametersLiteral[uint64]{
-		LWEDimension:  804,
+		LWEDimension:  807,
 		GLWEDimension: 1,
 		PolyDegree:    4096,
 
@@ -141,7 +141,7 @@ var (
 
 	// ParamsUint8 ensures 8 bits of message precision.
 	ParamsUint8 = ParametersLiteral[uint64]{
-		LWEDimension:  1014,
+		LWEDimension:  1017,
 		GLWEDimension: 1,
 		PolyDegree:    32768,
 

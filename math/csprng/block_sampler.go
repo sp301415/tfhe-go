@@ -36,19 +36,23 @@ func NewBlockSamplerWithSeed[T num.Integer](seed []byte, blockSize int) BlockSam
 }
 
 // SampleSliceAssign samples block binary values to v.
-//
-// Panics when len(v) % BlockSize != 0.
 func (s BlockSampler[T]) SampleSliceAssign(v []T) {
-	if len(v)%s.BlockSize != 0 {
-		panic("length not multiple of blocksize")
-	}
+	leftover := len(v) % s.BlockSize
+	end := s.BlockSize * (len(v) / s.BlockSize)
 
-	for i := 0; i < len(v); i += s.BlockSize {
+	for i := 0; i < end; i += s.BlockSize {
 		vec.Fill(v[i:i+s.BlockSize], 0)
 		offset := s.baseSampler.SampleN(s.BlockSize + 1)
-		if offset == s.BlockSize {
-			continue
+		if offset != s.BlockSize {
+			v[i+offset] = 1
 		}
-		v[i+offset] = 1
+	}
+
+	if leftover != 0 {
+		vec.Fill(v[end:end+leftover], 0)
+		offset := s.baseSampler.SampleN(leftover + 1)
+		if offset != leftover {
+			v[end+offset] = 1
+		}
 	}
 }
