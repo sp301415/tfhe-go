@@ -26,6 +26,7 @@ type SecretKey[T Tint] struct {
 	// Used for GLWE encryption.
 	FourierGLWEKey FourierGLWEKey[T]
 	// LWESmallKey is a temporary LWE key for bootstrapping.
+	// Essentially, this is the first LWESmallDimension elements of LWEKey.
 	LWESmallKey LWEKey[T]
 }
 
@@ -116,8 +117,8 @@ func (sk SecretKey[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//	           8               8            8
-//	LWEDimension | GLWEDimension | PolyDegree | LWEKey | FourierGLWEKey
+//	                8               8            8
+//	LWESmallDimension | GLWEDimension | PolyDegree | LWEKey | FourierGLWEKey
 func (sk SecretKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 

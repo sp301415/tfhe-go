@@ -140,7 +140,7 @@ func (e *Evaluator[T]) SampleExtract(ct GLWECiphertext[T], index int) LWECiphert
 	return ctOut
 }
 
-// SampleExtractAssign extracts LWE ciphertext of given index from GLWE ciphertext.
+// SampleExtractAssign extracts LWE ciphertext of given index from GLWE ciphertext, and writes it to ctOut.
 func (e *Evaluator[T]) SampleExtractAssign(ct GLWECiphertext[T], index int, ctOut LWECiphertext[T]) {
 	ctOut.Value[0] = ct.Value[0].Coeffs[index]
 
@@ -157,6 +157,8 @@ func (e *Evaluator[T]) SampleExtractAssign(ct GLWECiphertext[T], index int, ctOu
 }
 
 // KeySwitch switches key of ct, and returns a new ciphertext.
+// Input ciphertext should be of dimension ksk.InputLWEDimension + 1,
+// and output ciphertext will be of dimension ksk.OutputLWEDimension + 1.
 func (e *Evaluator[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchKey[T]) LWECiphertext[T] {
 	ctOut := NewLWECiphertextCustom[T](ksk.OutputLWEDimension())
 	e.KeySwitchAssign(ct, ksk, ctOut)
@@ -164,6 +166,8 @@ func (e *Evaluator[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchKey[T]) LWECi
 }
 
 // KeySwitchAssign switches key of ct, and writes it to ctOut.
+// Input ciphertext should be of dimension ksk.InputLWEDimension + 1,
+// and output ciphertext should be of dimension ksk.OutputLWEDimension + 1.
 func (e *Evaluator[T]) KeySwitchAssign(ct LWECiphertext[T], ksk KeySwitchKey[T], ctOut LWECiphertext[T]) {
 	decomposed := e.getDecomposedBuffer(ksk.GadgetParameters)
 
@@ -182,6 +186,7 @@ func (e *Evaluator[T]) KeySwitchAssign(ct LWECiphertext[T], ksk KeySwitchKey[T],
 }
 
 // KeySwitchForBootstrap performs the keyswitching using evaulater's bootstrap key.
+// Output ciphertext will be of dimension LWESmallDimension + 1.
 func (e *Evaluator[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[T] {
 	ctOut := NewLWECiphertextCustom[T](e.Parameters.lweSmallDimension)
 	e.KeySwitchForBootstrapAssign(ct, ctOut)
@@ -189,6 +194,7 @@ func (e *Evaluator[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[
 }
 
 // KeySwitchForBootstrapAssign performs the keyswitching using evaulater's bootstrap key.
+// Output ciphertext should be of dimension LWESmallDimension + 1.
 func (e *Evaluator[T]) KeySwitchForBootstrapAssign(ct, ctOut LWECiphertext[T]) {
 	e.buffer.ctKeySwitch.Value[0] = 0
 	vec.CopyAssign(ct.Value[e.Parameters.lweSmallDimension+1:], e.buffer.ctKeySwitch.Value[1:])

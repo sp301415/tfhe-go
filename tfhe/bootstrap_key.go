@@ -5,7 +5,7 @@ package tfhe
 type EvaluationKey[T Tint] struct {
 	// BootstrapKey is a bootstrap key.
 	BootstrapKey BootstrapKey[T]
-	// KeySwitchKey is a keyswitch key switching GLWE secret key -> LWE secret key.
+	// KeySwitchKey is a keyswitch key switching LWEKey -> LWESmallKey.
 	KeySwitchKey KeySwitchKey[T]
 }
 
@@ -46,7 +46,7 @@ func (evk *EvaluationKey[T]) Clear() {
 }
 
 // BootstrapKey is a key for bootstrapping.
-// Essentially, this is a GGSW encryption of LWE key with GLWE key.
+// Essentially, this is a GGSW encryption of LWESmallKey with GLWEKey.
 // However, FFT is already applied for fast external product.
 type BootstrapKey[T Tint] struct {
 	GadgetParameters GadgetParameters[T]
@@ -98,7 +98,7 @@ func (bsk *BootstrapKey[T]) Clear() {
 }
 
 // KeySwitchKey is a LWE keyswitch key from GLWE secret key to LWE secret key.
-// Essentially, this is a GSW encryption of GLWE key with LWE key.
+// Essentially, this is a GSW encryption of GLWEKey with LWESmallKey.
 type KeySwitchKey[T Tint] struct {
 	GadgetParameters GadgetParameters[T]
 

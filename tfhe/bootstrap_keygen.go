@@ -104,7 +104,7 @@ func (e *Encryptor[T]) GenBootstrapKeyParallel() BootstrapKey[T] {
 	return bsk
 }
 
-// GenKeySwitchKey samples a new keyswitch key skIn -> e.SecretKey.LWEKey.
+// GenKeySwitchKey samples a new keyswitch key skIn -> LWEKey.
 //
 // This can take a long time.
 // Use GenKeySwitchKeyParallel for better key generation performance.
@@ -121,7 +121,7 @@ func (e *Encryptor[T]) GenKeySwitchKey(skIn LWEKey[T], gadgetParams GadgetParame
 	return ksk
 }
 
-// GenKeySwitchKeyParallel samples a new keyswitch key skIn -> e.SecretKey.LWEKey in parallel.
+// GenKeySwitchKeyParallel samples a new keyswitch key skIn -> LWEKey in parallel.
 func (e *Encryptor[T]) GenKeySwitchKeyParallel(skIn LWEKey[T], gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
 	ksk := NewKeySwitchKey(len(skIn.Value), len(e.SecretKey.LWEKey.Value), gadgetParams)
 
