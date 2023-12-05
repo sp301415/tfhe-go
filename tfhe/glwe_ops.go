@@ -136,6 +136,20 @@ func (e *Evaluator[T]) MonomialMulGLWEInPlace(ct0 GLWECiphertext[T], d int) {
 	}
 }
 
+// MonomialMulAddGLWEAssign multiplies X^d to ct0 and adds it to ctOut.
+func (e *Evaluator[T]) MonomialMulAddGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.PolyEvaluator.MonomialMulAddAssign(ct0.Value[i], d, ctOut.Value[i])
+	}
+}
+
+// MonomialMulSubGLWEAssign multiplies X^d to ct0 and subtracts it from ctOut.
+func (e *Evaluator[T]) MonomialMulSubGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.PolyEvaluator.MonomialMulSubAssign(ct0.Value[i], d, ctOut.Value[i])
+	}
+}
+
 // MonomialMulMinusOneAddGLWEAssign multiplies X^d-1 to ct0, and adds it to ctOut.
 // This operation is frequently used in Blind Rotation,
 // so we implement it as a special function.

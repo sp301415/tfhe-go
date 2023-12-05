@@ -25,6 +25,10 @@ type evaluationBuffer[T Tint] struct {
 	// Initially has length bootstrapParameters.level.
 	// Use getPolyDecomposedBuffer() to get appropriate length of buffer.
 	polyDecomposed []poly.Poly[T]
+	// polyFourierDecomposed holds the decomposed polynomial in Fourier domain.
+	// Initially has length bootstrapParameters.level.
+	// Use getPolyFourierDecomposedBuffer() to get appropriate length of buffer.
+	polyFourierDecomposed []poly.FourierPoly
 	// decomposed holds the decomposed scalar.
 	// Initially has length keyswitchParameters.level.
 	// Use getDecomposedBuffer() to get appropriate length of buffer.
@@ -77,6 +81,11 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 		polyDecomposed[i] = poly.New[T](params.polyDegree)
 	}
 
+	polyFourierDecomposed := make([]poly.FourierPoly, params.bootstrapParameters.level)
+	for i := range polyFourierDecomposed {
+		polyFourierDecomposed[i] = poly.NewFourierPoly(params.polyDegree)
+	}
+
 	accDecomposed := make([][]poly.FourierPoly, params.glweDimension+1)
 	for i := range accDecomposed {
 		accDecomposed[i] = make([]poly.FourierPoly, params.bootstrapParameters.level)
@@ -86,8 +95,9 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 	}
 
 	return evaluationBuffer[T]{
-		polyDecomposed: polyDecomposed,
-		decomposed:     make([]T, params.keyswitchParameters.level),
+		polyDecomposed:        polyDecomposed,
+		polyFourierDecomposed: polyFourierDecomposed,
+		decomposed:            make([]T, params.keyswitchParameters.level),
 
 		fpOut:         poly.NewFourierPoly(params.polyDegree),
 		ctFourierProd: NewFourierGLWECiphertext(params),

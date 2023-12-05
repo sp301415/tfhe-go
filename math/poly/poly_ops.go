@@ -159,6 +159,80 @@ func (e *Evaluator[T]) MonomialMulInPlace(p0 Poly[T], d int) {
 	}
 }
 
+// MonomialMulAddAssign multiplies X^d to p0 and adds it to pOut.
+func (e *Evaluator[T]) MonomialMulAddAssign(p0 Poly[T], d int, pOut Poly[T]) {
+	switch k := d % (2 * e.degree); {
+	case e.degree <= k:
+		kk := k - e.degree
+		for i := 0; i < kk; i++ {
+			pOut.Coeffs[i] += p0.Coeffs[i-kk+e.degree]
+		}
+		for i := kk; i < e.degree; i++ {
+			pOut.Coeffs[i] += -p0.Coeffs[i-kk]
+		}
+	case 0 <= k && k < e.degree:
+		for i := 0; i < k; i++ {
+			pOut.Coeffs[i] += -p0.Coeffs[i-k+e.degree]
+		}
+		for i := k; i < e.degree; i++ {
+			pOut.Coeffs[i] += p0.Coeffs[i-k]
+		}
+	case -e.degree <= k && k < 0:
+		kk := k + e.degree
+		for i := 0; i < kk; i++ {
+			pOut.Coeffs[i] += p0.Coeffs[i-kk+e.degree]
+		}
+		for i := kk; i < e.degree; i++ {
+			pOut.Coeffs[i] += -p0.Coeffs[i-kk]
+		}
+	case k < -e.degree:
+		kk := k + 2*e.degree
+		for i := 0; i < kk; i++ {
+			pOut.Coeffs[i] += -p0.Coeffs[i-kk+e.degree]
+		}
+		for i := kk; i < e.degree; i++ {
+			pOut.Coeffs[i] += p0.Coeffs[i-kk]
+		}
+	}
+}
+
+// MonomialMulSubAssign multiplies X^d to p0 and subtracts it from pOut.
+func (e *Evaluator[T]) MonomialMulSubAssign(p0 Poly[T], d int, pOut Poly[T]) {
+	switch k := d % (2 * e.degree); {
+	case e.degree <= k:
+		kk := k - e.degree
+		for i := 0; i < kk; i++ {
+			pOut.Coeffs[i] -= p0.Coeffs[i-kk+e.degree]
+		}
+		for i := kk; i < e.degree; i++ {
+			pOut.Coeffs[i] -= -p0.Coeffs[i-kk]
+		}
+	case 0 <= k && k < e.degree:
+		for i := 0; i < k; i++ {
+			pOut.Coeffs[i] -= -p0.Coeffs[i-k+e.degree]
+		}
+		for i := k; i < e.degree; i++ {
+			pOut.Coeffs[i] -= p0.Coeffs[i-k]
+		}
+	case -e.degree <= k && k < 0:
+		kk := k + e.degree
+		for i := 0; i < kk; i++ {
+			pOut.Coeffs[i] -= p0.Coeffs[i-kk+e.degree]
+		}
+		for i := kk; i < e.degree; i++ {
+			pOut.Coeffs[i] -= -p0.Coeffs[i-kk]
+		}
+	case k < -e.degree:
+		kk := k + 2*e.degree
+		for i := 0; i < kk; i++ {
+			pOut.Coeffs[i] -= -p0.Coeffs[i-kk+e.degree]
+		}
+		for i := kk; i < e.degree; i++ {
+			pOut.Coeffs[i] -= p0.Coeffs[i-kk]
+		}
+	}
+}
+
 // MonomialMulMinusOneAddAssign multiplies X^d-1 to p0, and adds it to pOut.
 // This operation is frequently used in Blind Rotation,
 // so we implement it as a special function.

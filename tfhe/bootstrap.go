@@ -42,10 +42,10 @@ func (e *Evaluator[T]) GenLookUpTable(f func(int) int) LookUpTable[T] {
 // Input and output of f is cut by MessageModulus.
 func (e *Evaluator[T]) GenLookUpTableAssign(f func(int) int, lutOut LookUpTable[T]) {
 	boxSize := 1 << (e.Parameters.polyDegreeLog - e.Parameters.messageModulusLog)
-	for i := 0; i < 1<<e.Parameters.messageModulusLog; i++ {
-		out := e.EncodeLWE(f(i)).Value
-		for j := i * boxSize; j < (i+1)*boxSize; j++ {
-			lutOut.Coeffs[j] = out
+	for x := 0; x < 1<<e.Parameters.messageModulusLog; x++ {
+		y := e.EncodeLWE(f(x)).Value
+		for xx := x * boxSize; xx < (x+1)*boxSize; xx++ {
+			lutOut.Coeffs[xx] = y
 		}
 	}
 	e.PolyEvaluator.MonomialMulInPlace(poly.Poly[T](lutOut), -boxSize/2)
@@ -63,10 +63,10 @@ func (e *Evaluator[T]) GenLookUpTableFull(f func(int) T) LookUpTable[T] {
 // Output of f is encoded as-is.
 func (e *Evaluator[T]) GenLookUpTableFullAssign(f func(int) T, lutOut LookUpTable[T]) {
 	boxSize := 1 << (e.Parameters.polyDegreeLog - e.Parameters.messageModulusLog)
-	for i := 0; i < 1<<e.Parameters.messageModulusLog; i++ {
-		out := f(i)
-		for j := i * boxSize; j < (i+1)*boxSize; j++ {
-			lutOut.Coeffs[j] = out
+	for x := 0; x < 1<<e.Parameters.messageModulusLog; x++ {
+		y := f(x)
+		for xx := x * boxSize; xx < (x+1)*boxSize; xx++ {
+			lutOut.Coeffs[xx] = y
 		}
 	}
 	e.PolyEvaluator.MonomialMulInPlace(poly.Poly[T](lutOut), -boxSize/2)
@@ -113,12 +113,24 @@ func (e *Evaluator[T]) BlindRotate(ct LWECiphertext[T], lut LookUpTable[T]) GLWE
 // BlindRotateAssign calculates the blind rotation of LWE ciphertext with respect to LUT.
 func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
 	ctOut.Clear()
+
+	// Allocate buffer ourselves, so that we can reuse them explicitly.
 	polyDecomposed := e.getPolyDecomposedBuffer(e.Parameters.bootstrapParameters)
 
+	// Implementation of Algorithm 2 and Section 5.1 from https://eprint.iacr.org/2023/958
 	e.PolyEvaluator.MonomialMulAssign(poly.Poly[T](lut), -e.ModSwitch(ct.Value[0]), ctOut.Value[0])
 
-	// Implementation of Algorithm 2 and Section 5.1 from https://eprint.iacr.org/2023/958
-	for i := 0; i < e.Parameters.BlockCount(); i++ {
+	e.DecomposePolyAssign(ctOut.Value[0], e.Parameters.bootstrapParameters, polyDecomposed)
+	for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
+		e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[k], e.buffer.accDecomposed[0][k])
+	}
+
+	for j := 0; j < e.Parameters.blockSize; j++ {
+		e.GadgetProductFourierDecomposedAssign(e.EvaluationKey.BootstrapKey.Value[j].Value[0], e.buffer.accDecomposed[0], e.buffer.acc)
+		e.MonomialMulMinusOneAddGLWEAssign(e.buffer.acc, -e.ModSwitch(ct.Value[j+1]), ctOut)
+	}
+
+	for i := 1; i < e.Parameters.BlockCount(); i++ {
 		for j := 0; j < e.Parameters.glweDimension+1; j++ {
 			e.DecomposePolyAssign(ctOut.Value[j], e.Parameters.bootstrapParameters, polyDecomposed)
 			for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
@@ -127,7 +139,7 @@ func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T]
 		}
 
 		for j := i * e.Parameters.blockSize; j < (i+1)*e.Parameters.blockSize; j++ {
-			e.ExternalProductDecomposedAssign(e.EvaluationKey.BootstrapKey.Value[j], e.buffer.accDecomposed, e.buffer.acc)
+			e.ExternalProductFourierDecomposedAssign(e.EvaluationKey.BootstrapKey.Value[j], e.buffer.accDecomposed, e.buffer.acc)
 			e.MonomialMulMinusOneAddGLWEAssign(e.buffer.acc, -e.ModSwitch(ct.Value[j+1]), ctOut)
 		}
 	}
@@ -171,14 +183,16 @@ func (e *Evaluator[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchKey[T]) LWECi
 func (e *Evaluator[T]) KeySwitchAssign(ct LWECiphertext[T], ksk KeySwitchKey[T], ctOut LWECiphertext[T]) {
 	decomposed := e.getDecomposedBuffer(ksk.GadgetParameters)
 
-	for i := 0; i < ksk.InputLWEDimension(); i++ {
+	e.DecomposeAssign(ct.Value[1], ksk.GadgetParameters, decomposed)
+	e.ScalarMulLWEAssign(ksk.Value[0].Value[0], decomposed[0], ctOut)
+	for j := 1; j < ksk.GadgetParameters.level; j++ {
+		e.ScalarMulAddLWEAssign(ksk.Value[0].Value[j], decomposed[j], ctOut)
+	}
+
+	for i := 1; i < ksk.InputLWEDimension(); i++ {
 		e.DecomposeAssign(ct.Value[i+1], ksk.GadgetParameters, decomposed)
 		for j := 0; j < ksk.GadgetParameters.level; j++ {
-			if i == 0 && j == 0 {
-				e.ScalarMulLWEAssign(ksk.Value[i].Value[j], decomposed[j], ctOut)
-			} else {
-				e.ScalarMulAddLWEAssign(ksk.Value[i].Value[j], decomposed[j], ctOut)
-			}
+			e.ScalarMulAddLWEAssign(ksk.Value[i].Value[j], decomposed[j], ctOut)
 		}
 	}
 
