@@ -10,9 +10,9 @@ import (
 )
 
 var (
-	testParams = tfheb.ParamsBoolean.Compile()
-	enc        = tfheb.NewEncryptor(testParams)
-	eval       = tfheb.NewEvaluator(testParams, enc.GenEvaluationKeyParallel())
+	testParams    = tfheb.ParamsBoolean.Compile()
+	testEncryptor = tfheb.NewEncryptor(testParams)
+	testEvaluator = tfheb.NewEvaluator(testParams, testEncryptor.GenEvaluationKeyParallel())
 )
 
 func TestEvaluator(t *testing.T) {
@@ -22,59 +22,59 @@ func TestEvaluator(t *testing.T) {
 		ct0 tfhe.LWECiphertext[uint32]
 		ct1 tfhe.LWECiphertext[uint32]
 	}{
-		{true, true, enc.EncryptLWEBool(true), enc.EncryptLWEBool(true)},
-		{true, false, enc.EncryptLWEBool(true), enc.EncryptLWEBool(false)},
-		{false, true, enc.EncryptLWEBool(false), enc.EncryptLWEBool(true)},
-		{false, false, enc.EncryptLWEBool(false), enc.EncryptLWEBool(false)},
+		{true, true, testEncryptor.EncryptLWEBool(true), testEncryptor.EncryptLWEBool(true)},
+		{true, false, testEncryptor.EncryptLWEBool(true), testEncryptor.EncryptLWEBool(false)},
+		{false, true, testEncryptor.EncryptLWEBool(false), testEncryptor.EncryptLWEBool(true)},
+		{false, false, testEncryptor.EncryptLWEBool(false), testEncryptor.EncryptLWEBool(false)},
 	}
 
 	t.Run("AND", func(t *testing.T) {
 		for _, tc := range tests {
-			assert.Equal(t, tc.pt0 && tc.pt1, enc.DecryptLWEBool(eval.AND(tc.ct0, tc.ct1)))
+			assert.Equal(t, tc.pt0 && tc.pt1, testEncryptor.DecryptLWEBool(testEvaluator.AND(tc.ct0, tc.ct1)))
 		}
 	})
 
 	t.Run("NAND", func(t *testing.T) {
 		for _, tc := range tests {
-			assert.Equal(t, !(tc.pt0 && tc.pt1), enc.DecryptLWEBool(eval.NAND(tc.ct0, tc.ct1)))
+			assert.Equal(t, !(tc.pt0 && tc.pt1), testEncryptor.DecryptLWEBool(testEvaluator.NAND(tc.ct0, tc.ct1)))
 		}
 	})
 
 	t.Run("OR", func(t *testing.T) {
 		for _, tc := range tests {
-			assert.Equal(t, tc.pt0 || tc.pt1, enc.DecryptLWEBool(eval.OR(tc.ct0, tc.ct1)))
+			assert.Equal(t, tc.pt0 || tc.pt1, testEncryptor.DecryptLWEBool(testEvaluator.OR(tc.ct0, tc.ct1)))
 		}
 	})
 
 	t.Run("NOR", func(t *testing.T) {
 		for _, tc := range tests {
-			assert.Equal(t, !(tc.pt0 || tc.pt1), enc.DecryptLWEBool(eval.NOR(tc.ct0, tc.ct1)))
+			assert.Equal(t, !(tc.pt0 || tc.pt1), testEncryptor.DecryptLWEBool(testEvaluator.NOR(tc.ct0, tc.ct1)))
 		}
 	})
 
 	t.Run("XOR", func(t *testing.T) {
 		for _, tc := range tests {
-			assert.Equal(t, tc.pt0 != tc.pt1, enc.DecryptLWEBool(eval.XOR(tc.ct0, tc.ct1)))
+			assert.Equal(t, tc.pt0 != tc.pt1, testEncryptor.DecryptLWEBool(testEvaluator.XOR(tc.ct0, tc.ct1)))
 		}
 	})
 
 	t.Run("XNOR", func(t *testing.T) {
 		for _, tc := range tests {
-			assert.Equal(t, tc.pt0 == tc.pt1, enc.DecryptLWEBool(eval.XNOR(tc.ct0, tc.ct1)))
+			assert.Equal(t, tc.pt0 == tc.pt1, testEncryptor.DecryptLWEBool(testEvaluator.XNOR(tc.ct0, tc.ct1)))
 		}
 	})
 
 	t.Run("Bits", func(t *testing.T) {
 		msg0, msg1 := 0b01, 0b10
-		ct0 := enc.EncryptLWEBits(msg0, 4)
-		ct1 := enc.EncryptLWEBits(msg1, 4)
+		ct0 := testEncryptor.EncryptLWEBits(msg0, 4)
+		ct1 := testEncryptor.EncryptLWEBits(msg1, 4)
 
-		ctOut := enc.EncryptLWEBits(0, 4)
+		ctOut := testEncryptor.EncryptLWEBits(0, 4)
 		for i := range ctOut {
-			eval.XORAssign(ct0[i], ct1[i], ctOut[i])
+			testEvaluator.XORAssign(ct0[i], ct1[i], ctOut[i])
 		}
 
-		assert.Equal(t, enc.DecryptLWEBits(ctOut), msg0^msg1)
+		assert.Equal(t, testEncryptor.DecryptLWEBits(ctOut), msg0^msg1)
 	})
 }
 
@@ -83,7 +83,7 @@ func TestMarshal(t *testing.T) {
 	t.Run("LWECiphertext", func(t *testing.T) {
 		var ctIn, ctOut tfhe.LWECiphertext[uint32]
 
-		ctIn = enc.BaseEncryptor.EncryptLWE(0)
+		ctIn = testEncryptor.BaseEncryptor.EncryptLWE(0)
 		if n, err := ctIn.WriteTo(&buf); err != nil {
 			assert.Equal(t, int(n), ctIn.ByteSize())
 			assert.Error(t, err)
@@ -100,7 +100,7 @@ func TestMarshal(t *testing.T) {
 	t.Run("LevCiphertext", func(t *testing.T) {
 		var ctIn, ctOut tfhe.LevCiphertext[uint32]
 
-		ctIn = enc.BaseEncryptor.EncryptLev(0, testParams.KeySwitchParameters())
+		ctIn = testEncryptor.BaseEncryptor.EncryptLev(0, testParams.KeySwitchParameters())
 		if n, err := ctIn.WriteTo(&buf); err != nil {
 			assert.Equal(t, int(n), ctIn.ByteSize())
 			assert.Error(t, err)
@@ -117,7 +117,7 @@ func TestMarshal(t *testing.T) {
 	t.Run("GSWCiphertext", func(t *testing.T) {
 		var ctIn, ctOut tfhe.GSWCiphertext[uint32]
 
-		ctIn = enc.BaseEncryptor.EncryptGSW(0, testParams.KeySwitchParameters())
+		ctIn = testEncryptor.BaseEncryptor.EncryptGSW(0, testParams.KeySwitchParameters())
 		if n, err := ctIn.WriteTo(&buf); err != nil {
 			assert.Equal(t, int(n), ctIn.ByteSize())
 			assert.Error(t, err)
@@ -134,7 +134,7 @@ func TestMarshal(t *testing.T) {
 	t.Run("GLWECiphertext", func(t *testing.T) {
 		var ctIn, ctOut tfhe.GLWECiphertext[uint32]
 
-		ctIn = enc.BaseEncryptor.EncryptGLWE([]int{0})
+		ctIn = testEncryptor.BaseEncryptor.EncryptGLWE([]int{0})
 		if n, err := ctIn.WriteTo(&buf); err != nil {
 			assert.Equal(t, int(n), ctIn.ByteSize())
 			assert.Error(t, err)
@@ -151,7 +151,7 @@ func TestMarshal(t *testing.T) {
 	t.Run("GLevCiphertext", func(t *testing.T) {
 		var ctIn, ctOut tfhe.GLevCiphertext[uint32]
 
-		ctIn = enc.BaseEncryptor.EncryptGLev([]int{0}, testParams.KeySwitchParameters())
+		ctIn = testEncryptor.BaseEncryptor.EncryptGLev([]int{0}, testParams.KeySwitchParameters())
 		if n, err := ctIn.WriteTo(&buf); err != nil {
 			assert.Equal(t, int(n), ctIn.ByteSize())
 			assert.Error(t, err)
@@ -168,7 +168,7 @@ func TestMarshal(t *testing.T) {
 	t.Run("GGSWCiphertext", func(t *testing.T) {
 		var ctIn, ctOut tfhe.GGSWCiphertext[uint32]
 
-		ctIn = enc.BaseEncryptor.EncryptGGSW([]int{0}, testParams.KeySwitchParameters())
+		ctIn = testEncryptor.BaseEncryptor.EncryptGGSW([]int{0}, testParams.KeySwitchParameters())
 		if n, err := ctIn.WriteTo(&buf); err != nil {
 			assert.Equal(t, int(n), ctIn.ByteSize())
 			assert.Error(t, err)
@@ -185,7 +185,7 @@ func TestMarshal(t *testing.T) {
 	t.Run("SecretKey", func(t *testing.T) {
 		var skIn, skOut tfhe.SecretKey[uint32]
 
-		skIn = enc.BaseEncryptor.SecretKey
+		skIn = testEncryptor.BaseEncryptor.SecretKey
 		if n, err := skIn.WriteTo(&buf); err != nil {
 			assert.Equal(t, int(n), skIn.ByteSize())
 			assert.Error(t, err)
@@ -202,7 +202,7 @@ func TestMarshal(t *testing.T) {
 	t.Run("EvaluationKey", func(t *testing.T) {
 		var evkIn, evkOut tfhe.EvaluationKey[uint32]
 
-		evkIn = eval.BaseEvaluator.EvaluationKey
+		evkIn = testEvaluator.BaseEvaluator.EvaluationKey
 		if n, err := evkIn.WriteTo(&buf); err != nil {
 			assert.Equal(t, int(n), evkIn.ByteSize())
 			assert.Error(t, err)
@@ -218,12 +218,12 @@ func TestMarshal(t *testing.T) {
 }
 
 func BenchmarkGateBootstrap(b *testing.B) {
-	ct0 := enc.EncryptLWEBool(true)
-	ct1 := enc.EncryptLWEBool(false)
+	ct0 := testEncryptor.EncryptLWEBool(true)
+	ct1 := testEncryptor.EncryptLWEBool(false)
 	ctOut := tfhe.NewLWECiphertext(testParams)
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		eval.ANDAssign(ct0, ct1, ctOut)
+		testEvaluator.ANDAssign(ct0, ct1, ctOut)
 	}
 }

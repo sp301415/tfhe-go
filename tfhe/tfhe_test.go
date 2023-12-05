@@ -11,11 +11,13 @@ import (
 )
 
 var (
-	testParams  = tfhe.ParamsUint3.Compile()
-	benchParams = tfhe.ParamsUint6.Compile()
-
+	testParams    = tfhe.ParamsUint3.Compile()
 	testEncryptor = tfhe.NewEncryptor(testParams)
 	testEvaluator = tfhe.NewEvaluator(testParams, testEncryptor.GenEvaluationKeyParallel())
+
+	benchParams    = tfhe.ParamsUint6.Compile()
+	benchEncryptor = tfhe.NewEncryptor(benchParams)
+	benchEvaluator = tfhe.NewEvaluator(benchParams, benchEncryptor.GenEvaluationKeyParallel())
 )
 
 func TestEncryptor(t *testing.T) {
@@ -324,16 +326,12 @@ func TestMarshal(t *testing.T) {
 }
 
 func BenchmarkEvaluationKeyGen(b *testing.B) {
-	benchEncryptor := tfhe.NewEncryptor(benchParams)
 	for i := 0; i < b.N; i++ {
 		benchEncryptor.GenEvaluationKeyParallel()
 	}
 }
 
 func BenchmarkBootstrap(b *testing.B) {
-	benchEncryptor := tfhe.NewEncryptor(benchParams)
-	benchEvaluator := tfhe.NewEvaluator(benchParams, benchEncryptor.GenEvaluationKeyParallel())
-
 	ct := benchEncryptor.EncryptLWE(3)
 	lut := benchEvaluator.GenLookUpTable(func(x int) int { return 2*x + 1 })
 	b.ResetTimer()
