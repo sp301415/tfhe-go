@@ -93,9 +93,9 @@ func (e *Evaluator[T]) BootstrapLUT(ct LWECiphertext[T], lut LookUpTable[T]) LWE
 
 // BootstrapLUTAssign bootstraps LWE ciphertext with respect to given LUT and writes it to ctOut.
 func (e *Evaluator[T]) BootstrapLUTAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut LWECiphertext[T]) {
-	e.BlindRotateAssign(ct, lut, e.buffer.ctRotate)
-	e.SampleExtractAssign(e.buffer.ctRotate, 0, e.buffer.ctExtract)
-	e.KeySwitchForBootstrapAssign(e.buffer.ctExtract, ctOut)
+	e.KeySwitchForBootstrapAssign(ct, e.buffer.ctSmall)
+	e.BlindRotateAssign(e.buffer.ctSmall, lut, e.buffer.ctRotate)
+	e.SampleExtractAssign(e.buffer.ctRotate, 0, ctOut)
 }
 
 // ModSwitch calculates round(2N * x / Q) mod 2N.
@@ -134,15 +134,13 @@ func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T]
 }
 
 // SampleExtract extracts LWE ciphertext of given index from GLWE ciphertext and returns it.
-// The output ciphertext has length GLWEDimension * PolyDegree + 1.
 func (e *Evaluator[T]) SampleExtract(ct GLWECiphertext[T], index int) LWECiphertext[T] {
-	ctOut := NewLWECiphertextCustom[T](e.Parameters.LargeLWEDimension())
+	ctOut := NewLWECiphertextCustom[T](e.Parameters.lweDimension)
 	e.SampleExtractAssign(ct, index, ctOut)
 	return ctOut
 }
 
 // SampleExtractAssign extracts LWE ciphertext of given index from GLWE ciphertext.
-// The output ciphertext should have length GLWEDimension * PolyDegree + 1.
 func (e *Evaluator[T]) SampleExtractAssign(ct GLWECiphertext[T], index int, ctOut LWECiphertext[T]) {
 	ctOut.Value[0] = ct.Value[0].Coeffs[index]
 
@@ -184,19 +182,17 @@ func (e *Evaluator[T]) KeySwitchAssign(ct LWECiphertext[T], ksk KeySwitchKey[T],
 }
 
 // KeySwitchForBootstrap performs the keyswitching using evaulater's bootstrap key.
-// Input ciphertext should be length LWELargeDimension + 1, and output ciphertext will be length LWEDimension + 1.
 func (e *Evaluator[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[T] {
-	ctOut := NewLWECiphertext(e.Parameters)
+	ctOut := NewLWECiphertextCustom[T](e.Parameters.lweSmallDimension)
 	e.KeySwitchForBootstrapAssign(ct, ctOut)
 	return ctOut
 }
 
 // KeySwitchForBootstrapAssign performs the keyswitching using evaulater's bootstrap key.
-// Input ciphertext should be length LWELargeDimension + 1, and output ciphertext should be length LWEDimension + 1.
 func (e *Evaluator[T]) KeySwitchForBootstrapAssign(ct, ctOut LWECiphertext[T]) {
 	e.buffer.ctKeySwitch.Value[0] = 0
-	vec.CopyAssign(ct.Value[e.Parameters.lweDimension+1:], e.buffer.ctKeySwitch.Value[1:])
+	vec.CopyAssign(ct.Value[e.Parameters.lweSmallDimension+1:], e.buffer.ctKeySwitch.Value[1:])
 
 	e.KeySwitchAssign(e.buffer.ctKeySwitch, e.EvaluationKey.KeySwitchKey, ctOut)
-	vec.AddAssign(ctOut.Value, ct.Value[:e.Parameters.lweDimension+1], ctOut.Value)
+	vec.AddAssign(ctOut.Value, ct.Value[:e.Parameters.lweSmallDimension+1], ctOut.Value)
 }

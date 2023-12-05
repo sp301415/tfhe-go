@@ -67,7 +67,6 @@ func NewFourierGLWECiphertext[T Tint](params Parameters[T]) FourierGLWECiphertex
 }
 
 // NewFourierGLWECiphertextCustom allocates an empty FourierGLWECiphertext with given dimension and polyDegree.
-// Note that the resulting ciphertext has length glweDimension + 1.
 func NewFourierGLWECiphertextCustom[T Tint](glweDimension, polyDegree int) FourierGLWECiphertext[T] {
 	ct := make([]poly.FourierPoly, glweDimension+1)
 	for i := range ct {
@@ -117,7 +116,6 @@ func NewFourierGLevCiphertext[T Tint](params Parameters[T], gadgetParams GadgetP
 }
 
 // NewFourierGLevCiphertextCustom allocates an empty FourierGLevCiphertext with given dimension and polyDegree.
-// Note that each GLWE ciphertext has length glweDimension + 1.
 func NewFourierGLevCiphertextCustom[T Tint](glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) FourierGLevCiphertext[T] {
 	ct := make([]FourierGLWECiphertext[T], gadgetParams.level)
 	for i := 0; i < gadgetParams.level; i++ {
@@ -168,7 +166,6 @@ func NewFourierGGSWCiphertext[T Tint](params Parameters[T], gadgetParams GadgetP
 }
 
 // NewFourierGGSWCiphertextCustom allocates an empty GGSW ciphertext with given dimension and polyDegree.
-// Note that each GLWE ciphertext has length glweDimension + 1.
 func NewFourierGGSWCiphertextCustom[T Tint](glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) FourierGGSWCiphertext[T] {
 	ct := make([]FourierGLevCiphertext[T], glweDimension+1)
 	for i := 0; i < glweDimension+1; i++ {

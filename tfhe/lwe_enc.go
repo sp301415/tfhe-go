@@ -27,7 +27,7 @@ func (e *Encryptor[T]) EncryptLWEPlaintextAssign(pt LWEPlaintext[T], ctOut LWECi
 // This avoids the need for most buffers.
 func (e *Encryptor[T]) EncryptLWEBody(ct LWECiphertext[T]) {
 	e.uniformSampler.SampleSliceAssign(ct.Value[1:])
-	ct.Value[0] += -vec.Dot(ct.Value[1:], e.SecretKey.LWEKey.Value) + e.lweSampler.Sample()
+	ct.Value[0] += -vec.Dot(ct.Value[1:], e.SecretKey.LWEKey.Value) + e.glweSampler.Sample()
 }
 
 // DecryptLWE decrypts and decodes LWE ciphertext to integer message.

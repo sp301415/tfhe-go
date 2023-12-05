@@ -42,12 +42,12 @@ type evaluationBuffer[T Tint] struct {
 	// acc holds the accumulator in Blind Rotation.
 	acc GLWECiphertext[T]
 
+	// ctKeySwitch holds LWEDimension - LWESmallDimension + 1 sized ciphertext from keyswitching.
+	ctKeySwitch LWECiphertext[T]
+	// ctSmall holds LWESmallDimension sized ciphertext from keyswitching.
+	ctSmall LWECiphertext[T]
 	// ctRotate holds the blind rotated GLWE ciphertext for bootstrapping.
 	ctRotate GLWECiphertext[T]
-	// ctExtract holds the sample extracted LWE large ciphertext for bootstrapping.
-	ctExtract LWECiphertext[T]
-	// ctKeySwitch holds LargeLWEDimension - LWEDimension + 1 sized ciphertext from keyswitching.
-	ctKeySwitch LWECiphertext[T]
 
 	// lut is an empty lut, used for BlindRotateFunc.
 	lut LookUpTable[T]
@@ -96,9 +96,9 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 		accDecomposed: accDecomposed,
 		acc:           NewGLWECiphertext(params),
 
+		ctKeySwitch: NewLWECiphertextCustom[T](params.lweDimension - params.lweSmallDimension),
+		ctSmall:     NewLWECiphertextCustom[T](params.lweSmallDimension),
 		ctRotate:    NewGLWECiphertext(params),
-		ctExtract:   NewLWECiphertextCustom[T](params.LargeLWEDimension()),
-		ctKeySwitch: NewLWECiphertextCustom[T](params.LargeLWEDimension() - params.lweDimension),
 
 		lut: NewLookUpTable(params),
 	}

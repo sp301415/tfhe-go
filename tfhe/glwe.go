@@ -113,7 +113,6 @@ func NewGLWECiphertext[T Tint](params Parameters[T]) GLWECiphertext[T] {
 }
 
 // NewGLWECiphertextCustom allocates an empty GLWECiphertext with given dimension and polyDegree.
-// Note that the resulting ciphertext has length glweDimension + 1.
 func NewGLWECiphertextCustom[T Tint](glweDimension, polyDegree int) GLWECiphertext[T] {
 	ct := make([]poly.Poly[T], glweDimension+1)
 	for i := 0; i < glweDimension+1; i++ {
@@ -163,7 +162,6 @@ func NewGLevCiphertext[T Tint](params Parameters[T], gadgetParams GadgetParamete
 }
 
 // NewGLevCiphertextCustom allocates an empty GLevCiphertext with given dimension and polyDegree.
-// Note that the each GLWE ciphertext has length glweDimension + 1.
 func NewGLevCiphertextCustom[T Tint](glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) GLevCiphertext[T] {
 	ct := make([]GLWECiphertext[T], gadgetParams.level)
 	for i := 0; i < gadgetParams.level; i++ {
@@ -215,7 +213,6 @@ func NewGGSWCiphertext[T Tint](params Parameters[T], gadgetParams GadgetParamete
 }
 
 // NewGGSWCiphertextCustom allocates an empty GGSW ciphertext with given dimension and polyDegree.
-// Note that each GLWE ciphertext has length glweDimension + 1.
 func NewGGSWCiphertextCustom[T Tint](glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) GGSWCiphertext[T] {
 	ct := make([]GLevCiphertext[T], glweDimension+1)
 	for i := 0; i < glweDimension+1; i++ {

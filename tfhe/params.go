@@ -199,9 +199,9 @@ func (p *GadgetParameters[T]) UnmarshalBinary(data []byte) error {
 // Unless you are a cryptographic expert, DO NOT set these by yourself;
 // always use the default parameters provided.
 type ParametersLiteral[T Tint] struct {
-	// LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
-	// Length of LWE secret key is LWEDimension, and length of LWE ciphertext is LWEDimension+1.
-	LWEDimension int
+	// LWESmallDimension is the dimension of LWE lattice used. Usually this is denoted by n.
+	// This is only used for temporary keys and ciphertexts during Blind Rotation.
+	LWESmallDimension int
 	// GLWEDimension is the dimension of GLWE lattice used. Usually this is denoted by k.
 	// Length of GLWE secret key is GLWEDimension, and length of GLWE ciphertext is GLWEDimension+1.
 	GLWEDimension int
@@ -237,8 +237,8 @@ type ParametersLiteral[T Tint] struct {
 // always use the default parameters provided.
 func (p ParametersLiteral[T]) Compile() Parameters[T] {
 	switch {
-	case p.LWEDimension <= 0:
-		panic("LWEDimension smaller than zero")
+	case p.LWESmallDimension <= 0:
+		panic("LWESmallDimension smaller than zero")
 	case p.GLWEDimension <= 0:
 		panic("GLWEDimension smaller than zero")
 	case p.PolyDegree <= MinPolyDegree:
@@ -249,6 +249,8 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("LWEStdDev smaller than zero")
 	case p.GLWEStdDev <= 0:
 		panic("GLWEStdDev smaller than zero")
+	case p.LWESmallDimension%p.BlockSize != 0:
+		panic("LWESmallDimension not multiple of BlockSize")
 	case !num.IsPowerOfTwo(p.PolyDegree):
 		panic("PolyDegree not power of two")
 	case !num.IsPowerOfTwo(p.MessageModulus):
@@ -259,10 +261,11 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 	deltaLog := num.SizeT[T]() - 1 - messageModulusLog
 
 	return Parameters[T]{
-		lweDimension:  p.LWEDimension,
-		glweDimension: p.GLWEDimension,
-		polyDegree:    p.PolyDegree,
-		polyDegreeLog: num.Log2(p.PolyDegree),
+		lweSmallDimension: p.LWESmallDimension,
+		lweDimension:      p.GLWEDimension * p.PolyDegree,
+		glweDimension:     p.GLWEDimension,
+		polyDegree:        p.PolyDegree,
+		polyDegreeLog:     num.Log2(p.PolyDegree),
 
 		lweStdDev:  p.LWEStdDev,
 		glweStdDev: p.GLWEStdDev,
@@ -284,8 +287,11 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 
 // Parameters are read-only, compiled parameters based on ParametersLiteral.
 type Parameters[T Tint] struct {
-	// LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
-	// Length of LWE secret key is LWEDimension, and length of LWE ciphertext is LWEDimension+1.
+	// LWESmallDimension is the dimension of LWE lattice used. Usually this is denoted by n.
+	// This is only used for temporary keys and ciphertexts during Blind Rotation.
+	lweSmallDimension int
+	// LWEDimension is the dimension for LWE entities.
+	// Equals to the "full" GLWE lattice; which is GLWEDimension * PolyDegree.
 	lweDimension int
 	// GLWEDimension is the dimension of GLWE lattice used. Usually this is denoted by k.
 	// Length of GLWE secret key is GLWEDimension, and length of GLWE ciphertext is GLWEDimension+1.
@@ -324,16 +330,16 @@ type Parameters[T Tint] struct {
 	keyswitchParameters GadgetParameters[T]
 }
 
-// LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
-// Length of LWE secret key is LWEDimension, and length of LWE ciphertext is LWEDimension+1.
-func (p Parameters[T]) LWEDimension() int {
-	return p.lweDimension
+// LWESmallDimension is the dimension of LWE lattice used. Usually this is denoted by n.
+// This is only used for temporary keys and ciphertexts during Blind Rotation.
+func (p Parameters[T]) LWESmallDimension() int {
+	return p.lweSmallDimension
 }
 
-// LargeLWEDimension is the dimension of LWE cipehrtext after Sample Extraction.
-// Equal to PolyDegree * GLWEDimension.
-func (p Parameters[T]) LargeLWEDimension() int {
-	return p.polyDegree * p.glweDimension
+// LWEDimension is the dimension for LWE entities.
+// Equals to the "full" GLWE lattice; which is GLWEDimension * PolyDegree.
+func (p Parameters[T]) LWEDimension() int {
+	return p.lweDimension
 }
 
 // GLWEDimension is the dimension of GLWE lattice used. Usually this is denoted by k.
@@ -367,9 +373,9 @@ func (p Parameters[T]) BlockSize() int {
 	return p.blockSize
 }
 
-// BlockCount is a number of blocks in LWE key. Equal to LWEDimension / BlockSize.
+// BlockCount is a number of blocks in LWESmallkey. Equal to LWESmallDimension / BlockSize.
 func (p Parameters[T]) BlockCount() int {
-	return p.lweDimension / p.blockSize
+	return p.lweSmallDimension / p.blockSize
 }
 
 // Delta is the scaling factor used for message encoding.
@@ -427,7 +433,7 @@ func (p Parameters[T]) ByteSize() int {
 func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var buf [3*8 + 2*8 + 8 + 8 + 16 + 16]byte
 
-	binary.BigEndian.PutUint64(buf[0:8], uint64(p.lweDimension))
+	binary.BigEndian.PutUint64(buf[0:8], uint64(p.lweSmallDimension))
 	binary.BigEndian.PutUint64(buf[8:16], uint64(p.glweDimension))
 	binary.BigEndian.PutUint64(buf[16:24], uint64(p.polyDegree))
 	binary.BigEndian.PutUint64(buf[24:32], math.Float64bits(p.lweStdDev))
@@ -463,7 +469,7 @@ func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
 		return
 	}
 
-	lweDimension := binary.BigEndian.Uint64(buf[0:8])
+	lweSmallDimension := binary.BigEndian.Uint64(buf[0:8])
 	glweDimension := binary.BigEndian.Uint64(buf[8:16])
 	polyDegree := binary.BigEndian.Uint64(buf[16:24])
 	lweStdDev := math.Float64frombits(binary.BigEndian.Uint64(buf[24:32]))
@@ -481,7 +487,7 @@ func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 
 	*p = ParametersLiteral[T]{
-		LWEDimension:        int(lweDimension),
+		LWESmallDimension:   int(lweSmallDimension),
 		GLWEDimension:       int(glweDimension),
 		PolyDegree:          int(polyDegree),
 		LWEStdDev:           lweStdDev,

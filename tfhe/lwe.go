@@ -77,7 +77,6 @@ func NewLWECiphertext[T Tint](params Parameters[T]) LWECiphertext[T] {
 }
 
 // NewLWECiphertextCustom allocates an empty LWECiphertext with given dimension.
-// Note that thre resulting ciphertext has length lweDimension + 1.
 func NewLWECiphertextCustom[T Tint](lweDimension int) LWECiphertext[T] {
 	return LWECiphertext[T]{Value: make([]T, lweDimension+1)}
 }
@@ -115,7 +114,6 @@ func NewLevCiphertext[T Tint](params Parameters[T], gadgetParams GadgetParameter
 }
 
 // NewLevCiphertextCustom allocates an empty LevCiphertext with given dimension.
-// Note that thre resulting ciphertext has length lweDimension + 1.
 func NewLevCiphertextCustom[T Tint](lweDimension int, gadgetParams GadgetParameters[T]) LevCiphertext[T] {
 	ct := make([]LWECiphertext[T], gadgetParams.level)
 	for i := 0; i < gadgetParams.level; i++ {
@@ -167,7 +165,6 @@ func NewGSWCiphertext[T Tint](params Parameters[T], gadgetParams GadgetParameter
 }
 
 // NewGSWCiphertextCustom allocates an empty GSW ciphertext with given dimension.
-// Note that thre resulting ciphertext has length lweDimension + 1.
 func NewGSWCiphertextCustom[T Tint](lweDimension int, gadgetParams GadgetParameters[T]) GSWCiphertext[T] {
 	ct := make([]LevCiphertext[T], lweDimension+1)
 	for i := 0; i < lweDimension+1; i++ {

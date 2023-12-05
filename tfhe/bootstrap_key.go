@@ -18,10 +18,10 @@ func NewEvaluationKey[T Tint](params Parameters[T]) EvaluationKey[T] {
 }
 
 // NewEvaluationKeyCustom allocates an empty EvaluationKey with custom parameters.
-func NewEvaluationKeyCustom[T Tint](lweDimension, glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) EvaluationKey[T] {
+func NewEvaluationKeyCustom[T Tint](lweSmallDimension, glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) EvaluationKey[T] {
 	return EvaluationKey[T]{
-		BootstrapKey: NewBootstrapKeyCustom(lweDimension, glweDimension, polyDegree, gadgetParams),
-		KeySwitchKey: NewKeySwitchKeyForBootstrapCustom(lweDimension, glweDimension, polyDegree, gadgetParams),
+		BootstrapKey: NewBootstrapKeyCustom(lweSmallDimension, glweDimension, polyDegree, gadgetParams),
+		KeySwitchKey: NewKeySwitchKeyForBootstrapCustom(lweSmallDimension, glweDimension, polyDegree, gadgetParams),
 	}
 }
 
@@ -51,23 +51,23 @@ func (evk *EvaluationKey[T]) Clear() {
 type BootstrapKey[T Tint] struct {
 	GadgetParameters GadgetParameters[T]
 
-	// Value has length LWEDimension.
+	// Value has length LWESmallDimension.
 	Value []FourierGGSWCiphertext[T]
 }
 
 // NewBootstrapKey allocates an empty BootstrappingKey.
 func NewBootstrapKey[T Tint](params Parameters[T]) BootstrapKey[T] {
-	bsk := make([]FourierGGSWCiphertext[T], params.lweDimension)
-	for i := 0; i < params.lweDimension; i++ {
+	bsk := make([]FourierGGSWCiphertext[T], params.lweSmallDimension)
+	for i := 0; i < params.lweSmallDimension; i++ {
 		bsk[i] = NewFourierGGSWCiphertext(params, params.bootstrapParameters)
 	}
 	return BootstrapKey[T]{Value: bsk, GadgetParameters: params.bootstrapParameters}
 }
 
 // NewBootstrapKeyCustom allocates an empty BootstrappingKey with custom parameters.
-func NewBootstrapKeyCustom[T Tint](lweDimension, glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) BootstrapKey[T] {
-	bsk := make([]FourierGGSWCiphertext[T], lweDimension)
-	for i := 0; i < lweDimension; i++ {
+func NewBootstrapKeyCustom[T Tint](lweSmallDimension, glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) BootstrapKey[T] {
+	bsk := make([]FourierGGSWCiphertext[T], lweSmallDimension)
+	for i := 0; i < lweSmallDimension; i++ {
 		bsk[i] = NewFourierGGSWCiphertextCustom[T](glweDimension, polyDegree, gadgetParams)
 	}
 	return BootstrapKey[T]{Value: bsk, GadgetParameters: gadgetParams}
@@ -108,24 +108,21 @@ type KeySwitchKey[T Tint] struct {
 
 // NewKeySwitchKey allocates an empty KeySwitchingKey.
 func NewKeySwitchKey[T Tint](inputDimension, outputDimension int, gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
-	kswKey := make([]LevCiphertext[T], inputDimension)
+	ksk := make([]LevCiphertext[T], inputDimension)
 	for i := 0; i < inputDimension; i++ {
-		kswKey[i] = LevCiphertext[T]{Value: make([]LWECiphertext[T], gadgetParams.level), GadgetParameters: gadgetParams}
-		for j := 0; j < gadgetParams.level; j++ {
-			kswKey[i].Value[j] = NewLWECiphertextCustom[T](outputDimension)
-		}
+		ksk[i] = NewLevCiphertextCustom(outputDimension, gadgetParams)
 	}
-	return KeySwitchKey[T]{Value: kswKey, GadgetParameters: gadgetParams}
+	return KeySwitchKey[T]{Value: ksk, GadgetParameters: gadgetParams}
 }
 
 // NewKeySwitchKeyForBootstrap allocates an empty KeySwitchingKey for bootstrapping.
 func NewKeySwitchKeyForBootstrap[T Tint](params Parameters[T]) KeySwitchKey[T] {
-	return NewKeySwitchKey[T](params.LargeLWEDimension()-params.lweDimension, params.lweDimension, params.keyswitchParameters)
+	return NewKeySwitchKey[T](params.lweDimension-params.lweSmallDimension, params.lweSmallDimension, params.keyswitchParameters)
 }
 
 // NewKeySwitchKeyForBootstrapCustom allocates an empty KeySwitchingKey with custom parameters.
-func NewKeySwitchKeyForBootstrapCustom[T Tint](lweDimension, glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
-	return NewKeySwitchKey[T](glweDimension*polyDegree-lweDimension, lweDimension, gadgetParams)
+func NewKeySwitchKeyForBootstrapCustom[T Tint](lweSmallDimension, glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
+	return NewKeySwitchKey[T](glweDimension*polyDegree-lweSmallDimension, lweSmallDimension, gadgetParams)
 }
 
 // InputLWEDimension returns the input LWEDimension of this key.
