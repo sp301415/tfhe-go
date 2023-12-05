@@ -127,7 +127,7 @@ func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T]
 		}
 
 		for j := i * e.Parameters.blockSize; j < (i+1)*e.Parameters.blockSize; j++ {
-			e.ExternalProductHoistedAssign(e.EvaluationKey.BootstrapKey.Value[j], e.buffer.accDecomposed, e.buffer.acc)
+			e.ExternalProductDecomposedAssign(e.EvaluationKey.BootstrapKey.Value[j], e.buffer.accDecomposed, e.buffer.acc)
 			e.MonomialMulMinusOneAddGLWEAssign(e.buffer.acc, -e.ModSwitch(ct.Value[j+1]), ctOut)
 		}
 	}

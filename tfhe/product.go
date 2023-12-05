@@ -131,17 +131,17 @@ func (e *Evaluator[T]) ExternalProductSubAssign(ctFourierGGSW FourierGGSWCiphert
 	}
 }
 
-// ExternalProductHoisted calculates the external product between
+// ExternalProductDecomposed calculates the external product between
 // ctFourierGGSW and decomposed ctGLWE, and returns it.
-func (e *Evaluator[T]) ExternalProductHoisted(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWEDecomposed [][]poly.FourierPoly) GLWECiphertext[T] {
+func (e *Evaluator[T]) ExternalProductDecomposed(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWEDecomposed [][]poly.FourierPoly) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
-	e.ExternalProductHoistedAssign(ctFourierGGSW, ctGLWEDecomposed, ctOut)
+	e.ExternalProductDecomposedAssign(ctFourierGGSW, ctGLWEDecomposed, ctOut)
 	return ctOut
 }
 
-// ExternalProductHoistedAssign calculates the external product between
+// ExternalProductDecomposedAssign calculates the external product between
 // ctFourierGGSW and decomposed ctGLWE, and writes it to ctGLWEOut.
-func (e *Evaluator[T]) ExternalProductHoistedAssign(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWEDecomposed [][]poly.FourierPoly, ctGLWEOut GLWECiphertext[T]) {
+func (e *Evaluator[T]) ExternalProductDecomposedAssign(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWEDecomposed [][]poly.FourierPoly, ctGLWEOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		for j := 0; j < ctFourierGGSW.GadgetParameters.level; j++ {
 			if i == 0 && j == 0 {
@@ -157,9 +157,9 @@ func (e *Evaluator[T]) ExternalProductHoistedAssign(ctFourierGGSW FourierGGSWCip
 	}
 }
 
-// ExternalProductHoistedAddAssign calculates the external product between
+// ExternalProductDecomposedAddAssign calculates the external product between
 // ctFourierGGSW and decomposed ctGLWE, and adds it to ctGLWEOut.
-func (e *Evaluator[T]) ExternalProductHoistedAddAssign(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWEDecomposed [][]poly.FourierPoly, ctGLWEOut GLWECiphertext[T]) {
+func (e *Evaluator[T]) ExternalProductDecomposedAddAssign(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWEDecomposed [][]poly.FourierPoly, ctGLWEOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		for j := 0; j < ctFourierGGSW.GadgetParameters.level; j++ {
 			if i == 0 && j == 0 {
@@ -175,9 +175,9 @@ func (e *Evaluator[T]) ExternalProductHoistedAddAssign(ctFourierGGSW FourierGGSW
 	}
 }
 
-// ExternalProductHoistedSubAssign calculates the external product between
+// ExternalProductDecomposedSubAssign calculates the external product between
 // ctFourierGGSW and decomposed ctGLWE, and subtracts it from ctGLWEOut.
-func (e *Evaluator[T]) ExternalProductHoistedSubAssign(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWEDecomposed [][]poly.FourierPoly, ctGLWEOut GLWECiphertext[T]) {
+func (e *Evaluator[T]) ExternalProductDecomposedSubAssign(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWEDecomposed [][]poly.FourierPoly, ctGLWEOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		for j := 0; j < ctFourierGGSW.GadgetParameters.level; j++ {
 			if i == 0 && j == 0 {
