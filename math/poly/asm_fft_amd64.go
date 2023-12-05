@@ -18,7 +18,7 @@ func fftInPlace(coeffs, wNj []complex128) {
 		return
 	}
 
-	// Implementation of Algorithm 1 from https://eprint.iacr.org/2016/504.pdf
+	// Implementation of Algorithm 1 from https://eprint.iacr.org/2016/504
 	N := len(coeffs)
 	t := N
 	for m := 1; m < N; m <<= 1 {
@@ -44,7 +44,7 @@ func invFFTInPlace(coeffs, wNjInv []complex128) {
 		return
 	}
 
-	// Implementation of Algorithm 2 from https://eprint.iacr.org/2016/504.pdf
+	// Implementation of Algorithm 2 from https://eprint.iacr.org/2016/504
 	N := len(coeffs)
 	t := 1
 	for m := N; m > 1; m >>= 1 {

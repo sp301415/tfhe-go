@@ -9,7 +9,6 @@ import (
 // fftInPlace is a top-level function for FFT.
 // All internal FFT implementations calls this function for performance.
 func fftInPlace(coeffs, wNj []complex128) {
-	// Implementation of Algorithm 1 from https://eprint.iacr.org/2016/504.pdf
 	N := len(coeffs)
 	t := N
 	for m := 1; m < N; m <<= 1 {
@@ -28,7 +27,6 @@ func fftInPlace(coeffs, wNj []complex128) {
 // InvfftInPlace is a top-level function for inverse FFT.
 // All internal inverse FFT implementations calls this function for performance.
 func invFFTInPlace(coeffs, wNjInv []complex128) {
-	// Implementation of Algorithm 2 from https://eprint.iacr.org/2016/504.pdf
 	N := len(coeffs)
 	t := 1
 	for m := N; m > 1; m >>= 1 {
