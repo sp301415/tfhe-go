@@ -87,7 +87,7 @@ func (s GaussianSampler[T]) normFloat64() float64 {
 			return -rn - x
 		}
 
-		if fn[i]+float32(s.uniformFloat())*(fn[i-1]-fn[i]) < float32(math.Exp(-.5*x*x)) {
+		if fn[i]+float32(s.uniformFloat())*(fn[i-1]-fn[i]) < float32(math.Exp(-0.5*x*x)) {
 			return x
 		}
 	}
@@ -96,83 +96,21 @@ func (s GaussianSampler[T]) normFloat64() float64 {
 // Sample returns a number sampled from rounded gaussian distribution.
 func (s GaussianSampler[T]) Sample() T {
 	u := s.normFloat64() * s.StdDev
-
-	var z T
-	switch any(z).(type) {
-	case uint, uintptr:
-		return T(int(math.Round(u)))
-	case uint8:
-		return T(int8(math.Round(u)))
-	case uint16:
-		return T(int16(math.Round(u)))
-	case uint32:
-		return T(int32(math.Round(u)))
-	case uint64:
-		return T(int64(math.Round(u)))
-	}
-	return T(math.Round(u))
+	return T(int64(math.Round(u)))
 }
 
 // SampleSliceAssign samples rounded gaussian values to v.
 func (s GaussianSampler[T]) SampleSliceAssign(v []T) {
-	var z T
-	switch any(z).(type) {
-	case uint, uintptr:
-		for i := range v {
-			v[i] = T(int(math.Round(s.normFloat64() * s.StdDev)))
-		}
-	case uint8:
-		for i := range v {
-			v[i] = T(int8(math.Round(s.normFloat64() * s.StdDev)))
-		}
-	case uint16:
-		for i := range v {
-			v[i] = T(int16(math.Round(s.normFloat64() * s.StdDev)))
-		}
-	case uint32:
-		for i := range v {
-			v[i] = T(int32(math.Round(s.normFloat64() * s.StdDev)))
-		}
-	case uint64:
-		for i := range v {
-			v[i] = T(int64(math.Round(s.normFloat64() * s.StdDev)))
-		}
-	default:
-		for i := range v {
-			v[i] = T(math.Round(s.normFloat64() * s.StdDev))
-		}
+	for i := range v {
+		v[i] = T(int64(math.Round(s.normFloat64() * s.StdDev)))
 	}
 }
 
 // SampleSliceAddAssign samples rounded gaussian values and adds to v.
 // Mostly used in EncryptBody functions, adding error to the message.
 func (s GaussianSampler[T]) SampleSliceAddAssign(v []T) {
-	var z T
-	switch any(z).(type) {
-	case uint, uintptr:
-		for i := range v {
-			v[i] += T(int(math.Round(s.normFloat64() * s.StdDev)))
-		}
-	case uint8:
-		for i := range v {
-			v[i] += T(int8(math.Round(s.normFloat64() * s.StdDev)))
-		}
-	case uint16:
-		for i := range v {
-			v[i] += T(int16(math.Round(s.normFloat64() * s.StdDev)))
-		}
-	case uint32:
-		for i := range v {
-			v[i] += T(int32(math.Round(s.normFloat64() * s.StdDev)))
-		}
-	case uint64:
-		for i := range v {
-			v[i] += T(int64(math.Round(s.normFloat64() * s.StdDev)))
-		}
-	default:
-		for i := range v {
-			v[i] += T(math.Round(s.normFloat64() * s.StdDev))
-		}
+	for i := range v {
+		v[i] += T(int64(math.Round(s.normFloat64() * s.StdDev)))
 	}
 }
 
