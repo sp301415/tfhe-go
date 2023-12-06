@@ -97,8 +97,8 @@ fmt.Println(enc.DecryptLWEBool(ctOut)) // true
 All results were measured from Intel i5-13400F. `ParamsBoolean` and `ParamsUint6` were used.
 |Operation|Time|
 |---------|-------|
-|Programmable Bootstrapping|88.19ms ± 0%|
-|Gate Bootstrapping|12.59ms ± 1%|
+|Programmable Bootstrapping|88.18ms ± 0%|
+|Gate Bootstrapping|12.17ms ± 1%|
 
 ## References
 - TFHE: Fast Fully Homomorphic Encryption over the Torus (https://eprint.iacr.org/2018/421)
