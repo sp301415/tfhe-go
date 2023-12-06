@@ -353,9 +353,9 @@ last_loop_end:
 
 TEXT ·twistAndScaleInPlaceAVX2(SB), NOSPLIT, $0-56
 	MOVQ v0+24(FP), AX
-	MOVQ vOut+0(FP), BX
+	MOVQ v1+0(FP), BX
 
-	MOVQ vOut_len+8(FP), DX
+	MOVQ v0_len+8(FP), DX
 	ADDQ DX, DX
 
 	VBROADCASTSD T+48(FP), Y10
@@ -386,12 +386,12 @@ loop_end:
 
 	RET
 
-TEXT ·untwistAssignAVX2(SB), NOSPLIT, $0-72
+TEXT ·untwistInPlaceAVX2(SB), NOSPLIT, $0-48
 	MOVQ v0+0(FP), AX
 	MOVQ v1+24(FP), BX
-	MOVQ vOut+48(FP), CX
 
-	MOVQ vOut_len+56(FP), DX
+	MOVQ v0_len+8(FP), DX
+	ADDQ DX, DX
 
 	XORQ SI, SI
 	JMP loop_end
@@ -409,7 +409,7 @@ loop_body:
 
 	VROUNDPD $0, Y5, Y5
 
-	VMOVUPD Y5, (CX)(SI*8)
+	VMOVUPD Y5, (AX)(SI*8)
 
 	ADDQ $4, SI
 
@@ -419,12 +419,12 @@ loop_end:
 
 	RET
 
-TEXT ·untwistAndScaleAssignAVX2(SB), NOSPLIT, $0-80
+TEXT ·untwistAndScaleInPlaceAVX2(SB), NOSPLIT, $0-56
 	MOVQ v0+0(FP), AX
 	MOVQ v1+24(FP), BX
-	MOVQ vOut+56(FP), CX
 
-	MOVQ vOut_len+64(FP), DX
+	MOVQ v0+8(FP), DX
+	ADDQ DX, DX
 
 	VBROADCASTSD T+48(FP), Y10
 
@@ -446,7 +446,7 @@ loop_body:
 	VSUBPD Y6, Y5, Y5
 	VMULPD Y5, Y10, Y5
 
-	VMOVUPD Y5, (CX)(SI*8)
+	VMOVUPD Y5, (AX)(SI*8)
 
 	ADDQ $4, SI
 

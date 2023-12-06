@@ -13,7 +13,7 @@ func fftInPlaceAVX2(coeffs, wNj []complex128)
 // fftInPlace is a top-level function for FFT.
 // All internal FFT implementations calls this function for performance.
 func fftInPlace(coeffs, wNj []complex128) {
-	if cpu.X86.HasFMA && cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		fftInPlaceAVX2(coeffs, wNj)
 		return
 	}
@@ -39,7 +39,7 @@ func invFFTInPlaceAVX2(coeffs, wNjInv []complex128)
 // InvfftInPlace is a top-level function for inverse FFT.
 // All internal inverse FFT implementations calls this function for performance.
 func invFFTInPlace(coeffs, wNjInv []complex128) {
-	if cpu.X86.HasFMA && cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		invFFTInPlaceAVX2(coeffs, wNjInv)
 		return
 	}
@@ -72,7 +72,7 @@ func twistAndScaleInPlaceAVX2(coeffs, w2Nj []complex128, maxTInv float64)
 
 // twistAndScaleInPlace twists the coefficients before FFT and scales it with maxTInv.
 func twistAndScaleInPlace(coeffs, w2Nj []complex128, maxTInv float64) {
-	if cpu.X86.HasFMA && cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		twistAndScaleInPlaceAVX2(coeffs, w2Nj, maxTInv)
 		return
 	}
@@ -82,39 +82,37 @@ func twistAndScaleInPlace(coeffs, w2Nj []complex128, maxTInv float64) {
 	}
 }
 
-func untwistAssignAVX2(coeffs, w2NjInv []complex128, coeffsOut []float64)
+func untwistInPlaceAVX2(coeffs, w2NjInv []complex128)
 
-// unTwistAssign untwists the coefficients after inverse FFT.
+// unTwistInPlace untwists the coefficients after inverse FFT.
 // Equivalent to coeffs * w2NjInv.
-func unTwistAssign(coeffs, w2NjInv []complex128, coeffsOut []float64) {
-	if cpu.X86.HasFMA && cpu.X86.HasAVX2 {
-		untwistAssignAVX2(coeffs, w2NjInv, coeffsOut)
+func unTwistInPlace(coeffs, w2NjInv []complex128) {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
+		untwistInPlaceAVX2(coeffs, w2NjInv)
 		return
 	}
 
-	for i, j := 0, 0; i < len(coeffs); i, j = i+1, j+2 {
+	for i := 0; i < len(coeffs); i++ {
 		c := coeffs[i] * w2NjInv[i]
 
-		coeffsOut[j] = math.Round(real(c))
-		coeffsOut[j+1] = math.Round(imag(c))
+		coeffs[i] = complex(math.Round(real(c)), math.Round(imag(c)))
 	}
 }
 
-func untwistAndScaleAssignAVX2(coeffs, w2NjInv []complex128, maxT float64, coeffsOut []float64)
+func untwistAndScaleInPlaceAVX2(coeffs, w2NjInv []complex128, maxT float64)
 
-// unTwistAndScaleAssign untwists the coefficients and scales it with maxT.
-func unTwistAndScaleAssign(coeffs, w2NjInv []complex128, maxT float64, coeffsOut []float64) {
-	if cpu.X86.HasFMA && cpu.X86.HasAVX2 {
-		untwistAndScaleAssignAVX2(coeffs, w2NjInv, maxT, coeffsOut)
+// unTwistAndScaleInPlace untwists the coefficients and scales it with maxT.
+func unTwistAndScaleInPlace(coeffs, w2NjInv []complex128, maxT float64) {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
+		untwistAndScaleInPlaceAVX2(coeffs, w2NjInv, maxT)
 		return
 	}
 
-	for i, j := 0, 0; i < len(coeffs); i, j = i+1, j+2 {
+	for i := 0; i < len(coeffs); i++ {
 		c := coeffs[i] * w2NjInv[i]
 		cr := real(c)
 		ci := imag(c)
 
-		coeffsOut[j] = (cr - math.Round(cr)) * maxT
-		coeffsOut[j+1] = (ci - math.Round(ci)) * maxT
+		coeffs[i] = complex((cr-math.Round(cr))*maxT, (ci-math.Round(ci))*maxT)
 	}
 }

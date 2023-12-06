@@ -52,7 +52,7 @@ func elementWiseMulCmplxAssignAVX2(v0, v1, vOut []complex128)
 
 // elementWiseMulCmplxAssign multiplies v0, v1 and writes it to vOut.
 func elementWiseMulCmplxAssign(v0 []complex128, v1 []complex128, vOut []complex128) {
-	if cpu.X86.HasFMA && cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		elementWiseMulCmplxAssignAVX2(v0, v1, vOut)
 		return
 	}
@@ -66,7 +66,7 @@ func elementWiseMulAddCmplxAssignAVX2(v0, v1, vOut []complex128)
 
 // elementWiseMulAddCmplxAssign multiplies v0, v1 and adds to vOut.
 func elementWiseMulAddCmplxAssign(v0 []complex128, v1 []complex128, vOut []complex128) {
-	if cpu.X86.HasFMA && cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		elementWiseMulAddCmplxAssignAVX2(v0, v1, vOut)
 		return
 	}
@@ -80,7 +80,7 @@ func elementWiseMulSubCmplxAssignAVX2(v0, v1, vOut []complex128)
 
 // elementWiseMulSubCmplxAssign multiplies v0, v1 and subtracts from vOut.
 func elementWiseMulSubCmplxAssign(v0 []complex128, v1 []complex128, vOut []complex128) {
-	if cpu.X86.HasFMA && cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		elementWiseMulSubCmplxAssignAVX2(v0, v1, vOut)
 		return
 	}
