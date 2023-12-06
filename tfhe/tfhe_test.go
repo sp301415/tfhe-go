@@ -21,6 +21,18 @@ var (
 )
 
 func TestParams(t *testing.T) {
+	t.Run("ParamsBoolean", func(t *testing.T) {
+		assert.NotPanics(t, func() { tfhe.ParamsBoolean.Compile() })
+	})
+
+	t.Run("ParamsBooleanLargeLWEEntities", func(t *testing.T) {
+		assert.NotPanics(t, func() { tfhe.ParamsBooleanLargeLWEEntities.Compile() })
+	})
+
+	t.Run("ParamsOriginalBoolean", func(t *testing.T) {
+		assert.NotPanics(t, func() { tfhe.ParamsOriginalBoolean.Compile() })
+	})
+
 	t.Run("ParamsUint2", func(t *testing.T) {
 		assert.NotPanics(t, func() { tfhe.ParamsUint2.Compile() })
 	})
@@ -397,9 +409,8 @@ func ExampleEvaluator_CMux() {
 	ct1 := enc.EncryptGLWE([]int{5})
 	ctFlag := enc.EncryptFourierGGSW([]int{1}, gadgetParams)
 
-	// We don't need evaluation key for CMUX,
-	// so we can just supply empty key.
-	eval := tfhe.NewEvaluator(params, tfhe.EvaluationKey[uint64]{})
+	// We don't need evaluation key for CMUX.
+	eval := tfhe.NewEvaluatorWithoutKey(params)
 
 	ctOut := eval.CMux(ctFlag, ct0, ct1)
 	fmt.Println(enc.DecryptGLWE(ctOut)[0]) // 5

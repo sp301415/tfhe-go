@@ -74,6 +74,12 @@ func NewEvaluator[T Tint](params Parameters[T], evkey EvaluationKey[T]) *Evaluat
 	}
 }
 
+// NewEvaluatorWithoutKey creates a new Evaluator based on parameters, but without evaluation keys.
+// This will panic if any operation that requires evaluation key is called.
+func NewEvaluatorWithoutKey[T Tint](params Parameters[T]) *Evaluator[T] {
+	return NewEvaluator[T](params, EvaluationKey[T]{})
+}
+
 // newEvaluationBuffer allocates an empty evaluationBuffer.
 func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 	polyDecomposed := make([]poly.Poly[T], params.bootstrapParameters.level)

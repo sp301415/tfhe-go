@@ -1,32 +1,37 @@
-package tfheb
+package tfhe
 
-import (
-	"github.com/sp301415/tfhe-go/tfhe"
-)
-
-// Encryptor encrypts binary TFHE plaintexts and ciphertexts.
+// BinaryEncryptor encrypts binary TFHE plaintexts and ciphertexts.
 // This is meant to be private, only for clients.
-type Encryptor struct {
-	*Encoder
-	Parameters    tfhe.Parameters[uint32]
-	BaseEncryptor *tfhe.Encryptor[uint32]
+type BinaryEncryptor struct {
+	*BinaryEncoder
+	Parameters    Parameters[uint32]
+	BaseEncryptor *Encryptor[uint32]
 }
 
-// NewEncryptor returns a initialized Encryptor with given parameters.
+// NewBinaryEncryptor returns a initialized BinaryEncryptor with given parameters.
 // It also automatically samples LWE and GLWE key.
-func NewEncryptor(params tfhe.Parameters[uint32]) *Encryptor {
-	return &Encryptor{
-		Encoder:       NewEncoder(params),
+func NewBinaryEncryptor(params Parameters[uint32]) *BinaryEncryptor {
+	return &BinaryEncryptor{
+		BinaryEncoder: NewBinaryEncoder(params),
 		Parameters:    params,
-		BaseEncryptor: tfhe.NewEncryptor(params),
+		BaseEncryptor: NewEncryptor(params),
 	}
 }
 
-// ShallowCopy returns a shallow copy of this Encryptor.
-// Returned Encryptor is safe for concurrent use.
-func (e *Encryptor) ShallowCopy() Encryptor {
-	return Encryptor{
-		Encoder:       e.Encoder,
+// NewBinaryEncryptorWithKey returns a initialized BinaryEncryptor with given parameters and key.
+func NewBinaryEncryptorWithKey(params Parameters[uint32], sk SecretKey[uint32]) *BinaryEncryptor {
+	return &BinaryEncryptor{
+		BinaryEncoder: NewBinaryEncoder(params),
+		Parameters:    params,
+		BaseEncryptor: NewEncryptorWithKey(params, sk),
+	}
+}
+
+// ShallowCopy returns a shallow copy of this BinaryEncryptor.
+// Returned BinaryEncryptor is safe for concurrent use.
+func (e *BinaryEncryptor) ShallowCopy() BinaryEncryptor {
+	return BinaryEncryptor{
+		BinaryEncoder: e.BinaryEncoder,
 		Parameters:    e.Parameters,
 		BaseEncryptor: e.BaseEncryptor.ShallowCopy(),
 	}
@@ -36,7 +41,7 @@ func (e *Encryptor) ShallowCopy() Encryptor {
 // Like most languages, false == 0, and true == 1.
 //
 // Note that this is different from calling EncryptLWE with 0 or 1.
-func (e *Encryptor) EncryptLWEBool(message bool) tfhe.LWECiphertext[uint32] {
+func (e *BinaryEncryptor) EncryptLWEBool(message bool) LWECiphertext[uint32] {
 	return e.BaseEncryptor.EncryptLWEPlaintext(e.EncodeLWEBool(message))
 }
 
@@ -44,19 +49,19 @@ func (e *Encryptor) EncryptLWEBool(message bool) tfhe.LWECiphertext[uint32] {
 // Like most languages, false == 0, and true == 1.
 //
 // Note that this is different from calling EncryptLWE with 0 or 1.
-func (e *Encryptor) EncryptLWEBoolAssign(message bool, ct tfhe.LWECiphertext[uint32]) {
+func (e *BinaryEncryptor) EncryptLWEBoolAssign(message bool, ct LWECiphertext[uint32]) {
 	e.BaseEncryptor.EncryptLWEPlaintextAssign(e.EncodeLWEBool(message), ct)
 }
 
 // DecryptLWEBool decrypts LWE ciphertext to boolean value.
-func (e *Encryptor) DecryptLWEBool(ct tfhe.LWECiphertext[uint32]) bool {
+func (e *BinaryEncryptor) DecryptLWEBool(ct LWECiphertext[uint32]) bool {
 	return e.DecodeLWEBool(e.BaseEncryptor.DecryptLWEPlaintext(ct))
 }
 
 // EncryptLWEBits encrypts each bits of an integer message.
 // The order of the bits are little-endian.
-func (e *Encryptor) EncryptLWEBits(message, bits int) []tfhe.LWECiphertext[uint32] {
-	cts := make([]tfhe.LWECiphertext[uint32], bits)
+func (e *BinaryEncryptor) EncryptLWEBits(message, bits int) []LWECiphertext[uint32] {
+	cts := make([]LWECiphertext[uint32], bits)
 	e.EncryptLWEBitsAssign(message, cts)
 	return cts
 }
@@ -64,7 +69,7 @@ func (e *Encryptor) EncryptLWEBits(message, bits int) []tfhe.LWECiphertext[uint3
 // EncryptLWEBitsAssign encrypts each bits of an integer message.
 // The order of the bits are little-endian,
 // and will be cut by the length of cts.
-func (e *Encryptor) EncryptLWEBitsAssign(message int, cts []tfhe.LWECiphertext[uint32]) {
+func (e *BinaryEncryptor) EncryptLWEBitsAssign(message int, cts []LWECiphertext[uint32]) {
 	for i := 0; i < len(cts); i++ {
 		cts[i] = e.EncryptLWEBool(message&1 == 1)
 		message >>= 1
@@ -74,7 +79,7 @@ func (e *Encryptor) EncryptLWEBitsAssign(message int, cts []tfhe.LWECiphertext[u
 // DecryptLWEBits decrypts a slice of binary LWE ciphertext
 // to integer message.
 // The order of bits of LWE ciphertexts are assumed to be little-endian.
-func (e *Encryptor) DecryptLWEBits(cts []tfhe.LWECiphertext[uint32]) int {
+func (e *BinaryEncryptor) DecryptLWEBits(cts []LWECiphertext[uint32]) int {
 	var msg int
 	for i := len(cts) - 1; i >= 0; i-- {
 		msg <<= 1
@@ -89,12 +94,12 @@ func (e *Encryptor) DecryptLWEBits(cts []tfhe.LWECiphertext[uint32]) int {
 //
 // This can take a long time.
 // Use GenBootstrapKeyParallel for better key generation performance.
-func (e *Encryptor) GenBootstrapKey() tfhe.BootstrapKey[uint32] {
+func (e *BinaryEncryptor) GenBootstrapKey() BootstrapKey[uint32] {
 	return e.BaseEncryptor.GenBootstrapKey()
 }
 
 // GenBootstrapKeyParallel samples a new bootstrapping key in parallel.
-func (e *Encryptor) GenBootstrapKeyParallel() tfhe.BootstrapKey[uint32] {
+func (e *BinaryEncryptor) GenBootstrapKeyParallel() BootstrapKey[uint32] {
 	return e.BaseEncryptor.GenBootstrapKeyParallel()
 }
 
@@ -103,13 +108,13 @@ func (e *Encryptor) GenBootstrapKeyParallel() tfhe.BootstrapKey[uint32] {
 //
 // This can take a long time.
 // Use GenKeySwitchKeyForBootstrapParallel for better key generation performance.
-func (e *Encryptor) GenKeySwitchKeyForBootstrap() tfhe.KeySwitchKey[uint32] {
+func (e *BinaryEncryptor) GenKeySwitchKeyForBootstrap() KeySwitchKey[uint32] {
 	return e.BaseEncryptor.GenKeySwitchKeyForBootstrap()
 }
 
 // GenKeySwitchKeyForBootstrapParallel samples a new keyswitch key LWELargeKey -> LWEKey in parallel,
 // used for bootstrapping.
-func (e *Encryptor) GenKeySwitchKeyForBootstrapParallel() tfhe.KeySwitchKey[uint32] {
+func (e *BinaryEncryptor) GenKeySwitchKeyForBootstrapParallel() KeySwitchKey[uint32] {
 	return e.BaseEncryptor.GenKeySwitchKeyForBootstrapParallel()
 }
 
@@ -117,11 +122,11 @@ func (e *Encryptor) GenKeySwitchKeyForBootstrapParallel() tfhe.KeySwitchKey[uint
 //
 // This can take a long time.
 // Use GenEvaluationKeyParallel for better key generation performance.
-func (e *Encryptor) GenEvaluationKey() tfhe.EvaluationKey[uint32] {
+func (e *BinaryEncryptor) GenEvaluationKey() EvaluationKey[uint32] {
 	return e.BaseEncryptor.GenEvaluationKey()
 }
 
 // GenEvaluationKeyParallel samples a new evaluation key for bootstrapping in parallel.
-func (e *Encryptor) GenEvaluationKeyParallel() tfhe.EvaluationKey[uint32] {
+func (e *BinaryEncryptor) GenEvaluationKeyParallel() EvaluationKey[uint32] {
 	return e.BaseEncryptor.GenEvaluationKeyParallel()
 }

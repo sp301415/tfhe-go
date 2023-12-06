@@ -48,9 +48,8 @@ ct0 := enc.EncryptGLWE([]int{2})
 ct1 := enc.EncryptGLWE([]int{5})
 ctFlag := enc.EncryptFourierGGSW([]int{1}, gadgetParams)
 
-// We don't need evaluation key for CMUX,
-// so we can just supply empty key.
-eval := tfhe.NewEvaluator(params, tfhe.EvaluationKey[uint64]{})
+// We don't need evaluation key for CMUX.
+eval := tfhe.NewEvaluatorWithoutKey(params)
 
 ctOut := eval.CMux(ctFlag, ct0, ct1)
 fmt.Println(enc.DecryptGLWE(ctOut)[0]) // 5
@@ -72,16 +71,16 @@ fmt.Println(enc.DecryptLWE(ctOut)) // 7 = 2*3+1
 
 ### Comparison using Gate Bootstrapping
 ```go
-params := tfheb.ParamsBoolean.Compile()
+params := tfhe.ParamsBoolean.Compile()
 
-enc := tfheb.NewEncryptor(params)
+enc := tfhe.NewBinaryEncryptor(params)
 
 // Change these values yourself!
 bits := 16
 ct0 := enc.EncryptLWEBits(3, bits)
 ct1 := enc.EncryptLWEBits(3, bits)
 
-eval := tfheb.NewEvaluator(params, enc.GenEvaluationKeyParallel())
+eval := tfhe.NewBinaryEvaluator(params, enc.GenEvaluationKeyParallel())
 
 ctXNOR := tfhe.NewLWECiphertext(params)
 ctOut := eval.XNOR(ct0[0], ct1[0])
