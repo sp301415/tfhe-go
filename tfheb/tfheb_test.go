@@ -15,6 +15,20 @@ var (
 	testEvaluator = tfheb.NewEvaluator(testParams, testEncryptor.GenEvaluationKeyParallel())
 )
 
+func TestParams(t *testing.T) {
+	t.Run("ParamsBoolean", func(t *testing.T) {
+		assert.NotPanics(t, func() { tfheb.ParamsBoolean.Compile() })
+	})
+
+	t.Run("ParamsBooleanLargeLWEEntities", func(t *testing.T) {
+		assert.NotPanics(t, func() { tfheb.ParamsBooleanLargeLWEEntities.Compile() })
+	})
+
+	t.Run("ParamsOriginal", func(t *testing.T) {
+		assert.NotPanics(t, func() { tfheb.ParamsOriginalBoolean.Compile() })
+	})
+}
+
 func TestEvaluator(t *testing.T) {
 	tests := []struct {
 		pt0 bool
