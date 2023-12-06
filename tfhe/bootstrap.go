@@ -93,9 +93,15 @@ func (e *Evaluator[T]) BootstrapLUT(ct LWECiphertext[T], lut LookUpTable[T]) LWE
 
 // BootstrapLUTAssign bootstraps LWE ciphertext with respect to given LUT and writes it to ctOut.
 func (e *Evaluator[T]) BootstrapLUTAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut LWECiphertext[T]) {
-	e.KeySwitchForBootstrapAssign(ct, e.buffer.ctSmall)
-	e.BlindRotateAssign(e.buffer.ctSmall, lut, e.buffer.ctRotate)
-	e.SampleExtractAssign(e.buffer.ctRotate, 0, ctOut)
+	if e.Parameters.useLargeLWEEntities {
+		e.KeySwitchForBootstrapAssign(ct, e.buffer.ctKeySwitch)
+		e.BlindRotateAssign(e.buffer.ctKeySwitch, lut, e.buffer.ctRotate)
+		e.SampleExtractAssign(e.buffer.ctRotate, 0, ctOut)
+	} else {
+		e.BlindRotateAssign(ct, lut, e.buffer.ctRotate)
+		e.SampleExtractAssign(e.buffer.ctRotate, 0, e.buffer.ctExtract)
+		e.KeySwitchForBootstrapAssign(e.buffer.ctExtract, ctOut)
+	}
 }
 
 // ModSwitch calculates round(2N * x / Q) mod 2N.
@@ -200,21 +206,21 @@ func (e *Evaluator[T]) KeySwitchAssign(ct LWECiphertext[T], ksk KeySwitchKey[T],
 }
 
 // KeySwitchForBootstrap performs the keyswitching using evaulater's bootstrap key.
-// Output ciphertext will be of dimension LWESmallDimension + 1.
+// Output ciphertext will be of dimension LWEDimension + 1.
 func (e *Evaluator[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[T] {
-	ctOut := NewLWECiphertextCustom[T](e.Parameters.lweSmallDimension)
+	ctOut := NewLWECiphertextCustom[T](e.Parameters.lweDimension)
 	e.KeySwitchForBootstrapAssign(ct, ctOut)
 	return ctOut
 }
 
 // KeySwitchForBootstrapAssign performs the keyswitching using evaulater's bootstrap key.
-// Output ciphertext should be of dimension LWESmallDimension + 1.
+// Output ciphertext should be of dimension LWEDimension + 1.
 func (e *Evaluator[T]) KeySwitchForBootstrapAssign(ct, ctOut LWECiphertext[T]) {
-	vec.CopyAssign(ct.Value[:e.Parameters.lweSmallDimension+1], ctOut.Value)
+	vec.CopyAssign(ct.Value[:e.Parameters.lweDimension+1], ctOut.Value)
 
 	decomposed := e.getDecomposedBuffer(e.Parameters.keyswitchParameters)
 
-	for i, ii := e.Parameters.lweSmallDimension, 0; i < e.Parameters.lweDimension; i, ii = i+1, ii+1 {
+	for i, ii := e.Parameters.lweDimension, 0; i < e.Parameters.lweLargeDimension; i, ii = i+1, ii+1 {
 		e.DecomposeAssign(ct.Value[i+1], e.Parameters.keyswitchParameters, decomposed)
 		for j := 0; j < e.Parameters.keyswitchParameters.level; j++ {
 			e.ScalarMulAddLWEAssign(e.EvaluationKey.KeySwitchKey.Value[ii].Value[j], decomposed[j], ctOut)

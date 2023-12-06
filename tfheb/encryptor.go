@@ -98,7 +98,7 @@ func (e *Encryptor) GenBootstrapKeyParallel() tfhe.BootstrapKey[uint32] {
 	return e.BaseEncryptor.GenBootstrapKeyParallel()
 }
 
-// GenKeySwitchKeyForBootstrap samples a new keyswitch key LWEKey -> LWESmallKey,
+// GenKeySwitchKeyForBootstrap samples a new keyswitch key LWELargeKey -> LWEKey,
 // used for bootstrapping.
 //
 // This can take a long time.
@@ -107,7 +107,7 @@ func (e *Encryptor) GenKeySwitchKeyForBootstrap() tfhe.KeySwitchKey[uint32] {
 	return e.BaseEncryptor.GenKeySwitchKeyForBootstrap()
 }
 
-// GenKeySwitchKeyForBootstrapParallel samples a new keyswitch key LWEKey -> LWESmallKey in parallel,
+// GenKeySwitchKeyForBootstrapParallel samples a new keyswitch key LWELargeKey -> LWEKey in parallel,
 // used for bootstrapping.
 func (e *Encryptor) GenKeySwitchKeyForBootstrapParallel() tfhe.KeySwitchKey[uint32] {
 	return e.BaseEncryptor.GenKeySwitchKeyForBootstrapParallel()

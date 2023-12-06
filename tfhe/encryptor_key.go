@@ -16,92 +16,92 @@ import (
 // LWEKey and GLWEKey is sampled together, as explained in https://eprint.iacr.org/2023/958.
 // FourierGLWEKey is also assumed to be a correct Fourier transform of GLWEKey.
 type SecretKey[T Tint] struct {
-	// LWEKey is a key used for LWE encryption and decryption.
+	// LWELargeKey is a LWE key with length LWELargeDimension.
 	// Essentially, this is same as GLWEKey but parsed differently.
-	LWEKey LWEKey[T]
+	LWELargeKey LWEKey[T]
 	// GLWEKey is a key used for GLWE encryption and decryption.
 	// Essentially, this is same as LWEKey but parsed differently.
 	GLWEKey GLWEKey[T]
 	// FourierGLWEKey is a fourier transformed GLWEKey.
 	// Used for GLWE encryption.
 	FourierGLWEKey FourierGLWEKey[T]
-	// LWESmallKey is a temporary LWE key for bootstrapping.
-	// Essentially, this is the first LWESmallDimension elements of LWEKey.
-	LWESmallKey LWEKey[T]
+	// LWEKey is a LWE key with length LWEDimension.
+	// Essentially, this is the first LWEDimension elements of LWEKey.
+	LWEKey LWEKey[T]
 }
 
 // NewSecretKey allocates an empty secret key.
 // Each key shares the same backing slice, held by LWEKey.
 func NewSecretKey[T Tint](params Parameters[T]) SecretKey[T] {
-	lweKey := NewLWEKey(params)
+	lweLargeKey := LWEKey[T]{Value: make([]T, params.lweLargeDimension)}
 
 	glweKey := GLWEKey[T]{Value: make([]poly.Poly[T], params.glweDimension)}
 	for i := 0; i < params.glweDimension; i++ {
-		glweKey.Value[i].Coeffs = lweKey.Value[i*params.polyDegree : (i+1)*params.polyDegree]
+		glweKey.Value[i].Coeffs = lweLargeKey.Value[i*params.polyDegree : (i+1)*params.polyDegree]
 	}
 	fourierGLWEKey := NewFourierGLWEKey(params)
 
-	lweSmallKey := LWEKey[T]{Value: lweKey.Value[:params.lweSmallDimension]}
+	lweKey := LWEKey[T]{Value: lweLargeKey.Value[:params.lweDimension]}
 
 	return SecretKey[T]{
-		LWEKey:         lweKey,
+		LWELargeKey:    lweLargeKey,
 		GLWEKey:        glweKey,
 		FourierGLWEKey: fourierGLWEKey,
-		LWESmallKey:    lweSmallKey,
+		LWEKey:         lweKey,
 	}
 }
 
 // NewSecretKeyCustom allocates an empty secret key with given dimension and polyDegree.
 // Each key shares the same backing slice, held by LWEKey.
-func NewSecretKeyCustom[T Tint](lweSmallDimension, glweDimension, polyDegree int) SecretKey[T] {
-	lweKey := LWEKey[T]{Value: make([]T, glweDimension*polyDegree)}
+func NewSecretKeyCustom[T Tint](lweDimension, glweDimension, polyDegree int) SecretKey[T] {
+	lweLargeKey := LWEKey[T]{Value: make([]T, glweDimension*polyDegree)}
 
 	glweKey := GLWEKey[T]{Value: make([]poly.Poly[T], glweDimension)}
 	for i := 0; i < glweDimension; i++ {
-		glweKey.Value[i].Coeffs = lweKey.Value[i*polyDegree : (i+1)*polyDegree]
+		glweKey.Value[i].Coeffs = lweLargeKey.Value[i*polyDegree : (i+1)*polyDegree]
 	}
 	fourierGLWEKey := NewFourierGLWEKeyCustom[T](glweDimension, polyDegree)
 
-	lweSmallKey := LWEKey[T]{Value: lweKey.Value[:lweSmallDimension]}
+	lweKey := LWEKey[T]{Value: lweLargeKey.Value[:lweDimension]}
 
 	return SecretKey[T]{
-		LWEKey:         lweKey,
+		LWELargeKey:    lweLargeKey,
 		GLWEKey:        glweKey,
 		FourierGLWEKey: fourierGLWEKey,
-		LWESmallKey:    lweSmallKey,
+		LWEKey:         lweKey,
 	}
 }
 
 // Copy returns a copy of the key.
 func (sk SecretKey[T]) Copy() SecretKey[T] {
-	lweKey := sk.LWEKey.Copy()
+	lweLargeKey := sk.LWELargeKey.Copy()
 
 	glweKey := GLWEKey[T]{Value: make([]poly.Poly[T], len(sk.GLWEKey.Value))}
 	for i := range glweKey.Value {
 		polyDegree := sk.GLWEKey.Value[i].Degree()
-		glweKey.Value[i].Coeffs = lweKey.Value[i*polyDegree : (i+1)*polyDegree]
+		glweKey.Value[i].Coeffs = lweLargeKey.Value[i*polyDegree : (i+1)*polyDegree]
 	}
 	fourierGLWEKey := sk.FourierGLWEKey.Copy()
 
-	lweSmallKey := LWEKey[T]{Value: lweKey.Value[:len(sk.LWESmallKey.Value)]}
+	lweKey := LWEKey[T]{Value: lweLargeKey.Value[:len(sk.LWEKey.Value)]}
 
 	return SecretKey[T]{
-		LWEKey:         lweKey,
+		LWELargeKey:    lweLargeKey,
 		GLWEKey:        glweKey,
 		FourierGLWEKey: fourierGLWEKey,
-		LWESmallKey:    lweSmallKey,
+		LWEKey:         lweKey,
 	}
 }
 
 // CopyFrom copies values from a key.
 func (sk *SecretKey[T]) CopyFrom(skIn SecretKey[T]) {
-	vec.CopyAssign(skIn.LWEKey.Value, sk.LWEKey.Value)
+	vec.CopyAssign(skIn.LWELargeKey.Value, sk.LWELargeKey.Value)
 	sk.FourierGLWEKey.CopyFrom(skIn.FourierGLWEKey)
 }
 
 // Clear clears the key.
 func (sk *SecretKey[T]) Clear() {
-	vec.Fill(sk.LWEKey.Value, 0)
+	vec.Fill(sk.LWELargeKey.Value, 0)
 	sk.FourierGLWEKey.Clear()
 }
 
@@ -117,17 +117,17 @@ func (sk SecretKey[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//	                8               8            8
-//	LWESmallDimension | GLWEDimension | PolyDegree | LWEKey | FourierGLWEKey
+//	           8               8            8
+//	LWEDimension | GLWEDimension | PolyDegree | LWELargeKey | FourierGLWEKey
 func (sk SecretKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 
-	lweSmallDimension := len(sk.LWESmallKey.Value)
+	lweDimension := len(sk.LWEKey.Value)
 	glweDimension := len(sk.GLWEKey.Value)
 	polyDegree := sk.GLWEKey.Value[0].Degree()
 
 	var metadata [24]byte
-	binary.BigEndian.PutUint64(metadata[0:8], uint64(lweSmallDimension))
+	binary.BigEndian.PutUint64(metadata[0:8], uint64(lweDimension))
 	binary.BigEndian.PutUint64(metadata[8:16], uint64(glweDimension))
 	binary.BigEndian.PutUint64(metadata[16:24], uint64(polyDegree))
 	nn, err = w.Write(metadata[:])
@@ -198,11 +198,11 @@ func (sk *SecretKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 		return
 	}
 
-	lweSmallDimension := int(binary.BigEndian.Uint64(metadata[0:8]))
+	lweDimension := int(binary.BigEndian.Uint64(metadata[0:8]))
 	glweDimension := int(binary.BigEndian.Uint64(metadata[8:16]))
 	polyDegree := int(binary.BigEndian.Uint64(metadata[16:24]))
 
-	*sk = NewSecretKeyCustom[T](lweSmallDimension, glweDimension, polyDegree)
+	*sk = NewSecretKeyCustom[T](lweDimension, glweDimension, polyDegree)
 
 	buf := make([]byte, polyDegree*8)
 

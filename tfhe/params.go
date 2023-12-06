@@ -199,9 +199,8 @@ func (p *GadgetParameters[T]) UnmarshalBinary(data []byte) error {
 // Unless you are a cryptographic expert, DO NOT set these by yourself;
 // always use the default parameters provided.
 type ParametersLiteral[T Tint] struct {
-	// LWESmallDimension is the dimension of LWE lattice used. Usually this is denoted by n.
-	// This is only used for temporary keys and ciphertexts during Blind Rotation.
-	LWESmallDimension int
+	// LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
+	LWEDimension int
 	// GLWEDimension is the dimension of GLWE lattice used. Usually this is denoted by k.
 	// Length of GLWE secret key is GLWEDimension, and length of GLWE ciphertext is GLWEDimension+1.
 	GLWEDimension int
@@ -223,6 +222,25 @@ type ParametersLiteral[T Tint] struct {
 	BootstrapParameters GadgetParametersLiteral[T]
 	// KeySwitchParameters is the gadget parameters for KeySwitching.
 	KeySwitchParameters GadgetParametersLiteral[T]
+
+	// UseLargeLWEEntities is a flag for using "large" LWE entities by default.
+	// If this is set to true, LWE entities, including key and ciphertexts,
+	// will have dimension according to LWELargeDimension.
+	//
+	// Another important aspect of this flag is that it affects
+	// the order of Programmable Bootstrapping.
+	// If this is set to true, then the order is:
+	//
+	//	KeySwitch -> BlindRotate -> SampleExtract
+	//
+	// Otherwise, the order is:
+	//
+	//	BlindRotate -> SampleExtract -> KeySwitch
+	//
+	// Essentially, there is a tradeoff:
+	// using large entities means that it will consume more memory,
+	// but it allows to use smaller parameters which will result in faster computation.
+	UseLargeLWEEntities bool
 }
 
 // Compile transforms ParametersLiteral to read-only Parameters.
@@ -237,8 +255,8 @@ type ParametersLiteral[T Tint] struct {
 // always use the default parameters provided.
 func (p ParametersLiteral[T]) Compile() Parameters[T] {
 	switch {
-	case p.LWESmallDimension <= 0:
-		panic("LWESmallDimension smaller than zero")
+	case p.LWEDimension <= 0:
+		panic("LWEDimension smaller than zero")
 	case p.GLWEDimension <= 0:
 		panic("GLWEDimension smaller than zero")
 	case p.PolyDegree <= MinPolyDegree:
@@ -249,8 +267,8 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("LWEStdDev smaller than zero")
 	case p.GLWEStdDev <= 0:
 		panic("GLWEStdDev smaller than zero")
-	case p.LWESmallDimension%p.BlockSize != 0:
-		panic("LWESmallDimension not multiple of BlockSize")
+	case p.LWEDimension%p.BlockSize != 0:
+		panic("LWEDimension not multiple of BlockSize")
 	case !num.IsPowerOfTwo(p.PolyDegree):
 		panic("PolyDegree not power of two")
 	case !num.IsPowerOfTwo(p.MessageModulus):
@@ -261,8 +279,8 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 	deltaLog := num.SizeT[T]() - 1 - messageModulusLog
 
 	return Parameters[T]{
-		lweSmallDimension: p.LWESmallDimension,
-		lweDimension:      p.GLWEDimension * p.PolyDegree,
+		lweDimension:      p.LWEDimension,
+		lweLargeDimension: p.GLWEDimension * p.PolyDegree,
 		glweDimension:     p.GLWEDimension,
 		polyDegree:        p.PolyDegree,
 		polyDegreeLog:     num.Log2(p.PolyDegree),
@@ -282,17 +300,18 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 
 		bootstrapParameters: p.BootstrapParameters.Compile(),
 		keyswitchParameters: p.KeySwitchParameters.Compile(),
+
+		useLargeLWEEntities: p.UseLargeLWEEntities,
 	}
 }
 
 // Parameters are read-only, compiled parameters based on ParametersLiteral.
 type Parameters[T Tint] struct {
-	// LWESmallDimension is the dimension of LWE lattice used. Usually this is denoted by n.
-	// This is only used for temporary keys and ciphertexts during Blind Rotation.
-	lweSmallDimension int
-	// LWEDimension is the dimension for LWE entities.
-	// Equals to the "full" GLWE lattice; which is GLWEDimension * PolyDegree.
+	// LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
 	lweDimension int
+	// LWELargeDimension is the dimension of "large" lattice used.
+	// Equals to the "full" GLWE lattice; which is GLWEDimension * PolyDegree.
+	lweLargeDimension int
 	// GLWEDimension is the dimension of GLWE lattice used. Usually this is denoted by k.
 	// Length of GLWE secret key is GLWEDimension, and length of GLWE ciphertext is GLWEDimension+1.
 	glweDimension int
@@ -328,18 +347,30 @@ type Parameters[T Tint] struct {
 	bootstrapParameters GadgetParameters[T]
 	// keyswitchParameters is the gadget parameters for KeySwitching.
 	keyswitchParameters GadgetParameters[T]
+
+	// useLargeLWEEntities is a flag for using "large" LWE entities by default.
+	useLargeLWEEntities bool
 }
 
-// LWESmallDimension is the dimension of LWE lattice used. Usually this is denoted by n.
-// This is only used for temporary keys and ciphertexts during Blind Rotation.
-func (p Parameters[T]) LWESmallDimension() int {
-	return p.lweSmallDimension
+// DefaultLWEDimension returns the default dimension for LWE entities.
+// Returns LWELargeDimension if useLargeLWEEntities is true,
+// and LWEDimension otherwise.
+func (p Parameters[T]) DefaultLWEDimension() int {
+	if p.useLargeLWEEntities {
+		return p.lweLargeDimension
+	}
+	return p.lweDimension
+}
+
+// LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
+func (p Parameters[T]) LWEDimension() int {
+	return p.lweDimension
 }
 
 // LWEDimension is the dimension for LWE entities.
 // Equals to the "full" GLWE lattice; which is GLWEDimension * PolyDegree.
-func (p Parameters[T]) LWEDimension() int {
-	return p.lweDimension
+func (p Parameters[T]) LWELargeDimension() int {
+	return p.lweLargeDimension
 }
 
 // GLWEDimension is the dimension of GLWE lattice used. Usually this is denoted by k.
@@ -373,9 +404,9 @@ func (p Parameters[T]) BlockSize() int {
 	return p.blockSize
 }
 
-// BlockCount is a number of blocks in LWESmallkey. Equal to LWESmallDimension / BlockSize.
+// BlockCount is a number of blocks in LWEkey. Equal to LWEDimension / BlockSize.
 func (p Parameters[T]) BlockCount() int {
-	return p.lweSmallDimension / p.blockSize
+	return p.lweDimension / p.blockSize
 }
 
 // Delta is the scaling factor used for message encoding.
@@ -419,21 +450,26 @@ func (p Parameters[T]) KeySwitchParameters() GadgetParameters[T] {
 	return p.keyswitchParameters
 }
 
+// UseLargeLWEEntities is a flag for using "large" LWE entities by default.
+func (p Parameters[T]) UseLargeLWEEntities() bool {
+	return p.useLargeLWEEntities
+}
+
 // ByteSize returns the byte size of the parameters.
 func (p Parameters[T]) ByteSize() int {
-	return 3*8 + 2*8 + 8 + 8 + 16 + 16
+	return 3*8 + 2*8 + 8 + 8 + 16 + 16 + 1
 }
 
 // WriteTo implements the io.WriterTo interface.
 //
 // The encoded form is as follows:
 //
-//	           8               8            8           8            8           8                8                    16                    16
-//	LWEDimension | GLWEDimension | PolyDegree | LWEStdDev | GLWEStdDev | BlockSize | MessageModulus | BootstrapParameters | KeySwitchParameters
+//	           8               8            8           8            8           8                8                    16                    16                     1
+//	LWEDimension | GLWEDimension | PolyDegree | LWEStdDev | GLWEStdDev | BlockSize | MessageModulus | BootstrapParameters | KeySwitchParameters | UseLargeLWEEntities
 func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
-	var buf [3*8 + 2*8 + 8 + 8 + 16 + 16]byte
+	var buf [3*8 + 2*8 + 8 + 8 + 16 + 16 + 1]byte
 
-	binary.BigEndian.PutUint64(buf[0:8], uint64(p.lweSmallDimension))
+	binary.BigEndian.PutUint64(buf[0:8], uint64(p.lweDimension))
 	binary.BigEndian.PutUint64(buf[8:16], uint64(p.glweDimension))
 	binary.BigEndian.PutUint64(buf[16:24], uint64(p.polyDegree))
 	binary.BigEndian.PutUint64(buf[24:32], math.Float64bits(p.lweStdDev))
@@ -446,6 +482,10 @@ func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
 
 	binary.BigEndian.PutUint64(buf[72:80], uint64(p.keyswitchParameters.base))
 	binary.BigEndian.PutUint64(buf[80:88], uint64(p.keyswitchParameters.level))
+
+	if p.useLargeLWEEntities {
+		buf[88] = 1
+	}
 
 	nn, err := w.Write(buf[:])
 	n += int64(nn)
@@ -462,14 +502,14 @@ func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
 
 // ReadFrom implements the io.ReaderFrom interface.
 func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
-	var buf [3*8 + 2*8 + 8 + 8 + 16 + 16]byte
+	var buf [3*8 + 2*8 + 8 + 8 + 16 + 16 + 1]byte
 	nn, err := io.ReadFull(r, buf[:])
 	n += int64(nn)
 	if err != nil {
 		return
 	}
 
-	lweSmallDimension := binary.BigEndian.Uint64(buf[0:8])
+	lweDimension := binary.BigEndian.Uint64(buf[0:8])
 	glweDimension := binary.BigEndian.Uint64(buf[8:16])
 	polyDegree := binary.BigEndian.Uint64(buf[16:24])
 	lweStdDev := math.Float64frombits(binary.BigEndian.Uint64(buf[24:32]))
@@ -486,8 +526,13 @@ func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
 		Level: int(binary.BigEndian.Uint64(buf[80:88])),
 	}
 
+	var useLargeLWEEntities bool
+	if buf[88] == 1 {
+		useLargeLWEEntities = true
+	}
+
 	*p = ParametersLiteral[T]{
-		LWESmallDimension:   int(lweSmallDimension),
+		LWEDimension:        int(lweDimension),
 		GLWEDimension:       int(glweDimension),
 		PolyDegree:          int(polyDegree),
 		LWEStdDev:           lweStdDev,
@@ -496,6 +541,7 @@ func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
 		MessageModulus:      T(messageModulus),
 		BootstrapParameters: bootstrapParameters,
 		KeySwitchParameters: keyswitchParameters,
+		UseLargeLWEEntities: useLargeLWEEntities,
 	}.Compile()
 
 	return

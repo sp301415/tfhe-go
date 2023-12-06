@@ -5,6 +5,16 @@ import (
 	"github.com/sp301415/tfhe-go/math/vec"
 )
 
+// DefaultLWEKey returns the LWE key according to the parameters.
+// Returns LWELargeKey if UseLargeLWEEntities is true,
+// or LWEKey otherwise.
+func (e *Encryptor[T]) DefaultLWEKey() LWEKey[T] {
+	if e.Parameters.useLargeLWEEntities {
+		return e.SecretKey.LWELargeKey
+	}
+	return e.SecretKey.LWEKey
+}
+
 // EncryptLWE encodes and encrypts integer message to LWE ciphertext.
 func (e *Encryptor[T]) EncryptLWE(message int) LWECiphertext[T] {
 	return e.EncryptLWEPlaintext(e.EncodeLWE(message))
@@ -27,7 +37,7 @@ func (e *Encryptor[T]) EncryptLWEPlaintextAssign(pt LWEPlaintext[T], ctOut LWECi
 // This avoids the need for most buffers.
 func (e *Encryptor[T]) EncryptLWEBody(ct LWECiphertext[T]) {
 	e.uniformSampler.SampleSliceAssign(ct.Value[1:])
-	ct.Value[0] += -vec.Dot(ct.Value[1:], e.SecretKey.LWEKey.Value) + e.glweSampler.Sample()
+	ct.Value[0] += -vec.Dot(ct.Value[1:], e.DefaultLWEKey().Value) + e.glweSampler.Sample()
 }
 
 // DecryptLWE decrypts and decodes LWE ciphertext to integer message.
@@ -37,7 +47,7 @@ func (e *Encryptor[T]) DecryptLWE(ct LWECiphertext[T]) int {
 
 // DecryptLWEPlaintext decrypts LWE ciphertext to LWE plaintext.
 func (e *Encryptor[T]) DecryptLWEPlaintext(ct LWECiphertext[T]) LWEPlaintext[T] {
-	pt := ct.Value[0] + vec.Dot(ct.Value[1:], e.SecretKey.LWEKey.Value)
+	pt := ct.Value[0] + vec.Dot(ct.Value[1:], e.DefaultLWEKey().Value)
 	return LWEPlaintext[T]{Value: pt}
 }
 
@@ -91,9 +101,9 @@ func (e *Encryptor[T]) EncryptGSWPlaintext(pt LWEPlaintext[T], gadgetParams Gadg
 func (e *Encryptor[T]) EncryptGSWPlaintextAssign(pt LWEPlaintext[T], ctOut GSWCiphertext[T]) {
 	e.EncryptLevPlaintextAssign(pt, ctOut.Value[0])
 
-	for i := 1; i < e.Parameters.lweDimension+1; i++ {
+	for i := 1; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		for j := 0; j < ctOut.GadgetParameters.level; j++ {
-			ctOut.Value[i].Value[j].Value[0] = e.SecretKey.LWEKey.Value[i-1] * pt.Value << ctOut.GadgetParameters.ScaledBaseLog(j)
+			ctOut.Value[i].Value[j].Value[0] = e.DefaultLWEKey().Value[i-1] * pt.Value << ctOut.GadgetParameters.ScaledBaseLog(j)
 			e.EncryptLWEBody(ctOut.Value[i].Value[j])
 		}
 	}

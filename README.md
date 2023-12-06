@@ -98,7 +98,7 @@ All results were measured from Intel i5-13400F. `ParamsBoolean` and `ParamsUint6
 |Operation|Time|
 |---------|-------|
 |Programmable Bootstrapping|85.65ms ± 0%|
-|Gate Bootstrapping|10.84ms ± 1%|
+|Gate Bootstrapping|11.27ms ± 2%|
 
 ## References
 - TFHE: Fast Fully Homomorphic Encryption over the Torus (https://eprint.iacr.org/2018/421)

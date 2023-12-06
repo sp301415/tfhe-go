@@ -87,12 +87,12 @@ func (bsk BootstrapKey[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//	   8       8                   8               8            8
-//	Base | Level | LWESmallDimension | GLWEDimension | PolyDegree | Value
+//	   8       8              8               8            8
+//	Base | Level | LWEDimension | GLWEDimension | PolyDegree | Value
 func (bsk BootstrapKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 
-	lweSmallDimension := len(bsk.Value)
+	lweDimension := len(bsk.Value)
 	glweDimension := len(bsk.Value[0].Value) - 1
 	level := len(bsk.Value[0].Value[0].Value)
 	polyDegree := bsk.Value[0].Value[0].Value[0].Value[0].Degree()
@@ -100,7 +100,7 @@ func (bsk BootstrapKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var metadta [40]byte
 	binary.BigEndian.PutUint64(metadta[0:8], uint64(bsk.GadgetParameters.base))
 	binary.BigEndian.PutUint64(metadta[8:16], uint64(level))
-	binary.BigEndian.PutUint64(metadta[16:24], uint64(lweSmallDimension))
+	binary.BigEndian.PutUint64(metadta[16:24], uint64(lweDimension))
 	binary.BigEndian.PutUint64(metadta[24:32], uint64(glweDimension))
 	binary.BigEndian.PutUint64(metadta[32:40], uint64(polyDegree))
 	nn, err = w.Write(metadta[:])
@@ -150,11 +150,11 @@ func (bsk *BootstrapKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 
 	base := int(binary.BigEndian.Uint64(metadata[0:8]))
 	level := int(binary.BigEndian.Uint64(metadata[8:16]))
-	lweSmallDimension := int(binary.BigEndian.Uint64(metadata[16:24]))
+	lweDimension := int(binary.BigEndian.Uint64(metadata[16:24]))
 	glweDimension := int(binary.BigEndian.Uint64(metadata[24:32]))
 	polyDegree := int(binary.BigEndian.Uint64(metadata[32:40]))
 
-	*bsk = NewBootstrapKeyCustom[T](lweSmallDimension, glweDimension, polyDegree, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
+	*bsk = NewBootstrapKeyCustom[T](lweDimension, glweDimension, polyDegree, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
 
 	buf := make([]byte, polyDegree*8)
 

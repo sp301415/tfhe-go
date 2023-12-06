@@ -6,13 +6,13 @@ import (
 
 // LWEKey is a LWE secret key, sampled from uniform binary distribution.
 type LWEKey[T Tint] struct {
-	// Value has length LWEDimension.
+	// Value has length DefaultLWEDimension.
 	Value []T
 }
 
 // NewLWEKey allocates an empty LWEKey.
 func NewLWEKey[T Tint](params Parameters[T]) LWEKey[T] {
-	return LWEKey[T]{Value: make([]T, params.lweDimension)}
+	return LWEKey[T]{Value: make([]T, params.DefaultLWEDimension())}
 }
 
 // NewLWEKeyCustom allocates an empty LWEKey with given dimension.
@@ -67,13 +67,13 @@ func (pt *LWEPlaintext[T]) Clear() {
 type LWECiphertext[T Tint] struct {
 	// Value is ordered as [body, mask],
 	// since Go doesn't provide an easy way to take last element of slice.
-	// Therefore, value has length LWEDimension + 1.
+	// Therefore, value has length DefaultLWEDimension + 1.
 	Value []T
 }
 
 // NewLWECiphertext allocates an empty LWECiphertext.
 func NewLWECiphertext[T Tint](params Parameters[T]) LWECiphertext[T] {
-	return LWECiphertext[T]{Value: make([]T, params.lweDimension+1)}
+	return LWECiphertext[T]{Value: make([]T, params.DefaultLWEDimension()+1)}
 }
 
 // NewLWECiphertextCustom allocates an empty LWECiphertext with given dimension.
@@ -147,18 +147,19 @@ func (ct *LevCiphertext[T]) Clear() {
 }
 
 // GSWCiphertext represents an encrypted GSW ciphertext,
-// which is a LWEDimension+1 collection of Lev ciphertexts.
+// which is a DefaultLWEDimension+1 collection of Lev ciphertexts.
 type GSWCiphertext[T Tint] struct {
 	GadgetParameters GadgetParameters[T]
 
-	// Value has length LWEDimension + 1.
+	// Value has length DefaultLWEDimension + 1.
 	Value []LevCiphertext[T]
 }
 
 // NewGSWCiphertext allocates an empty GSW ciphertext.
 func NewGSWCiphertext[T Tint](params Parameters[T], gadgetParams GadgetParameters[T]) GSWCiphertext[T] {
-	ct := make([]LevCiphertext[T], params.lweDimension+1)
-	for i := 0; i < params.lweDimension+1; i++ {
+	lweDimension := params.DefaultLWEDimension()
+	ct := make([]LevCiphertext[T], lweDimension+1)
+	for i := 0; i < lweDimension+1; i++ {
 		ct[i] = NewLevCiphertext(params, gadgetParams)
 	}
 	return GSWCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
