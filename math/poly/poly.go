@@ -62,8 +62,8 @@ func (p Poly[T]) Equals(p0 Poly[T]) bool {
 }
 
 // FourierPoly is a polynomial with Fourier Transform applied.
-// Since we twist degree N polynomial in Z[x]/X^N+1 to
-// degree N/2 polynomial in C[x]/X^N/2+1,
+// Since we fold degree N polynomial in Z[X]/(X^N+1) to
+// degree N/2 polynomial in C[X]/(X^N/2+1),
 // we store N/2 coefficients, instead of N.
 type FourierPoly struct {
 	// Coeffs has length Degree / 2.
