@@ -63,6 +63,9 @@ func Rotate[T any](v []T, l int) []T {
 
 // RotateAssign rotates v l times to the right, and writes it to vOut.
 // If l < 0, then it rotates the vector l times to the left.
+//
+// v and vOut should not overlap. For rotating a slice inplace,
+// use RotateInPlace.
 func RotateAssign[T any](v []T, l int, vOut []T) {
 	if l < 0 {
 		l = len(v) - ((-l) % len(v))
@@ -96,6 +99,9 @@ func Reverse[T any](v []T) []T {
 }
 
 // ReverseAssign reverse v and writes it to vOut.
+//
+// v and vOut should not overlap. For reversing a slice inplace,
+// use RotateInPlace.
 func ReverseAssign[T any](v, vOut []T) {
 	for i := range vOut {
 		vOut[len(vOut)-i-1] = v[i]

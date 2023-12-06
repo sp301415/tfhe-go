@@ -98,6 +98,9 @@ func (e *Evaluator[T]) MonomialMul(p0 Poly[T], d int) Poly[T] {
 }
 
 // MonomialMulAssign multiplies X^d to p0 and writes it to pOut.
+//
+// p0 and pOut should not overlap. For inplace multiplication,
+// use MonomialMulInPlace.
 func (e *Evaluator[T]) MonomialMulAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	switch k := d % (2 * e.degree); {
 	case e.degree <= k:
@@ -160,6 +163,8 @@ func (e *Evaluator[T]) MonomialMulInPlace(p0 Poly[T], d int) {
 }
 
 // MonomialMulAddAssign multiplies X^d to p0 and adds it to pOut.
+//
+// p0 and pOut should not overlap.
 func (e *Evaluator[T]) MonomialMulAddAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	switch k := d % (2 * e.degree); {
 	case e.degree <= k:
@@ -197,6 +202,8 @@ func (e *Evaluator[T]) MonomialMulAddAssign(p0 Poly[T], d int, pOut Poly[T]) {
 }
 
 // MonomialMulSubAssign multiplies X^d to p0 and subtracts it from pOut.
+//
+// p0 and pOut should not overlap.
 func (e *Evaluator[T]) MonomialMulSubAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	switch k := d % (2 * e.degree); {
 	case e.degree <= k:
@@ -236,6 +243,8 @@ func (e *Evaluator[T]) MonomialMulSubAssign(p0 Poly[T], d int, pOut Poly[T]) {
 // MonomialMulMinusOneAddAssign multiplies X^d-1 to p0, and adds it to pOut.
 // This operation is frequently used in Blind Rotation,
 // so we implement it as a special function.
+//
+// p0 and pOut should not overlap.
 func (e *Evaluator[T]) MonomialMulMinusOneAddAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	switch k := d % (2 * e.degree); {
 	case e.degree <= k:
