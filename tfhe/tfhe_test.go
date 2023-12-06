@@ -20,6 +20,36 @@ var (
 	benchEvaluator = tfhe.NewEvaluator(benchParams, benchEncryptor.GenEvaluationKeyParallel())
 )
 
+func TestParams(t *testing.T) {
+	t.Run("ParamsUint2", func(t *testing.T) {
+		assert.NotPanics(t, func() { tfhe.ParamsUint2.Compile() })
+	})
+
+	t.Run("ParamsUint3", func(t *testing.T) {
+		assert.NotPanics(t, func() { tfhe.ParamsUint3.Compile() })
+	})
+
+	t.Run("ParamsUint4", func(t *testing.T) {
+		assert.NotPanics(t, func() { tfhe.ParamsUint4.Compile() })
+	})
+
+	t.Run("ParamsUint5", func(t *testing.T) {
+		assert.NotPanics(t, func() { tfhe.ParamsUint5.Compile() })
+	})
+
+	t.Run("ParamsUint6", func(t *testing.T) {
+		assert.NotPanics(t, func() { tfhe.ParamsUint6.Compile() })
+	})
+
+	t.Run("ParamsUint7", func(t *testing.T) {
+		assert.NotPanics(t, func() { tfhe.ParamsUint7.Compile() })
+	})
+
+	t.Run("ParamsUint8", func(t *testing.T) {
+		assert.NotPanics(t, func() { tfhe.ParamsUint8.Compile() })
+	})
+}
+
 func TestEncryptor(t *testing.T) {
 	messages := []int{1, 2, 3}
 	gadgetParams := testParams.KeySwitchParameters()

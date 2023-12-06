@@ -62,26 +62,6 @@ func invFFTInPlace(coeffs, wNjInv []complex128) {
 	}
 }
 
-// twistInPlace twists the coefficients before FFT.
-// Equivalent to coeffs * w2Nj.
-func twistInPlace(coeffs, w2Nj []complex128) {
-	elementWiseMulCmplxAssign(coeffs, w2Nj, coeffs)
-}
-
-func twistAndScaleInPlaceAVX2(coeffs, w2Nj []complex128, maxTInv float64)
-
-// twistAndScaleInPlace twists the coefficients before FFT and scales it with maxTInv.
-func twistAndScaleInPlace(coeffs, w2Nj []complex128, maxTInv float64) {
-	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
-		twistAndScaleInPlaceAVX2(coeffs, w2Nj, maxTInv)
-		return
-	}
-
-	for i := 0; i < len(coeffs); i++ {
-		coeffs[i] = coeffs[i] * w2Nj[i] * complex(maxTInv, 0)
-	}
-}
-
 func untwistInPlaceAVX2(coeffs, w2NjInv []complex128)
 
 // unTwistInPlace untwists the coefficients after inverse FFT.

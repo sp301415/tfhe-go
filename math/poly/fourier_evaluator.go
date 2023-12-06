@@ -41,6 +41,8 @@ type FourierEvaluator[T num.Integer] struct {
 	wNjInv []complex128
 	// w2Nj holds the precomputed values of w_2N^j where j = 0 ~ N/2.
 	w2Nj []complex128
+	// w2NjScaled holds the precomputes values of w_2N^j / 2^sizeT where j = 0 ~ N/2.
+	w2NjScaled []complex128
 	// w2NjInv holds the precomputed values of scaled w_2N^-j / (N / 2) where j = 0 ~ N/2.
 	w2NjInv []complex128
 
@@ -53,8 +55,6 @@ type fourierBuffer[T num.Integer] struct {
 	fp FourierPoly
 	// fpInv holds the InvFFT value of fp.
 	fpInv FourierPoly
-	// floatCoeffs holds the untwisted coefficients of fourier polynomial.
-	floatCoeffs []float64
 }
 
 // NewFourierEvaluator creates a new FourierEvaluator with degree N.
@@ -69,6 +69,8 @@ func NewFourierEvaluator[T num.Integer](N int) *FourierEvaluator[T] {
 		panic("degree smaller than MinDegree")
 	}
 
+	maxT := math.Exp2(float64(num.SizeT[T]()))
+
 	wNj := make([]complex128, N/2)
 	wNjInv := make([]complex128, N/2)
 	for j := 0; j < N/2; j++ {
@@ -80,21 +82,24 @@ func NewFourierEvaluator[T num.Integer](N int) *FourierEvaluator[T] {
 	vec.BitReverseInPlace(wNjInv)
 
 	w2Nj := make([]complex128, N/2)
+	w2NjScaled := make([]complex128, N/2)
 	w2NjInv := make([]complex128, N/2)
 	for j := 0; j < N/2; j++ {
 		e := math.Pi * float64(j) / float64(N)
 		w2Nj[j] = cmplx.Exp(complex(0, e))
+		w2NjScaled[j] = w2Nj[j] / complex(maxT, 0)
 		w2NjInv[j] = cmplx.Exp(-complex(0, e)) / complex(float64(N/2), 0)
 	}
 
 	return &FourierEvaluator[T]{
 		degree: N,
-		maxT:   math.Exp2(float64(num.SizeT[T]())),
+		maxT:   maxT,
 
-		wNj:     wNj,
-		wNjInv:  wNjInv,
-		w2Nj:    w2Nj,
-		w2NjInv: w2NjInv,
+		wNj:        wNj,
+		wNjInv:     wNjInv,
+		w2Nj:       w2Nj,
+		w2NjScaled: w2NjScaled,
+		w2NjInv:    w2NjInv,
 
 		buffer: newFourierBuffer[T](N),
 	}
@@ -103,9 +108,8 @@ func NewFourierEvaluator[T num.Integer](N int) *FourierEvaluator[T] {
 // newFourierBuffer allocates an empty fourierBuffer.
 func newFourierBuffer[T num.Integer](N int) fourierBuffer[T] {
 	return fourierBuffer[T]{
-		fp:          NewFourierPoly(N),
-		fpInv:       NewFourierPoly(N),
-		floatCoeffs: make([]float64, N),
+		fp:    NewFourierPoly(N),
+		fpInv: NewFourierPoly(N),
 	}
 }
 
@@ -116,10 +120,11 @@ func (f *FourierEvaluator[T]) ShallowCopy() *FourierEvaluator[T] {
 		degree: f.degree,
 		maxT:   f.maxT,
 
-		wNj:     f.wNj,
-		wNjInv:  f.wNjInv,
-		w2Nj:    f.w2Nj,
-		w2NjInv: f.w2NjInv,
+		wNj:        f.wNj,
+		wNjInv:     f.wNjInv,
+		w2Nj:       f.w2Nj,
+		w2NjScaled: f.w2NjScaled,
+		w2NjInv:    f.w2NjInv,
 
 		buffer: newFourierBuffer[T](f.degree),
 	}

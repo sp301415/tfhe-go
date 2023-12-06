@@ -39,7 +39,7 @@ func (f *FourierEvaluator[T]) ToFourierPolyAssign(p Poly[T], fpOut FourierPoly) 
 		}
 	}
 
-	twistInPlace(fpOut.Coeffs, f.w2Nj)
+	elementWiseMulCmplxAssign(fpOut.Coeffs, f.w2Nj, fpOut.Coeffs)
 	fftInPlace(fpOut.Coeffs, f.wNj)
 }
 
@@ -84,7 +84,7 @@ func (f *FourierEvaluator[T]) ToScaledFourierPolyAssign(p Poly[T], fp FourierPol
 		}
 	}
 
-	twistAndScaleInPlace(fp.Coeffs, f.w2Nj, 1/f.maxT)
+	elementWiseMulCmplxAssign(fp.Coeffs, f.w2NjScaled, fp.Coeffs)
 	fftInPlace(fp.Coeffs, f.wNj)
 }
 
