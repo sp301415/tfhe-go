@@ -21,5 +21,5 @@ jobs:
       - name: Run Tests
         run: |
           go test ./math/poly -timeout=0
-          go test ./tfhe ./tfheb -timeout=0
-          go test ./tfhe ./tfheb -timeout=0 -tags=purego
+          go test ./tfhe -timeout=0
+          go test ./tfhe -timeout=0 -tags=purego
