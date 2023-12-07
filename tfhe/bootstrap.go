@@ -160,7 +160,10 @@ func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUp
 	ctOut.Clear()
 
 	e.PolyEvaluator.MonomialMulAssign(poly.Poly[T](lut), -e.ModSwitch(ct.Value[0]), ctOut.Value[0])
-	for i := 0; i < e.Parameters.lweDimension; i++ {
+
+	e.PolyEvaluator.MonomialMulMinusOneAssign(ctOut.Value[0], -e.ModSwitch(ct.Value[1]), e.buffer.acc.Value[0])
+	e.GadgetProductAddAssign(e.EvaluationKey.BootstrapKey.Value[0].Value[0], e.buffer.acc.Value[0], ctOut)
+	for i := 1; i < e.Parameters.lweDimension; i++ {
 		e.MonomialMulMinusOneAssign(ctOut, -e.ModSwitch(ct.Value[i+1]), e.buffer.acc)
 		e.ExternalProductAddAssign(e.EvaluationKey.BootstrapKey.Value[i], e.buffer.acc, ctOut)
 	}
@@ -221,6 +224,7 @@ func (e *Evaluator[T]) KeySwitchAssign(ct LWECiphertext[T], ksk KeySwitchKey[T],
 }
 
 // KeySwitchForBootstrap performs the keyswitching using evaulater's bootstrap key.
+// Input ciphertext should be of dimension LWELargeDimension + 1.
 // Output ciphertext will be of dimension LWEDimension + 1.
 func (e *Evaluator[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[T] {
 	ctOut := NewLWECiphertextCustom[T](e.Parameters.lweDimension)
@@ -229,6 +233,7 @@ func (e *Evaluator[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[
 }
 
 // KeySwitchForBootstrapAssign performs the keyswitching using evaulater's bootstrap key.
+// Input ciphertext should be of dimension LWELargeDimension + 1.
 // Output ciphertext should be of dimension LWEDimension + 1.
 func (e *Evaluator[T]) KeySwitchForBootstrapAssign(ct, ctOut LWECiphertext[T]) {
 	vec.CopyAssign(ct.Value[:e.Parameters.lweDimension+1], ctOut.Value)
