@@ -118,6 +118,11 @@ func (e *Evaluator[T]) BlindRotate(ct LWECiphertext[T], lut LookUpTable[T]) GLWE
 
 // BlindRotateAssign calculates the blind rotation of LWE ciphertext with respect to LUT.
 func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
+	if e.Parameters.blockSize == 1 {
+		e.blindRotateOriginalAssign(ct, lut, ctOut)
+		return
+	}
+
 	ctOut.Clear()
 	polyDecomposed := e.getPolyDecomposedBuffer(e.Parameters.bootstrapParameters)
 
@@ -146,6 +151,16 @@ func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T]
 			e.ExternalProductFourierDecomposedAssign(e.EvaluationKey.BootstrapKey.Value[j], e.buffer.accDecomposed, e.buffer.acc)
 			e.MonomialMulMinusOneAddGLWEAssign(e.buffer.acc, -e.ModSwitch(ct.Value[j+1]), ctOut)
 		}
+	}
+}
+
+func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
+	ctOut.Clear()
+
+	e.PolyEvaluator.MonomialMulAssign(poly.Poly[T](lut), -e.ModSwitch(ct.Value[0]), ctOut.Value[0])
+	for i := 0; i < e.Parameters.lweDimension; i++ {
+		e.MonomialMulMinusOneAssign(ctOut, -e.ModSwitch(ct.Value[i+1]), e.buffer.acc)
+		e.ExternalProductAddAssign(e.EvaluationKey.BootstrapKey.Value[i], e.buffer.acc, ctOut)
 	}
 }
 

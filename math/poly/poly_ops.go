@@ -240,6 +240,47 @@ func (e *Evaluator[T]) MonomialMulSubAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	}
 }
 
+// MonomialMulMinusOnessign multiplies X^d-1 to p0, and writes it to pOut.
+// This operation is frequently used in Blind Rotation,
+// so we implement it as a special function.
+//
+// p0 and pOut should not overlap.
+func (e *Evaluator[T]) MonomialMulMinusOneAssign(p0 Poly[T], d int, pOut Poly[T]) {
+	switch k := d % (2 * e.degree); {
+	case e.degree <= k:
+		kk := k - e.degree
+		for i := 0; i < kk; i++ {
+			pOut.Coeffs[i] = p0.Coeffs[i-kk+e.degree] - p0.Coeffs[i]
+		}
+		for i := kk; i < e.degree; i++ {
+			pOut.Coeffs[i] = -p0.Coeffs[i-kk] - p0.Coeffs[i]
+		}
+	case 0 <= k && k < e.degree:
+		for i := 0; i < k; i++ {
+			pOut.Coeffs[i] = -p0.Coeffs[i-k+e.degree] - p0.Coeffs[i]
+		}
+		for i := k; i < e.degree; i++ {
+			pOut.Coeffs[i] = p0.Coeffs[i-k] - p0.Coeffs[i]
+		}
+	case -e.degree <= k && k < 0:
+		kk := k + e.degree
+		for i := 0; i < kk; i++ {
+			pOut.Coeffs[i] = p0.Coeffs[i-kk+e.degree] - p0.Coeffs[i]
+		}
+		for i := kk; i < e.degree; i++ {
+			pOut.Coeffs[i] = -p0.Coeffs[i-kk] - p0.Coeffs[i]
+		}
+	case k < -e.degree:
+		kk := k + 2*e.degree
+		for i := 0; i < kk; i++ {
+			pOut.Coeffs[i] = -p0.Coeffs[i-kk+e.degree] - p0.Coeffs[i]
+		}
+		for i := kk; i < e.degree; i++ {
+			pOut.Coeffs[i] = p0.Coeffs[i-kk] - p0.Coeffs[i]
+		}
+	}
+}
+
 // MonomialMulMinusOneAddAssign multiplies X^d-1 to p0, and adds it to pOut.
 // This operation is frequently used in Blind Rotation,
 // so we implement it as a special function.

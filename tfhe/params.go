@@ -276,6 +276,8 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 	switch {
 	case p.LWEDimension <= 0:
 		panic("LWEDimension smaller than zero")
+	case p.LWEDimension > p.GLWEDimension*p.PolyDegree:
+		panic("LWEDimension larger than GLWEDimension * PolyDegree")
 	case p.GLWEDimension <= 0:
 		panic("GLWEDimension smaller than zero")
 	case p.PolyDegree <= MinPolyDegree:
@@ -286,6 +288,8 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("LWEStdDev smaller than zero")
 	case p.GLWEStdDev <= 0:
 		panic("GLWEStdDev smaller than zero")
+	case p.BlockSize <= 0:
+		panic("BlockSize smaller than zero")
 	case p.LWEDimension%p.BlockSize != 0:
 		panic("LWEDimension not multiple of BlockSize")
 	case !num.IsPowerOfTwo(p.PolyDegree):
