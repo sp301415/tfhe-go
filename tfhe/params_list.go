@@ -23,12 +23,12 @@ var (
 			Level: 4,
 		},
 
-		UseLargeLWEEntities: false,
+		BootstrapOrder: OrderBlindRotateKeySwitch,
 	}
 
-	// ParamsBooleanLargeLWEEntities is a parameter set for boolean TFHE
-	// with large LWE entities by default.
-	ParamsBooleanLargeLWEEntities = ParametersLiteral[uint32]{
+	// ParamsBooleanKeySwitchBlindRotate is a parameter set for boolean TFHE
+	// with OrderKeySwitchBlindRotate.
+	ParamsBooleanKeySwitchBlindRotate = ParametersLiteral[uint32]{
 		LWEDimension:  664,
 		GLWEDimension: 2,
 		PolyDegree:    512,
@@ -49,7 +49,7 @@ var (
 			Level: 4,
 		},
 
-		UseLargeLWEEntities: true,
+		BootstrapOrder: OrderKeySwitchBlindRotate,
 	}
 
 	// ParamsOriginalBoolean is parameters from the original C++ TFHE library.
@@ -74,7 +74,7 @@ var (
 			Level: 8,
 		},
 
-		UseLargeLWEEntities: false,
+		BootstrapOrder: OrderBlindRotateKeySwitch,
 	}
 
 	// ParamsUint2 ensures 2 bits of message precision.
@@ -99,7 +99,7 @@ var (
 			Level: 4,
 		},
 
-		UseLargeLWEEntities: true,
+		BootstrapOrder: OrderKeySwitchBlindRotate,
 	}
 
 	// ParamsUint3 ensures 3 bits of message precision.
@@ -124,7 +124,7 @@ var (
 			Level: 3,
 		},
 
-		UseLargeLWEEntities: true,
+		BootstrapOrder: OrderKeySwitchBlindRotate,
 	}
 
 	// ParamsUint4 ensures 4 bits of message precision.
@@ -149,7 +149,7 @@ var (
 			Level: 5,
 		},
 
-		UseLargeLWEEntities: true,
+		BootstrapOrder: OrderKeySwitchBlindRotate,
 	}
 
 	// ParamsUint5 ensures 5 bits of message precision.
@@ -174,7 +174,7 @@ var (
 			Level: 5,
 		},
 
-		UseLargeLWEEntities: true,
+		BootstrapOrder: OrderKeySwitchBlindRotate,
 	}
 
 	// ParamsUint6 ensures 6 bits of message precision.
@@ -199,7 +199,7 @@ var (
 			Level: 4,
 		},
 
-		UseLargeLWEEntities: true,
+		BootstrapOrder: OrderKeySwitchBlindRotate,
 	}
 
 	// ParamsUint7 ensures 7 bits of message precision.
@@ -224,7 +224,7 @@ var (
 			Level: 6,
 		},
 
-		UseLargeLWEEntities: true,
+		BootstrapOrder: OrderKeySwitchBlindRotate,
 	}
 
 	// ParamsUint8 ensures 8 bits of message precision.
@@ -249,6 +249,6 @@ var (
 			Level: 5,
 		},
 
-		UseLargeLWEEntities: true,
+		BootstrapOrder: OrderKeySwitchBlindRotate,
 	}
 )

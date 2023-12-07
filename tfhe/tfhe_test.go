@@ -25,8 +25,8 @@ func TestParams(t *testing.T) {
 		assert.NotPanics(t, func() { tfhe.ParamsBoolean.Compile() })
 	})
 
-	t.Run("ParamsBooleanLargeLWEEntities", func(t *testing.T) {
-		assert.NotPanics(t, func() { tfhe.ParamsBooleanLargeLWEEntities.Compile() })
+	t.Run("ParamsBooleanKeySwitchBlindRotate", func(t *testing.T) {
+		assert.NotPanics(t, func() { tfhe.ParamsBooleanKeySwitchBlindRotate.Compile() })
 	})
 
 	t.Run("ParamsOriginalBoolean", func(t *testing.T) {

@@ -93,7 +93,7 @@ func (e *Evaluator[T]) BootstrapLUT(ct LWECiphertext[T], lut LookUpTable[T]) LWE
 
 // BootstrapLUTAssign bootstraps LWE ciphertext with respect to given LUT and writes it to ctOut.
 func (e *Evaluator[T]) BootstrapLUTAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut LWECiphertext[T]) {
-	if e.Parameters.useLargeLWEEntities {
+	if e.Parameters.bootstrapOrder == OrderKeySwitchBlindRotate {
 		e.KeySwitchForBootstrapAssign(ct, e.buffer.ctKeySwitch)
 		e.BlindRotateAssign(e.buffer.ctKeySwitch, lut, e.buffer.ctRotate)
 		e.SampleExtractAssign(e.buffer.ctRotate, 0, ctOut)
@@ -119,8 +119,6 @@ func (e *Evaluator[T]) BlindRotate(ct LWECiphertext[T], lut LookUpTable[T]) GLWE
 // BlindRotateAssign calculates the blind rotation of LWE ciphertext with respect to LUT.
 func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
 	ctOut.Clear()
-
-	// Allocate buffer ourselves, so that we can reuse them explicitly.
 	polyDecomposed := e.getPolyDecomposedBuffer(e.Parameters.bootstrapParameters)
 
 	// Implementation of Algorithm 2 and Section 5.1 from https://eprint.iacr.org/2023/958

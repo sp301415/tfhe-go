@@ -5,7 +5,7 @@ import (
 )
 
 // BinaryEvaluator evaluates homomorphic binary gates on ciphertexts.
-// All LWE ciphertexts should be encrypted with tfheb.Encryptor.
+// All LWE ciphertexts should be encrypted with tfhe.BinaryEncryptor.
 // This is meant to be public, usually for servers.
 type BinaryEvaluator struct {
 	*BinaryEncoder

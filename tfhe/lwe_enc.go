@@ -6,10 +6,10 @@ import (
 )
 
 // DefaultLWEKey returns the LWE key according to the parameters.
-// Returns LWELargeKey if UseLargeLWEEntities is true,
+// Returns LWELargeKey if BootstrapOrder is OrderKeySwitchBlindRotate,
 // or LWEKey otherwise.
 func (e *Encryptor[T]) DefaultLWEKey() LWEKey[T] {
-	if e.Parameters.useLargeLWEEntities {
+	if e.Parameters.bootstrapOrder == OrderKeySwitchBlindRotate {
 		return e.SecretKey.LWELargeKey
 	}
 	return e.SecretKey.LWEKey

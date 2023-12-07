@@ -192,6 +192,27 @@ func (p *GadgetParameters[T]) UnmarshalBinary(data []byte) error {
 	return err
 }
 
+// BootstrapOrder is an enum type for the order of Programmable Bootstrapping.
+type BootstrapOrder int
+
+const (
+	// OrderKeySwitchBlindRotate sets the order of Programmable Bootstrapping as
+	//
+	//	KeySwitch -> BlindRotate -> SampleExtract
+	//
+	// This means that LWE keys and ciphertexts will have size
+	// according to LWELargeDimension.
+	OrderKeySwitchBlindRotate BootstrapOrder = iota
+
+	// OrderBlindRotateKeySwitch sets the order of Programmable Bootstrapping as
+	//
+	//	BlindRotate -> SampleExtract -> KeySwitch
+	//
+	// This means that LWE keys and ciphertexts will have size
+	// according to LWEDimension.
+	OrderBlindRotateKeySwitch
+)
+
 // ParametersLiteral is a structure for TFHE parameters.
 //
 // # Warning
@@ -223,24 +244,22 @@ type ParametersLiteral[T Tint] struct {
 	// KeySwitchParameters is the gadget parameters for KeySwitching.
 	KeySwitchParameters GadgetParametersLiteral[T]
 
-	// UseLargeLWEEntities is a flag for using "large" LWE entities by default.
-	// If this is set to true, LWE entities, including key and ciphertexts,
-	// will have dimension according to LWELargeDimension.
-	//
-	// Another important aspect of this flag is that it affects
-	// the order of Programmable Bootstrapping.
-	// If this is set to true, then the order is:
+	// BootstrapOrder is the order of Programmable Bootstrapping.
+	// If this is set to OrderKeySwitchBlindRotate, then the order is:
 	//
 	//	KeySwitch -> BlindRotate -> SampleExtract
 	//
-	// Otherwise, the order is:
+	// And LWE keys and ciphertexts will have size according to LWELargeDimension.
+	// Otherwise, if this is set to OrderBlindRotateKeySwitch, the order is:
 	//
 	//	BlindRotate -> SampleExtract -> KeySwitch
 	//
+	// And LWE keys and ciphertexts will have size according to LWEDimension.
+	//
 	// Essentially, there is a tradeoff:
-	// using large entities means that it will consume more memory,
+	// performing keyswitching first means that it will consume more memory,
 	// but it allows to use smaller parameters which will result in faster computation.
-	UseLargeLWEEntities bool
+	BootstrapOrder BootstrapOrder
 }
 
 // Compile transforms ParametersLiteral to read-only Parameters.
@@ -273,6 +292,8 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("PolyDegree not power of two")
 	case !num.IsPowerOfTwo(p.MessageModulus):
 		panic("MessageModulus not power of two")
+	case !(p.BootstrapOrder == OrderKeySwitchBlindRotate || p.BootstrapOrder == OrderBlindRotateKeySwitch):
+		panic("BootstrapOrder not valid")
 	}
 
 	messageModulusLog := num.Log2(p.MessageModulus)
@@ -301,7 +322,7 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		bootstrapParameters: p.BootstrapParameters.Compile(),
 		keyswitchParameters: p.KeySwitchParameters.Compile(),
 
-		useLargeLWEEntities: p.UseLargeLWEEntities,
+		bootstrapOrder: p.BootstrapOrder,
 	}
 }
 
@@ -348,15 +369,15 @@ type Parameters[T Tint] struct {
 	// keyswitchParameters is the gadget parameters for KeySwitching.
 	keyswitchParameters GadgetParameters[T]
 
-	// useLargeLWEEntities is a flag for using "large" LWE entities by default.
-	useLargeLWEEntities bool
+	// bootstrapOrder is the order of Programmable Bootstrapping.
+	bootstrapOrder BootstrapOrder
 }
 
 // DefaultLWEDimension returns the default dimension for LWE entities.
-// Returns LWELargeDimension if useLargeLWEEntities is true,
+// Returns LWELargeDimension if BootstrapOrder is OrderKeySwitchBlindRotate,
 // and LWEDimension otherwise.
 func (p Parameters[T]) DefaultLWEDimension() int {
-	if p.useLargeLWEEntities {
+	if p.bootstrapOrder == OrderKeySwitchBlindRotate {
 		return p.lweLargeDimension
 	}
 	return p.lweDimension
@@ -450,9 +471,9 @@ func (p Parameters[T]) KeySwitchParameters() GadgetParameters[T] {
 	return p.keyswitchParameters
 }
 
-// UseLargeLWEEntities is a flag for using "large" LWE entities by default.
-func (p Parameters[T]) UseLargeLWEEntities() bool {
-	return p.useLargeLWEEntities
+// BootstrapOrder is the order of Programmable Bootstrapping.
+func (p Parameters[T]) BootstrapOrder() BootstrapOrder {
+	return p.bootstrapOrder
 }
 
 // ByteSize returns the byte size of the parameters.
@@ -464,8 +485,8 @@ func (p Parameters[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//	           8               8            8           8            8           8                8                    16                    16                     1
-//	LWEDimension | GLWEDimension | PolyDegree | LWEStdDev | GLWEStdDev | BlockSize | MessageModulus | BootstrapParameters | KeySwitchParameters | UseLargeLWEEntities
+//	           8               8            8           8            8           8                8                    16                    16                1
+//	LWEDimension | GLWEDimension | PolyDegree | LWEStdDev | GLWEStdDev | BlockSize | MessageModulus | BootstrapParameters | KeySwitchParameters | BootstrapOrder
 func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var buf [3*8 + 2*8 + 8 + 8 + 16 + 16 + 1]byte
 
@@ -482,10 +503,7 @@ func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
 
 	binary.BigEndian.PutUint64(buf[72:80], uint64(p.keyswitchParameters.base))
 	binary.BigEndian.PutUint64(buf[80:88], uint64(p.keyswitchParameters.level))
-
-	if p.useLargeLWEEntities {
-		buf[88] = 1
-	}
+	buf[88] = byte(p.bootstrapOrder)
 
 	nn, err := w.Write(buf[:])
 	n += int64(nn)
@@ -526,10 +544,7 @@ func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
 		Level: int(binary.BigEndian.Uint64(buf[80:88])),
 	}
 
-	var useLargeLWEEntities bool
-	if buf[88] == 1 {
-		useLargeLWEEntities = true
-	}
+	bootstrapOrder := BootstrapOrder(buf[88])
 
 	*p = ParametersLiteral[T]{
 		LWEDimension:        int(lweDimension),
@@ -541,7 +556,7 @@ func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
 		MessageModulus:      T(messageModulus),
 		BootstrapParameters: bootstrapParameters,
 		KeySwitchParameters: keyswitchParameters,
-		UseLargeLWEEntities: useLargeLWEEntities,
+		BootstrapOrder:      bootstrapOrder,
 	}.Compile()
 
 	return
