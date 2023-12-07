@@ -1,6 +1,7 @@
 package tfhe
 
 import (
+	"github.com/sp301415/tfhe-go/math/csprng"
 	"github.com/sp301415/tfhe-go/math/num"
 	"github.com/sp301415/tfhe-go/math/vec"
 )
@@ -13,6 +14,16 @@ func (e *Encryptor[T]) DefaultLWEKey() LWEKey[T] {
 		return e.SecretKey.LWELargeKey
 	}
 	return e.SecretKey.LWEKey
+}
+
+// DefaultLWESampler returns the LWE sampler according to the parameters.
+// Returns GLWESampler if BootstrapOrder is OrderKeySwitchBlindRotate,
+// or LWESampler otherwise.
+func (e *Encryptor[T]) DefaultLWESampler() csprng.GaussianSampler[T] {
+	if e.Parameters.bootstrapOrder == OrderKeySwitchBlindRotate {
+		return e.glweSampler
+	}
+	return e.lweSampler
 }
 
 // EncryptLWE encodes and encrypts integer message to LWE ciphertext.
@@ -37,7 +48,7 @@ func (e *Encryptor[T]) EncryptLWEPlaintextAssign(pt LWEPlaintext[T], ctOut LWECi
 // This avoids the need for most buffers.
 func (e *Encryptor[T]) EncryptLWEBody(ct LWECiphertext[T]) {
 	e.uniformSampler.SampleSliceAssign(ct.Value[1:])
-	ct.Value[0] += -vec.Dot(ct.Value[1:], e.DefaultLWEKey().Value) + e.glweSampler.Sample()
+	ct.Value[0] += -vec.Dot(ct.Value[1:], e.DefaultLWEKey().Value) + e.DefaultLWESampler().Sample()
 }
 
 // DecryptLWE decrypts and decodes LWE ciphertext to integer message.
