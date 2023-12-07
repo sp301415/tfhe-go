@@ -54,14 +54,14 @@ var (
 
 	// ParamsOriginalBoolean is parameters from the original C++ TFHE library.
 	ParamsOriginalBoolean = ParametersLiteral[uint32]{
-		LWEDimension:  628,
+		LWEDimension:  630,
 		GLWEDimension: 1,
 		PolyDegree:    1024,
 
 		LWEStdDev:  0.000030517578125,
 		GLWEStdDev: 0.0000000298023223876953125,
 
-		BlockSize: 4,
+		BlockSize: 1,
 
 		MessageModulus: 1 << 2,
 
