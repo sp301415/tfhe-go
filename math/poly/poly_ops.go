@@ -104,35 +104,32 @@ func (e *Evaluator[T]) MonomialMul(p0 Poly[T], d int) Poly[T] {
 func (e *Evaluator[T]) MonomialMulAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	switch k := d % (2 * e.degree); {
 	case e.degree <= k:
-		kk := k - e.degree
-		for i := 0; i < kk; i++ {
-			pOut.Coeffs[i] = p0.Coeffs[i-kk+e.degree]
+		for i, ii := 0, -k+2*e.degree; ii < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] = p0.Coeffs[ii]
 		}
-		for i := kk; i < e.degree; i++ {
-			pOut.Coeffs[i] = -p0.Coeffs[i-kk]
+		for i, ii := k-e.degree, 0; i < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] = -p0.Coeffs[ii]
 		}
 	case 0 <= k && k < e.degree:
-		for i := 0; i < k; i++ {
-			pOut.Coeffs[i] = -p0.Coeffs[i-k+e.degree]
+		for i, ii := 0, -k+e.degree; ii < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] = -p0.Coeffs[ii]
 		}
-		for i := k; i < e.degree; i++ {
-			pOut.Coeffs[i] = p0.Coeffs[i-k]
+		for i, ii := k, 0; i < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] = p0.Coeffs[ii]
 		}
 	case -e.degree <= k && k < 0:
-		kk := k + e.degree
-		for i := 0; i < kk; i++ {
-			pOut.Coeffs[i] = p0.Coeffs[i-kk+e.degree]
+		for i, ii := 0, -k; ii < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] = p0.Coeffs[ii]
 		}
-		for i := kk; i < e.degree; i++ {
-			pOut.Coeffs[i] = -p0.Coeffs[i-kk]
+		for i, ii := k+e.degree, 0; i < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] = -p0.Coeffs[ii]
 		}
 	case k < -e.degree:
-		kk := k + 2*e.degree
-		for i := 0; i < kk; i++ {
-			pOut.Coeffs[i] = -p0.Coeffs[i-kk+e.degree]
+		for i, ii := 0, -k-e.degree; ii < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] = -p0.Coeffs[ii]
 		}
-		for i := kk; i < e.degree; i++ {
-			pOut.Coeffs[i] = p0.Coeffs[i-kk]
+		for i, ii := k+2*e.degree, 0; i < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] = p0.Coeffs[ii]
 		}
 	}
 }
@@ -168,35 +165,32 @@ func (e *Evaluator[T]) MonomialMulInPlace(p0 Poly[T], d int) {
 func (e *Evaluator[T]) MonomialMulAddAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	switch k := d % (2 * e.degree); {
 	case e.degree <= k:
-		kk := k - e.degree
-		for i := 0; i < kk; i++ {
-			pOut.Coeffs[i] += p0.Coeffs[i-kk+e.degree]
+		for i, ii := 0, -k+2*e.degree; ii < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] += p0.Coeffs[ii]
 		}
-		for i := kk; i < e.degree; i++ {
-			pOut.Coeffs[i] += -p0.Coeffs[i-kk]
+		for i, ii := k-e.degree, 0; i < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] += -p0.Coeffs[ii]
 		}
 	case 0 <= k && k < e.degree:
-		for i := 0; i < k; i++ {
-			pOut.Coeffs[i] += -p0.Coeffs[i-k+e.degree]
+		for i, ii := 0, -k+e.degree; ii < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] += -p0.Coeffs[ii]
 		}
-		for i := k; i < e.degree; i++ {
-			pOut.Coeffs[i] += p0.Coeffs[i-k]
+		for i, ii := k, 0; i < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] += p0.Coeffs[ii]
 		}
 	case -e.degree <= k && k < 0:
-		kk := k + e.degree
-		for i := 0; i < kk; i++ {
-			pOut.Coeffs[i] += p0.Coeffs[i-kk+e.degree]
+		for i, ii := 0, -k; ii < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] += p0.Coeffs[ii]
 		}
-		for i := kk; i < e.degree; i++ {
-			pOut.Coeffs[i] += -p0.Coeffs[i-kk]
+		for i, ii := k+e.degree, 0; i < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] += -p0.Coeffs[ii]
 		}
 	case k < -e.degree:
-		kk := k + 2*e.degree
-		for i := 0; i < kk; i++ {
-			pOut.Coeffs[i] += -p0.Coeffs[i-kk+e.degree]
+		for i, ii := 0, -k-e.degree; ii < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] += -p0.Coeffs[ii]
 		}
-		for i := kk; i < e.degree; i++ {
-			pOut.Coeffs[i] += p0.Coeffs[i-kk]
+		for i, ii := k+2*e.degree, 0; i < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] += p0.Coeffs[ii]
 		}
 	}
 }
@@ -207,35 +201,32 @@ func (e *Evaluator[T]) MonomialMulAddAssign(p0 Poly[T], d int, pOut Poly[T]) {
 func (e *Evaluator[T]) MonomialMulSubAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	switch k := d % (2 * e.degree); {
 	case e.degree <= k:
-		kk := k - e.degree
-		for i := 0; i < kk; i++ {
-			pOut.Coeffs[i] -= p0.Coeffs[i-kk+e.degree]
+		for i, ii := 0, -k+2*e.degree; ii < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] -= p0.Coeffs[ii]
 		}
-		for i := kk; i < e.degree; i++ {
-			pOut.Coeffs[i] -= -p0.Coeffs[i-kk]
+		for i, ii := k-e.degree, 0; i < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] -= -p0.Coeffs[ii]
 		}
 	case 0 <= k && k < e.degree:
-		for i := 0; i < k; i++ {
-			pOut.Coeffs[i] -= -p0.Coeffs[i-k+e.degree]
+		for i, ii := 0, -k+e.degree; ii < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] -= -p0.Coeffs[ii]
 		}
-		for i := k; i < e.degree; i++ {
-			pOut.Coeffs[i] -= p0.Coeffs[i-k]
+		for i, ii := k, 0; i < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] -= p0.Coeffs[ii]
 		}
 	case -e.degree <= k && k < 0:
-		kk := k + e.degree
-		for i := 0; i < kk; i++ {
-			pOut.Coeffs[i] -= p0.Coeffs[i-kk+e.degree]
+		for i, ii := 0, -k; ii < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] -= p0.Coeffs[ii]
 		}
-		for i := kk; i < e.degree; i++ {
-			pOut.Coeffs[i] -= -p0.Coeffs[i-kk]
+		for i, ii := k+e.degree, 0; i < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] -= -p0.Coeffs[ii]
 		}
 	case k < -e.degree:
-		kk := k + 2*e.degree
-		for i := 0; i < kk; i++ {
-			pOut.Coeffs[i] -= -p0.Coeffs[i-kk+e.degree]
+		for i, ii := 0, -k-e.degree; ii < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] -= -p0.Coeffs[ii]
 		}
-		for i := kk; i < e.degree; i++ {
-			pOut.Coeffs[i] -= p0.Coeffs[i-kk]
+		for i, ii := k+2*e.degree, 0; i < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] -= p0.Coeffs[ii]
 		}
 	}
 }
@@ -248,35 +239,25 @@ func (e *Evaluator[T]) MonomialMulSubAssign(p0 Poly[T], d int, pOut Poly[T]) {
 func (e *Evaluator[T]) MonomialMulMinusOneAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	switch k := d % (2 * e.degree); {
 	case e.degree <= k:
-		kk := k - e.degree
-		for i := 0; i < kk; i++ {
-			pOut.Coeffs[i] = p0.Coeffs[i-kk+e.degree] - p0.Coeffs[i]
+		for i, ii := 0, -k+2*e.degree; ii < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] = p0.Coeffs[ii] - p0.Coeffs[i]
 		}
-		for i := kk; i < e.degree; i++ {
-			pOut.Coeffs[i] = -p0.Coeffs[i-kk] - p0.Coeffs[i]
+		for i, ii := k-e.degree, 0; i < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] = -p0.Coeffs[ii] - p0.Coeffs[i]
 		}
 	case 0 <= k && k < e.degree:
-		for i := 0; i < k; i++ {
-			pOut.Coeffs[i] = -p0.Coeffs[i-k+e.degree] - p0.Coeffs[i]
+		for i, ii := 0, -k+e.degree; ii < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] = -p0.Coeffs[ii] - p0.Coeffs[i]
 		}
-		for i := k; i < e.degree; i++ {
-			pOut.Coeffs[i] = p0.Coeffs[i-k] - p0.Coeffs[i]
+		for i, ii := k, 0; i < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] = p0.Coeffs[ii] - p0.Coeffs[i]
 		}
 	case -e.degree <= k && k < 0:
-		kk := k + e.degree
-		for i := 0; i < kk; i++ {
-			pOut.Coeffs[i] = p0.Coeffs[i-kk+e.degree] - p0.Coeffs[i]
+		for i, ii := 0, -k+e.degree; ii < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] = -p0.Coeffs[ii] - p0.Coeffs[i]
 		}
-		for i := kk; i < e.degree; i++ {
-			pOut.Coeffs[i] = -p0.Coeffs[i-kk] - p0.Coeffs[i]
-		}
-	case k < -e.degree:
-		kk := k + 2*e.degree
-		for i := 0; i < kk; i++ {
-			pOut.Coeffs[i] = -p0.Coeffs[i-kk+e.degree] - p0.Coeffs[i]
-		}
-		for i := kk; i < e.degree; i++ {
-			pOut.Coeffs[i] = p0.Coeffs[i-kk] - p0.Coeffs[i]
+		for i, ii := k, 0; i < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] = p0.Coeffs[ii] - p0.Coeffs[i]
 		}
 	}
 }
@@ -289,35 +270,32 @@ func (e *Evaluator[T]) MonomialMulMinusOneAssign(p0 Poly[T], d int, pOut Poly[T]
 func (e *Evaluator[T]) MonomialMulMinusOneAddAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	switch k := d % (2 * e.degree); {
 	case e.degree <= k:
-		kk := k - e.degree
-		for i := 0; i < kk; i++ {
-			pOut.Coeffs[i] += p0.Coeffs[i-kk+e.degree] - p0.Coeffs[i]
+		for i, ii := 0, -k+2*e.degree; ii < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] += p0.Coeffs[ii] - p0.Coeffs[i]
 		}
-		for i := kk; i < e.degree; i++ {
-			pOut.Coeffs[i] += -p0.Coeffs[i-kk] - p0.Coeffs[i]
+		for i, ii := k-e.degree, 0; i < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] += -p0.Coeffs[ii] - p0.Coeffs[i]
 		}
 	case 0 <= k && k < e.degree:
-		for i := 0; i < k; i++ {
-			pOut.Coeffs[i] += -p0.Coeffs[i-k+e.degree] - p0.Coeffs[i]
+		for i, ii := 0, -k+e.degree; ii < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] += -p0.Coeffs[ii] - p0.Coeffs[i]
 		}
-		for i := k; i < e.degree; i++ {
-			pOut.Coeffs[i] += p0.Coeffs[i-k] - p0.Coeffs[i]
+		for i, ii := k, 0; i < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] += p0.Coeffs[ii] - p0.Coeffs[i]
 		}
 	case -e.degree <= k && k < 0:
-		kk := k + e.degree
-		for i := 0; i < kk; i++ {
-			pOut.Coeffs[i] += p0.Coeffs[i-kk+e.degree] - p0.Coeffs[i]
+		for i, ii := 0, -k; ii < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] += p0.Coeffs[ii] - p0.Coeffs[i]
 		}
-		for i := kk; i < e.degree; i++ {
-			pOut.Coeffs[i] += -p0.Coeffs[i-kk] - p0.Coeffs[i]
+		for i, ii := k+e.degree, 0; i < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] += -p0.Coeffs[ii] - p0.Coeffs[i]
 		}
 	case k < -e.degree:
-		kk := k + 2*e.degree
-		for i := 0; i < kk; i++ {
-			pOut.Coeffs[i] += -p0.Coeffs[i-kk+e.degree] - p0.Coeffs[i]
+		for i, ii := 0, -k-e.degree; ii < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] += -p0.Coeffs[ii] - p0.Coeffs[i]
 		}
-		for i := kk; i < e.degree; i++ {
-			pOut.Coeffs[i] += p0.Coeffs[i-kk] - p0.Coeffs[i]
+		for i, ii := k+2*e.degree, 0; i < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] += p0.Coeffs[ii] - p0.Coeffs[i]
 		}
 	}
 }

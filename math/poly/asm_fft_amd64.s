@@ -351,41 +351,6 @@ last_loop_end:
 
 	RET
 
-TEXT ·twistAndScaleInPlaceAVX2(SB), NOSPLIT, $0-56
-	MOVQ v0+24(FP), AX
-	MOVQ v1+0(FP), BX
-
-	MOVQ v0_len+8(FP), DX
-	ADDQ DX, DX
-
-	VBROADCASTSD T+48(FP), Y10
-
-	XORQ SI, SI
-	JMP loop_end
-
-loop_body:
-	VMOVUPD (AX)(SI*8), Y0
-	VMOVUPD (BX)(SI*8), Y1
-
-	VSHUFPD $0b0101, Y1, Y1, Y2
-	VSHUFPD $0b1111, Y0, Y0, Y3
-	VSHUFPD $0b0000, Y0, Y0, Y4
-
-	VMULPD Y2, Y3, Y5
-	VFMADDSUB231PD Y1, Y4, Y5
-
-	VMULPD Y10, Y5, Y5
-
-	VMOVUPD Y5, (BX)(SI*8)
-
-	ADDQ $4, SI
-
-loop_end:
-	CMPQ SI, DX
-	JL loop_body
-
-	RET
-
 TEXT ·untwistInPlaceAVX2(SB), NOSPLIT, $0-48
 	MOVQ v0+0(FP), AX
 	MOVQ v1+24(FP), BX
