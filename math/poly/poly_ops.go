@@ -253,10 +253,17 @@ func (e *Evaluator[T]) MonomialMulMinusOneAssign(p0 Poly[T], d int, pOut Poly[T]
 			pOut.Coeffs[i] = p0.Coeffs[ii] - p0.Coeffs[i]
 		}
 	case -e.degree <= k && k < 0:
-		for i, ii := 0, -k+e.degree; ii < e.degree; i, ii = i+1, ii+1 {
+		for i, ii := 0, -k; ii < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] = p0.Coeffs[ii] - p0.Coeffs[i]
+		}
+		for i, ii := k+e.degree, 0; i < e.degree; i, ii = i+1, ii+1 {
 			pOut.Coeffs[i] = -p0.Coeffs[ii] - p0.Coeffs[i]
 		}
-		for i, ii := k, 0; i < e.degree; i, ii = i+1, ii+1 {
+	case k < -e.degree:
+		for i, ii := 0, -k-e.degree; ii < e.degree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] = -p0.Coeffs[ii] - p0.Coeffs[i]
+		}
+		for i, ii := k+2*e.degree, 0; i < e.degree; i, ii = i+1, ii+1 {
 			pOut.Coeffs[i] = p0.Coeffs[ii] - p0.Coeffs[i]
 		}
 	}
