@@ -392,7 +392,7 @@ func (p Parameters[T]) LWEDimension() int {
 	return p.lweDimension
 }
 
-// LWEDimension is the dimension for LWE entities.
+// LWELargeDimension is the dimension of "large" lattice used.
 // Equals to the "full" GLWE lattice; which is GLWEDimension * PolyDegree.
 func (p Parameters[T]) LWELargeDimension() int {
 	return p.lweLargeDimension
@@ -482,7 +482,7 @@ func (p Parameters[T]) BootstrapOrder() BootstrapOrder {
 
 // ByteSize returns the byte size of the parameters.
 func (p Parameters[T]) ByteSize() int {
-	return 3*8 + 2*8 + 8 + 8 + 16 + 16 + 1
+	return 7*8 + 2*16 + 1
 }
 
 // WriteTo implements the io.WriterTo interface.
@@ -492,7 +492,7 @@ func (p Parameters[T]) ByteSize() int {
 //	           8               8            8           8            8           8                8                    16                    16                1
 //	LWEDimension | GLWEDimension | PolyDegree | LWEStdDev | GLWEStdDev | BlockSize | MessageModulus | BootstrapParameters | KeySwitchParameters | BootstrapOrder
 func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
-	var buf [3*8 + 2*8 + 8 + 8 + 16 + 16 + 1]byte
+	var buf [7*8 + 2*16 + 1]byte
 
 	binary.BigEndian.PutUint64(buf[0:8], uint64(p.lweDimension))
 	binary.BigEndian.PutUint64(buf[8:16], uint64(p.glweDimension))
@@ -524,7 +524,7 @@ func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
 
 // ReadFrom implements the io.ReaderFrom interface.
 func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
-	var buf [3*8 + 2*8 + 8 + 8 + 16 + 16 + 1]byte
+	var buf [7*8 + 2*16 + 1]byte
 	nn, err := io.ReadFull(r, buf[:])
 	n += int64(nn)
 	if err != nil {

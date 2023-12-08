@@ -13,6 +13,20 @@ var (
 	testBinaryEvaluator = tfhe.NewBinaryEvaluator(testBinaryParams, testBinaryEncryptor.GenEvaluationKeyParallel())
 )
 
+func TestBinaryParams(t *testing.T) {
+	t.Run("ParamsBoolean", func(t *testing.T) {
+		assert.NotPanics(t, func() { tfhe.ParamsBoolean.Compile() })
+	})
+
+	t.Run("ParamsBooleanKeySwitchBlindRotate", func(t *testing.T) {
+		assert.NotPanics(t, func() { tfhe.ParamsBooleanKeySwitchBlindRotate.Compile() })
+	})
+
+	t.Run("ParamsOriginalBoolean", func(t *testing.T) {
+		assert.NotPanics(t, func() { tfhe.ParamsOriginalBoolean.Compile() })
+	})
+}
+
 func TestBinaryEvaluator(t *testing.T) {
 	tests := []struct {
 		pt0 bool
