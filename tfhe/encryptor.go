@@ -60,7 +60,6 @@ func NewEncryptor[T Tint](params Parameters[T]) *Encryptor[T] {
 		buffer: newEncryptionBuffer(params),
 	}
 
-	// Generate Secret Key
 	encryptor.SecretKey = encryptor.GenSecretKey()
 	return &encryptor
 }

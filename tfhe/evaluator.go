@@ -39,12 +39,10 @@ type evaluationBuffer[T Tint] struct {
 	// ctFourierProd holds the fourier transformed ctGLWEOut in ExternalProductFourier.
 	ctFourierProd FourierGLWECiphertext[T]
 	// ctCMux holds ct1 - ct0 in CMux.
+	// In a similar manner, it holds (X^a - 1) * ACC in Blind Roation.
 	ctCMux GLWECiphertext[T]
-
-	// accDecomposed holds the decomposed accumulator in Blind Rotation.
-	accDecomposed [][]poly.FourierPoly
-	// acc holds the accumulator in Blind Rotation.
-	acc GLWECiphertext[T]
+	// ctCMuxFourierDecomposed holds the decomposed ctCMux in Blind Rotation.
+	ctCMuxFourierDecomposed [][]poly.FourierPoly
 
 	// ctRotate holds the blind rotated GLWE ciphertext for bootstrapping.
 	ctRotate GLWECiphertext[T]
@@ -92,11 +90,11 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 		polyFourierDecomposed[i] = poly.NewFourierPoly(params.polyDegree)
 	}
 
-	accDecomposed := make([][]poly.FourierPoly, params.glweDimension+1)
-	for i := range accDecomposed {
-		accDecomposed[i] = make([]poly.FourierPoly, params.bootstrapParameters.level)
-		for j := range accDecomposed[i] {
-			accDecomposed[i][j] = poly.NewFourierPoly(params.polyDegree)
+	ctCMuxFourierDecomposed := make([][]poly.FourierPoly, params.glweDimension+1)
+	for i := range ctCMuxFourierDecomposed {
+		ctCMuxFourierDecomposed[i] = make([]poly.FourierPoly, params.bootstrapParameters.level)
+		for j := range ctCMuxFourierDecomposed[i] {
+			ctCMuxFourierDecomposed[i][j] = poly.NewFourierPoly(params.polyDegree)
 		}
 	}
 
@@ -107,10 +105,9 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 
 		fpOut:         poly.NewFourierPoly(params.polyDegree),
 		ctFourierProd: NewFourierGLWECiphertext(params),
-		ctCMux:        NewGLWECiphertext(params),
 
-		accDecomposed: accDecomposed,
-		acc:           NewGLWECiphertext(params),
+		ctCMux:                  NewGLWECiphertext(params),
+		ctCMuxFourierDecomposed: ctCMuxFourierDecomposed,
 
 		ctRotate:    NewGLWECiphertext(params),
 		ctExtract:   NewLWECiphertextCustom[T](params.lweLargeDimension),
