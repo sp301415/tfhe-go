@@ -14,7 +14,7 @@ import (
 // SecretKey is a structure containing LWE and GLWE key.
 //
 // LWEKey and GLWEKey is sampled together, as explained in https://eprint.iacr.org/2023/958.
-// FourierGLWEKey is also assumed to be a correct Fourier transform of GLWEKey.
+// As a result, LWEKey and GLWEKey share the same backing slice, so modifying one will affect the other.
 type SecretKey[T Tint] struct {
 	// LWELargeKey is a LWE key with length LWELargeDimension.
 	// Essentially, this is same as GLWEKey but parsed differently.
