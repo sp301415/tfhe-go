@@ -361,7 +361,7 @@ func BenchmarkEvaluationKeyGen(b *testing.B) {
 	}
 }
 
-func BenchmarkBootstrap(b *testing.B) {
+func BenchmarkProgrammableBootstrap(b *testing.B) {
 	ct := benchEncryptor.EncryptLWE(3)
 	lut := benchEvaluator.GenLookUpTable(func(x int) int { return 2*x + 1 })
 	b.ResetTimer()
