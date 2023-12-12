@@ -64,9 +64,9 @@ func invFFTInPlace(coeffs, wNjInv []complex128) {
 
 func untwistInPlaceAVX2(coeffs, w2NjInv []complex128)
 
-// unTwistInPlace untwists the coefficients after inverse FFT.
+// untwistInPlace untwists the coefficients after inverse FFT.
 // Equivalent to coeffs * w2NjInv.
-func unTwistInPlace(coeffs, w2NjInv []complex128) {
+func untwistInPlace(coeffs, w2NjInv []complex128) {
 	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		untwistInPlaceAVX2(coeffs, w2NjInv)
 		return
@@ -81,8 +81,8 @@ func unTwistInPlace(coeffs, w2NjInv []complex128) {
 
 func untwistAndScaleInPlaceAVX2(coeffs, w2NjInv []complex128, maxT float64)
 
-// unTwistAndScaleInPlace untwists the coefficients and scales it with maxT.
-func unTwistAndScaleInPlace(coeffs, w2NjInv []complex128, maxT float64) {
+// untwistAndScaleInPlace untwists the coefficients and scales it with maxT.
+func untwistAndScaleInPlace(coeffs, w2NjInv []complex128, maxT float64) {
 	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		untwistAndScaleInPlaceAVX2(coeffs, w2NjInv, maxT)
 		return

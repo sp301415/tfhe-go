@@ -101,7 +101,7 @@ func (f *FourierEvaluator[T]) ToStandardPolyAssign(fp FourierPoly, pOut Poly[T])
 
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
-	unTwistInPlace(f.buffer.fpInv.Coeffs, f.w2NjInv)
+	untwistInPlace(f.buffer.fpInv.Coeffs, f.w2NjInv)
 
 	for j := 0; j < N/2; j++ {
 		pOut.Coeffs[j] = T(int64(real(f.buffer.fpInv.Coeffs[j])))
@@ -117,7 +117,7 @@ func (f *FourierEvaluator[T]) ToStandardPolyAssignUnsafe(fp FourierPoly, pOut Po
 	N := f.degree
 
 	invFFTInPlace(fp.Coeffs, f.wNjInv)
-	unTwistInPlace(fp.Coeffs, f.w2NjInv)
+	untwistInPlace(fp.Coeffs, f.w2NjInv)
 
 	for j := 0; j < N/2; j++ {
 		pOut.Coeffs[j] = T(int64(real(fp.Coeffs[j])))
@@ -131,7 +131,7 @@ func (f *FourierEvaluator[T]) ToStandardPolyAddAssign(fp FourierPoly, pOut Poly[
 
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
-	unTwistInPlace(f.buffer.fpInv.Coeffs, f.w2NjInv)
+	untwistInPlace(f.buffer.fpInv.Coeffs, f.w2NjInv)
 
 	for j := 0; j < N/2; j++ {
 		pOut.Coeffs[j] += T(int64(real(f.buffer.fpInv.Coeffs[j])))
@@ -147,7 +147,7 @@ func (f *FourierEvaluator[T]) ToStandardPolyAddAssignUnsafe(fp FourierPoly, pOut
 	N := f.degree
 
 	invFFTInPlace(fp.Coeffs, f.wNjInv)
-	unTwistInPlace(fp.Coeffs, f.w2NjInv)
+	untwistInPlace(fp.Coeffs, f.w2NjInv)
 
 	for j := 0; j < N/2; j++ {
 		pOut.Coeffs[j] += T(int64(real(fp.Coeffs[j])))
@@ -161,7 +161,7 @@ func (f *FourierEvaluator[T]) ToStandardPolySubAssign(fp FourierPoly, pOut Poly[
 
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
-	unTwistInPlace(f.buffer.fpInv.Coeffs, f.w2NjInv)
+	untwistInPlace(f.buffer.fpInv.Coeffs, f.w2NjInv)
 
 	for j := 0; j < N/2; j++ {
 		pOut.Coeffs[j] -= T(int64(real(f.buffer.fpInv.Coeffs[j])))
@@ -177,7 +177,7 @@ func (f *FourierEvaluator[T]) ToStandardPolySubAssignUnsafe(fp FourierPoly, pOut
 	N := f.degree
 
 	invFFTInPlace(fp.Coeffs, f.wNjInv)
-	unTwistInPlace(fp.Coeffs, f.w2NjInv)
+	untwistInPlace(fp.Coeffs, f.w2NjInv)
 
 	for j := 0; j < N/2; j++ {
 		pOut.Coeffs[j] -= T(int64(real(fp.Coeffs[j])))
@@ -200,7 +200,7 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolyAssign(fp FourierPoly, pOut Po
 
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
-	unTwistAndScaleInPlace(f.buffer.fpInv.Coeffs, f.w2NjInv, f.maxT)
+	untwistAndScaleInPlace(f.buffer.fpInv.Coeffs, f.w2NjInv, f.maxT)
 
 	for j := 0; j < N/2; j++ {
 		pOut.Coeffs[j] = T(int64(real(f.buffer.fpInv.Coeffs[j])))
@@ -217,7 +217,7 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolyAssignUnsafe(fp FourierPoly, p
 	N := f.degree
 
 	invFFTInPlace(fp.Coeffs, f.wNjInv)
-	unTwistAndScaleInPlace(fp.Coeffs, f.w2NjInv, f.maxT)
+	untwistAndScaleInPlace(fp.Coeffs, f.w2NjInv, f.maxT)
 
 	for j := 0; j < N/2; j++ {
 		pOut.Coeffs[j] = T(int64(real(fp.Coeffs[j])))
@@ -232,7 +232,7 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolyAddAssign(fp FourierPoly, pOut
 
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
-	unTwistAndScaleInPlace(f.buffer.fpInv.Coeffs, f.w2NjInv, f.maxT)
+	untwistAndScaleInPlace(f.buffer.fpInv.Coeffs, f.w2NjInv, f.maxT)
 
 	for j := 0; j < N/2; j++ {
 		pOut.Coeffs[j] += T(int64(real(f.buffer.fpInv.Coeffs[j])))
@@ -249,7 +249,7 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolyAddAssignUnsafe(fp FourierPoly
 	N := f.degree
 
 	invFFTInPlace(fp.Coeffs, f.wNjInv)
-	unTwistAndScaleInPlace(fp.Coeffs, f.w2NjInv, f.maxT)
+	untwistAndScaleInPlace(fp.Coeffs, f.w2NjInv, f.maxT)
 
 	for j := 0; j < N/2; j++ {
 		pOut.Coeffs[j] += T(int64(real(fp.Coeffs[j])))
@@ -264,7 +264,7 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolySubAssign(fp FourierPoly, pOut
 
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
-	unTwistAndScaleInPlace(f.buffer.fpInv.Coeffs, f.w2NjInv, f.maxT)
+	untwistAndScaleInPlace(f.buffer.fpInv.Coeffs, f.w2NjInv, f.maxT)
 
 	for j := 0; j < N/2; j++ {
 		pOut.Coeffs[j] -= T(int64(real(f.buffer.fpInv.Coeffs[j])))
@@ -281,7 +281,7 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolySubAssignUnsafe(fp FourierPoly
 	N := f.degree
 
 	invFFTInPlace(fp.Coeffs, f.wNjInv)
-	unTwistAndScaleInPlace(fp.Coeffs, f.w2NjInv, f.maxT)
+	untwistAndScaleInPlace(fp.Coeffs, f.w2NjInv, f.maxT)
 
 	for j := 0; j < N/2; j++ {
 		pOut.Coeffs[j] -= T(int64(real(fp.Coeffs[j])))
