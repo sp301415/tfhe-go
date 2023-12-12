@@ -156,24 +156,24 @@ func (e *Evaluator[T]) MonomialMulSubGLWEAssign(ct0 GLWECiphertext[T], d int, ct
 	}
 }
 
-// MonomialMulMinusOneAssign multiplies X^d-1 to ct0 and writes it to ctOut.
+// MonomialDivMinusOneAssign multiplies X^d-1 to ct0 and writes it to ctOut.
 // This operation is frequently used in Blind Rotation,
 // so we implement it as a special function.
 //
 // ct0 and ctOut should not overlap.
-func (e *Evaluator[T]) MonomialMulMinusOneAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
+func (e *Evaluator[T]) MonomialDivMinusOneAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.PolyEvaluator.MonomialMulMinusOneAssign(ct0.Value[i], d, ctOut.Value[i])
+		e.PolyEvaluator.MonomialDivMinusOneAssign(ct0.Value[i], d, ctOut.Value[i])
 	}
 }
 
-// MonomialMulMinusOneAddGLWEAssign multiplies X^d-1 to ct0, and adds it to ctOut.
+// MonomialDivMinusOneAddGLWEAssign multiplies X^d-1 to ct0, and adds it to ctOut.
 // This operation is frequently used in Blind Rotation,
 // so we implement it as a special function.
 //
 // ct0 and ctOut should not overlap.
-func (e *Evaluator[T]) MonomialMulMinusOneAddGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
+func (e *Evaluator[T]) MonomialDivMinusOneAddGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.PolyEvaluator.MonomialMulMinusOneAddAssign(ct0.Value[i], d, ctOut.Value[i])
+		e.PolyEvaluator.MonomialDivMinusOneAddAssign(ct0.Value[i], d, ctOut.Value[i])
 	}
 }
