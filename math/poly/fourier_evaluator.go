@@ -75,8 +75,8 @@ func NewFourierEvaluator[T num.Integer](N int) *FourierEvaluator[T] {
 	wNjInv := make([]complex128, N/2)
 	for j := 0; j < N/2; j++ {
 		e := 2 * math.Pi * float64(j) / float64(N)
-		wNj[j] = cmplx.Exp(complex(0, e))
-		wNjInv[j] = cmplx.Exp(-complex(0, e))
+		wNj[j] = cmplx.Exp(-complex(0, e))
+		wNjInv[j] = cmplx.Exp(complex(0, e))
 	}
 	vec.BitReverseInPlace(wNj)
 	vec.BitReverseInPlace(wNjInv)
