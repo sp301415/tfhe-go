@@ -46,17 +46,17 @@ func invFFTInPlace(coeffs, wNjInv []complex128) {
 	}
 }
 
-// unTwistInPlace untwists the coefficients after inverse FFT.
+// untwistInPlace untwists the coefficients after inverse FFT.
 // Equivalent to coeffs * w2NjInv.
-func unTwistInPlace(coeffs, w2NjInv []complex128) {
+func untwistInPlace(coeffs, w2NjInv []complex128) {
 	for i := 0; i < len(coeffs); i++ {
 		c := coeffs[i] * w2NjInv[i]
 		coeffs[i] = complex(math.Round(real(c)), math.Round(imag(c)))
 	}
 }
 
-// unTwistAndScaleInPlace untwists the coefficients and scales it with maxT.
-func unTwistAndScaleInPlace(coeffs, w2NjInv []complex128, maxT float64) {
+// untwistAndScaleInPlace untwists the coefficients and scales it with maxT.
+func untwistAndScaleInPlace(coeffs, w2NjInv []complex128, maxT float64) {
 	for i := 0; i < len(coeffs); i++ {
 		c := coeffs[i] * w2NjInv[i]
 		cr := real(c)
