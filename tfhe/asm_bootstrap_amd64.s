@@ -2,21 +2,24 @@
 
 #include "textflag.h"
 
-TEXT ·monomialDivSubAddAssignUint32AVX2(SB), NOSPLIT, $0-56
+TEXT ·monomialMulSubAddAssignUint32AVX2(SB), NOSPLIT, $0-56
     MOVQ v0+0(FP), AX
     MOVQ vOut+32(FP), BX
 
     MOVQ d+24(FP), R10
     MOVQ vOut_len+40(FP), R11
 
-    CMPQ R10, R11
-    JGE case_1
+    XORQ R12, R12
+    SUBQ R11, R12
+    CMPQ R12, R10
+    JG case_1
 
 case_0:
 
-// for i, ii := 0, d; ii < e.degree; i, ii = i+1, ii+1
+// for j, jj := 0, -d; jj < polyDegree; j, jj = j+1, jj+1
     XORQ SI, SI
-    MOVQ R10, DI
+    XORQ DI, DI
+    SUBQ R10, DI
 
     JMP case_0_loop_0_end
 
@@ -58,9 +61,9 @@ case_0_loop_0_leftover_end:
     CMPQ DI, R11
     JL case_0_loop_0_leftover
 
-// for i, ii := e.degree-d, 0; i < e.degree; i, ii = i+1, ii+1
+// for j, jj := polyDegree+d, 0; j < polyDegree; j, jj = j+1, jj+1
     MOVQ R11, SI
-    SUBQ R10, SI
+    ADDQ R10, SI
     XORQ DI, DI
 
     JMP case_0_loop_1_end
@@ -107,10 +110,11 @@ case_0_loop_1_leftover_end:
 
 case_1:
 
-// for i, ii := 0, d-e.degree; ii < e.degree; i, ii = i+1, ii+1
+// for j, jj := 0, -polyDegree-d; jj < polyDegree; j, jj = j+1, jj+1
     XORQ SI, SI
-    MOVQ R10, DI
+    XORQ DI, DI
     SUBQ R11, DI
+    SUBQ R10, DI
 
     JMP case_1_loop_0_end
 
@@ -152,10 +156,10 @@ case_1_loop_0_leftover_end:
     CMPQ DI, R11
     JL case_1_loop_0_leftover
 
-// for i, ii := 2*e.degree-d, 0; i < e.degree; i, ii = i+1, ii+1
+// for j, jj := 2*polyDegree+d, 0; j < polyDegree; j, jj = j+1, jj+1
     MOVQ R11, SI
     ADDQ R11, SI
-    SUBQ R10, SI
+    ADDQ R10, SI
     XORQ DI, DI
 
     JMP case_1_loop_1_end
@@ -200,21 +204,24 @@ case_1_loop_1_leftover_end:
 
     RET
 
-TEXT ·monomialDivSubAddAssignUint64AVX2(SB), NOSPLIT, $0-56
+TEXT ·monomialMulSubAddAssignUint64AVX2(SB), NOSPLIT, $0-56
     MOVQ v0+0(FP), AX
     MOVQ vOut+32(FP), BX
 
     MOVQ d+24(FP), R10
     MOVQ vOut_len+40(FP), R11
 
-    CMPQ R10, R11
-    JGE case_1
+    XORQ R12, R12
+    SUBQ R11, R12
+    CMPQ R12, R10
+    JG case_1
 
 case_0:
 
-// for i, ii := 0, d; ii < e.degree; i, ii = i+1, ii+1
+// for j, jj := 0, -d; jj < polyDegree; j, jj = j+1, jj+1
     XORQ SI, SI
-    MOVQ R10, DI
+    XORQ DI, DI
+    SUBQ R10, DI
 
     JMP case_0_loop_0_end
 
@@ -256,9 +263,9 @@ case_0_loop_0_leftover_end:
     CMPQ DI, R11
     JL case_0_loop_0_leftover
 
-// for i, ii := e.degree-d, 0; i < e.degree; i, ii = i+1, ii+1
+// for j, jj := polyDegree+d, 0; j < polyDegree; j, jj = j+1, jj+1
     MOVQ R11, SI
-    SUBQ R10, SI
+    ADDQ R10, SI
     XORQ DI, DI
 
     JMP case_0_loop_1_end
@@ -305,10 +312,11 @@ case_0_loop_1_leftover_end:
 
 case_1:
 
-// for i, ii := 0, d-e.degree; ii < e.degree; i, ii = i+1, ii+1
+// for j, jj := 0, -polyDegree-d; jj < polyDegree; j, jj = j+1, jj+1
     XORQ SI, SI
-    MOVQ R10, DI
+    XORQ DI, DI
     SUBQ R11, DI
+    SUBQ R10, DI
 
     JMP case_1_loop_0_end
 
@@ -350,10 +358,10 @@ case_1_loop_0_leftover_end:
     CMPQ DI, R11
     JL case_1_loop_0_leftover
 
-// for i, ii := 2*e.degree-d, 0; i < e.degree; i, ii = i+1, ii+1
+// for j, jj := 2*polyDegree+d, 0; j < polyDegree; j, jj = j+1, jj+1
     MOVQ R11, SI
     ADDQ R11, SI
-    SUBQ R10, SI
+    ADDQ R10, SI
     XORQ DI, DI
 
     JMP case_1_loop_1_end
@@ -398,21 +406,24 @@ case_1_loop_1_leftover_end:
 
     RET
 
-TEXT ·monomialDivSubAssignUint32AVX2(SB), NOSPLIT, $0-56
+TEXT ·monomialMulSubAssignUint32AVX2(SB), NOSPLIT, $0-56
     MOVQ v0+0(FP), AX
     MOVQ vOut+32(FP), BX
 
     MOVQ d+24(FP), R10
     MOVQ vOut_len+40(FP), R11
 
-    CMPQ R10, R11
-    JGE case_1
+    XORQ R12, R12
+    SUBQ R11, R12
+    CMPQ R12, R10
+    JG case_1
 
 case_0:
 
-// for i, ii := 0, d; ii < e.degree; i, ii = i+1, ii+1
+// for j, jj := 0, -d; jj < polyDegree; j, jj = j+1, jj+1
     XORQ SI, SI
-    MOVQ R10, DI
+    XORQ DI, DI
+    SUBQ R10, DI
 
     JMP case_0_loop_0_end
 
@@ -450,9 +461,9 @@ case_0_loop_0_leftover_end:
     CMPQ DI, R11
     JL case_0_loop_0_leftover
 
-// for i, ii := e.degree-d, 0; i < e.degree; i, ii = i+1, ii+1
+// for j, jj := polyDegree+d, 0; j < polyDegree; j, jj = j+1, jj+1
     MOVQ R11, SI
-    SUBQ R10, SI
+    ADDQ R10, SI
     XORQ DI, DI
 
     JMP case_0_loop_1_end
@@ -499,10 +510,11 @@ case_0_loop_1_leftover_end:
 
 case_1:
 
-// for i, ii := 0, d-e.degree; ii < e.degree; i, ii = i+1, ii+1
+// for j, jj := 0, -polyDegree-d; jj < polyDegree; j, jj = j+1, jj+1
     XORQ SI, SI
-    MOVQ R10, DI
+    XORQ DI, DI
     SUBQ R11, DI
+    SUBQ R10, DI
 
     JMP case_1_loop_0_end
 
@@ -544,10 +556,10 @@ case_1_loop_0_leftover_end:
     CMPQ DI, R11
     JL case_1_loop_0_leftover
 
-// for i, ii := 2*e.degree-d, 0; i < e.degree; i, ii = i+1, ii+1
+// for j, jj := 2*polyDegree+d, 0; j < polyDegree; j, jj = j+1, jj+1
     MOVQ R11, SI
     ADDQ R11, SI
-    SUBQ R10, SI
+    ADDQ R10, SI
     XORQ DI, DI
 
     JMP case_1_loop_1_end
@@ -588,21 +600,24 @@ case_1_loop_1_leftover_end:
 
     RET
 
-TEXT ·monomialDivSubAssignUint64AVX2(SB), NOSPLIT, $0-56
+TEXT ·monomialMulSubAssignUint64AVX2(SB), NOSPLIT, $0-56
     MOVQ v0+0(FP), AX
     MOVQ vOut+32(FP), BX
 
     MOVQ d+24(FP), R10
     MOVQ vOut_len+40(FP), R11
 
-    CMPQ R10, R11
-    JGE case_1
+    XORQ R12, R12
+    SUBQ R11, R12
+    CMPQ R12, R10
+    JG case_1
 
 case_0:
 
-// for i, ii := 0, d; ii < e.degree; i, ii = i+1, ii+1
+// for j, jj := 0, -d; jj < polyDegree; j, jj = j+1, jj+1
     XORQ SI, SI
-    MOVQ R10, DI
+    XORQ DI, DI
+    SUBQ R10, DI
 
     JMP case_0_loop_0_end
 
@@ -640,9 +655,9 @@ case_0_loop_0_leftover_end:
     CMPQ DI, R11
     JL case_0_loop_0_leftover
 
-// for i, ii := e.degree-d, 0; i < e.degree; i, ii = i+1, ii+1
+// for j, jj := polyDegree+d, 0; j < polyDegree; j, jj = j+1, jj+1
     MOVQ R11, SI
-    SUBQ R10, SI
+    ADDQ R10, SI
     XORQ DI, DI
 
     JMP case_0_loop_1_end
@@ -689,10 +704,11 @@ case_0_loop_1_leftover_end:
 
 case_1:
 
-// for i, ii := 0, d-e.degree; ii < e.degree; i, ii = i+1, ii+1
+// for j, jj := 0, -polyDegree-d; jj < polyDegree; j, jj = j+1, jj+1
     XORQ SI, SI
-    MOVQ R10, DI
+    XORQ DI, DI
     SUBQ R11, DI
+    SUBQ R10, DI
 
     JMP case_1_loop_0_end
 
@@ -734,10 +750,10 @@ case_1_loop_0_leftover_end:
     CMPQ DI, R11
     JL case_1_loop_0_leftover
 
-// for i, ii := 2*e.degree-d, 0; i < e.degree; i, ii = i+1, ii+1
+// for j, jj := 2*polyDegree+d, 0; j < polyDegree; j, jj = j+1, jj+1
     MOVQ R11, SI
     ADDQ R11, SI
-    SUBQ R10, SI
+    ADDQ R10, SI
     XORQ DI, DI
 
     JMP case_1_loop_1_end

@@ -10,7 +10,7 @@ var (
 		LWEStdDev:  0.000013071021089943935,
 		GLWEStdDev: 0.00000004990272175010415,
 
-		BlockSize: 5,
+		BlockSize: 1,
 
 		MessageModulus: 1 << 2,
 
