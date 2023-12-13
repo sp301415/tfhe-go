@@ -2,7 +2,7 @@
 
 #include "textflag.h"
 
-TEXT ·monomialDivMinusOneAddAssignUint32AVX2(SB), NOSPLIT, $0-56
+TEXT ·rotateSubAddAssignUint32AVX2(SB), NOSPLIT, $0-56
     MOVQ v0+0(FP), AX
     MOVQ vOut+32(FP), BX
 
@@ -39,7 +39,6 @@ case_0_loop_0_end:
     CMPQ R12, R11
     JLE case_0_loop_0
 
-// Leftovers
     JMP case_0_loop_0_leftover_end
 
 case_0_loop_0_leftover:
@@ -85,7 +84,6 @@ case_0_loop_1_end:
     CMPQ R12, R11
     JLE case_0_loop_1
 
-// Leftovers
     JMP case_0_loop_1_leftover_end
 
 case_0_loop_1_leftover:
@@ -135,7 +133,6 @@ case_1_loop_0_end:
     CMPQ R12, R11
     JLE case_1_loop_0
 
-// Leftovers
     JMP case_1_loop_0_leftover_end
 
 case_1_loop_0_leftover:
@@ -182,7 +179,6 @@ case_1_loop_1_end:
     CMPQ R12, R11
     JLE case_1_loop_1
 
-// Leftovers
     JMP case_1_loop_1_leftover_end
 
 case_1_loop_1_leftover:
@@ -204,7 +200,7 @@ case_1_loop_1_leftover_end:
 
     RET
 
-TEXT ·monomialDivMinusOneAddAssignUint64AVX2(SB), NOSPLIT, $0-56
+TEXT ·rotateSubAddAssignUint64AVX2(SB), NOSPLIT, $0-56
     MOVQ v0+0(FP), AX
     MOVQ vOut+32(FP), BX
 
@@ -241,7 +237,6 @@ case_0_loop_0_end:
     CMPQ R12, R11
     JLE case_0_loop_0
 
-// Leftovers
     JMP case_0_loop_0_leftover_end
 
 case_0_loop_0_leftover:
@@ -287,7 +282,6 @@ case_0_loop_1_end:
     CMPQ R12, R11
     JLE case_0_loop_1
 
-// Leftovers
     JMP case_0_loop_1_leftover_end
 
 case_0_loop_1_leftover:
@@ -337,7 +331,6 @@ case_1_loop_0_end:
     CMPQ R12, R11
     JLE case_1_loop_0
 
-// Leftovers
     JMP case_1_loop_0_leftover_end
 
 case_1_loop_0_leftover:
@@ -384,7 +377,6 @@ case_1_loop_1_end:
     CMPQ R12, R11
     JLE case_1_loop_1
 
-// Leftovers
     JMP case_1_loop_1_leftover_end
 
 case_1_loop_1_leftover:
@@ -406,7 +398,7 @@ case_1_loop_1_leftover_end:
 
     RET
 
-TEXT ·monomialDivMinusOneAssignUint32AVX2(SB), NOSPLIT, $0-56
+TEXT ·rotateSubAssignUint32AVX2(SB), NOSPLIT, $0-56
     MOVQ v0+0(FP), AX
     MOVQ vOut+32(FP), BX
 
@@ -441,7 +433,6 @@ case_0_loop_0_end:
     CMPQ R12, R11
     JLE case_0_loop_0
 
-// Leftovers
     JMP case_0_loop_0_leftover_end
 
 case_0_loop_0_leftover:
@@ -485,7 +476,6 @@ case_0_loop_1_end:
     CMPQ R12, R11
     JLE case_0_loop_1
 
-// Leftovers
     JMP case_0_loop_1_leftover_end
 
 case_0_loop_1_leftover:
@@ -535,7 +525,6 @@ case_1_loop_0_end:
     CMPQ R12, R11
     JLE case_1_loop_0
 
-// Leftovers
     JMP case_1_loop_0_leftover_end
 
 case_1_loop_0_leftover:
@@ -580,7 +569,6 @@ case_1_loop_1_end:
     CMPQ R12, R11
     JLE case_1_loop_1
 
-// Leftovers
     JMP case_1_loop_1_leftover_end
 
 case_1_loop_1_leftover:
@@ -600,7 +588,7 @@ case_1_loop_1_leftover_end:
 
     RET
 
-TEXT ·monomialDivMinusOneAssignUint64AVX2(SB), NOSPLIT, $0-56
+TEXT ·rotateSubAssignUint64AVX2(SB), NOSPLIT, $0-56
     MOVQ v0+0(FP), AX
     MOVQ vOut+32(FP), BX
 
@@ -635,7 +623,6 @@ case_0_loop_0_end:
     CMPQ R12, R11
     JLE case_0_loop_0
 
-// Leftovers
     JMP case_0_loop_0_leftover_end
 
 case_0_loop_0_leftover:
@@ -679,7 +666,6 @@ case_0_loop_1_end:
     CMPQ R12, R11
     JLE case_0_loop_1
 
-// Leftovers
     JMP case_0_loop_1_leftover_end
 
 case_0_loop_1_leftover:
@@ -729,7 +715,6 @@ case_1_loop_0_end:
     CMPQ R12, R11
     JLE case_1_loop_0
 
-// Leftovers
     JMP case_1_loop_0_leftover_end
 
 case_1_loop_0_leftover:
@@ -774,7 +759,6 @@ case_1_loop_1_end:
     CMPQ R12, R11
     JLE case_1_loop_1
 
-// Leftovers
     JMP case_1_loop_1_leftover_end
 
 case_1_loop_1_leftover:
