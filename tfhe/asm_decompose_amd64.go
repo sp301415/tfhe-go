@@ -10,8 +10,8 @@ import (
 	"golang.org/x/sys/cpu"
 )
 
-func decomposeUint32PolyAssignAVX2(p []uint32, base uint32, baseLog uint32, lastScaledBaseLog uint32, d [][]uint32)
-func decomposeUint64PolyAssignAVX2(p []uint64, base uint64, baseLog uint64, lastScaledBaseLog uint64, d [][]uint64)
+func decomposePolyAssignUint32AVX2(p []uint32, base uint32, baseLog uint32, lastScaledBaseLog uint32, d [][]uint32)
+func decomposePolyAssignUint64AVX2(p []uint64, base uint64, baseLog uint64, lastScaledBaseLog uint64, d [][]uint64)
 
 // decomposePolyAssign decomposes p with respect to gadgetParams, and writes it to decomposedOut.
 func decomposePolyAssign[T Tint](p poly.Poly[T], gadgetParams GadgetParameters[T], decomposedOut []poly.Poly[T]) {
@@ -19,7 +19,7 @@ func decomposePolyAssign[T Tint](p poly.Poly[T], gadgetParams GadgetParameters[T
 		var z T
 		switch any(z).(type) {
 		case uint32:
-			decomposeUint32PolyAssignAVX2(
+			decomposePolyAssignUint32AVX2(
 				*(*[]uint32)(unsafe.Pointer(&p)),
 				uint32(gadgetParams.base),
 				uint32(gadgetParams.baseLog),
@@ -27,7 +27,7 @@ func decomposePolyAssign[T Tint](p poly.Poly[T], gadgetParams GadgetParameters[T
 				*(*[][]uint32)(unsafe.Pointer(&decomposedOut)),
 			)
 		case uint64:
-			decomposeUint64PolyAssignAVX2(
+			decomposePolyAssignUint64AVX2(
 				*(*[]uint64)(unsafe.Pointer(&p)),
 				uint64(gadgetParams.base),
 				uint64(gadgetParams.baseLog),
