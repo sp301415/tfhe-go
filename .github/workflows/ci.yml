@@ -20,6 +20,7 @@ jobs:
 
       - name: Run Tests
         run: |
-          go test ./math/poly -timeout=0
-          go test ./tfhe -timeout=0
-          go test ./tfhe -timeout=0 -tags=purego
+          go test ./math/poly -timeout=0 -count=1
+          go test ./tfhe -timeout=0 -count=1
+          go test ./tfhe -timeout=0 -count=1 -tags=purego
+          GODEBUG=cpu.all=off go test ./tfhe -count=1
