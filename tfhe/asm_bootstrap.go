@@ -6,7 +6,7 @@ import (
 	"github.com/sp301415/tfhe-go/math/poly"
 )
 
-// monomialMulSubAddAssign multiplies X^(-d) - 1 to p0, and adds it to pOut.
+// monomialMulSubAddAssign multiplies X^d - 1 to p0, and adds it to pOut.
 //
 // d is assumed to be in [-2N, 0]. p0 and pOut should not overlap.
 func monomialMulSubAddAssign[T Tint](p0 poly.Poly[T], d int, pOut poly.Poly[T]) {
@@ -28,7 +28,7 @@ func monomialMulSubAddAssign[T Tint](p0 poly.Poly[T], d int, pOut poly.Poly[T]) 
 	}
 }
 
-// monomialMulSubAssign multiplies X^(-d) - 1 to p0, and writes it to pOut.
+// monomialMulSubAssign multiplies X^d - 1 to p0, and writes it to pOut.
 //
 // d is assumed to be in [-2N, 0]. p0 and pOut should not overlap.
 func monomialMulSubAssign[T Tint](p0 poly.Poly[T], d int, pOut poly.Poly[T]) {
