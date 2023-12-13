@@ -6,7 +6,7 @@
 
 ⚠️ TFHE-go is still under heavy development. There may be backward-incompatible changes at any time.
 
-TFHE-go is a pure Go implementation of TFHE[[CGGI16](https://eprint.iacr.org/2016/870)] scheme. The structure of this library is similar to another great Go-based FHE library, [Lattigo](https://github.com/tuneinsight/lattigo).
+TFHE-go is a Go implementation of TFHE[[CGGI16](https://eprint.iacr.org/2016/870)] scheme. The structure of this library is similar to another great Go-based FHE library, [Lattigo](https://github.com/tuneinsight/lattigo).
 
 This library is heavily influenced by the excellent [TFHE-rs](https://github.com/zama-ai/tfhe-rs), developed by [Zama](https://www.zama.ai). The goal is to implement most of the functionalities that TFHE-rs provides, with readable code and minimal performance overhead.
 
