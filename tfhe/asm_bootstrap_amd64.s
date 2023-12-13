@@ -2,7 +2,7 @@
 
 #include "textflag.h"
 
-TEXT ·rotateSubAddAssignUint32AVX2(SB), NOSPLIT, $0-56
+TEXT ·monomialDivSubAddAssignUint32AVX2(SB), NOSPLIT, $0-56
     MOVQ v0+0(FP), AX
     MOVQ vOut+32(FP), BX
 
@@ -200,7 +200,7 @@ case_1_loop_1_leftover_end:
 
     RET
 
-TEXT ·rotateSubAddAssignUint64AVX2(SB), NOSPLIT, $0-56
+TEXT ·monomialDivSubAddAssignUint64AVX2(SB), NOSPLIT, $0-56
     MOVQ v0+0(FP), AX
     MOVQ vOut+32(FP), BX
 
@@ -398,7 +398,7 @@ case_1_loop_1_leftover_end:
 
     RET
 
-TEXT ·rotateSubAssignUint32AVX2(SB), NOSPLIT, $0-56
+TEXT ·monomialDivSubAssignUint32AVX2(SB), NOSPLIT, $0-56
     MOVQ v0+0(FP), AX
     MOVQ vOut+32(FP), BX
 
@@ -588,7 +588,7 @@ case_1_loop_1_leftover_end:
 
     RET
 
-TEXT ·rotateSubAssignUint64AVX2(SB), NOSPLIT, $0-56
+TEXT ·monomialDivSubAssignUint64AVX2(SB), NOSPLIT, $0-56
     MOVQ v0+0(FP), AX
     MOVQ vOut+32(FP), BX
 

@@ -6,10 +6,10 @@ import (
 	"github.com/sp301415/tfhe-go/math/poly"
 )
 
-// rotateSubAddAssign multiplies X^(-d) - 1 to p0, and adds it to pOut.
+// monomialDivSubAddAssign multiplies X^(-d) - 1 to p0, and adds it to pOut.
 //
 // p0 and pOut should not overlap.
-func rotateSubAddAssign[T Tint](p0 poly.Poly[T], d int, pOut poly.Poly[T]) {
+func monomialDivSubAddAssign[T Tint](p0 poly.Poly[T], d int, pOut poly.Poly[T]) {
 	polyDegree := pOut.Degree()
 	if d < polyDegree {
 		for j, jj := 0, d; jj < polyDegree; j, jj = j+1, jj+1 {
@@ -28,10 +28,10 @@ func rotateSubAddAssign[T Tint](p0 poly.Poly[T], d int, pOut poly.Poly[T]) {
 	}
 }
 
-// rotateSubAssign multiplies X^(-d) - 1 to p0, and writes it to pOut.
+// monomialDivSubAssign multiplies X^(-d) - 1 to p0, and writes it to pOut.
 //
 // p0 and pOut should not overlap.
-func rotateSubAssign[T Tint](p0 poly.Poly[T], d int, pOut poly.Poly[T]) {
+func monomialDivSubAssign[T Tint](p0 poly.Poly[T], d int, pOut poly.Poly[T]) {
 	polyDegree := pOut.Degree()
 	if d < polyDegree {
 		for j, jj := 0, d; jj < polyDegree; j, jj = j+1, jj+1 {

@@ -136,7 +136,7 @@ func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T]
 
 	for j := 0; j < e.Parameters.blockSize; j++ {
 		e.GadgetProductFourierDecomposedAssign(e.EvaluationKey.BootstrapKey.Value[j].Value[0], e.buffer.ctCMuxFourierDecomposed[0], e.buffer.ctCMux)
-		e.rotateSubAddGLWEAssign(e.buffer.ctCMux, e.ModSwitch(ct.Value[j+1]), ctOut)
+		e.monomialDivSubAddGLWEAssign(e.buffer.ctCMux, e.ModSwitch(ct.Value[j+1]), ctOut)
 	}
 
 	for i := 1; i < e.Parameters.BlockCount(); i++ {
@@ -149,17 +149,17 @@ func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T]
 
 		for j := i * e.Parameters.blockSize; j < (i+1)*e.Parameters.blockSize; j++ {
 			e.ExternalProductFourierDecomposedAssign(e.EvaluationKey.BootstrapKey.Value[j], e.buffer.ctCMuxFourierDecomposed, e.buffer.ctCMux)
-			e.rotateSubAddGLWEAssign(e.buffer.ctCMux, e.ModSwitch(ct.Value[j+1]), ctOut)
+			e.monomialDivSubAddGLWEAssign(e.buffer.ctCMux, e.ModSwitch(ct.Value[j+1]), ctOut)
 		}
 	}
 }
 
-// rotateSubAddGLWEAssign multiplies X^(-d) - 1 to ct0, and adds it to ctOut.
+// monomialDivSubAddGLWEAssign multiplies X^(-d) - 1 to ct0, and adds it to ctOut.
 //
 // ct0 and ctOut should not overlap.
-func (e *Evaluator[T]) rotateSubAddGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
+func (e *Evaluator[T]) monomialDivSubAddGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		rotateSubAddAssign(ct0.Value[i], d, ctOut.Value[i])
+		monomialDivSubAddAssign(ct0.Value[i], d, ctOut.Value[i])
 	}
 }
 
@@ -170,20 +170,20 @@ func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUp
 
 	e.PolyEvaluator.MonomialMulAssign(poly.Poly[T](lut), -e.ModSwitch(ct.Value[0]), ctOut.Value[0])
 
-	rotateSubAssign(ctOut.Value[0], e.ModSwitch(ct.Value[1]), e.buffer.ctCMux.Value[0])
+	monomialDivSubAssign(ctOut.Value[0], e.ModSwitch(ct.Value[1]), e.buffer.ctCMux.Value[0])
 	e.GadgetProductAddAssign(e.EvaluationKey.BootstrapKey.Value[0].Value[0], e.buffer.ctCMux.Value[0], ctOut)
 	for i := 1; i < e.Parameters.lweDimension; i++ {
-		e.rotateSubGLWEAssign(ctOut, e.ModSwitch(ct.Value[i+1]), e.buffer.ctCMux)
+		e.monomialDivSubGLWEAssign(ctOut, e.ModSwitch(ct.Value[i+1]), e.buffer.ctCMux)
 		e.ExternalProductAddAssign(e.EvaluationKey.BootstrapKey.Value[i], e.buffer.ctCMux, ctOut)
 	}
 }
 
-// rotateSubGLWEAssign multiplies X^(-d) - 1 to ct0, and writes it to ctOut.
+// monomialDivSubGLWEAssign multiplies X^(-d) - 1 to ct0, and writes it to ctOut.
 //
 // ct0 and ctOut should not overlap.
-func (e *Evaluator[T]) rotateSubGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
+func (e *Evaluator[T]) monomialDivSubGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		rotateSubAssign(ct0.Value[i], d, ctOut.Value[i])
+		monomialDivSubAssign(ct0.Value[i], d, ctOut.Value[i])
 	}
 }
 
