@@ -120,7 +120,7 @@ func (e *Encryptor[T]) ShallowCopy() *Encryptor[T] {
 	}
 }
 
-// GenSecretKey samples a new LWE key.
+// GenSecretKey samples a new SecretKey.
 func (e *Encryptor[T]) GenSecretKey() SecretKey[T] {
 	sk := NewSecretKey(e.Parameters)
 

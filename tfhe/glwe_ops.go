@@ -160,7 +160,7 @@ func (e *Evaluator[T]) MonomialMulSubGLWEAssign(ct0 GLWECiphertext[T], d int, ct
 //
 // This method is frequently used in Blind Rotation,
 // so this is tailor-made for that:
-// Namely, d is assumed to be in [-2N, 0], and ct0 and ctOut should not overlap.
+// Namely, d is assumed to be in [-N, N], and ct0 and ctOut should not overlap.
 func (e *Evaluator[T]) MonomialSubOneMulAssign(p0 GLWECiphertext[T], d int, pOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.PolyEvaluator.MonomialSubOneMulAssign(p0.Value[i], d, pOut.Value[i])
@@ -171,7 +171,7 @@ func (e *Evaluator[T]) MonomialSubOneMulAssign(p0 GLWECiphertext[T], d int, pOut
 //
 // This method is frequently used in Blind Rotation,
 // so this is tailor-made for that:
-// Namely, d is assumed to be in [-2N, 0], and ct0 and ctOut should not overlap.
+// Namely, d is assumed to be in [-N, N], and ct0 and ctOut should not overlap.
 func (e *Evaluator[T]) MonomialSubOneMulAddAssign(p0 GLWECiphertext[T], d int, pOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.PolyEvaluator.MonomialSubOneMulAddAssign(p0.Value[i], d, pOut.Value[i])
