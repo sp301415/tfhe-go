@@ -46,26 +46,34 @@ func newKaratsubaBuffer[T num.Integer](N int) []karatsubaBuffer[T] {
 	return buff
 }
 
-// mulAssignNaive multiplies two polynomials using schoolbook method,
+// mulNaive multiplies two polynomials using schoolbook method,
 // taking O(N^2) time.
-func (e *Evaluator[T]) mulAssignNaive(p0, p1, pOut Poly[T]) {
-	N := e.degree
-	pOut.Clear()
+func (e *Evaluator[T]) mulNaive(p0, p1 Poly[T]) Poly[T] {
+	pOut := e.NewPoly()
 
 	for i, c0 := range p0.Coeffs {
 		for j, c1 := range p1.Coeffs {
-			if i+j < N {
+			if i+j < e.degree {
 				pOut.Coeffs[i+j] += c0 * c1
 			} else {
-				pOut.Coeffs[i+j-N] -= c0 * c1
+				pOut.Coeffs[i+j-e.degree] -= c0 * c1
 			}
 		}
 	}
+
+	return pOut
 }
 
-// mulAssignKaratsuba multiplies two polynomials using recursive karatsuba multiplication,
+// mulNaiveAssign multiplies two polynomials using schoolbook method,
+// taking O(N^2) time.
+func (e *Evaluator[T]) mulNaiveAssign(p0, p1, pOut Poly[T]) {
+	mOut := e.mulNaive(p0, p1)
+	pOut.CopyFrom(mOut)
+}
+
+// mulKaratsubaAssign multiplies two polynomials using recursive karatsuba multiplication,
 // taking O(N^1.58) time.
-func (e *Evaluator[T]) mulAssignKaratsuba(p, q, pOut Poly[T]) {
+func (e *Evaluator[T]) mulKaratsubaAssign(p, q, pOut Poly[T]) {
 	// Implementation Note:
 	// Seems like using range-based loops are faster than regular loops.
 

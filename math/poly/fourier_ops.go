@@ -2,7 +2,7 @@ package poly
 
 // Add adds fp0, fp1 and returns the result.
 func (f *FourierEvaluator[T]) Add(fp0, fp1 FourierPoly) FourierPoly {
-	fp := NewFourierPoly(f.degree)
+	fp := f.NewFourierPoly()
 	f.AddAssign(fp0, fp1, fp)
 	return fp
 }
@@ -14,7 +14,7 @@ func (f *FourierEvaluator[T]) AddAssign(fp0, fp1, fpOut FourierPoly) {
 
 // Sub subtracts fp0, fp1 and returns the result.
 func (f *FourierEvaluator[T]) Sub(fp0, fp1 FourierPoly) FourierPoly {
-	fp := NewFourierPoly(f.degree)
+	fp := f.NewFourierPoly()
 	f.SubAssign(fp0, fp1, fp)
 	return fp
 }
@@ -26,7 +26,7 @@ func (f *FourierEvaluator[T]) SubAssign(fp0, fp1, fpOut FourierPoly) {
 
 // Neg negates fp0 and returns the result.
 func (f *FourierEvaluator[T]) Neg(fp0 FourierPoly) FourierPoly {
-	fp := NewFourierPoly(f.degree)
+	fp := f.NewFourierPoly()
 	f.NegAssign(fp0, fp)
 	return fp
 }
@@ -38,7 +38,7 @@ func (f *FourierEvaluator[T]) NegAssign(fp0, fpOut FourierPoly) {
 
 // Mul multiplies fp0, fp1 and returns the result.
 func (f *FourierEvaluator[T]) Mul(fp0, fp1 FourierPoly) FourierPoly {
-	fp := NewFourierPoly(f.degree)
+	fp := f.NewFourierPoly()
 	f.MulAssign(fp0, fp1, fp)
 	return fp
 }
@@ -60,7 +60,7 @@ func (f *FourierEvaluator[T]) MulSubAssign(fp0, fp1, fpOut FourierPoly) {
 
 // PolyMul multiplies fp0, p1 and returns the result.
 func (f *FourierEvaluator[T]) PolyMul(fp0 FourierPoly, p1 Poly[T]) FourierPoly {
-	fp := NewFourierPoly(f.degree)
+	fp := f.NewFourierPoly()
 	f.PolyMulAssign(fp0, p1, fp)
 	return fp
 }

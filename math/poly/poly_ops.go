@@ -6,7 +6,7 @@ import (
 
 // Add adds p0, p1 and returns the result.
 func (e *Evaluator[T]) Add(p0, p1 Poly[T]) Poly[T] {
-	p := New[T](e.degree)
+	p := e.NewPoly()
 	e.AddAssign(p0, p1, p)
 	return p
 }
@@ -18,7 +18,7 @@ func (e *Evaluator[T]) AddAssign(p0, p1, pOut Poly[T]) {
 
 // Sub subtracts p0, p1 and returns the result.
 func (e *Evaluator[T]) Sub(p0, p1 Poly[T]) Poly[T] {
-	p := New[T](e.degree)
+	p := e.NewPoly()
 	e.SubAssign(p0, p1, p)
 	return p
 }
@@ -30,7 +30,7 @@ func (e *Evaluator[T]) SubAssign(p0, p1, pOut Poly[T]) {
 
 // Neg negates p0 and returns the result.
 func (e *Evaluator[T]) Neg(p0 Poly[T]) Poly[T] {
-	p := New[T](e.degree)
+	p := e.NewPoly()
 	e.NegAssign(p0, p)
 	return p
 }
@@ -42,17 +42,21 @@ func (e *Evaluator[T]) NegAssign(p0, pOut Poly[T]) {
 
 // Mul multiplies p0, p1 and returns the result.
 func (e *Evaluator[T]) Mul(p0, p1 Poly[T]) Poly[T] {
-	p := New[T](e.degree)
-	e.MulAssign(p0, p1, p)
-	return p
+	if e.degree <= karatsubaRecurseThreshold {
+		return e.mulNaive(p0, p1)
+	}
+
+	pOut := e.NewPoly()
+	e.mulKaratsubaAssign(p0, p1, pOut)
+	return pOut
 }
 
 // MulAssign multiplies p0, p1 and writes it to pOut.
 func (e *Evaluator[T]) MulAssign(p0, p1, pOut Poly[T]) {
 	if e.degree <= karatsubaRecurseThreshold {
-		e.mulAssignNaive(p0, p1, pOut)
+		e.mulNaiveAssign(p0, p1, pOut)
 	} else {
-		e.mulAssignKaratsuba(p0, p1, pOut)
+		e.mulKaratsubaAssign(p0, p1, pOut)
 	}
 }
 
@@ -70,7 +74,7 @@ func (e *Evaluator[T]) MulSubAssign(p0, p1, pOut Poly[T]) {
 
 // ScalarMul multiplies c to p0 and returns the result.
 func (e *Evaluator[T]) ScalarMul(p0 Poly[T], c T) Poly[T] {
-	p := New[T](e.degree)
+	p := e.NewPoly()
 	e.ScalarMulAssign(p0, c, p)
 	return p
 }
@@ -92,7 +96,7 @@ func (e *Evaluator[T]) ScalarMulSubAssign(p0 Poly[T], c T, pOut Poly[T]) {
 
 // MonomialMul multiplies X^d to p0 and returns the result.
 func (e *Evaluator[T]) MonomialMul(p0 Poly[T], d int) Poly[T] {
-	p := New[T](e.degree)
+	p := e.NewPoly()
 	e.MonomialMulAssign(p0, d, p)
 	return p
 }
