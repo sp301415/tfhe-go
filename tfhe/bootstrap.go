@@ -106,7 +106,11 @@ func (e *Evaluator[T]) BootstrapLUTAssign(ct LWECiphertext[T], lut LookUpTable[T
 
 // ModSwitch calculates round(2N * x / Q) mod 2N.
 func (e *Evaluator[T]) ModSwitch(x T) int {
-	return int(num.RoundRatioBits(x, e.Parameters.sizeT-(e.Parameters.polyDegreeLog+1))) % (2 * e.Parameters.polyDegree)
+	x2N := int(num.RoundRatioBits(x, e.Parameters.sizeT-(e.Parameters.polyDegreeLog+1))) % (2 * e.Parameters.polyDegree)
+	if x2N >= e.Parameters.polyDegree {
+		x2N -= 2 * e.Parameters.polyDegree
+	}
+	return x2N
 }
 
 // BlindRotate calculates the blind rotation of LWE ciphertext with respect to LUT.
@@ -136,7 +140,7 @@ func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T]
 
 	for j := 0; j < e.Parameters.blockSize; j++ {
 		e.GadgetProductFourierDecomposedAssign(e.EvaluationKey.BootstrapKey.Value[j].Value[0], e.buffer.ctCMuxFourierDecomposed[0], e.buffer.ctCMux)
-		e.monomialMulSubAddGLWEAssign(e.buffer.ctCMux, -e.ModSwitch(ct.Value[j+1]), ctOut)
+		e.MonomialSubOneMulAddAssign(e.buffer.ctCMux, -e.ModSwitch(ct.Value[j+1]), ctOut)
 	}
 
 	for i := 1; i < e.Parameters.BlockCount(); i++ {
@@ -149,17 +153,8 @@ func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T]
 
 		for j := i * e.Parameters.blockSize; j < (i+1)*e.Parameters.blockSize; j++ {
 			e.ExternalProductFourierDecomposedAssign(e.EvaluationKey.BootstrapKey.Value[j], e.buffer.ctCMuxFourierDecomposed, e.buffer.ctCMux)
-			e.monomialMulSubAddGLWEAssign(e.buffer.ctCMux, -e.ModSwitch(ct.Value[j+1]), ctOut)
+			e.MonomialSubOneMulAddAssign(e.buffer.ctCMux, -e.ModSwitch(ct.Value[j+1]), ctOut)
 		}
-	}
-}
-
-// monomialMulSubAddGLWEAssign multiplies X^(-d) - 1 to ct0, and adds it to ctOut.
-//
-// d is assumed to be in [-2N, 0]. ct0 and ctOut should not overlap.
-func (e *Evaluator[T]) monomialMulSubAddGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		monomialMulSubAddAssign(ct0.Value[i], d, ctOut.Value[i])
 	}
 }
 
@@ -170,20 +165,11 @@ func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUp
 
 	e.PolyEvaluator.MonomialMulAssign(poly.Poly[T](lut), -e.ModSwitch(ct.Value[0]), ctOut.Value[0])
 
-	monomialMulSubAssign(ctOut.Value[0], -e.ModSwitch(ct.Value[1]), e.buffer.ctCMux.Value[0])
+	e.PolyEvaluator.MonomialSubOneMulAssign(ctOut.Value[0], -e.ModSwitch(ct.Value[1]), e.buffer.ctCMux.Value[0])
 	e.GadgetProductAddAssign(e.EvaluationKey.BootstrapKey.Value[0].Value[0], e.buffer.ctCMux.Value[0], ctOut)
 	for i := 1; i < e.Parameters.lweDimension; i++ {
-		e.monomialMulSubGLWEAssign(ctOut, -e.ModSwitch(ct.Value[i+1]), e.buffer.ctCMux)
+		e.MonomialSubOneMulAssign(ctOut, -e.ModSwitch(ct.Value[i+1]), e.buffer.ctCMux)
 		e.ExternalProductAddAssign(e.EvaluationKey.BootstrapKey.Value[i], e.buffer.ctCMux, ctOut)
-	}
-}
-
-// monomialMulSubGLWEAssign multiplies X^(-d) - 1 to ct0, and writes it to ctOut.
-//
-// d is assumed to be in [-2N, 0]. ct0 and ctOut should not overlap.
-func (e *Evaluator[T]) monomialMulSubGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		monomialMulSubAssign(ct0.Value[i], d, ctOut.Value[i])
 	}
 }
 
