@@ -46,7 +46,7 @@ type evaluationBuffer[T Tint] struct {
 
 	// ctRotate holds the blind rotated GLWE ciphertext for bootstrapping.
 	ctRotate GLWECiphertext[T]
-	// ctExtract holds the extracted =KWE ciphertext after Blind Rotation.
+	// ctExtract holds the extracted LWE ciphertext after Blind Rotation.
 	ctExtract LWECiphertext[T]
 	// ctKeySwitch holds LWEDimension sized ciphertext from keyswitching.
 	ctKeySwitch LWECiphertext[T]

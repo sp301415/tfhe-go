@@ -124,9 +124,14 @@ func (e *Evaluator[T]) BlindRotate(ct LWECiphertext[T], lut LookUpTable[T]) GLWE
 func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
 	if e.Parameters.blockSize == 1 {
 		e.blindRotateOriginalAssign(ct, lut, ctOut)
-		return
+	} else {
+		e.blindRotateBlockAssign(ct, lut, ctOut)
 	}
+}
 
+// blindRotateBlockAssign calculates the blind rotation when blockSize > 1.
+// This is equivalent to the blind rotation algorithm using block binary keys, as explained in https://eprint.iacr.org/2023/958.
+func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
 	ctOut.Clear()
 	polyDecomposed := e.getPolyDecomposedBuffer(e.Parameters.bootstrapParameters)
 
