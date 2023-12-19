@@ -134,12 +134,14 @@ func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T]
 func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
 	ctOut.Clear()
 
+	polyDecomposed := e.buffer.polyDecomposed[:e.Parameters.bootstrapParameters.level]
+
 	// Implementation of Algorithm 2 and Section 5.1 from https://eprint.iacr.org/2023/958
 	e.PolyEvaluator.MonomialMulAssign(poly.Poly[T](lut), -e.ModSwitch(ct.Value[0]), ctOut.Value[0])
 
-	e.DecomposePolyAssign(ctOut.Value[0], e.Parameters.bootstrapParameters, e.buffer.polyDecomposed)
+	e.DecomposePolyAssign(ctOut.Value[0], e.Parameters.bootstrapParameters, polyDecomposed)
 	for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
-		e.FourierEvaluator.ToFourierPolyAssign(e.buffer.polyDecomposed[k], e.buffer.ctCMuxFourierDecomposed[0][k])
+		e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[k], e.buffer.ctCMuxFourierDecomposed[0][k])
 	}
 
 	for j := 0; j < e.Parameters.blockSize; j++ {
@@ -149,9 +151,9 @@ func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTab
 
 	for i := 1; i < e.Parameters.BlockCount(); i++ {
 		for j := 0; j < e.Parameters.glweDimension+1; j++ {
-			e.DecomposePolyAssign(ctOut.Value[j], e.Parameters.bootstrapParameters, e.buffer.polyDecomposed)
+			e.DecomposePolyAssign(ctOut.Value[j], e.Parameters.bootstrapParameters, polyDecomposed)
 			for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
-				e.FourierEvaluator.ToFourierPolyAssign(e.buffer.polyDecomposed[k], e.buffer.ctCMuxFourierDecomposed[j][k])
+				e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[k], e.buffer.ctCMuxFourierDecomposed[j][k])
 			}
 		}
 
@@ -246,10 +248,12 @@ func (e *Evaluator[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[
 func (e *Evaluator[T]) KeySwitchForBootstrapAssign(ct, ctOut LWECiphertext[T]) {
 	vec.CopyAssign(ct.Value[:e.Parameters.lweDimension+1], ctOut.Value)
 
+	decomposed := e.buffer.decomposed[:e.Parameters.keyswitchParameters.level]
+
 	for i, ii := e.Parameters.lweDimension, 0; i < e.Parameters.lweLargeDimension; i, ii = i+1, ii+1 {
-		e.DecomposeAssign(ct.Value[i+1], e.Parameters.keyswitchParameters, e.buffer.decomposed)
+		e.DecomposeAssign(ct.Value[i+1], e.Parameters.keyswitchParameters, decomposed)
 		for j := 0; j < e.Parameters.keyswitchParameters.level; j++ {
-			e.ScalarMulAddLWEAssign(e.EvaluationKey.KeySwitchKey.Value[ii].Value[j], e.buffer.decomposed[j], ctOut)
+			e.ScalarMulAddLWEAssign(e.EvaluationKey.KeySwitchKey.Value[ii].Value[j], decomposed[j], ctOut)
 		}
 	}
 }
