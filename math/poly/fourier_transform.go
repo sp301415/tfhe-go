@@ -43,6 +43,28 @@ func (f *FourierEvaluator[T]) ToFourierPolyAssign(p Poly[T], fpOut FourierPoly) 
 	fftInPlace(fpOut.Coeffs, f.wNj)
 }
 
+// MonomialToFourierPoly transforms X^d to FourierPoly, and returns it.
+//
+// Assumes d is in [-N, N].
+func (f *FourierEvaluator[T]) MonomialToFourierPoly(d int) FourierPoly {
+	fp := NewFourierPoly(f.degree)
+	f.MonomialToFourierPolyAssign(d, fp)
+	return fp
+}
+
+// MonomialToFourierPolyAssign transforms X^d to FourierPoly, and writes it to fpOut.
+//
+// Assumes d is in [-N, N].
+func (f *FourierEvaluator[T]) MonomialToFourierPolyAssign(d int, fpOut FourierPoly) {
+	if d < 0 {
+		d += 2 * f.degree
+	}
+
+	for j := 0; j < f.degree/2; j++ {
+		fpOut.Coeffs[j] = f.w2Nj[(f.revOddIdx[j]*d)&(f.degree-1)]
+	}
+}
+
 // ToScaledFourierPoly transforms Poly to FourierPoly, and returns it.
 // Each coefficients are scaled by 1 / 2^sizeT.
 func (f *FourierEvaluator[T]) ToScaledFourierPoly(p Poly[T]) FourierPoly {
