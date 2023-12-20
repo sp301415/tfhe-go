@@ -181,7 +181,7 @@ func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUp
 
 // SampleExtract extracts LWE ciphertext of given index from GLWE ciphertext and returns it.
 func (e *Evaluator[T]) SampleExtract(ct GLWECiphertext[T], index int) LWECiphertext[T] {
-	ctOut := NewLWECiphertextCustom[T](e.Parameters.lweDimension)
+	ctOut := NewLWECiphertextCustom[T](e.Parameters.lweLargeDimension)
 	e.SampleExtractAssign(ct, index, ctOut)
 	return ctOut
 }
