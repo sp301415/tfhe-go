@@ -61,7 +61,7 @@ func (f *FourierEvaluator[T]) MonomialToFourierPolyAssign(d int, fpOut FourierPo
 	}
 
 	for j := 0; j < f.degree/2; j++ {
-		fpOut.Coeffs[j] = f.w2Nj[(f.revOddIdx[j]*d)&(f.degree-1)]
+		fpOut.Coeffs[j] = f.w2NjMono[(f.revOddIdx[j]*d)&(2*f.degree-1)]
 	}
 }
 
