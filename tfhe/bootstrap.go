@@ -106,7 +106,7 @@ func (e *Evaluator[T]) BootstrapLUTAssign(ct LWECiphertext[T], lut LookUpTable[T
 
 // ModSwitch calculates round(2N * x / Q) mod 2N.
 func (e *Evaluator[T]) ModSwitch(x T) int {
-	x2N := int(num.RoundRatioBits(x, e.Parameters.sizeT-(e.Parameters.polyDegreeLog+1))) % (2 * e.Parameters.polyDegree)
+	x2N := int(num.RoundRatioBits(x, e.Parameters.sizeT-(e.Parameters.polyDegreeLog+1))) & (2*e.Parameters.polyDegree - 1)
 	if x2N >= e.Parameters.polyDegree {
 		x2N -= 2 * e.Parameters.polyDegree
 	}

@@ -106,7 +106,7 @@ func (e *Evaluator[T]) MonomialMul(p0 Poly[T], d int) Poly[T] {
 // p0 and pOut should not overlap. For inplace multiplication,
 // use MonomialMulInPlace.
 func (e *Evaluator[T]) MonomialMulAssign(p0 Poly[T], d int, pOut Poly[T]) {
-	switch k := d % (2 * e.degree); {
+	switch k := d & (2*e.degree - 1); {
 	case e.degree <= k:
 		for i, ii := 0, -k+2*e.degree; ii < e.degree; i, ii = i+1, ii+1 {
 			pOut.Coeffs[i] = p0.Coeffs[ii]
@@ -140,10 +140,10 @@ func (e *Evaluator[T]) MonomialMulAssign(p0 Poly[T], d int, pOut Poly[T]) {
 
 // MonomialMulInPlace multiplies X^d to p0.
 func (e *Evaluator[T]) MonomialMulInPlace(p0 Poly[T], d int) {
-	kk := d % e.degree
+	kk := d & (e.degree - 1)
 	vec.RotateInPlace(p0.Coeffs, kk)
 
-	switch k := d % (2 * e.degree); {
+	switch k := d & (2*e.degree - 1); {
 	case e.degree <= k:
 		for i := kk; i < e.degree; i++ {
 			p0.Coeffs[i] = -p0.Coeffs[i]
@@ -167,7 +167,7 @@ func (e *Evaluator[T]) MonomialMulInPlace(p0 Poly[T], d int) {
 //
 // p0 and pOut should not overlap.
 func (e *Evaluator[T]) MonomialMulAddAssign(p0 Poly[T], d int, pOut Poly[T]) {
-	switch k := d % (2 * e.degree); {
+	switch k := d & (2*e.degree - 1); {
 	case e.degree <= k:
 		for i, ii := 0, -k+2*e.degree; ii < e.degree; i, ii = i+1, ii+1 {
 			pOut.Coeffs[i] += p0.Coeffs[ii]
@@ -203,7 +203,7 @@ func (e *Evaluator[T]) MonomialMulAddAssign(p0 Poly[T], d int, pOut Poly[T]) {
 //
 // p0 and pOut should not overlap.
 func (e *Evaluator[T]) MonomialMulSubAssign(p0 Poly[T], d int, pOut Poly[T]) {
-	switch k := d % (2 * e.degree); {
+	switch k := d & (2*e.degree - 1); {
 	case e.degree <= k:
 		for i, ii := 0, -k+2*e.degree; ii < e.degree; i, ii = i+1, ii+1 {
 			pOut.Coeffs[i] -= p0.Coeffs[ii]

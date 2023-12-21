@@ -57,7 +57,7 @@ func (f *FourierEvaluator[T]) MonomialToFourierPoly(d int) FourierPoly {
 // Assumes d is in [-N, N].
 func (f *FourierEvaluator[T]) MonomialToFourierPolyAssign(d int, fpOut FourierPoly) {
 	if d < 0 {
-		d += 2 * f.degree
+		d += f.degree
 	}
 
 	for j := 0; j < f.degree/2; j++ {
