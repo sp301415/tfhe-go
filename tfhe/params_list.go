@@ -3,9 +3,10 @@ package tfhe
 var (
 	// ParamsBoolean is a default parameter set for boolean TFHE.
 	ParamsBoolean = ParametersLiteral[uint32]{
-		LWEDimension:  720,
-		GLWEDimension: 2,
-		PolyDegree:    512,
+		LWEDimension:    720,
+		GLWEDimension:   2,
+		PolyDegree:      512,
+		PolyLargeDegree: 512,
 
 		LWEStdDev:  0.000013071021089943935,
 		GLWEStdDev: 0.00000004990272175010415,
@@ -29,9 +30,10 @@ var (
 	// ParamsBooleanKeySwitchBlindRotate is a parameter set for boolean TFHE
 	// with OrderKeySwitchBlindRotate.
 	ParamsBooleanKeySwitchBlindRotate = ParametersLiteral[uint32]{
-		LWEDimension:  664,
-		GLWEDimension: 2,
-		PolyDegree:    512,
+		LWEDimension:    664,
+		GLWEDimension:   2,
+		PolyDegree:      512,
+		PolyLargeDegree: 512,
 
 		LWEStdDev:  0.0000380828292345977,
 		GLWEStdDev: 0.00000004990272175010415,
@@ -54,9 +56,10 @@ var (
 
 	// ParamsOriginalBoolean is parameters from the original C++ TFHE library.
 	ParamsOriginalBoolean = ParametersLiteral[uint32]{
-		LWEDimension:  630,
-		GLWEDimension: 1,
-		PolyDegree:    1024,
+		LWEDimension:    630,
+		GLWEDimension:   1,
+		PolyDegree:      1024,
+		PolyLargeDegree: 1024,
 
 		LWEStdDev:  0.000030517578125,
 		GLWEStdDev: 0.0000000298023223876953125,
@@ -79,9 +82,10 @@ var (
 
 	// ParamsUint2 ensures 2 bits of message precision.
 	ParamsUint2 = ParametersLiteral[uint64]{
-		LWEDimension:  656,
-		GLWEDimension: 2,
-		PolyDegree:    512,
+		LWEDimension:    656,
+		GLWEDimension:   2,
+		PolyDegree:      512,
+		PolyLargeDegree: 512,
 
 		LWEStdDev:  0.000034119201269311964,
 		GLWEStdDev: 0.00000004053919869756513,
@@ -104,9 +108,10 @@ var (
 
 	// ParamsUint3 ensures 3 bits of message precision.
 	ParamsUint3 = ParametersLiteral[uint64]{
-		LWEDimension:  740,
-		GLWEDimension: 2,
-		PolyDegree:    1024,
+		LWEDimension:    740,
+		GLWEDimension:   2,
+		PolyDegree:      1024,
+		PolyLargeDegree: 1024,
 
 		LWEStdDev:  0.000007069849454709433,
 		GLWEStdDev: 0.00000000000000029403601535432533,
@@ -129,9 +134,10 @@ var (
 
 	// ParamsUint4 ensures 4 bits of message precision.
 	ParamsUint4 = ParametersLiteral[uint64]{
-		LWEDimension:  740,
-		GLWEDimension: 1,
-		PolyDegree:    2048,
+		LWEDimension:    740,
+		GLWEDimension:   1,
+		PolyDegree:      2048,
+		PolyLargeDegree: 2048,
 
 		LWEStdDev:  0.000007069849454709433,
 		GLWEStdDev: 0.00000000000000029403601535432533,
@@ -154,12 +160,13 @@ var (
 
 	// ParamsUint5 ensures 5 bits of message precision.
 	ParamsUint5 = ParametersLiteral[uint64]{
-		LWEDimension:  804,
-		GLWEDimension: 1,
-		PolyDegree:    4096,
+		LWEDimension:    804,
+		GLWEDimension:   1,
+		PolyDegree:      2048,
+		PolyLargeDegree: 4096,
 
 		LWEStdDev:  0.0000021515145918907506,
-		GLWEStdDev: 0.0000000000000000002168404344971009,
+		GLWEStdDev: 0.00000000000000029403601535432533,
 
 		BlockSize: 6,
 
@@ -179,12 +186,13 @@ var (
 
 	// ParamsUint6 ensures 6 bits of message precision.
 	ParamsUint6 = ParametersLiteral[uint64]{
-		LWEDimension:  912,
-		GLWEDimension: 1,
-		PolyDegree:    8192,
+		LWEDimension:    912,
+		GLWEDimension:   1,
+		PolyDegree:      2048,
+		PolyLargeDegree: 8192,
 
 		LWEStdDev:  0.00000029804653749339636,
-		GLWEStdDev: 0.0000000000000000002168404344971009,
+		GLWEStdDev: 0.00000000000000029403601535432533,
 
 		BlockSize: 8,
 
@@ -204,12 +212,13 @@ var (
 
 	// ParamsUint7 ensures 7 bits of message precision.
 	ParamsUint7 = ParametersLiteral[uint64]{
-		LWEDimension:  928,
-		GLWEDimension: 1,
-		PolyDegree:    16384,
+		LWEDimension:    928,
+		GLWEDimension:   1,
+		PolyDegree:      2048,
+		PolyLargeDegree: 16384,
 
 		LWEStdDev:  0.00000022649232786295453,
-		GLWEStdDev: 0.0000000000000000002168404344971009,
+		GLWEStdDev: 0.00000000000000029403601535432533,
 
 		BlockSize: 8,
 
@@ -229,12 +238,13 @@ var (
 
 	// ParamsUint8 ensures 8 bits of message precision.
 	ParamsUint8 = ParametersLiteral[uint64]{
-		LWEDimension:  1017,
-		GLWEDimension: 1,
-		PolyDegree:    32768,
+		LWEDimension:    1017,
+		GLWEDimension:   1,
+		PolyDegree:      2048,
+		PolyLargeDegree: 32768,
 
 		LWEStdDev:  0.0000000460803851108693,
-		GLWEStdDev: 0.0000000000000000002168404344971009,
+		GLWEStdDev: 0.00000000000000029403601535432533,
 
 		BlockSize: 9,
 

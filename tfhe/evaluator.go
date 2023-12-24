@@ -39,10 +39,19 @@ type evaluationBuffer[T Tint] struct {
 	// ctFourierProd holds the fourier transformed ctGLWEOut in ExternalProductFourier.
 	ctFourierProd FourierGLWECiphertext[T]
 	// ctCMux holds ct1 - ct0 in CMux.
-	// In a similar manner, it holds (X^a - 1) * ACC in Blind Roation.
 	ctCMux GLWECiphertext[T]
-	// ctCMuxFourierDecomposed holds the decomposed ctCMux in Blind Rotation.
-	ctCMuxFourierDecomposed [][]poly.FourierPoly
+
+	// ctAcc holds the accumulator in Blind Rotation.
+	// In case of BlindRotateBlock and BlindRotateOriginal, only the first element is used.
+	// This has length PolyExpandFactor.
+	ctAcc []GLWECiphertext[T]
+	// ctAccFourierDecomposed holds the decomposed ctAcc in Blind Rotation.
+	// In case of BlindRotateBlock and BlindRotateOriginal, only the first element is used.
+	// This has length PolyExpandFactor + 1,
+	// where the last element is used as an auxiliary buffer.
+	ctAccFourierDecomposed [][][]poly.FourierPoly
+	// fMono holds the fourier transformed monomial in Blind Rotation.
+	fMono poly.FourierPoly
 
 	// ctRotate holds the blind rotated GLWE ciphertext for bootstrapping.
 	ctRotate GLWECiphertext[T]
@@ -90,11 +99,19 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 		polyFourierDecomposed[i] = poly.NewFourierPoly(params.polyDegree)
 	}
 
-	ctCMuxFourierDecomposed := make([][]poly.FourierPoly, params.glweDimension+1)
-	for i := range ctCMuxFourierDecomposed {
-		ctCMuxFourierDecomposed[i] = make([]poly.FourierPoly, params.bootstrapParameters.level)
-		for j := range ctCMuxFourierDecomposed[i] {
-			ctCMuxFourierDecomposed[i][j] = poly.NewFourierPoly(params.polyDegree)
+	ctAcc := make([]GLWECiphertext[T], params.PolyExpandFactor())
+	for i := range ctAcc {
+		ctAcc[i] = NewGLWECiphertext(params)
+	}
+
+	ctAccFourierDecomposed := make([][][]poly.FourierPoly, params.PolyExpandFactor()+1)
+	for i := range ctAccFourierDecomposed {
+		ctAccFourierDecomposed[i] = make([][]poly.FourierPoly, params.glweDimension+1)
+		for j := range ctAccFourierDecomposed[i] {
+			ctAccFourierDecomposed[i][j] = make([]poly.FourierPoly, params.bootstrapParameters.level)
+			for k := range ctAccFourierDecomposed[i][j] {
+				ctAccFourierDecomposed[i][j][k] = poly.NewFourierPoly(params.polyDegree)
+			}
 		}
 	}
 
@@ -105,9 +122,11 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 
 		fpOut:         poly.NewFourierPoly(params.polyDegree),
 		ctFourierProd: NewFourierGLWECiphertext(params),
+		ctCMux:        NewGLWECiphertext(params),
 
-		ctCMux:                  NewGLWECiphertext(params),
-		ctCMuxFourierDecomposed: ctCMuxFourierDecomposed,
+		ctAcc:                  ctAcc,
+		ctAccFourierDecomposed: ctAccFourierDecomposed,
+		fMono:                  poly.NewFourierPoly(params.polyDegree),
 
 		ctRotate:    NewGLWECiphertext(params),
 		ctExtract:   NewLWECiphertextCustom[T](params.lweLargeDimension),

@@ -227,6 +227,8 @@ type ParametersLiteral[T Tint] struct {
 	GLWEDimension int
 	// PolyDegree is the degree of polynomials in GLWE entities. Usually this is denoted by N.
 	PolyDegree int
+	// PolyLargeDegree is the degree of polynomial used in Blind Roation.
+	PolyLargeDegree int
 
 	// LWEStdDev is the standard deviation used for gaussian error sampling in LWE encryption.
 	LWEStdDev float64
@@ -280,10 +282,16 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("LWEDimension larger than GLWEDimension * PolyDegree")
 	case p.GLWEDimension <= 0:
 		panic("GLWEDimension smaller than zero")
-	case p.PolyDegree <= MinPolyDegree:
+	case p.PolyDegree < MinPolyDegree:
 		panic("PolyDegree smaller than MinPolyDegree")
 	case p.PolyDegree > MaxPolyDegree:
 		panic("PolyDegree larger than MaxPolyDegree")
+	case p.PolyLargeDegree < MinPolyDegree:
+		panic("PolyLargeDegree smaller than MinPolyDegree")
+	case p.PolyLargeDegree > MaxPolyDegree:
+		panic("PolyLargeDegree larger than MaxPolyDegree")
+	case p.PolyLargeDegree < p.PolyDegree:
+		panic("PolyLargeDegree smaller than PolyDegree")
 	case p.LWEStdDev <= 0:
 		panic("LWEStdDev smaller than zero")
 	case p.GLWEStdDev <= 0:
@@ -294,6 +302,8 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("LWEDimension not multiple of BlockSize")
 	case !num.IsPowerOfTwo(p.PolyDegree):
 		panic("PolyDegree not power of two")
+	case !num.IsPowerOfTwo(p.PolyLargeDegree):
+		panic("PolyLargeDegree not power of two")
 	case !num.IsPowerOfTwo(p.MessageModulus):
 		panic("MessageModulus not power of two")
 	case !(p.BootstrapOrder == OrderKeySwitchBlindRotate || p.BootstrapOrder == OrderBlindRotateKeySwitch):
@@ -304,16 +314,20 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 	deltaLog := num.SizeT[T]() - 1 - messageModulusLog
 
 	return Parameters[T]{
-		lweDimension:      p.LWEDimension,
-		lweLargeDimension: p.GLWEDimension * p.PolyDegree,
-		glweDimension:     p.GLWEDimension,
-		polyDegree:        p.PolyDegree,
-		polyDegreeLog:     num.Log2(p.PolyDegree),
+		lweDimension:       p.LWEDimension,
+		lweLargeDimension:  p.GLWEDimension * p.PolyDegree,
+		glweDimension:      p.GLWEDimension,
+		polyDegree:         p.PolyDegree,
+		polyDegreeLog:      num.Log2(p.PolyDegree),
+		polyLargeDegree:    p.PolyLargeDegree,
+		polyLargeDegreeLog: num.Log2(p.PolyLargeDegree),
+		polyExpandFactor:   p.PolyLargeDegree / p.PolyDegree,
 
 		lweStdDev:  p.LWEStdDev,
 		glweStdDev: p.GLWEStdDev,
 
-		blockSize: p.BlockSize,
+		blockSize:  p.BlockSize,
+		blockCount: p.LWEDimension / p.BlockSize,
 
 		messageModulus:    p.MessageModulus,
 		messageModulusLog: messageModulusLog,
@@ -344,6 +358,12 @@ type Parameters[T Tint] struct {
 	polyDegree int
 	// PolyDegreeLog equals log(PolyDegree).
 	polyDegreeLog int
+	// PolyLargeDegree is the degree of polynomial used in Blind Roation.
+	polyLargeDegree int
+	// PolyLargeDegreeLog equals log(PolyLargeDegree).
+	polyLargeDegreeLog int
+	// polyExpandFactor equals PolyLargeDegree / PolyDegree.
+	polyExpandFactor int
 
 	// LWEStdDev is the standard deviation used for gaussian error sampling in LWE encryption.
 	lweStdDev float64
@@ -352,6 +372,8 @@ type Parameters[T Tint] struct {
 
 	// BlockSize is the size of block to be used for LWE key sampling.
 	blockSize int
+	// BlockCount is a number of blocks in LWEkey. Equal to LWEDimension / BlockSize.
+	blockCount int
 
 	// MessageModulus is the modulus of the encoded message.
 	messageModulus T
@@ -414,6 +436,21 @@ func (p Parameters[T]) PolyDegreeLog() int {
 	return p.polyDegreeLog
 }
 
+// PolyLargeDegree is the degree of polynomial used in Blind Roation.
+func (p Parameters[T]) PolyLargeDegree() int {
+	return p.polyLargeDegree
+}
+
+// PolyLargeDegreeLog equals log(PolyLargeDegree).
+func (p Parameters[T]) PolyLargeDegreeLog() int {
+	return p.polyLargeDegreeLog
+}
+
+// PolyExpandFactor returns PolyLargeDegree / PolyDegree.
+func (p Parameters[T]) PolyExpandFactor() int {
+	return p.polyExpandFactor
+}
+
 // LWEStdDev is the standard deviation used for gaussian error sampling in LWE encryption.
 func (p Parameters[T]) LWEStdDev() float64 {
 	return p.lweStdDev
@@ -431,7 +468,7 @@ func (p Parameters[T]) BlockSize() int {
 
 // BlockCount is a number of blocks in LWEkey. Equal to LWEDimension / BlockSize.
 func (p Parameters[T]) BlockCount() int {
-	return p.lweDimension / p.blockSize
+	return p.blockCount
 }
 
 // Delta is the scaling factor used for message encoding.
@@ -489,25 +526,24 @@ func (p Parameters[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//	           8               8            8           8            8           8                8                    16                    16                1
-//	LWEDimension | GLWEDimension | PolyDegree | LWEStdDev | GLWEStdDev | BlockSize | MessageModulus | BootstrapParameters | KeySwitchParameters | BootstrapOrder
+//	           8               8            8                 8           8            8           8                8                    16                    16                1
+//	LWEDimension | GLWEDimension | PolyDegree | PolyLargeDegree | LWEStdDev | GLWEStdDev | BlockSize | MessageModulus | BootstrapParameters | KeySwitchParameters | BootstrapOrder
 func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
-	var buf [7*8 + 2*16 + 1]byte
+	var buf [8*8 + 2*16 + 1]byte
 
 	binary.BigEndian.PutUint64(buf[0:8], uint64(p.lweDimension))
 	binary.BigEndian.PutUint64(buf[8:16], uint64(p.glweDimension))
 	binary.BigEndian.PutUint64(buf[16:24], uint64(p.polyDegree))
-	binary.BigEndian.PutUint64(buf[24:32], math.Float64bits(p.lweStdDev))
-	binary.BigEndian.PutUint64(buf[32:40], math.Float64bits(p.glweStdDev))
-	binary.BigEndian.PutUint64(buf[40:48], uint64(p.blockSize))
-	binary.BigEndian.PutUint64(buf[48:56], uint64(p.messageModulus))
-
-	binary.BigEndian.PutUint64(buf[56:64], uint64(p.bootstrapParameters.base))
-	binary.BigEndian.PutUint64(buf[64:72], uint64(p.bootstrapParameters.level))
-
-	binary.BigEndian.PutUint64(buf[72:80], uint64(p.keyswitchParameters.base))
-	binary.BigEndian.PutUint64(buf[80:88], uint64(p.keyswitchParameters.level))
-	buf[88] = byte(p.bootstrapOrder)
+	binary.BigEndian.PutUint64(buf[24:32], uint64(p.polyLargeDegree))
+	binary.BigEndian.PutUint64(buf[32:40], math.Float64bits(p.lweStdDev))
+	binary.BigEndian.PutUint64(buf[40:48], math.Float64bits(p.glweStdDev))
+	binary.BigEndian.PutUint64(buf[48:56], uint64(p.blockSize))
+	binary.BigEndian.PutUint64(buf[56:64], uint64(p.messageModulus))
+	binary.BigEndian.PutUint64(buf[64:72], uint64(p.bootstrapParameters.Base()))
+	binary.BigEndian.PutUint64(buf[72:80], uint64(p.bootstrapParameters.Level()))
+	binary.BigEndian.PutUint64(buf[80:88], uint64(p.keyswitchParameters.Base()))
+	binary.BigEndian.PutUint64(buf[88:96], uint64(p.keyswitchParameters.Level()))
+	buf[96] = byte(p.bootstrapOrder)
 
 	nn, err := w.Write(buf[:])
 	n += int64(nn)
@@ -524,7 +560,7 @@ func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
 
 // ReadFrom implements the io.ReaderFrom interface.
 func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
-	var buf [7*8 + 2*16 + 1]byte
+	var buf [8*8 + 2*16 + 1]byte
 	nn, err := io.ReadFull(r, buf[:])
 	n += int64(nn)
 	if err != nil {
@@ -534,26 +570,28 @@ func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	lweDimension := binary.BigEndian.Uint64(buf[0:8])
 	glweDimension := binary.BigEndian.Uint64(buf[8:16])
 	polyDegree := binary.BigEndian.Uint64(buf[16:24])
-	lweStdDev := math.Float64frombits(binary.BigEndian.Uint64(buf[24:32]))
-	glweStdDev := math.Float64frombits(binary.BigEndian.Uint64(buf[32:40]))
-	blockSize := binary.BigEndian.Uint64(buf[40:48])
-	messageModulus := binary.BigEndian.Uint64(buf[48:56])
+	polyLargeDegree := binary.BigEndian.Uint64(buf[24:32])
+	lweStdDev := math.Float64frombits(binary.BigEndian.Uint64(buf[32:40]))
+	glweStdDev := math.Float64frombits(binary.BigEndian.Uint64(buf[40:48]))
+	blockSize := binary.BigEndian.Uint64(buf[48:56])
+	messageModulus := binary.BigEndian.Uint64(buf[56:64])
 
 	bootstrapParameters := GadgetParametersLiteral[T]{
-		Base:  T(binary.BigEndian.Uint64(buf[56:64])),
-		Level: int(binary.BigEndian.Uint64(buf[64:72])),
+		Base:  T(binary.BigEndian.Uint64(buf[64:72])),
+		Level: int(binary.BigEndian.Uint64(buf[72:80])),
 	}
 	keyswitchParameters := GadgetParametersLiteral[T]{
-		Base:  T(binary.BigEndian.Uint64(buf[72:80])),
-		Level: int(binary.BigEndian.Uint64(buf[80:88])),
+		Base:  T(binary.BigEndian.Uint64(buf[80:88])),
+		Level: int(binary.BigEndian.Uint64(buf[88:96])),
 	}
 
-	bootstrapOrder := BootstrapOrder(buf[88])
+	bootstrapOrder := BootstrapOrder(buf[96])
 
 	*p = ParametersLiteral[T]{
 		LWEDimension:        int(lweDimension),
 		GLWEDimension:       int(glweDimension),
 		PolyDegree:          int(polyDegree),
+		PolyLargeDegree:     int(polyLargeDegree),
 		LWEStdDev:           lweStdDev,
 		GLWEStdDev:          glweStdDev,
 		BlockSize:           int(blockSize),

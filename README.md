@@ -108,3 +108,4 @@ All results were measured from Intel i5-13400F. `ParamsBoolean` and `ParamsUint6
 - Improving TFHE: faster packed homomorphic operations and efficient circuit bootstrapping (https://eprint.iacr.org/2017/430)
 - MOSFHET: Optimized Software for FHE over the Torus (https://eprint.iacr.org/2022/515)
 - Faster TFHE Bootstrapping with Block Binary Keys (https://eprint.iacr.org/2023/958)
+- Discretization Error Reduction for Torus Fully Homomorphic Encryption (https://eprint.iacr.org/2023/402)
