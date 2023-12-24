@@ -132,14 +132,13 @@ func (e *Evaluator[T]) BlindRotate(ct LWECiphertext[T], lut LookUpTable[T]) GLWE
 
 // BlindRotateAssign calculates the blind rotation of LWE ciphertext with respect to LUT.
 func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
-	if e.Parameters.polyLargeDegree > e.Parameters.polyDegree {
+	switch {
+	case e.Parameters.polyLargeDegree > e.Parameters.polyDegree:
 		e.blindRotateExtendedAssign(ct, lut, ctOut)
-	} else {
-		if e.Parameters.blockSize == 1 {
-			e.blindRotateOriginalAssign(ct, lut, ctOut)
-		} else {
-			e.blindRotateBlockAssign(ct, lut, ctOut)
-		}
+	case e.Parameters.blockSize == 1:
+		e.blindRotateOriginalAssign(ct, lut, ctOut)
+	default:
+		e.blindRotateBlockAssign(ct, lut, ctOut)
 	}
 }
 
@@ -153,7 +152,7 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 	if b2N < 0 {
 		b2N += 2 * e.Parameters.polyLargeDegree
 	}
-	b2NSmall, b2NIdx := b2N/e.Parameters.polyExtendFactor, b2N&(e.Parameters.polyExtendFactor-1)
+	b2NSmall, b2NIdx := b2N>>e.Parameters.polyExtendFactorLog, b2N&(e.Parameters.polyExtendFactor-1)
 
 	for i := 0; i < e.Parameters.polyExtendFactor; i++ {
 		ii := (i + b2N) & (e.Parameters.polyExtendFactor - 1)
@@ -181,7 +180,7 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 		if a2N < 0 {
 			a2N += 2 * e.Parameters.polyLargeDegree
 		}
-		a2NSmall, a2NIdx := a2N/e.Parameters.polyExtendFactor, a2N&(e.Parameters.polyExtendFactor-1)
+		a2NSmall, a2NIdx := a2N>>e.Parameters.polyExtendFactorLog, a2N&(e.Parameters.polyExtendFactor-1)
 
 		if a2NIdx == 0 {
 			e.FourierEvaluator.MonomialToFourierPolyAssign(a2NSmall, e.buffer.fMono)
@@ -225,7 +224,7 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 			if a2N < 0 {
 				a2N += 2 * e.Parameters.polyLargeDegree
 			}
-			a2NSmall, a2NIdx := a2N/e.Parameters.polyExtendFactor, a2N&(e.Parameters.polyExtendFactor-1)
+			a2NSmall, a2NIdx := a2N>>e.Parameters.polyExtendFactorLog, a2N&(e.Parameters.polyExtendFactor-1)
 
 			if a2NIdx == 0 {
 				e.FourierEvaluator.MonomialToFourierPolyAssign(a2NSmall, e.buffer.fMono)
@@ -275,7 +274,7 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 		if a2N < 0 {
 			a2N += 2 * e.Parameters.polyLargeDegree
 		}
-		a2NSmall, a2NIdx := a2N/e.Parameters.polyExtendFactor, a2N&(e.Parameters.polyExtendFactor-1)
+		a2NSmall, a2NIdx := a2N>>e.Parameters.polyExtendFactorLog, a2N&(e.Parameters.polyExtendFactor-1)
 
 		if a2NIdx == 0 {
 			e.FourierEvaluator.MonomialToFourierPolyAssign(a2NSmall, e.buffer.fMono)

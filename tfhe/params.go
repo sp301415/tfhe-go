@@ -314,14 +314,15 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 	deltaLog := num.SizeT[T]() - 1 - messageModulusLog
 
 	return Parameters[T]{
-		lweDimension:       p.LWEDimension,
-		lweLargeDimension:  p.GLWEDimension * p.PolyDegree,
-		glweDimension:      p.GLWEDimension,
-		polyDegree:         p.PolyDegree,
-		polyDegreeLog:      num.Log2(p.PolyDegree),
-		polyLargeDegree:    p.PolyLargeDegree,
-		polyLargeDegreeLog: num.Log2(p.PolyLargeDegree),
-		polyExtendFactor:   p.PolyLargeDegree / p.PolyDegree,
+		lweDimension:        p.LWEDimension,
+		lweLargeDimension:   p.GLWEDimension * p.PolyDegree,
+		glweDimension:       p.GLWEDimension,
+		polyDegree:          p.PolyDegree,
+		polyDegreeLog:       num.Log2(p.PolyDegree),
+		polyLargeDegree:     p.PolyLargeDegree,
+		polyLargeDegreeLog:  num.Log2(p.PolyLargeDegree),
+		polyExtendFactor:    p.PolyLargeDegree / p.PolyDegree,
+		polyExtendFactorLog: num.Log2(p.PolyLargeDegree / p.PolyDegree),
 
 		lweStdDev:  p.LWEStdDev,
 		glweStdDev: p.GLWEStdDev,
@@ -364,6 +365,8 @@ type Parameters[T Tint] struct {
 	polyLargeDegreeLog int
 	// polyExtendFactor equals PolyLargeDegree / PolyDegree.
 	polyExtendFactor int
+	// polyExtendFactorLog equals log(PolyLargeDegree / PolyDegree).
+	polyExtendFactorLog int
 
 	// LWEStdDev is the standard deviation used for gaussian error sampling in LWE encryption.
 	lweStdDev float64
@@ -449,6 +452,11 @@ func (p Parameters[T]) PolyLargeDegreeLog() int {
 // PolyExtendFactor returns PolyLargeDegree / PolyDegree.
 func (p Parameters[T]) PolyExtendFactor() int {
 	return p.polyExtendFactor
+}
+
+// PolyExtendFactorLog returns log(PolyLargeDegree / PolyDegree).
+func (p Parameters[T]) PolyExtendFactorLog() int {
+	return p.polyExtendFactorLog
 }
 
 // LWEStdDev is the standard deviation used for gaussian error sampling in LWE encryption.
