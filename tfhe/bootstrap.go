@@ -14,7 +14,7 @@ type LookUpTable[T Tint] poly.Poly[T]
 
 // NewLookUpTable allocates an empty lookup table.
 func NewLookUpTable[T Tint](params Parameters[T]) LookUpTable[T] {
-	return LookUpTable[T](poly.New[T](params.polyLargeDegree))
+	return LookUpTable[T](poly.NewPoly[T](params.polyLargeDegree))
 }
 
 // Copy returns a copy of the LUT.

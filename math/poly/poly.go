@@ -11,10 +11,10 @@ type Poly[T num.Integer] struct {
 	Coeffs []T
 }
 
-// New creates a polynomial with degree N with empty coefficients.
+// NewPoly creates a polynomial with degree N with empty coefficients.
 // N should be power of two, and at least MinDegree.
 // Otherwise, it panics.
-func New[T num.Integer](N int) Poly[T] {
+func NewPoly[T num.Integer](N int) Poly[T] {
 	if !num.IsPowerOfTwo(N) {
 		panic("degree not power of two")
 
@@ -30,7 +30,7 @@ func New[T num.Integer](N int) Poly[T] {
 // From creates a new polynomial from given coefficient slice.
 // The given slice is copied, and extended to degree N.
 func From[T num.Integer](coeffs []T, N int) Poly[T] {
-	p := New[T](N)
+	p := NewPoly[T](N)
 	vec.CopyAssign(coeffs, p.Coeffs)
 	return p
 }

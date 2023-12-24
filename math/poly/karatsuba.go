@@ -50,25 +50,27 @@ func newKaratsubaBuffer[T num.Integer](N int) []karatsubaBuffer[T] {
 // taking O(N^2) time.
 func (e *Evaluator[T]) mulNaive(p0, p1 Poly[T]) Poly[T] {
 	pOut := e.NewPoly()
-
-	for i, c0 := range p0.Coeffs {
-		for j, c1 := range p1.Coeffs {
-			if i+j < e.degree {
-				pOut.Coeffs[i+j] += c0 * c1
-			} else {
-				pOut.Coeffs[i+j-e.degree] -= c0 * c1
-			}
-		}
-	}
-
+	e.mulNaiveAssign(p0, p1, pOut)
 	return pOut
 }
 
 // mulNaiveAssign multiplies two polynomials using schoolbook method,
 // taking O(N^2) time.
 func (e *Evaluator[T]) mulNaiveAssign(p0, p1, pOut Poly[T]) {
-	mOut := e.mulNaive(p0, p1)
-	pOut.CopyFrom(mOut)
+
+	for i := 0; i < e.degree; i++ {
+		pOut.Coeffs[i] = p0.Coeffs[i] * p1.Coeffs[0]
+	}
+
+	for i := 1; i < e.degree; i++ {
+		for j := 0; j < e.degree; j++ {
+			if i+j < e.degree {
+				pOut.Coeffs[i+j] += p0.Coeffs[i] * p1.Coeffs[j]
+			} else {
+				pOut.Coeffs[i+j-e.degree] -= p0.Coeffs[i] * p1.Coeffs[j]
+			}
+		}
+	}
 }
 
 // mulKaratsubaAssign multiplies two polynomials using recursive karatsuba multiplication,

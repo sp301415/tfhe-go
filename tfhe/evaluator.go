@@ -91,7 +91,7 @@ func NewEvaluatorWithoutKey[T Tint](params Parameters[T]) *Evaluator[T] {
 func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 	polyDecomposed := make([]poly.Poly[T], params.bootstrapParameters.level)
 	for i := range polyDecomposed {
-		polyDecomposed[i] = poly.New[T](params.polyDegree)
+		polyDecomposed[i] = poly.NewPoly[T](params.polyDegree)
 	}
 
 	polyFourierDecomposed := make([]poly.FourierPoly, params.bootstrapParameters.level)

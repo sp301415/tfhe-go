@@ -108,7 +108,7 @@ func (f *FourierEvaluator[T]) ToScaledFourierPolyAssign(p Poly[T], fp FourierPol
 
 // ToStandardPoly transforms FourierPoly to Poly, and returns it.
 func (f *FourierEvaluator[T]) ToStandardPoly(fp FourierPoly) Poly[T] {
-	p := New[T](f.degree)
+	p := NewPoly[T](f.degree)
 	f.ToStandardPolyAssign(fp, p)
 	return p
 }
@@ -206,7 +206,7 @@ func (f *FourierEvaluator[T]) ToStandardPolySubAssignUnsafe(fp FourierPoly, pOut
 // ToScaledStandardPoly transforms FourierPoly to Poly, and returns it.
 // Each coefficients are scaled by 2^sizeT.
 func (f *FourierEvaluator[T]) ToScaledStandardPoly(fp FourierPoly) Poly[T] {
-	p := New[T](f.degree)
+	p := NewPoly[T](f.degree)
 	f.ToScaledStandardPolyAssign(fp, p)
 	return p
 }

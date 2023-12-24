@@ -92,8 +92,8 @@ func NewEncryptorWithKey[T Tint](params Parameters[T], sk SecretKey[T]) *Encrypt
 func newEncryptionBuffer[T Tint](params Parameters[T]) encryptionBuffer[T] {
 	return encryptionBuffer[T]{
 		ctGLWE:  NewGLWECiphertext(params),
-		ptGGSW:  poly.New[T](params.polyDegree),
-		pSplit:  poly.New[T](params.polyDegree),
+		ptGGSW:  poly.NewPoly[T](params.polyDegree),
+		pSplit:  poly.NewPoly[T](params.polyDegree),
 		fpSplit: poly.NewFourierPoly(params.polyDegree),
 	}
 }

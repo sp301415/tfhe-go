@@ -60,7 +60,7 @@ func NewEvaluator[T num.Integer](N int) *Evaluator[T] {
 // newEvaluationBuffer allocates an empty evaluation buffer.
 func newEvaluationBuffer[T num.Integer](N int) evaluationBuffer[T] {
 	return evaluationBuffer[T]{
-		pOut: New[T](N),
+		pOut: NewPoly[T](N),
 	}
 }
 
