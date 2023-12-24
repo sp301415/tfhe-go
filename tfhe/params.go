@@ -321,7 +321,7 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		polyDegreeLog:      num.Log2(p.PolyDegree),
 		polyLargeDegree:    p.PolyLargeDegree,
 		polyLargeDegreeLog: num.Log2(p.PolyLargeDegree),
-		polyExpandFactor:   p.PolyLargeDegree / p.PolyDegree,
+		polyExtendFactor:   p.PolyLargeDegree / p.PolyDegree,
 
 		lweStdDev:  p.LWEStdDev,
 		glweStdDev: p.GLWEStdDev,
@@ -362,8 +362,8 @@ type Parameters[T Tint] struct {
 	polyLargeDegree int
 	// PolyLargeDegreeLog equals log(PolyLargeDegree).
 	polyLargeDegreeLog int
-	// polyExpandFactor equals PolyLargeDegree / PolyDegree.
-	polyExpandFactor int
+	// polyExtendFactor equals PolyLargeDegree / PolyDegree.
+	polyExtendFactor int
 
 	// LWEStdDev is the standard deviation used for gaussian error sampling in LWE encryption.
 	lweStdDev float64
@@ -446,9 +446,9 @@ func (p Parameters[T]) PolyLargeDegreeLog() int {
 	return p.polyLargeDegreeLog
 }
 
-// PolyExpandFactor returns PolyLargeDegree / PolyDegree.
-func (p Parameters[T]) PolyExpandFactor() int {
-	return p.polyExpandFactor
+// PolyExtendFactor returns PolyLargeDegree / PolyDegree.
+func (p Parameters[T]) PolyExtendFactor() int {
+	return p.polyExtendFactor
 }
 
 // LWEStdDev is the standard deviation used for gaussian error sampling in LWE encryption.

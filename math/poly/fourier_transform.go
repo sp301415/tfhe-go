@@ -45,7 +45,7 @@ func (f *FourierEvaluator[T]) ToFourierPolyAssign(p Poly[T], fpOut FourierPoly) 
 
 // MonomialToFourierPoly transforms X^d to FourierPoly, and returns it.
 //
-// Assumes d is in [-N, N].
+// Assumes d is positive.
 func (f *FourierEvaluator[T]) MonomialToFourierPoly(d int) FourierPoly {
 	fp := NewFourierPoly(f.degree)
 	f.MonomialToFourierPolyAssign(d, fp)

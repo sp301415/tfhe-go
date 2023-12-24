@@ -99,12 +99,12 @@ func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
 		polyFourierDecomposed[i] = poly.NewFourierPoly(params.polyDegree)
 	}
 
-	ctAcc := make([]GLWECiphertext[T], params.PolyExpandFactor())
+	ctAcc := make([]GLWECiphertext[T], params.PolyExtendFactor())
 	for i := range ctAcc {
 		ctAcc[i] = NewGLWECiphertext(params)
 	}
 
-	ctAccFourierDecomposed := make([][][]poly.FourierPoly, params.PolyExpandFactor()+1)
+	ctAccFourierDecomposed := make([][][]poly.FourierPoly, params.PolyExtendFactor()+1)
 	for i := range ctAccFourierDecomposed {
 		ctAccFourierDecomposed[i] = make([][]poly.FourierPoly, params.glweDimension+1)
 		for j := range ctAccFourierDecomposed[i] {
