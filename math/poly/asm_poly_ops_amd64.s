@@ -26,7 +26,7 @@ case_0_loop_0:
     VMOVDQU (AX)(DI*4), Y1
 
     VPADDD Y0, Y1, Y1
-    VPXORD Y2, Y2, Y2
+    VPXOR Y2, Y2, Y2
     VPSUBD Y1, Y2, Y2
 
     VMOVDQU Y2, (BX)(SI*4)
@@ -156,7 +156,7 @@ case_1_loop_1:
     VMOVDQU (AX)(DI*4), Y1
 
     VPADDD Y0, Y1, Y1
-    VPXORD Y2, Y2, Y2
+    VPXOR Y2, Y2, Y2
     VPSUBD Y1, Y2, Y2
 
     VMOVDQU Y2, (BX)(SI*4)
@@ -215,7 +215,7 @@ case_0_loop_0:
     VMOVDQU (AX)(DI*8), Y1
 
     VPADDQ Y0, Y1, Y1
-    VPXORQ Y2, Y2, Y2
+    VPXOR Y2, Y2, Y2
     VPSUBQ Y1, Y2, Y2
 
     VMOVDQU Y2, (BX)(SI*8)
@@ -345,7 +345,7 @@ case_1_loop_1:
     VMOVDQU (AX)(DI*8), Y1
 
     VPADDQ Y0, Y1, Y1
-    VPXORQ Y2, Y2, Y2
+    VPXOR Y2, Y2, Y2
     VPSUBQ Y1, Y2, Y2
 
     VMOVDQU Y2, (BX)(SI*8)
