@@ -1,8 +1,8 @@
 package tfhe
 
 var (
-	// ParamsBoolean is a default parameter set for boolean TFHE.
-	ParamsBoolean = ParametersLiteral[uint32]{
+	// ParamsBinary is a default parameter set for boolean TFHE.
+	ParamsBinary = ParametersLiteral[uint32]{
 		LWEDimension:    720,
 		GLWEDimension:   2,
 		PolyDegree:      512,
@@ -27,9 +27,9 @@ var (
 		BootstrapOrder: OrderBlindRotateKeySwitch,
 	}
 
-	// ParamsBooleanKeySwitchBlindRotate is a parameter set for boolean TFHE
+	// ParamsBinaryCompact is a parameter set for boolean TFHE
 	// with OrderKeySwitchBlindRotate.
-	ParamsBooleanKeySwitchBlindRotate = ParametersLiteral[uint32]{
+	ParamsBinaryCompact = ParametersLiteral[uint32]{
 		LWEDimension:    664,
 		GLWEDimension:   2,
 		PolyDegree:      512,
@@ -54,8 +54,8 @@ var (
 		BootstrapOrder: OrderKeySwitchBlindRotate,
 	}
 
-	// ParamsOriginalBoolean is parameters from the original C++ TFHE library.
-	ParamsOriginalBoolean = ParametersLiteral[uint32]{
+	// ParamsBinaryOriginal is parameters from the original C++ TFHE library.
+	ParamsBinaryOriginal = ParametersLiteral[uint32]{
 		LWEDimension:    630,
 		GLWEDimension:   1,
 		PolyDegree:      1024,

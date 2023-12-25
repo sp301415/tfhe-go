@@ -8,22 +8,22 @@ import (
 )
 
 var (
-	testBinaryParams    = tfhe.ParamsBoolean.Compile()
+	testBinaryParams    = tfhe.ParamsBinary.Compile()
 	testBinaryEncryptor = tfhe.NewBinaryEncryptor(testBinaryParams)
 	testBinaryEvaluator = tfhe.NewBinaryEvaluator(testBinaryParams, testBinaryEncryptor.GenEvaluationKeyParallel())
 )
 
 func TestBinaryParams(t *testing.T) {
 	t.Run("ParamsBoolean", func(t *testing.T) {
-		assert.NotPanics(t, func() { tfhe.ParamsBoolean.Compile() })
+		assert.NotPanics(t, func() { tfhe.ParamsBinary.Compile() })
 	})
 
 	t.Run("ParamsBooleanKeySwitchBlindRotate", func(t *testing.T) {
-		assert.NotPanics(t, func() { tfhe.ParamsBooleanKeySwitchBlindRotate.Compile() })
+		assert.NotPanics(t, func() { tfhe.ParamsBinaryCompact.Compile() })
 	})
 
 	t.Run("ParamsOriginalBoolean", func(t *testing.T) {
-		assert.NotPanics(t, func() { tfhe.ParamsOriginalBoolean.Compile() })
+		assert.NotPanics(t, func() { tfhe.ParamsBinaryOriginal.Compile() })
 	})
 }
 

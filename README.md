@@ -4,13 +4,20 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/sp301415/tfhe-go)](https://goreportcard.com/report/github.com/sp301415/tfhe-go)
 ![CI Test Status](https://github.com/sp301415/tfhe-go/actions/workflows/ci.yml/badge.svg)
 
-⚠️ TFHE-go is still under heavy development. There may be backward-incompatible changes at any time.
+> [!WARNING]
+> TFHE-go is still under heavy development. There may be backward-incompatible changes at any time.
 
-TFHE-go is a Go implementation of TFHE[[CGGI16](https://eprint.iacr.org/2016/870)] scheme. The structure of this library is similar to another great Go-based FHE library, [Lattigo](https://github.com/tuneinsight/lattigo).
+> [!CAUTION]
+> This library has not been audited or reviewed by security experts, so I do not recommend using it for any real-world production purposes.
 
-This library is heavily influenced by the excellent [TFHE-rs](https://github.com/zama-ai/tfhe-rs), developed by [Zama](https://www.zama.ai). The goal is to implement most of the functionalities that TFHE-rs provides, with readable code and minimal performance overhead.
+TFHE-go is a Go implementation of TFHE[[CGGI16](https://eprint.iacr.org/2016/870)] scheme. It provides:
+- Support for both binary and integer TFHE
+- A portable, pure Go implementation, along with SIMD-accelerated Go Assembly on amd64 platforms
+- Comparable performance to state-of-the-art C++/Rust libraries
+- Readable code with modern Go features such as generics
 
-Please note that this library has not been audited or reviewed by security experts, so I do not recommend using it for any real-world production purposes.
+This library is heavily influenced by the excellent [Lattigo](https://github.com/tuneinsight/lattigo) and [TFHE-rs](https://github.com/zama-ai/tfhe-rs).
+
 
 ## Installation
 You can install TFHE-go in your project using `go get`:
@@ -69,9 +76,9 @@ ctOut := eval.BootstrapFunc(ct, func(x int) int { return 2*x + 1 })
 fmt.Println(enc.DecryptLWE(ctOut)) // 7 = 2*3+1
 ```
 
-### Comparison using Gate Bootstrapping
+### Comparison using binary TFHE
 ```go
-params := tfhe.ParamsBoolean.Compile()
+params := tfhe.ParamsBinary.Compile()
 
 enc := tfhe.NewBinaryEncryptor(params)
 
@@ -93,11 +100,11 @@ fmt.Println(enc.DecryptLWEBool(ctOut)) // true
 ```
 
 ## Benchmarks
-All results were measured from Intel i5-13400F. `ParamsBoolean` and `ParamsUint6` were used.
-|Operation|Time|
-|---------|-------|
-|Programmable Bootstrapping|51.06ms ± 1%|
-|Gate Bootstrapping|10.87ms ± 1%|
+All results were measured from Intel i5-13400F, with roughly equivalent parameters.
+|Operation|TFHE-go|TFHE-rs (v0.4.1)|
+|---------|-------|-------|
+|Gate Bootstrap|10.87ms|9.84ms|
+|Programmable Bootstrap (6 bits)|51.06ms|85.26ms|
 
 ## References
 - TFHE: Fast Fully Homomorphic Encryption over the Torus (https://eprint.iacr.org/2018/421)
