@@ -136,13 +136,23 @@ func TestEvaluator(t *testing.T) {
 		}
 	})
 
-	t.Run("BootstrapFunc", func(t *testing.T) {
+	t.Run("BootstrapBlockFunc", func(t *testing.T) {
 		f := func(x int) int { return 2 * x }
 
 		for _, m := range messages {
 			ct := testEncryptor.EncryptLWE(m)
 			ctOut := testEvaluator.BootstrapFunc(ct, f)
 			assert.Equal(t, f(m), testEncryptor.DecryptLWE(ctOut))
+		}
+	})
+
+	t.Run("BootstrapExtendedFunc", func(t *testing.T) {
+		f := func(x int) int { return 2 * x }
+
+		for _, m := range messages {
+			ct := benchEncryptor.EncryptLWE(m)
+			ctOut := benchEvaluator.BootstrapFunc(ct, f)
+			assert.Equal(t, f(m), benchEncryptor.DecryptLWE(ctOut))
 		}
 	})
 }
