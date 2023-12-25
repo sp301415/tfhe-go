@@ -4,19 +4,17 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/sp301415/tfhe-go)](https://goreportcard.com/report/github.com/sp301415/tfhe-go)
 ![CI Test Status](https://github.com/sp301415/tfhe-go/actions/workflows/ci.yml/badge.svg)
 
-> [!WARNING]
-> TFHE-go is still under heavy development. There may be backward-incompatible changes at any time.
+⚠️ TFHE-go is still under heavy development. There may be backward-incompatible changes at any time.
 
-> [!CAUTION]
-> This library has not been audited or reviewed by security experts, so I do not recommend using it for any real-world production purposes.
-
-**TFHE-go** is a Go implementation of TFHE[[CGGI16](https://eprint.iacr.org/2016/870)] scheme. It provides:
-- Support for both binary and integer TFHE
+**TFHE-go** is a Go implementation of the TFHE[[CGGI16](https://eprint.iacr.org/2016/870)] scheme. It provides:
+- Support for binary and integer TFHE
 - A portable, pure Go implementation, along with SIMD-accelerated Go Assembly on amd64 platforms
 - Comparable performance to state-of-the-art C++/Rust libraries
-- Readable code with modern Go features such as generics
+- Readable code and user-friendly API, with modern Go features like generics
 
-This library is heavily influenced by the excellent [Lattigo](https://github.com/tuneinsight/lattigo) and [TFHE-rs](https://github.com/zama-ai/tfhe-rs).
+The design of this library is heavily influenced by two excellent FHE libraries: [Lattigo](https://github.com/tuneinsight/lattigo) by [Tune Insight](https://tuneinsight.com), and [TFHE-rs](https://github.com/zama-ai/tfhe-rs) by [Zama](https://zama.ai). The goal is to deliver a highly performant, yet easily hackable & extendable library for researchers and developers who are interested in Fully Homomorphic Encryption.
+
+Please note that this library has not been audited or reviewed by security experts, so using it for any real-world production purposes are not recommended.
 
 ## Installation
 You can install TFHE-go in your project using `go get`:
@@ -75,7 +73,7 @@ ctOut := eval.BootstrapFunc(ct, func(x int) int { return 2*x + 1 })
 fmt.Println(enc.DecryptLWE(ctOut)) // 7 = 2*3+1
 ```
 
-### Comparison using binary TFHE
+### Comparison using Binary TFHE
 ```go
 params := tfhe.ParamsBinary.Compile()
 
@@ -104,6 +102,20 @@ All results were measured from Intel i5-13400F, with roughly equivalent paramete
 |---------|-------|-------|
 |Gate Bootstrapping|10.87ms|9.84ms|
 |Programmable Bootstrapping (6 bits)|51.06ms|85.26ms|
+
+## License
+TFHE-go is licensed under the Apache 2.0 License.
+
+## Citing
+To cite TFHE-go, please use the following BibTeX entry:
+```tex
+@misc{TFHE-go,
+  title={{TFHE-go}},
+  author={Intak Hwang},
+  year={2023},
+  howpublished = {Online: \url{https://github.com/sp301415/tfhe-go}},
+}
+```
 
 ## References
 - TFHE: Fast Fully Homomorphic Encryption over the Torus (https://eprint.iacr.org/2018/421)
