@@ -14,15 +14,15 @@ var (
 )
 
 func TestBinaryParams(t *testing.T) {
-	t.Run("ParamsBoolean", func(t *testing.T) {
+	t.Run("ParamsBinary", func(t *testing.T) {
 		assert.NotPanics(t, func() { tfhe.ParamsBinary.Compile() })
 	})
 
-	t.Run("ParamsBooleanKeySwitchBlindRotate", func(t *testing.T) {
+	t.Run("ParamsBinaryCompact", func(t *testing.T) {
 		assert.NotPanics(t, func() { tfhe.ParamsBinaryCompact.Compile() })
 	})
 
-	t.Run("ParamsOriginalBoolean", func(t *testing.T) {
+	t.Run("ParamsOriginalBinary", func(t *testing.T) {
 		assert.NotPanics(t, func() { tfhe.ParamsBinaryOriginal.Compile() })
 	})
 }

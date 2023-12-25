@@ -10,14 +10,13 @@
 > [!CAUTION]
 > This library has not been audited or reviewed by security experts, so I do not recommend using it for any real-world production purposes.
 
-TFHE-go is a Go implementation of TFHE[[CGGI16](https://eprint.iacr.org/2016/870)] scheme. It provides:
+**TFHE-go** is a Go implementation of TFHE[[CGGI16](https://eprint.iacr.org/2016/870)] scheme. It provides:
 - Support for both binary and integer TFHE
 - A portable, pure Go implementation, along with SIMD-accelerated Go Assembly on amd64 platforms
 - Comparable performance to state-of-the-art C++/Rust libraries
 - Readable code with modern Go features such as generics
 
 This library is heavily influenced by the excellent [Lattigo](https://github.com/tuneinsight/lattigo) and [TFHE-rs](https://github.com/zama-ai/tfhe-rs).
-
 
 ## Installation
 You can install TFHE-go in your project using `go get`:
@@ -103,8 +102,8 @@ fmt.Println(enc.DecryptLWEBool(ctOut)) // true
 All results were measured from Intel i5-13400F, with roughly equivalent parameters.
 |Operation|TFHE-go|TFHE-rs (v0.4.1)|
 |---------|-------|-------|
-|Gate Bootstrap|10.87ms|9.84ms|
-|Programmable Bootstrap (6 bits)|51.06ms|85.26ms|
+|Gate Bootstrapping|10.87ms|9.84ms|
+|Programmable Bootstrapping (6 bits)|51.06ms|85.26ms|
 
 ## References
 - TFHE: Fast Fully Homomorphic Encryption over the Torus (https://eprint.iacr.org/2018/421)

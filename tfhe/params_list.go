@@ -1,7 +1,7 @@
 package tfhe
 
 var (
-	// ParamsBinary is a default parameter set for boolean TFHE.
+	// ParamsBinary is a default parameter set for binary TFHE.
 	ParamsBinary = ParametersLiteral[uint32]{
 		LWEDimension:    720,
 		GLWEDimension:   2,
@@ -27,8 +27,11 @@ var (
 		BootstrapOrder: OrderBlindRotateKeySwitch,
 	}
 
-	// ParamsBinaryCompact is a parameter set for boolean TFHE
+	// ParamsBinaryCompact is a parameter set for binary TFHE
 	// with OrderKeySwitchBlindRotate.
+	//
+	// This parameter set is slightly more compact than ParamsBinary,
+	// giving a faster performance.
 	ParamsBinaryCompact = ParametersLiteral[uint32]{
 		LWEDimension:    664,
 		GLWEDimension:   2,
