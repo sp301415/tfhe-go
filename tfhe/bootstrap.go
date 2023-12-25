@@ -142,7 +142,7 @@ func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T]
 	}
 }
 
-// blindRotateExtendedAssign calculates the blind rotation when polyLargeDegree > polyDegree.
+// blindRotateExtendedAssign calculates the blind rotation when PolyLargeDegree > PolyDegree.
 // This is equivalent to the blind rotation algorithm using extended polynomials, as explained in https://eprint.iacr.org/2023/402.
 func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
 	ctAccFourierDecomposedSub := e.buffer.ctAccFourierDecomposed[e.Parameters.polyExtendFactor]
@@ -301,7 +301,7 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 	ctOut.CopyFrom(e.buffer.ctAcc[0])
 }
 
-// blindRotateBlockAssign calculates the blind rotation when blockSize > 1.
+// blindRotateBlockAssign calculates the blind rotation when PolyDegree = PolyLargeDegree and BlockSize > 1.
 // This is equivalent to the blind rotation algorithm using block binary keys, as explained in https://eprint.iacr.org/2023/958.
 func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
 	ctOut.Clear()
@@ -336,7 +336,7 @@ func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTab
 	}
 }
 
-// blindRotateOriginalAssign calculates the blind rotation when blockSize == 1.
+// blindRotateOriginalAssign calculates the blind rotation when PolyDegree = PolyLargeDegree and BlockSize = 1.
 // This is equivalent to the original blind rotation algorithm.
 func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
 	ctOut.Clear()
