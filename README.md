@@ -12,16 +12,16 @@
 - Comparable performance to state-of-the-art C++/Rust libraries
 - Readable code and user-friendly API, with modern Go features like generics
 
-The design of this library is heavily influenced by two excellent FHE libraries: [Lattigo](https://github.com/tuneinsight/lattigo) by [Tune Insight](https://tuneinsight.com), and [TFHE-rs](https://github.com/zama-ai/tfhe-rs) by [Zama](https://zama.ai). The goal is to deliver a highly performant, yet easily hackable & extendable library for researchers and developers who are interested in Fully Homomorphic Encryption.
+To goal of this library is to be highly efficient while remaining easily customizable and extendable for researchers and developers interested in TFHE. The overall design of this library is heavily influenced by two excellent FHE libraries: [Lattigo](https://github.com/tuneinsight/lattigo) by [Tune Insight](https://tuneinsight.com), and [TFHE-rs](https://github.com/zama-ai/tfhe-rs) by [Zama](https://zama.ai).
 
-Please note that this library has not been audited or reviewed by security experts, so using it for any real-world production purposes are not recommended.
+Please note that this library has not been audited or reviewed by security experts, so using it for any real-world production purposes is not recommended.
 
 ## Installation
 You can install TFHE-go in your project using `go get`:
 ```
 $ go get -u github.com/sp301415/tfhe-go
 ```
-TFHE-go uses Go Assembly for SIMD operations in amd64 platform. To disable this, you can pass `purego` [build tag](https://pkg.go.dev/go/build#hdr-Build_Constraints).
+TFHE-go uses Go Assembly for SIMD operations on amd64 platforms. To disable this, you can pass `purego` [build tag](https://pkg.go.dev/go/build#hdr-Build_Constraints).
 
 ## Examples
 ### Encryption
