@@ -12,7 +12,7 @@
 - Comparable performance to state-of-the-art C++/Rust libraries
 - Readable code and user-friendly API, with modern Go features like generics
 
-To goal of this library is to be highly efficient while remaining easily customizable and extendable for researchers and developers interested in TFHE. The overall design of this library is heavily influenced by two excellent FHE libraries: [Lattigo](https://github.com/tuneinsight/lattigo) by [Tune Insight](https://tuneinsight.com), and [TFHE-rs](https://github.com/zama-ai/tfhe-rs) by [Zama](https://zama.ai).
+The goal of this library is to be fast and simple, offering an extendable and customizable basis for researchers and developers interested in TFHE. The overall structure and design is heavily influenced by two excellent FHE libraries: [Lattigo](https://github.com/tuneinsight/lattigo) by [Tune Insight](https://tuneinsight.com), and [TFHE-rs](https://github.com/zama-ai/tfhe-rs) by [Zama](https://zama.ai).
 
 Please note that this library has not been audited or reviewed by security experts, so using it for any real-world production purposes is not recommended.
 
