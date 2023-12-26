@@ -103,11 +103,12 @@ func (e *Evaluator[T]) BootstrapLUT(ct LWECiphertext[T], lut LookUpTable[T]) LWE
 
 // BootstrapLUTAssign bootstraps LWE ciphertext with respect to given LUT and writes it to ctOut.
 func (e *Evaluator[T]) BootstrapLUTAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut LWECiphertext[T]) {
-	if e.Parameters.bootstrapOrder == OrderKeySwitchBlindRotate {
+	switch e.Parameters.bootstrapOrder {
+	case OrderKeySwitchBlindRotate:
 		e.KeySwitchForBootstrapAssign(ct, e.buffer.ctKeySwitch)
 		e.BlindRotateAssign(e.buffer.ctKeySwitch, lut, e.buffer.ctRotate)
 		e.SampleExtractAssign(e.buffer.ctRotate, 0, ctOut)
-	} else {
+	case OrderBlindRotateKeySwitch:
 		e.BlindRotateAssign(ct, lut, e.buffer.ctRotate)
 		e.SampleExtractAssign(e.buffer.ctRotate, 0, e.buffer.ctExtract)
 		e.KeySwitchForBootstrapAssign(e.buffer.ctExtract, ctOut)
@@ -135,10 +136,10 @@ func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T]
 	switch {
 	case e.Parameters.polyLargeDegree > e.Parameters.polyDegree:
 		e.blindRotateExtendedAssign(ct, lut, ctOut)
-	case e.Parameters.blockSize == 1:
-		e.blindRotateOriginalAssign(ct, lut, ctOut)
-	default:
+	case e.Parameters.blockSize > 1:
 		e.blindRotateBlockAssign(ct, lut, ctOut)
+	default:
+		e.blindRotateOriginalAssign(ct, lut, ctOut)
 	}
 }
 
@@ -148,6 +149,7 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 	ctAccFourierDecomposedSub := e.buffer.ctAccFourierDecomposed[e.Parameters.polyExtendFactor]
 
 	// Implementation of Algorithm 4 from https://eprint.iacr.org/2023/402
+	// Slightly modified for Block Binary Keys
 	b2N := -e.ModSwitch(ct.Value[0])
 	if b2N < 0 {
 		b2N += 2 * e.Parameters.polyLargeDegree
