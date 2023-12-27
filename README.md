@@ -8,11 +8,11 @@
 
 **TFHE-go** is a Go implementation of the TFHE[[CGGI16](https://eprint.iacr.org/2016/870)] scheme. It provides:
 - Support for binary and integer TFHE
-- A portable, pure Go implementation, along with SIMD-accelerated Go Assembly on amd64 platforms
+- Pure Go implementation, along with SIMD-accelerated Go Assembly on amd64 platforms
 - Comparable performance to state-of-the-art C++/Rust libraries
-- Readable code and user-friendly API, with modern Go features like generics
+- Readable code and user-friendly API using modern Go features like generics
 
-The goal of this library is to be fast and simple, offering an extendable and customizable basis for researchers and developers interested in TFHE. The overall structure and design is heavily influenced by two excellent FHE libraries: [Lattigo](https://github.com/tuneinsight/lattigo) by [Tune Insight](https://tuneinsight.com), and [TFHE-rs](https://github.com/zama-ai/tfhe-rs) by [Zama](https://zama.ai).
+The goal of this library is to be fast, simple and versatile, offering a robust basis for researchers and developers interested in TFHE. The overall structure and design is heavily influenced by two excellent FHE libraries: [Lattigo](https://github.com/tuneinsight/lattigo) by [Tune Insight](https://tuneinsight.com), and [TFHE-rs](https://github.com/zama-ai/tfhe-rs) by [Zama](https://zama.ai).
 
 Please note that this library has not been audited or reviewed by security experts, so using it for any real-world production purposes is not recommended.
 

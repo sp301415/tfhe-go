@@ -11,45 +11,38 @@ import (
 // FourierEvaluator calculates algorithms related to FFT,
 // most notably the polynomial multiplication.
 //
-// While FFT is much faster than Evaluator's karatsuba multiplication,
-// in TFHE it is used sparsely because of float64 precision.
-//
-// Some methods use AVX2 instructions, when available.
-//
 // Operations usually take two forms: for example,
-//   - Add(p0, p1) is equivalent to var p = p0 + p1.
-//   - AddAssign(p0, p1, pOut) is equivalent to pOut = p0 + p1.
+//   - Add(p0, p1) adds p0, p1, allocates a new polynomial to store the result, and returns it.
+//   - AddAssign(p0, p1, pOut) adds p0, p1, and writes the result to pre-existing pOut without returning.
 //
-// Note that usually calling Assign(p0, pOut, pOut) is valid.
-// However, for some operations, InPlace methods are implemented separately.
+// Note that in most cases, p0, p1, and pOut can overlap.
+// However, for operations that cannot, InPlace methods are implemented separately.
 //
-// # Warning
-//
-// For performance reasons, functions in this package usually don't implement bound checks.
-// If length mismatch happens, usually the result is wrong.
+// For performance reasons, most methods in this package don't implement bound checks.
+// If length mismatch happens, it may panic or produce wrong results.
 type FourierEvaluator[T num.Integer] struct {
 	// degree is the degree of polynomial that this transformer can handle.
 	degree int
-	// maxT is a float64 value of 2^sizeT.
+	// maxT is a float64 value of MaxT.
 	maxT float64
 
-	// wNj holds the precomputed values of w_N^j where j = 0 ~ N/2,
+	// wNj holds the twiddle factors exp(-2pi*j/N) where j = 0 ~ N/2,
 	// ordered in bit-reversed order.
 	wNj []complex128
-	// wNjInv holds the precomputed values of w_N^-j where j = 0 ~ N/2,
+	// wNjInv holds the inverse twiddle factors exp(2pi*j/N) where j = 0 ~ N/2,
 	// ordered in bit-reversed order.
 	wNjInv []complex128
-	// w2Nj holds the precomputed values of w_2N^j where j = 0 ~ N/2.
+	// w2Nj holds the twisting factors exp(pi*j/N) where j = 0 ~ N/2.
 	w2Nj []complex128
-	// w2NjScaled holds the precomputes values of w_2N^j / 2^sizeT where j = 0 ~ N/2.
+	// w2NjScaled holds the scaled twisting factors w2Nj * maxT.
 	w2NjScaled []complex128
-	// w2NjInv holds the precomputed values of scaled w_2N^-j / (N / 2) where j = 0 ~ N/2.
+	// w2NjInv holds the inverse twisting factors exp(-pi*j/N) where j = 0 ~ N/2.
 	w2NjInv []complex128
-	// w2NjMono holds the precomputed values of w_2N^j where j = 0 ~ 2N, for MonomialToFourierPoly.
+	// w2NjMono holds the twisting factors for monomials: exp(-pi*j/N) where j = 0 ~ 2N.
 	w2NjMono []complex128
-	// revOddIdx holds the precomputed bit-reversed index for MonomialToFourierPoly.
-	// Equivalent to BitReverse([1, 5, 9, ..., 2N-1]).
-	revOddIdx []int
+	// revMonoIdx holds the precomputed bit-reversed index for MonomialToFourierPoly.
+	// Equivalent to BitReverse([1, 5, 9, ..., 4N-1]).
+	revMonoIdx []int
 
 	buffer fourierBuffer[T]
 }
@@ -118,7 +111,7 @@ func NewFourierEvaluator[T num.Integer](N int) *FourierEvaluator[T] {
 		w2NjScaled: w2NjScaled,
 		w2NjInv:    w2NjInv,
 		w2NjMono:   w2NjMono,
-		revOddIdx:  revOddIdx,
+		revMonoIdx: revOddIdx,
 
 		buffer: newFourierBuffer[T](N),
 	}
@@ -145,7 +138,7 @@ func (f *FourierEvaluator[T]) ShallowCopy() *FourierEvaluator[T] {
 		w2NjScaled: f.w2NjScaled,
 		w2NjInv:    f.w2NjInv,
 		w2NjMono:   f.w2NjMono,
-		revOddIdx:  f.revOddIdx,
+		revMonoIdx: f.revMonoIdx,
 
 		buffer: newFourierBuffer[T](f.degree),
 	}

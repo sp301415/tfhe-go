@@ -1,16 +1,14 @@
 // Package vec implements vector operations acting on slices.
 //
-// Operations usually take three forms: for example,
-//   - Add(v0, v1) is equivalent to v := v0 + v1.
-//   - AddAssign(v0, v1, vOut) is equivalent to vOut = v0 + v1.
+// Operations usually take two forms: for example,
+//   - Add(v0, v1) adds v0, v1, allocates a new vector to store the result, and returns it.
+//   - AddAssign(v0, v1, vOut) adds v0, v1, and writes the result to pre-existing vOut without returning.
 //
-// Note that usually calling Assign(p0, pOut, pOut) is valid.
-// However, for some operations, InPlace methods are implemented separately.
+// Note that in most cases, v0, v1, and vOut can overlap.
+// However, for operations that cannot, InPlace methods are implemented separately.
 //
-// # Warning
-//
-// For performance reasons, functions in this package usually don't implement bound checks.
-// If length mismatch happens, usually the result is wrong.
+// For performance reasons, most functions in this package don't implement bound checks.
+// If length mismatch happens, it may panic or produce wrong results.
 package vec
 
 import (

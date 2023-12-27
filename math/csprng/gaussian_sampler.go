@@ -43,13 +43,13 @@ func NewGaussianSamplerWithSeed[T num.Integer](seed []byte, stdDev float64) Gaus
 	}
 }
 
-// NewGaussianSamplerTorus is equivalent to NewGaussianSampler, but stdDev is scaled by 2^SizeT.
+// NewGaussianSamplerTorus is equivalent to NewGaussianSampler, but stdDev is scaled by MaxT.
 func NewGaussianSamplerTorus[T num.Integer](stdDev float64) GaussianSampler[T] {
 	maxTf := math.Exp2(float64(num.SizeT[T]()))
 	return NewGaussianSampler[T](stdDev * maxTf)
 }
 
-// NewGaussianSamplerTorusWithSeed is equivalent to NewGaussianSamplerWithSeed, but stdDev is scaled by 2^SizeT.
+// NewGaussianSamplerTorusWithSeed is equivalent to NewGaussianSamplerWithSeed, but stdDev is scaled by MaxT.
 func NewGaussianSamplerTorusWithSeed[T num.Integer](seed []byte, stdDev float64) GaussianSampler[T] {
 	maxTf := math.Exp2(float64(num.SizeT[T]()))
 	return NewGaussianSamplerWithSeed[T](seed, stdDev*maxTf)
