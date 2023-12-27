@@ -100,8 +100,8 @@ fmt.Println(enc.DecryptLWEBool(ctOut)) // true
 All results were measured from Intel i5-13400F, with roughly equivalent parameters.
 |Operation|TFHE-go|TFHE-rs (v0.4.1)|
 |---------|-------|-------|
-|Gate Bootstrapping|10.87ms|9.84ms|
-|Programmable Bootstrapping (6 bits)|51.06ms|85.26ms|
+|Gate Bootstrapping|10.88ms|9.84ms|
+|Programmable Bootstrapping (6 bits)|50.72ms|85.26ms|
 
 ## License
 TFHE-go is licensed under the Apache 2.0 License.
