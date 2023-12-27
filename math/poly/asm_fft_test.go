@@ -32,6 +32,7 @@ func invFFTInPlaceGeneric(coeffs, wNjInv []complex128) {
 	N := len(coeffs)
 
 	t := 1
+	k := 0
 	for m := N; m > 2; m >>= 1 {
 		j1 := 0
 		h := m >> 1
@@ -39,11 +40,12 @@ func invFFTInPlaceGeneric(coeffs, wNjInv []complex128) {
 			j2 := j1 + t
 			for j := j1; j < j2; j++ {
 				U, V := coeffs[j], coeffs[j+t]
-				coeffs[j], coeffs[j+t] = U+V, (U-V)*wNjInv[h+i]
+				coeffs[j], coeffs[j+t] = U+V, (U-V)*wNjInv[k+i]
 			}
 			j1 += t << 1
 		}
 		t <<= 1
+		k += h
 	}
 
 	for j := 0; j < N/2; j++ {

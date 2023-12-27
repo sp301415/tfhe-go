@@ -74,15 +74,19 @@ func NewFourierEvaluator[T num.Integer](N int) *FourierEvaluator[T] {
 	for j := 0; j < N/4; j++ {
 		e := -4 * math.Pi * float64(j) / float64(N)
 		wNj[j+N/4] = cmplx.Exp(complex(0, e))
-		wNjInv[j+N/4] = cmplx.Exp(-complex(0, e))
+		wNjInv[j] = cmplx.Exp(-complex(0, e))
 	}
 	vec.BitReverseInPlace(wNj[N/4:])
-	vec.BitReverseInPlace(wNjInv[N/4:])
+	vec.BitReverseInPlace(wNjInv[:N/4])
 
 	for i := 1; i < N/4; i <<= 1 {
 		for j := 0; j < i; j++ {
 			wNj[i+j] = wNj[j+N/4]
-			wNjInv[i+j] = wNjInv[j+N/4]
+		}
+	}
+	for i, x := N/8, 0; i >= 1; i, x = i>>1, x+i {
+		for j := 0; j < i; j++ {
+			wNjInv[x+j+N/4] = wNjInv[j]
 		}
 	}
 

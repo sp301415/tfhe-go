@@ -173,18 +173,14 @@ TEXT ·invFFTInPlaceAVX2(SB), NOSPLIT, $0-48
 
 	// First Loop
 	// U, V := coeffs[j], coeffs[j+1]
-	// coeffs[j], coeffs[j+1] = U+V, (U-V)*wNj[j+N]
-
-	MOVQ CX, DX
-	ADDQ CX, DX // 2N
+	// coeffs[j], coeffs[j+1] = U+V, (U-V)*wNj[i]
 
 	XORQ SI, SI // j
-	MOVQ SI, DI
-	ADDQ CX, DI // j+N
+	XORQ DI, DI // i
 	JMP first_loop_end
 
 first_loop:
-	// Load wNj[j+N]
+	// Load wNj[i]
 	VMOVUPD (BX)(DI*8), X2
 	VSHUFPD $0b00, X2, X2, X0
 	VSHUFPD $0b11, X2, X2, X1
@@ -202,7 +198,7 @@ first_loop:
 	// coeffs[j+1] = U - V
 	VSUBPD X3, X2, X4
 
-	// coeffs[j+1] = coeffs[j+1] * wNj[j+N]
+	// coeffs[j+1] = coeffs[j+1] * wNj[i]
 	VSHUFPD        $0b01, X4, X4, X5
 	VMULPD         X1, X5, X5
 	VFMADDSUB231PD X0, X4, X5
@@ -212,7 +208,7 @@ first_loop:
 	ADDQ $2, DI
 
 first_loop_end:
-	CMPQ DI, DX
+	CMPQ DI, CX
 	JL first_loop
 
 	// Main Loop
@@ -220,7 +216,7 @@ first_loop_end:
 	MOVQ $4, R8
 
 	MOVQ CX, DX
-	SHRQ $1, DX // N/2
+	SHRQ $1, DX // k = N/2
 
 	MOVQ DX, R10 // m
 	JMP m_loop_end
@@ -237,11 +233,11 @@ m_loop:
 	JMP i_loop_end
 
 	i_loop:
-		// h + i
-		MOVQ R9, R15
+		// k + i
+		MOVQ DX, R15
 		ADDQ R11, R15
 
-		// Load wNjInv[h+i]
+		// Load wNjInv[k+i]
 		SHLQ $1, R15
 		VBROADCASTSD (BX)(R15*8), Y0
 		VBROADCASTSD 8(BX)(R15*8), Y1
@@ -269,7 +265,7 @@ m_loop:
 			// U - V
 			VSUBPD Y3, Y2, Y4
 
-			// coeffs[j+t] = (U - V) * wNjInv[h+i]
+			// coeffs[j+t] = (U - V) * wNjInv[k+i]
 			VSHUFPD        $0b0101, Y4, Y4, Y5
 			VMULPD         Y1, Y5, Y5
 			VFMADDSUB231PD Y0, Y4, Y5
@@ -293,6 +289,8 @@ m_loop:
 
 	// t <<= 1
 	SHLQ $1, R8
+
+	ADDQ R9, DX
 
 	SHRQ $1, R10
 
