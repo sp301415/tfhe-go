@@ -41,7 +41,7 @@ type FourierEvaluator[T num.Integer] struct {
 	// w2NjMono holds the twisting factors for monomials: exp(-pi*j/N) where j = 0 ~ 2N.
 	w2NjMono []complex128
 	// revMonoIdx holds the precomputed bit-reversed index for MonomialToFourierPoly.
-	// Equivalent to BitReverse([1, 5, 9, ..., 4N-1]).
+	// Equivalent to BitReverse([-1, 3, 7, ..., 2N-1]).
 	revMonoIdx []int
 
 	buffer fourierBuffer[T]
@@ -71,13 +71,20 @@ func NewFourierEvaluator[T num.Integer](N int) *FourierEvaluator[T] {
 
 	wNj := make([]complex128, N/2)
 	wNjInv := make([]complex128, N/2)
-	for j := 0; j < N/2; j++ {
-		e := 2 * math.Pi * float64(j) / float64(N)
-		wNj[j] = cmplx.Exp(-complex(0, e))
-		wNjInv[j] = cmplx.Exp(complex(0, e))
+	for j := 0; j < N/4; j++ {
+		e := -4 * math.Pi * float64(j) / float64(N)
+		wNj[j+N/4] = cmplx.Exp(complex(0, e))
+		wNjInv[j+N/4] = cmplx.Exp(-complex(0, e))
 	}
-	vec.BitReverseInPlace(wNj)
-	vec.BitReverseInPlace(wNjInv)
+	vec.BitReverseInPlace(wNj[N/4:])
+	vec.BitReverseInPlace(wNjInv[N/4:])
+
+	for i := 1; i < N/4; i <<= 1 {
+		for j := 0; j < i; j++ {
+			wNj[i+j] = wNj[j+N/4]
+			wNjInv[i+j] = wNjInv[j+N/4]
+		}
+	}
 
 	w2Nj := make([]complex128, N/2)
 	w2NjScaled := make([]complex128, N/2)
@@ -91,15 +98,16 @@ func NewFourierEvaluator[T num.Integer](N int) *FourierEvaluator[T] {
 
 	w2NjMono := make([]complex128, 2*N)
 	for j := 0; j < 2*N; j++ {
-		e := math.Pi * float64(j) / float64(N)
-		w2NjMono[j] = cmplx.Exp(-complex(0, e))
+		e := -math.Pi * float64(j) / float64(N)
+		w2NjMono[j] = cmplx.Exp(complex(0, e))
 	}
 
-	revOddIdx := make([]int, N/2)
-	for i := 0; i < N/2; i++ {
-		revOddIdx[i] = 4*i + 1
+	revMonoIdx := make([]int, N/2)
+	revMonoIdx[0] = 2*N - 1
+	for i := 1; i < N/2; i++ {
+		revMonoIdx[i] = 4*i - 1
 	}
-	vec.BitReverseInPlace(revOddIdx)
+	vec.BitReverseInPlace(revMonoIdx)
 
 	return &FourierEvaluator[T]{
 		degree: N,
@@ -111,7 +119,7 @@ func NewFourierEvaluator[T num.Integer](N int) *FourierEvaluator[T] {
 		w2NjScaled: w2NjScaled,
 		w2NjInv:    w2NjInv,
 		w2NjMono:   w2NjMono,
-		revMonoIdx: revOddIdx,
+		revMonoIdx: revMonoIdx,
 
 		buffer: newFourierBuffer[T](N),
 	}

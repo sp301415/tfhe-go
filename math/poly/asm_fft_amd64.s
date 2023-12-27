@@ -9,12 +9,8 @@ TEXT ·fftInPlaceAVX2(SB), NOSPLIT, $0-48
 	MOVQ coeffs_len+8(FP), CX
 
 	// First Loop
-	// U, V := coeffs[j], coeffs[j+N]*wNj[1]
+	// U, V := coeffs[j], coeffs[j+N]
 	// coeffs[j], coeffs[j+N] = U+V, U-V
-
-	// Load wNj[1]
-	VBROADCASTSD 16(BX), Y0
-	VBROADCASTSD 24(BX), Y1
 
 	XORQ SI, SI // j
 	MOVQ SI, DI
@@ -28,17 +24,12 @@ first_loop:
 	// V := coeffs[j+N]
 	VMOVUPD (AX)(DI*8), Y3
 
-	// V = V * wNj[1]
-	VSHUFPD        $0b0101, Y3, Y3, Y4
-	VMULPD         Y1, Y4, Y4
-	VFMADDSUB231PD Y0, Y3, Y4
-
 	// coeffs[j] = U + V
-	VADDPD Y4, Y2, Y5
+	VADDPD Y3, Y2, Y5
 	VMOVUPD Y5, (AX)(SI*8)
 
-	// coeffs[j] = U - V
-	VSUBPD Y4, Y2, Y5
+	// coeffs[j+N] = U - V
+	VSUBPD Y3, Y2, Y5
 	VMOVUPD Y5, (AX)(DI*8)
 
 	ADDQ $4, SI
@@ -311,11 +302,7 @@ m_loop_end:
 
 	// Last Loop
 	// U, V := coeffs[j], coeffs[j+N]
-	// coeffs[j], coeffs[j+N] = U+V, (U-V)*wNjInv[1]
-
-	// Load wNjInv[1]
-	VBROADCASTSD 16(BX), Y0
-	VBROADCASTSD 24(BX), Y1
+	// coeffs[j], coeffs[j+N] = U+V, U-V
 
 	XORQ SI, SI // j
 	MOVQ SI, DI
@@ -333,14 +320,9 @@ last_loop:
 	VADDPD Y3, Y2, Y4
 	VMOVUPD Y4, (AX)(SI*8)
 
-	// U - V
+	// coeffs[j+N] = U - V
 	VSUBPD Y3, Y2, Y4
-
-	// coeffs[j+N] = (U - V) * wNjInv[1]
-	VSHUFPD        $0b0101, Y4, Y4, Y5
-	VMULPD         Y1, Y5, Y5
-	VFMADDSUB231PD Y0, Y4, Y5
-	VMOVUPD Y5, (AX)(DI*8)
+	VMOVUPD Y4, (AX)(DI*8)
 
 	ADDQ $4, SI
 	ADDQ $4, DI
