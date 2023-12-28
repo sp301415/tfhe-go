@@ -77,7 +77,7 @@ func invFFTInPlace(coeffs, wNjInv []complex128) {
 func untwistInPlaceAVX2(coeffs, w2NjInv []complex128)
 
 // untwistInPlace untwists the coefficients after inverse FFT.
-// Equivalent to coeffs * w2NjInv.
+// Equivalent to round(coeffs * w2NjInv).
 func untwistInPlace(coeffs, w2NjInv []complex128) {
 	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		untwistInPlaceAVX2(coeffs, w2NjInv)
