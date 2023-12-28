@@ -25,12 +25,12 @@ first_loop:
 	VMOVUPD (AX)(DI*8), Y3
 
 	// coeffs[j] = U + V
-	VADDPD Y3, Y2, Y5
-	VMOVUPD Y5, (AX)(SI*8)
+	VADDPD Y3, Y2, Y4
+	VMOVUPD Y4, (AX)(SI*8)
 
 	// coeffs[j+N] = U - V
-	VSUBPD Y3, Y2, Y5
-	VMOVUPD Y5, (AX)(DI*8)
+	VSUBPD Y3, Y2, Y4
+	VMOVUPD Y4, (AX)(DI*8)
 
 	ADDQ $4, SI
 	ADDQ $4, DI
@@ -40,6 +40,9 @@ first_loop_end:
 	JL first_loop
 
 	// Main Loop
+	// Start with wNj[1]
+	ADDQ $16, BX
+
 	// t := 2N
 	MOVQ CX, R8
 
@@ -57,25 +60,22 @@ m_loop:
 	JMP i_loop_end
 
 	i_loop:
-		// m + i
-		MOVQ R10, R12
-		ADDQ R11, R12
-
 		// Load wNj[m+i]
-		SHLQ $1, R12
-		VBROADCASTSD (BX)(R12*8), Y0
-		VBROADCASTSD 8(BX)(R12*8), Y1
+		ADDQ $16, BX
+		VBROADCASTSD (BX), Y0
+		VBROADCASTSD 8(BX), Y1
 
-		// j1 := i*t << 1
-		MOVQ R11, R13
-		IMULQ R8, R13
-		SHLQ $1, R13
+		// j = j1 := i*t << 1
+		MOVQ R11, R12
+		IMULQ R8, R12
+		ADDQ R12, R12
 
 		// j2 := j1 + t
-		MOVQ R13, R14
+		MOVQ R12, R14
 		ADDQ R8, R14
 
-		MOVQ R13, R12 // j
+		MOVQ R12, R15
+		ADDQ R8, R15  // j + t
 		JMP j_loop_end
 
 		j_loop:
@@ -83,8 +83,6 @@ m_loop:
 			VMOVUPD (AX)(R12*8), Y2
 
 			// V := coeffs[j+t]
-			MOVQ R12, R15
-			ADDQ R8, R15
 			VMOVUPD (AX)(R15*8), Y3
 
 			// V = V * wNj[m+i]
@@ -101,6 +99,7 @@ m_loop:
 			VMOVUPD Y5, (AX)(R15*8)
 
 			ADDQ $4, R12
+			ADDQ $4, R15
 
 		j_loop_end:
 			CMPQ R12, R14
@@ -113,7 +112,7 @@ m_loop:
 		JL i_loop
 
 	// m <<= 1
-	SHLQ $1, R10
+	ADDQ R10, R10
 
 m_loop_end:
 	CMPQ R10, DX
@@ -127,13 +126,12 @@ m_loop_end:
 	ADDQ CX, DX // 2N
 
 	XORQ SI, SI // j
-	MOVQ SI, DI
-	ADDQ CX, DI // j+N
 	JMP last_loop_end
 
 last_loop:
 	// Load wNj[j+N]
-	VMOVUPD (BX)(DI*8), X2
+	ADDQ $16, BX
+	VMOVUPD (BX), X2
 	VSHUFPD $0b00, X2, X2, X0
 	VSHUFPD $0b11, X2, X2, X1
 
@@ -157,10 +155,9 @@ last_loop:
 	VMOVUPD X5, 16(AX)(SI*8)
 
 	ADDQ $4, SI
-	ADDQ $2, DI
 
 last_loop_end:
-	CMPQ DI, DX
+	CMPQ SI, DX
 	JL last_loop
 
 	RET
@@ -174,14 +171,20 @@ TEXT ·invFFTInPlaceAVX2(SB), NOSPLIT, $0-48
 	// First Loop
 	// U, V := coeffs[j], coeffs[j+1]
 	// coeffs[j], coeffs[j+1] = U+V, (U-V)*wNj[i]
+	// Start from wNj[-1]
+	SUBQ $16, BX
+
+	MOVQ CX, DX
+	ADDQ CX, DX // 2N
 
 	XORQ SI, SI // j
-	XORQ DI, DI // i
+
 	JMP first_loop_end
 
 first_loop:
 	// Load wNj[i]
-	VMOVUPD (BX)(DI*8), X2
+	ADDQ $16, BX
+	VMOVUPD (BX), X2
 	VSHUFPD $0b00, X2, X2, X0
 	VSHUFPD $0b11, X2, X2, X1
 
@@ -205,20 +208,17 @@ first_loop:
 	VMOVUPD X5, 16(AX)(SI*8)
 
 	ADDQ $4, SI
-	ADDQ $2, DI
 
 first_loop_end:
-	CMPQ DI, CX
+	CMPQ SI, DX
 	JL first_loop
 
 	// Main Loop
 	// t := 4
 	MOVQ $4, R8
 
-	MOVQ CX, DX
-	SHRQ $1, DX // k = N/2
-
-	MOVQ DX, R10 // m
+	MOVQ CX, R10
+	SHRQ $1, R10 // m
 	JMP m_loop_end
 
 m_loop:
@@ -233,20 +233,18 @@ m_loop:
 	JMP i_loop_end
 
 	i_loop:
-		// k + i
-		MOVQ DX, R15
-		ADDQ R11, R15
-
 		// Load wNjInv[k+i]
-		SHLQ $1, R15
-		VBROADCASTSD (BX)(R15*8), Y0
-		VBROADCASTSD 8(BX)(R15*8), Y1
+		ADDQ $16, BX
+		VBROADCASTSD (BX), Y0
+		VBROADCASTSD 8(BX), Y1
 
 		// j2 := j1 + t
 		MOVQ R13, R14
 		ADDQ R8, R14
 
 		MOVQ R13, R12 // j
+		MOVQ R13, R15
+		ADDQ R8, R15  // j + t
 		JMP j_loop_end
 
 		j_loop:
@@ -254,8 +252,6 @@ m_loop:
 			VMOVUPD (AX)(R12*8), Y2
 
 			// V := coeffs[j+t]
-			MOVQ R12, R15
-			ADDQ R8, R15
 			VMOVUPD (AX)(R15*8), Y3
 
 			// coeffs[j] = U + V
@@ -272,6 +268,7 @@ m_loop:
 			VMOVUPD Y5, (AX)(R15*8)
 
 			ADDQ $4, R12
+			ADDQ $4, R15
 
 		j_loop_end:
 			CMPQ R12, R14
@@ -288,9 +285,7 @@ m_loop:
 		JL i_loop
 
 	// t <<= 1
-	SHLQ $1, R8
-
-	ADDQ R9, DX
+	ADDQ R8, R8
 
 	SHRQ $1, R10
 
