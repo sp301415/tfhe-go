@@ -11,7 +11,7 @@ var (
 		LWEStdDev:  0.000013071021089943935,
 		GLWEStdDev: 0.00000004990272175010415,
 
-		BlockSize: 5,
+		BlockSize: 3,
 
 		MessageModulus: 1 << 2,
 
@@ -41,7 +41,7 @@ var (
 		LWEStdDev:  0.0000380828292345977,
 		GLWEStdDev: 0.00000004990272175010415,
 
-		BlockSize: 4,
+		BlockSize: 2,
 
 		MessageModulus: 1 << 2,
 
@@ -93,7 +93,7 @@ var (
 		LWEStdDev:  0.000034119201269311964,
 		GLWEStdDev: 0.00000004053919869756513,
 
-		BlockSize: 4,
+		BlockSize: 2,
 
 		MessageModulus: 1 << 2,
 
@@ -111,7 +111,7 @@ var (
 
 	// ParamsUint3 ensures 3 bits of message precision.
 	ParamsUint3 = ParametersLiteral[uint64]{
-		LWEDimension:    740,
+		LWEDimension:    744,
 		GLWEDimension:   2,
 		PolyDegree:      1024,
 		PolyLargeDegree: 1024,
@@ -119,7 +119,7 @@ var (
 		LWEStdDev:  0.000007069849454709433,
 		GLWEStdDev: 0.00000000000000029403601535432533,
 
-		BlockSize: 5,
+		BlockSize: 3,
 
 		MessageModulus: 1 << 3,
 
@@ -137,7 +137,7 @@ var (
 
 	// ParamsUint4 ensures 4 bits of message precision.
 	ParamsUint4 = ParametersLiteral[uint64]{
-		LWEDimension:    740,
+		LWEDimension:    744,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
 		PolyLargeDegree: 2048,
@@ -145,7 +145,7 @@ var (
 		LWEStdDev:  0.000007069849454709433,
 		GLWEStdDev: 0.00000000000000029403601535432533,
 
-		BlockSize: 5,
+		BlockSize: 3,
 
 		MessageModulus: 1 << 4,
 
@@ -163,7 +163,7 @@ var (
 
 	// ParamsUint5 ensures 5 bits of message precision.
 	ParamsUint5 = ParametersLiteral[uint64]{
-		LWEDimension:    804,
+		LWEDimension:    808,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
 		PolyLargeDegree: 4096,
@@ -171,7 +171,7 @@ var (
 		LWEStdDev:  0.0000021515145918907506,
 		GLWEStdDev: 0.00000000000000029403601535432533,
 
-		BlockSize: 6,
+		BlockSize: 4,
 
 		MessageModulus: 1 << 5,
 
@@ -189,7 +189,7 @@ var (
 
 	// ParamsUint6 ensures 6 bits of message precision.
 	ParamsUint6 = ParametersLiteral[uint64]{
-		LWEDimension:    912,
+		LWEDimension:    925,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
 		PolyLargeDegree: 8192,
@@ -197,7 +197,7 @@ var (
 		LWEStdDev:  0.00000029804653749339636,
 		GLWEStdDev: 0.00000000000000029403601535432533,
 
-		BlockSize: 8,
+		BlockSize: 5,
 
 		MessageModulus: 1 << 6,
 
@@ -215,7 +215,7 @@ var (
 
 	// ParamsUint7 ensures 7 bits of message precision.
 	ParamsUint7 = ParametersLiteral[uint64]{
-		LWEDimension:    928,
+		LWEDimension:    940,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
 		PolyLargeDegree: 16384,
@@ -223,7 +223,7 @@ var (
 		LWEStdDev:  0.00000022649232786295453,
 		GLWEStdDev: 0.00000000000000029403601535432533,
 
-		BlockSize: 8,
+		BlockSize: 5,
 
 		MessageModulus: 1 << 7,
 
@@ -241,7 +241,7 @@ var (
 
 	// ParamsUint8 ensures 8 bits of message precision.
 	ParamsUint8 = ParametersLiteral[uint64]{
-		LWEDimension:    1017,
+		LWEDimension:    1044,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
 		PolyLargeDegree: 32768,
@@ -249,7 +249,7 @@ var (
 		LWEStdDev:  0.0000000460803851108693,
 		GLWEStdDev: 0.00000000000000029403601535432533,
 
-		BlockSize: 9,
+		BlockSize: 6,
 
 		MessageModulus: 1 << 8,
 
