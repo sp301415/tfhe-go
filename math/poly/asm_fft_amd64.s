@@ -2,7 +2,7 @@
 
 #include "textflag.h"
 
-TEXT ·fftInPlaceAVX2(SB), NOSPLIT, $0-48
+TEXT ·fftInPlaceAVX2(SB), $0-48
 	MOVQ coeffs+0(FP), AX
 	MOVQ wNj+24(FP), BX
 
@@ -162,7 +162,7 @@ last_loop_end:
 
 	RET
 
-TEXT ·invFFTInPlaceAVX2(SB), NOSPLIT, $0-48
+TEXT ·invFFTInPlaceAVX2(SB), $0-48
 	MOVQ coeffs+0(FP), AX
 	MOVQ wNjInv+24(FP), BX
 
@@ -326,7 +326,7 @@ last_loop_end:
 
 	RET
 
-TEXT ·untwistInPlaceAVX2(SB), NOSPLIT, $0-48
+TEXT ·untwistInPlaceAVX2(SB), $0-48
 	MOVQ v0+0(FP), AX
 	MOVQ v1+24(FP), BX
 
@@ -359,7 +359,7 @@ loop_end:
 
 	RET
 
-TEXT ·untwistAndScaleInPlaceAVX2(SB), NOSPLIT, $0-56
+TEXT ·untwistAndScaleInPlaceAVX2(SB), $0-56
 	MOVQ v0+0(FP), AX
 	MOVQ v1+24(FP), BX
 

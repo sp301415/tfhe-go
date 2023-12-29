@@ -3,11 +3,11 @@
 #include "textflag.h"
 
 DATA one32<>+0(SB)/4, $0x1
-GLOBL one32<>+0(SB), RODATA, $4
+GLOBL one32<>+0(SB), (NOPTR+RODATA), $4
 DATA one64<>+0(SB)/8, $0x1
-GLOBL one64<>+0(SB), RODATA, $8
+GLOBL one64<>+0(SB), (NOPTR+RODATA), $8
 
-TEXT ·decomposePolyAssignUint32AVX2(SB), NOSPLIT, $0-64
+TEXT ·decomposePolyAssignUint32AVX2(SB), $0-64
 	MOVQ p+0(FP), AX
 	MOVQ dOut+40(FP), BX
 
@@ -88,7 +88,7 @@ N_loop_end:
 
 	RET
 
-TEXT ·decomposePolyAssignUint64AVX2(SB), NOSPLIT, $0-72
+TEXT ·decomposePolyAssignUint64AVX2(SB), $0-72
 	MOVQ p+0(FP), AX
 	MOVQ dOut+48(FP), BX
 
