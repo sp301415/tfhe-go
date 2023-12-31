@@ -28,17 +28,23 @@ type FourierEvaluator[T num.Integer] struct {
 
 	// wNj holds the twiddle factors exp(-2pi*j/N) where j = 0 ~ N/2,
 	// ordered in bit-reversed order.
+	// Unlike other complex128 slices, wNj is in natural order.
 	wNj []complex128
 	// wNjInv holds the inverse twiddle factors exp(2pi*j/N) where j = 0 ~ N/2,
 	// ordered in bit-reversed order.
+	// Unlike other complex128 slices, wNjInv is in natural order.
 	wNjInv []complex128
 	// w2Nj holds the twisting factors exp(pi*j/N) where j = 0 ~ N/2.
-	w2Nj []complex128
+	// Ordered as float4 representation.
+	w2Nj []float64
 	// w2NjScaled holds the scaled twisting factors w2Nj * maxT.
-	w2NjScaled []complex128
+	// Ordered as float4 representation.
+	w2NjScaled []float64
 	// w2NjInv holds the inverse twisting factors exp(-pi*j/N) where j = 0 ~ N/2.
-	w2NjInv []complex128
+	// Ordered as float4 representation.
+	w2NjInv []float64
 	// w2NjMono holds the twisting factors for monomials: exp(-pi*j/N) where j = 0 ~ 2N.
+	// Unlike other complex128 slices, w2NjMono is in natural order.
 	w2NjMono []complex128
 	// revMonoIdx holds the precomputed bit-reversed index for MonomialToFourierPoly.
 	// Equivalent to BitReverse([-1, 3, 7, ..., 2N-1]).
@@ -78,7 +84,6 @@ func NewFourierEvaluator[T num.Integer](N int) *FourierEvaluator[T] {
 	}
 	vec.BitReverseInPlace(wNj[N/4:])
 	vec.BitReverseInPlace(wNjInv[:N/4])
-
 	for i := 1; i < N/4; i <<= 1 {
 		for j := 0; j < i; j++ {
 			wNj[i+j] = wNj[j+N/4]
@@ -99,6 +104,9 @@ func NewFourierEvaluator[T num.Integer](N int) *FourierEvaluator[T] {
 		w2NjScaled[j] = w2Nj[j] / complex(maxT, 0)
 		w2NjInv[j] = cmplx.Exp(-complex(0, e)) / complex(float64(N/2), 0)
 	}
+	w2NjFloat4 := vec.CmplxToFloat4(w2Nj)
+	w2NjScaledFloat4 := vec.CmplxToFloat4(w2NjScaled)
+	w2NjInvFloat4 := vec.CmplxToFloat4(w2NjInv)
 
 	w2NjMono := make([]complex128, 2*N)
 	for j := 0; j < 2*N; j++ {
@@ -119,9 +127,9 @@ func NewFourierEvaluator[T num.Integer](N int) *FourierEvaluator[T] {
 
 		wNj:        wNj,
 		wNjInv:     wNjInv,
-		w2Nj:       w2Nj,
-		w2NjScaled: w2NjScaled,
-		w2NjInv:    w2NjInv,
+		w2Nj:       w2NjFloat4,
+		w2NjScaled: w2NjScaledFloat4,
+		w2NjInv:    w2NjInvFloat4,
 		w2NjMono:   w2NjMono,
 		revMonoIdx: revMonoIdx,
 
@@ -157,11 +165,11 @@ func (f *FourierEvaluator[T]) ShallowCopy() *FourierEvaluator[T] {
 }
 
 // Degree returns the degree of polynomial that the evaluator can handle.
-func (e *FourierEvaluator[T]) Degree() int {
-	return e.degree
+func (f *FourierEvaluator[T]) Degree() int {
+	return f.degree
 }
 
 // NewFourierPoly creates a new fourier polynomial with the same degree as the evaluator.
-func (e *FourierEvaluator[T]) NewFourierPoly() FourierPoly {
-	return FourierPoly{Coeffs: make([]complex128, e.degree/2)}
+func (f *FourierEvaluator[T]) NewFourierPoly() FourierPoly {
+	return FourierPoly{Coeffs: make([]float64, f.degree)}
 }

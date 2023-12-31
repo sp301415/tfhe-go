@@ -115,9 +115,8 @@ func (bsk BootstrapKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 		for _, fglev := range fggsw.Value {
 			for _, fglwe := range fglev.Value {
 				for _, fp := range fglwe.Value {
-					for i, b := 0, 0; i < len(fp.Coeffs); i, b = i+1, b+2 {
-						binary.BigEndian.PutUint64(buf[(b+0)*8:(b+1)*8], math.Float64bits(real(fp.Coeffs[i])))
-						binary.BigEndian.PutUint64(buf[(b+1)*8:(b+2)*8], math.Float64bits(imag(fp.Coeffs[i])))
+					for i := range fp.Coeffs {
+						binary.BigEndian.PutUint64(buf[i*8:(i+1)*8], math.Float64bits(fp.Coeffs[i]))
 					}
 
 					nn, err = w.Write(buf[:polyDegree*8])
@@ -168,11 +167,8 @@ func (bsk *BootstrapKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 						return
 					}
 
-					for i, b := 0, 0; i < len(fp.Coeffs); i, b = i+1, b+2 {
-						fp.Coeffs[i] = complex(
-							math.Float64frombits(binary.BigEndian.Uint64(buf[(b+0)*8:(b+1)*8])),
-							math.Float64frombits(binary.BigEndian.Uint64(buf[(b+1)*8:(b+2)*8])),
-						)
+					for i := range fp.Coeffs {
+						fp.Coeffs[i] = math.Float64frombits(binary.BigEndian.Uint64(buf[i*8 : (i+1)*8]))
 					}
 				}
 			}

@@ -248,3 +248,88 @@ func ElementWiseMulSubAssign[T num.Number](v0 []T, v1 []T, vOut []T) {
 		vOut[i] -= v0[i] * v1[i]
 	}
 }
+
+// CmplxToFloat4 converts a complex128 vector to
+// float-4 representation used in fourier polynomials, and returns it.
+//
+// Namely, it converts
+//
+//	[(r0, i0), (r1, i1), (r2, i2), (r3, i3), ...]
+//
+// to
+//
+//	[(r0, r1, r2, r3), (i0, i1, i2, i3), ...]
+//
+// The length of the input vector should be multiple of 4.
+func CmplxToFloat4(v []complex128) []float64 {
+	vOut := make([]float64, 2*len(v))
+	CmplxToFloat4Assign(v, vOut)
+	return vOut
+}
+
+// CmplxToFloat4Assign converts a complex128 vector to
+// float-4 representation used in fourier polynomials, and writes it to vOut.
+//
+// Namely, it converts
+//
+//	[(r0, i0), (r1, i1), (r2, i2), (r3, i3), ...]
+//
+// to
+//
+//	[(r0, r1, r2, r3), (i0, i1, i2, i3), ...]
+//
+// The length of the input vector should be multiple of 4,
+// and the length of vOut should be 2 times of the length of v.
+func CmplxToFloat4Assign(v []complex128, vOut []float64) {
+	for i, j := 0, 0; i < len(v); i, j = i+4, j+8 {
+		vOut[j+0] = real(v[i+0])
+		vOut[j+1] = real(v[i+1])
+		vOut[j+2] = real(v[i+2])
+		vOut[j+3] = real(v[i+3])
+
+		vOut[j+4] = imag(v[i+0])
+		vOut[j+5] = imag(v[i+1])
+		vOut[j+6] = imag(v[i+2])
+		vOut[j+7] = imag(v[i+3])
+	}
+}
+
+// Float4ToCmplx converts a float-4 complex vector to
+// naturally ordered complex128 vector, and returns it.
+//
+// Namely, it converts
+//
+//	[(r0, r1, r2, r3), (i0, i1, i2, i3), ...]
+//
+// to
+//
+//	[(r0, i0), (r1, i1), (r2, i2), (r3, i3), ...]
+//
+// The length of the input vector should be multiple of 8.
+func Float4ToCmplx(v []float64) []complex128 {
+	vOut := make([]complex128, len(v)/2)
+	Float4ToCmplxAssign(v, vOut)
+	return vOut
+}
+
+// Float4ToCmplxAssign converts a float-4 complex vector to
+// naturally ordered complex128 vector, and writes it to vOut.
+//
+// Namely, it converts
+//
+//	[(r0, r1, r2, r3), (i0, i1, i2, i3), ...]
+//
+// to
+//
+//	[(r0, i0), (r1, i1), (r2, i2), (r3, i3), ...]
+//
+// The length of the input vector should be multiple of 8,
+// and the length of vOut should be half of the length of v.
+func Float4ToCmplxAssign(v []float64, vOut []complex128) {
+	for i, j := 0, 0; i < len(v); i, j = i+8, j+4 {
+		vOut[j+0] = complex(v[i+0], v[i+4])
+		vOut[j+1] = complex(v[i+1], v[i+5])
+		vOut[j+2] = complex(v[i+2], v[i+6])
+		vOut[j+3] = complex(v[i+3], v[i+7])
+	}
+}

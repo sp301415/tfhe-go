@@ -2,6 +2,12 @@
 
 #include "textflag.h"
 
+DATA fftStride2Mask<>+0(SB)/8, $0x0 // 1
+DATA fftStride2Mask<>+8(SB)/8, $0x0 // 1
+DATA fftStride2Mask<>+16(SB)/8, $0x8000000000000000 // -1
+DATA fftStride2Mask<>+24(SB)/8, $0x8000000000000000 // -1
+GLOBL fftStride2Mask<>+0(SB), (NOPTR+RODATA), $32
+
 TEXT ·fftInPlaceAVX2(SB), $0-48
 	MOVQ coeffs+0(FP), AX
 	MOVQ wNj+24(FP), BX
@@ -9,158 +15,196 @@ TEXT ·fftInPlaceAVX2(SB), $0-48
 	MOVQ coeffs_len+8(FP), CX
 
 	// First Loop
-	// U, V := coeffs[j], coeffs[j+N]
-	// coeffs[j], coeffs[j+N] = U+V, U-V
-
-	XORQ SI, SI         // j
-	MOVQ SI, DI
-	ADDQ CX, DI         // j+N
-	JMP  first_loop_end
-
-first_loop:
-	// U := coeffs[j]
-	VMOVUPD (AX)(SI*8), Y2
-
-	// V := coeffs[j+N]
-	VMOVUPD (AX)(DI*8), Y3
-
-	// coeffs[j] = U + V
-	VADDPD  Y3, Y2, Y4
-	VMOVUPD Y4, (AX)(SI*8)
-
-	// coeffs[j+N] = U - V
-	VSUBPD  Y3, Y2, Y4
-	VMOVUPD Y4, (AX)(DI*8)
-
-	ADDQ $4, SI
-	ADDQ $4, DI
-
-first_loop_end:
-	CMPQ SI, CX
-	JL   first_loop
-
-	// Main Loop
-	// Start with wNj[1]
-	ADDQ $16, BX
-
-	// t := 2N
-	MOVQ CX, R8
-
 	MOVQ CX, DX
 	SHRQ $1, DX // N/2
 
-	MOVQ $2, R10    // m
-	JMP  m_loop_end
+	XORQ SI, SI // j
+	XORQ DI, DI
+	ADDQ DX, DI // j + N
+	JMP first_loop_end
+
+first_loop:
+	VMOVUPD (AX)(SI*8), Y0 // Ur
+	VMOVUPD 32(AX)(SI*8), Y1 // Ui
+	VMOVUPD (AX)(DI*8), Y2 // Vr
+	VMOVUPD 32(AX)(DI*8), Y3 // Vi
+
+	VADDPD Y2, Y0, Y4
+	VADDPD Y3, Y1, Y5
+	VSUBPD Y2, Y0, Y6
+	VSUBPD Y3, Y1, Y7
+
+	VMOVUPD Y4, (AX)(SI*8)
+	VMOVUPD Y5, 32(AX)(SI*8)
+	VMOVUPD Y6, (AX)(DI*8)
+	VMOVUPD Y7, 32(AX)(DI*8)
+
+	ADDQ $8, SI
+	ADDQ $8, DI
+first_loop_end:
+	CMPQ SI, DX
+	JL first_loop
+
+	// Main loop
+	// Start with wNj[1]
+	ADDQ $16, BX
+
+	// t := N >> 1
+	MOVQ DX, R8 // t
+
+	MOVQ $4, SI // m
+	SHRQ $1, DX // N/4
+	JMP m_loop_end
 
 m_loop:
 	// t >>= 1
 	SHRQ $1, R8
 
-	XORQ R11, R11   // i
-	JMP  i_loop_end
+	XORQ DI, DI // i
+	JMP i_loop_end
 
 i_loop:
-	// Load wNj[m+i]
-	ADDQ         $16, BX
-	VBROADCASTSD (BX), Y0
-	VBROADCASTSD 8(BX), Y1
-
-	// j = j1 := i*t << 1
-	MOVQ  R11, R12
-	IMULQ R8, R12
-	ADDQ  R12, R12
+	// j1 := i * t
+	MOVQ DI, R9 // j = j1
+	IMULQ R8, R9
 
 	// j2 := j1 + t
-	MOVQ R12, R14
-	ADDQ R8, R14
+	MOVQ R9, R11 // j2
+	ADDQ R8, R11
 
-	MOVQ R12, R15
-	ADDQ R8, R15    // j + t
-	JMP  j_loop_end
+	MOVQ R11, R10 // j + t
+
+	ADDQ $16, BX
+	VBROADCASTSD (BX), Y13 // Wr
+	VBROADCASTSD 8(BX), Y14 // Wi
+
+	JMP j_loop_end
 
 j_loop:
-	// U := coeffs[j]
-	VMOVUPD (AX)(R12*8), Y2
+	VMOVUPD (AX)(R9*8), Y0 // Ur
+	VMOVUPD 32(AX)(R9*8), Y1 // Ui
+	VMOVUPD (AX)(R10*8), Y2 // Vr
+	VMOVUPD 32(AX)(R10*8), Y3 // Vi
 
-	// V := coeffs[j+t]
-	VMOVUPD (AX)(R15*8), Y3
+	// V * W
+	VMULPD Y3, Y14, Y4
+    VFMSUB231PD Y2, Y13, Y4 // Vr * W
 
-	// V = V * wNj[m+i]
-	VSHUFPD        $0b0101, Y3, Y3, Y4
-	VMULPD         Y1, Y4, Y4
-	VFMADDSUB231PD Y0, Y3, Y4
+	VMULPD Y2, Y14, Y5
+    VFMADD231PD Y3, Y13, Y5 // Vi * W
 
-	// coeffs[j] = U + V
-	VADDPD  Y4, Y2, Y5
-	VMOVUPD Y5, (AX)(R12*8)
+	VADDPD Y4, Y0, Y6
+	VADDPD Y5, Y1, Y7
+	VSUBPD Y4, Y0, Y8
+	VSUBPD Y5, Y1, Y9
 
-	// coeffs[j] = U - V
-	VSUBPD  Y4, Y2, Y5
-	VMOVUPD Y5, (AX)(R15*8)
+	VMOVUPD Y6, (AX)(R9*8)
+	VMOVUPD Y7, 32(AX)(R9*8)
+	VMOVUPD Y8, (AX)(R10*8)
+	VMOVUPD Y9, 32(AX)(R10*8)
 
-	ADDQ $4, R12
-	ADDQ $4, R15
-
+	ADDQ $8, R9
+	ADDQ $8, R10
 j_loop_end:
-	CMPQ R12, R14
-	JL   j_loop
+	CMPQ R9, R11
+	JL j_loop
 
-	ADDQ $1, R11
-
+	ADDQ $2, DI
 i_loop_end:
-	CMPQ R11, R10
-	JL   i_loop
+	CMPQ DI, SI
+	JL i_loop
 
-	// m <<= 1
-	ADDQ R10, R10
-
+	ADDQ SI, SI
 m_loop_end:
-	CMPQ R10, DX
-	JL   m_loop
+	CMPQ SI, DX
+	JL m_loop
 
-	// Last Loop
-	// U, V := coeffs[j], coeffs[j+1]*wNj[j+N]
-	// coeffs[j], coeffs[j+1] = U+V, U-V
+	// Last two loops
+	// Last Loop - stride = 2
+	VMOVUPD fftStride2Mask<>+0(SB), Y10 // (1, 1, -1, -1)
 
-	MOVQ CX, DX
-	ADDQ CX, DX // 2N
+	XORQ DI, DI // j
+	JMP last_loop_2_end
 
-	XORQ SI, SI        // j
-	JMP  last_loop_end
+last_loop_2:
+	ADDQ $16, BX
+	VMOVUPD (BX), X10
+	VSHUFPD $0b00, X10, X10, X13 // Wr
+	VSHUFPD $0b11, X10, X10, X14 // Wi
 
-last_loop:
-	// Load wNj[j+N]
-	ADDQ    $16, BX
-	VMOVUPD (BX), X2
-	VSHUFPD $0b00, X2, X2, X0
-	VSHUFPD $0b11, X2, X2, X1
+	VMOVUPD (AX)(DI*8), X0 // Ur
+	VMOVUPD 16(AX)(DI*8), X1 // Vr
+	VMOVUPD 32(AX)(DI*8), X2 // Ui
+	VMOVUPD 48(AX)(DI*8), X3 // Vi
 
-	// U := coeffs[j]
-	VMOVUPD (AX)(SI*8), X2
+	VMULPD X3, X14, X4
+	VFMSUB231PD X1, X13, X4 // Vr * W
 
-	// V := coeffs[j+1]
-	VMOVUPD 16(AX)(SI*8), X3
+	VMULPD X3, X13, X5
+	VFMADD231PD X1, X14, X5 // Vi * W
 
-	// V = V * wNj[j+N]
-	VSHUFPD        $0b01, X3, X3, X4
-	VMULPD         X1, X4, X4
-	VFMADDSUB231PD X0, X3, X4
+	VADDPD X4, X0, X6
+	VSUBPD X4, X0, X7
 
-	// coeffs[j] = U + V
-	VADDPD  X4, X2, X5
-	VMOVUPD X5, (AX)(SI*8)
+	VADDPD X5, X2, X8
+	VSUBPD X5, X2, X9
 
-	// coeffs[j+1] = U - V
-	VSUBPD  X4, X2, X5
-	VMOVUPD X5, 16(AX)(SI*8)
+	VMOVUPD X6, (AX)(DI*8)
+	VMOVUPD X7, 16(AX)(DI*8)
+	VMOVUPD X8, 32(AX)(DI*8)
+	VMOVUPD X9, 48(AX)(DI*8)
+
+	ADDQ $8, DI
+last_loop_2_end:
+	CMPQ DI, CX
+	JL last_loop_2
+
+	// Last Loop - stride 1
+	VBROADCASTSD fftStride2Mask<>+16(SB), Y10 // (-1, -1, -1, -1)
+
+	// We read wNj with stride 32 from here,
+	// So we offset it by -16.
+	SUBQ $16, BX
+
+	XORQ SI, SI // i
+	XORQ DI, DI // j
+	JMP last_loop_1_end
+
+last_loop_1:
+	ADDQ $32, BX
+	VMOVUPD (BX), Y13 // (Wr0, Wi0, Wr1, Wi1)
+	VSHUFPD $0b0101, Y13, Y13, Y14
+
+	VMOVUPD (AX)(DI*8), Y0 // (Ur0, Vr0, Ur1, Vr1)
+	VMOVUPD 32(AX)(DI*8), Y1 // (Ui0, Vi0, Ui1, Vi1)
+
+	VSHUFPD $0b1111, Y0, Y0, Y2 // (Vr0, Vr0, Vr1, Vr1)
+	VSHUFPD $0b1111, Y1, Y1, Y3 // (Vi0, Vi0, Vi1, Vi1)
+
+	VMULPD Y3, Y14, Y5
+	VFMADDSUB231PD Y2, Y13, Y5 // (Vr0 * W, Vi0 * W, Vr1 * W, Vi1 * W)
+
+	VSHUFPD $0b0000, Y0, Y0, Y6 // (Ur0, Ur0, Ur1, Ur1)
+	VSHUFPD $0b0000, Y1, Y1, Y7 // (Ui0, Ui0, Ui1, Ui1)
+
+	VSHUFPD $0b0000, Y5, Y5, Y0 // (Vr0 * W, Vr0 * W, Vr1 * W, Vr1 * W)
+	VSHUFPD $0b1111, Y5, Y5, Y1 // (Vi0 * W, Vi0 * W, Vi1 * W, Vi1 * W)
+	VPXOR Y0, Y10, Y0
+	VPXOR Y1, Y10, Y1
+
+	VADDSUBPD Y0, Y6, Y0
+	VADDSUBPD Y1, Y7, Y1
+
+	VMOVUPD Y0, (AX)(DI*8)
+	VMOVUPD Y1, 32(AX)(DI*8)
 
 	ADDQ $4, SI
+	ADDQ $8, DI
+last_loop_1_end:
+	CMPQ DI, CX
+	JL last_loop_1
 
-last_loop_end:
-	CMPQ SI, DX
-	JL   last_loop
-
-	RET
+    RET
 
 TEXT ·invFFTInPlaceAVX2(SB), $0-48
 	MOVQ coeffs+0(FP), AX
@@ -168,161 +212,196 @@ TEXT ·invFFTInPlaceAVX2(SB), $0-48
 
 	MOVQ coeffs_len+8(FP), CX
 
-	// First Loop
-	// U, V := coeffs[j], coeffs[j+1]
-	// coeffs[j], coeffs[j+1] = U+V, (U-V)*wNj[i]
-	// Start from wNj[-1]
-	SUBQ $16, BX
+	// First two loops
+	// First Loop - stride 1
+	// We read wNjInv with stride 32 here,
+	// So we offset it by -32.
+	SUBQ $32, BX
 
-	MOVQ CX, DX
-	ADDQ CX, DX // 2N
+	XORQ SI, SI // i
+	XORQ DI, DI // j
+	JMP first_loop_1_end
 
-	XORQ SI, SI // j
+first_loop_1:
+	ADDQ $32, BX
+	VMOVUPD (BX), Y13 // (Wr0, Wi0, Wr1, Wi1)
+	VSHUFPD $0b0101, Y13, Y13, Y14
 
-	JMP first_loop_end
+	VMOVUPD (AX)(DI*8), Y0 // (Ur0, Vr0, Ur1, Vr1)
+	VMOVUPD 32(AX)(DI*8), Y1 // (Ui0, Vi0, Ui1, Vi1)
 
-first_loop:
-	// Load wNj[i]
-	ADDQ    $16, BX
-	VMOVUPD (BX), X2
-	VSHUFPD $0b00, X2, X2, X0
-	VSHUFPD $0b11, X2, X2, X1
+	VHADDPD Y0, Y0, Y10
+	VHADDPD Y1, Y1, Y11
 
-	// U := coeffs[j]
-	VMOVUPD (AX)(SI*8), X2
+	VSHUFPD $0b0000, Y1, Y0, Y2 // (Ur0, Ui0, Ur1, Ui1)
+	VSHUFPD $0b1111, Y1, Y0, Y3 // (Vr0, Vi0, Vr1, Vi1)
 
-	// V := coeffs[j+1]
-	VMOVUPD 16(AX)(SI*8), X3
+	VSUBPD Y3, Y2, Y2 // (UVr0, UVi0, UVr1, UVi1)
 
-	// coeffs[j] = U + V
-	VADDPD  X3, X2, X4
-	VMOVUPD X4, (AX)(SI*8)
+	VSHUFPD $0b0000, Y2, Y2, Y3 // (UVr0, UVr0, UVr1, UVr1)
+	VSHUFPD $0b1111, Y2, Y2, Y4 // (UVi0, UVi0, UVi1, UVi1)
 
-	// coeffs[j+1] = U - V
-	VSUBPD X3, X2, X4
+	VMULPD Y4, Y14, Y5
+	VFMADDSUB231PD Y3, Y13, Y5 // (UVr0 * W, UVi0 * W, UVr1 * W, UVi1 * W)
 
-	// coeffs[j+1] = coeffs[j+1] * wNj[i]
-	VSHUFPD        $0b01, X4, X4, X5
-	VMULPD         X1, X5, X5
-	VFMADDSUB231PD X0, X4, X5
-	VMOVUPD        X5, 16(AX)(SI*8)
+	VSHUFPD $0b0000, Y5, Y10, Y6
+	VSHUFPD $0b1111, Y5, Y11, Y7
+
+	VMOVUPD Y6, (AX)(DI*8)
+	VMOVUPD Y7, 32(AX)(DI*8)
 
 	ADDQ $4, SI
+	ADDQ $8, DI
+first_loop_1_end:
+	CMPQ DI, CX
+	JL first_loop_1
 
-first_loop_end:
-	CMPQ SI, DX
-	JL   first_loop
+	// First Loop - stride 2
+	// We read wNjInv with stride 16 from here,
+	// So we offset it by 32 - 16 = 16.
+	ADDQ $16, BX
+
+	XORQ DI, DI // j
+	JMP first_loop_2_end
+
+first_loop_2:
+	ADDQ $16, BX
+	VMOVUPD (BX), X10
+	VSHUFPD $0b00, X10, X10, X13 // Wr
+	VSHUFPD $0b11, X10, X10, X14 // Wi
+
+	VMOVUPD (AX)(DI*8), X0 // Ur
+	VMOVUPD 16(AX)(DI*8), X1 // Vr
+	VMOVUPD 32(AX)(DI*8), X2 // Ui
+	VMOVUPD 48(AX)(DI*8), X3 // Vi
+
+	VADDPD X1, X0, X10
+	VADDPD X3, X2, X11
+
+	VSUBPD X1, X0, X4
+	VSUBPD X3, X2, X5
+
+	VMULPD X5, X14, X6
+	VFMSUB231PD X4, X13, X6 // Vr * W
+
+	VMULPD X5, X13, X7
+	VFMADD231PD X4, X14, X7 // Vi * W
+
+	VMOVUPD X10, (AX)(DI*8)
+	VMOVUPD X6, 16(AX)(DI*8)
+	VMOVUPD X11, 32(AX)(DI*8)
+	VMOVUPD X7, 48(AX)(DI*8)
+
+	ADDQ $8, DI
+first_loop_2_end:
+	CMPQ DI, CX
+	JL first_loop_2
 
 	// Main Loop
-	// t := 4
-	MOVQ $4, R8
+	// t := 8
+	MOVQ $8, R8 // t
 
-	MOVQ CX, R10
-	SHRQ $1, R10    // m
-	JMP  m_loop_end
+	MOVQ CX, SI
+	SHRQ $3, SI // m = N/8
+	JMP m_loop_end
 
 m_loop:
 	// j1 := 0
-	XORQ R13, R13
+	XORQ R9, R9 // j1
 
-	// h := m >> 1
-	MOVQ R10, R9
-	SHRQ $1, R9
-
-	XORQ R11, R11   // i
-	JMP  i_loop_end
+	XORQ DI, DI // i
+	JMP i_loop_end
 
 i_loop:
-	// Load wNjInv[k+i]
-	ADDQ         $16, BX
-	VBROADCASTSD (BX), Y0
-	VBROADCASTSD 8(BX), Y1
-
 	// j2 := j1 + t
-	MOVQ R13, R14
-	ADDQ R8, R14
+	MOVQ R9, R12
+	ADDQ R8, R12 // j2
 
-	MOVQ R13, R12   // j
-	MOVQ R13, R15
-	ADDQ R8, R15    // j + t
-	JMP  j_loop_end
+	MOVQ R9, R10 // j
+	MOVQ R9, R11
+	ADDQ R8, R11 // j + t
+
+	ADDQ $16, BX
+	VBROADCASTSD (BX), Y13 // Wr
+	VBROADCASTSD 8(BX), Y14 // Wi
 
 j_loop:
-	// U := coeffs[j]
-	VMOVUPD (AX)(R12*8), Y2
+	VMOVUPD (AX)(R10*8), Y0 // Ur
+	VMOVUPD 32(AX)(R10*8), Y1 // Ui
+	VMOVUPD (AX)(R11*8), Y2 // Vr
+	VMOVUPD 32(AX)(R11*8), Y3 // Vi
 
-	// V := coeffs[j+t]
-	VMOVUPD (AX)(R15*8), Y3
+	VADDPD Y2, Y0, Y4
+	VADDPD Y3, Y1, Y5
 
-	// coeffs[j] = U + V
-	VADDPD  Y3, Y2, Y4
-	VMOVUPD Y4, (AX)(R12*8)
+	VSUBPD Y2, Y0, Y6 // UVr
+	VSUBPD Y3, Y1, Y7 // UVi
 
-	// U - V
-	VSUBPD Y3, Y2, Y4
+	// UV * W
+	VMULPD Y7, Y14, Y8
+    VFMSUB231PD Y6, Y13, Y8 // UVr * W
 
-	// coeffs[j+t] = (U - V) * wNjInv[k+i]
-	VSHUFPD        $0b0101, Y4, Y4, Y5
-	VMULPD         Y1, Y5, Y5
-	VFMADDSUB231PD Y0, Y4, Y5
-	VMOVUPD        Y5, (AX)(R15*8)
+	VMULPD Y6, Y14, Y9
+    VFMADD231PD Y7, Y13, Y9 // UVi * W
 
-	ADDQ $4, R12
-	ADDQ $4, R15
+	VMOVUPD Y4, (AX)(R10*8)
+	VMOVUPD Y5, 32(AX)(R10*8)
+	VMOVUPD Y8, (AX)(R11*8)
+	VMOVUPD Y9, 32(AX)(R11*8)
 
+	ADDQ $8, R10
+	ADDQ $8, R11
 j_loop_end:
-	CMPQ R12, R14
-	JL   j_loop
+	CMPQ R10, R12
+	JL j_loop
 
 	// j1 += t << 1
-	ADDQ R8, R13
-	ADDQ R8, R13
+	ADDQ R8, R9
+	ADDQ R8, R9
 
-	ADDQ $1, R11
-
+	ADDQ $2, DI
 i_loop_end:
-	CMPQ R11, R9
-	JL   i_loop
+	CMPQ DI, SI
+	JL i_loop
 
 	// t <<= 1
 	ADDQ R8, R8
 
-	SHRQ $1, R10
-
+	SHRQ $1, SI
 m_loop_end:
-	CMPQ R10, $2
-	JG   m_loop
+	CMPQ SI, $2
+	JG m_loop
 
 	// Last Loop
-	// U, V := coeffs[j], coeffs[j+N]
-	// coeffs[j], coeffs[j+N] = U+V, U-V
+	MOVQ CX, DX
+	SHRQ $1, DX // N/2
 
-	XORQ SI, SI        // j
-	MOVQ SI, DI
-	ADDQ CX, DI        // j+N
-	JMP  last_loop_end
+	XORQ SI, SI // j
+	XORQ DI, DI
+	ADDQ DX, DI // j + N/2
+	JMP last_loop_end
 
 last_loop:
-	// U := coeffs[j]
-	VMOVUPD (AX)(SI*8), Y2
+	VMOVUPD (AX)(SI*8), Y0 // Ur
+	VMOVUPD 32(AX)(SI*8), Y1 // Ui
+	VMOVUPD (AX)(DI*8), Y2 // Vr
+	VMOVUPD 32(AX)(DI*8), Y3 // Vi
 
-	// V := coeffs[j+N]
-	VMOVUPD (AX)(DI*8), Y3
+	VADDPD Y2, Y0, Y4
+	VADDPD Y3, Y1, Y5
+	VSUBPD Y2, Y0, Y6
+	VSUBPD Y3, Y1, Y7
 
-	// coeffs[j] = U + V
-	VADDPD  Y3, Y2, Y4
 	VMOVUPD Y4, (AX)(SI*8)
+	VMOVUPD Y5, 32(AX)(SI*8)
+	VMOVUPD Y6, (AX)(DI*8)
+	VMOVUPD Y7, 32(AX)(DI*8)
 
-	// coeffs[j+N] = U - V
-	VSUBPD  Y3, Y2, Y4
-	VMOVUPD Y4, (AX)(DI*8)
-
-	ADDQ $4, SI
-	ADDQ $4, DI
-
+	ADDQ $8, SI
+	ADDQ $8, DI
 last_loop_end:
-	CMPQ SI, CX
-	JL   last_loop
+	CMPQ SI, DX
+	JL last_loop
 
 	RET
 
@@ -331,28 +410,29 @@ TEXT ·untwistInPlaceAVX2(SB), $0-48
 	MOVQ v1+24(FP), BX
 
 	MOVQ v0_len+8(FP), DX
-	ADDQ DX, DX
 
 	XORQ SI, SI
 	JMP  loop_end
 
 loop_body:
 	VMOVUPD (AX)(SI*8), Y0
-	VMOVUPD (BX)(SI*8), Y1
+	VMOVUPD 32(AX)(SI*8), Y1
+	VMOVUPD (BX)(SI*8), Y2
+	VMOVUPD 32(BX)(SI*8), Y3
 
-	VSHUFPD $0b0101, Y1, Y1, Y2
-	VSHUFPD $0b1111, Y0, Y0, Y3
-	VSHUFPD $0b0000, Y0, Y0, Y4
+	VMULPD Y1, Y3, Y4
+	VFMSUB231PD Y0, Y2, Y4
 
-	VMULPD         Y2, Y3, Y5
-	VFMADDSUB231PD Y1, Y4, Y5
+	VMULPD Y0, Y3, Y5
+	VFMADD231PD Y1, Y2, Y5
 
+	VROUNDPD $0, Y4, Y4
 	VROUNDPD $0, Y5, Y5
 
-	VMOVUPD Y5, (AX)(SI*8)
+	VMOVUPD Y4, (AX)(SI*8)
+	VMOVUPD Y5, 32(AX)(SI*8)
 
-	ADDQ $4, SI
-
+	ADDQ $8, SI
 loop_end:
 	CMPQ SI, DX
 	JL   loop_body
@@ -364,7 +444,6 @@ TEXT ·untwistAndScaleInPlaceAVX2(SB), $0-56
 	MOVQ v1+24(FP), BX
 
 	MOVQ v0+8(FP), DX
-	ADDQ DX, DX
 
 	VBROADCASTSD T+48(FP), Y10
 
@@ -373,23 +452,28 @@ TEXT ·untwistAndScaleInPlaceAVX2(SB), $0-56
 
 loop_body:
 	VMOVUPD (AX)(SI*8), Y0
-	VMOVUPD (BX)(SI*8), Y1
+	VMOVUPD 32(AX)(SI*8), Y1
+	VMOVUPD (BX)(SI*8), Y2
+	VMOVUPD 32(BX)(SI*8), Y3
 
-	VSHUFPD $0b0101, Y1, Y1, Y2
-	VSHUFPD $0b1111, Y0, Y0, Y3
-	VSHUFPD $0b0000, Y0, Y0, Y4
+	VMULPD Y1, Y3, Y4
+	VFMSUB231PD Y0, Y2, Y4
 
-	VMULPD         Y2, Y3, Y5
-	VFMADDSUB231PD Y1, Y4, Y5
+	VMULPD Y0, Y3, Y5
+	VFMADD231PD Y1, Y2, Y5
+
+	VROUNDPD $0, Y4, Y6
+	VSUBPD   Y6, Y4, Y4
+	VMULPD   Y4, Y10, Y4
 
 	VROUNDPD $0, Y5, Y6
-	VSUBPD   Y6, Y5, Y5
-	VMULPD   Y5, Y10, Y5
+	VSUBPD Y6, Y5, Y5
+	VMULPD Y5, Y10, Y5
 
-	VMOVUPD Y5, (AX)(SI*8)
+	VMOVUPD Y4, (AX)(SI*8)
+	VMOVUPD Y5, 32(AX)(SI*8)
 
-	ADDQ $4, SI
-
+	ADDQ $8, SI
 loop_end:
 	CMPQ SI, DX
 	JL   loop_body

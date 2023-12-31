@@ -61,13 +61,19 @@ func (p Poly[T]) Equals(p0 Poly[T]) bool {
 	return vec.Equals(p.Coeffs, p0.Coeffs)
 }
 
-// FourierPoly is a polynomial with Fourier Transform applied.
-// Since we fold degree N polynomial in Z[X]/(X^N+1) to
-// degree N/2 polynomial in C[X]/(X^N/2+1),
-// we store N/2 coefficients, instead of N.
+// FourierPoly is a polynomial in the fourier domain, C[X]/(X^N/2-1).
 type FourierPoly struct {
-	// Coeffs has length Degree / 2.
-	Coeffs []complex128
+	// Coeffs is ordered as float4 representation
+	// for efficient computation.
+	//
+	// Namely,
+	//	[(r0, i0), (r1, i1), (r2, i2), (r3, i3), ...]
+	//
+	// is represented as
+	//
+	//	[(r0, r1, r2, r3), (i0, i1, i2, i3), ...]
+	//
+	Coeffs []float64
 }
 
 // NewFourierPoly creates a fourier polynomial with degree N with empty coefficients.
@@ -81,12 +87,12 @@ func NewFourierPoly(N int) FourierPoly {
 		panic("degree smaller than MinDegree")
 	}
 
-	return FourierPoly{Coeffs: make([]complex128, N/2)}
+	return FourierPoly{Coeffs: make([]float64, N)}
 }
 
 // Degree returns the degree of the polynomial.
 func (p FourierPoly) Degree() int {
-	return len(p.Coeffs) * 2
+	return len(p.Coeffs)
 }
 
 // Copy returns a copy of the polynomial.

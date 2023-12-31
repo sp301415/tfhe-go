@@ -8,7 +8,6 @@ TEXT ·addCmplxAssignAVX2(SB), $0-72
 	MOVQ vOut+48(FP), CX
 
 	MOVQ vOut_len+56(FP), DX
-	ADDQ DX, DX
 
 	XORQ SI, SI
 	JMP  loop_end
@@ -17,12 +16,11 @@ loop_body:
 	VMOVUPD (AX)(SI*8), Y0
 	VMOVUPD (BX)(SI*8), Y1
 
-	VADDPD Y0, Y1, Y2
+	VADDPD Y1, Y0, Y2
 
 	VMOVUPD Y2, (CX)(SI*8)
 
 	ADDQ $4, SI
-
 loop_end:
 	CMPQ SI, DX
 	JL   loop_body
@@ -35,7 +33,6 @@ TEXT ·subCmplxAssignAVX2(SB), $0-72
 	MOVQ vOut+48(FP), CX
 
 	MOVQ vOut_len+56(FP), DX
-	ADDQ DX, DX
 
 	XORQ SI, SI
 	JMP  loop_end
@@ -49,7 +46,6 @@ loop_body:
 	VMOVUPD Y2, (CX)(SI*8)
 
 	ADDQ $4, SI
-
 loop_end:
 	CMPQ SI, DX
 	JL   loop_body
@@ -61,21 +57,19 @@ TEXT ·negCmplxAssignAVX2(SB), $0-48
 	MOVQ vOut+24(FP), CX
 
 	MOVQ vOut_len+32(FP), DX
-	ADDQ DX, DX
 
+	VPXOR Y1, Y1, Y1
 	XORQ SI, SI
 	JMP  loop_end
 
 loop_body:
 	VMOVUPD (AX)(SI*8), Y0
 
-	VXORPD Y1, Y1, Y1
 	VSUBPD Y0, Y1, Y2
 
 	VMOVUPD Y2, (CX)(SI*8)
 
 	ADDQ $4, SI
-
 loop_end:
 	CMPQ SI, DX
 	JL   loop_body
@@ -88,26 +82,26 @@ TEXT ·elementWiseMulCmplxAssignAVX2(SB), $0-72
 	MOVQ vOut+48(FP), CX
 
 	MOVQ vOut_len+56(FP), DX
-	ADDQ DX, DX
 
 	XORQ SI, SI
 	JMP  loop_end
 
 loop_body:
 	VMOVUPD (AX)(SI*8), Y0
-	VMOVUPD (BX)(SI*8), Y1
+	VMOVUPD 32(AX)(SI*8), Y1
+	VMOVUPD (BX)(SI*8), Y2
+	VMOVUPD 32(BX)(SI*8), Y3
 
-	VSHUFPD $0b0101, Y1, Y1, Y2
-	VSHUFPD $0b1111, Y0, Y0, Y3
-	VSHUFPD $0b0000, Y0, Y0, Y4
+	VMULPD Y1, Y3, Y4
+	VFMSUB231PD Y0, Y2, Y4
 
-	VMULPD         Y2, Y3, Y5
-	VFMADDSUB231PD Y1, Y4, Y5
+	VMULPD Y0, Y3, Y5
+	VFMADD231PD Y1, Y2, Y5
 
-	VMOVUPD Y5, (CX)(SI*8)
+	VMOVUPD Y4, (CX)(SI*8)
+	VMOVUPD Y5, 32(CX)(SI*8)
 
-	ADDQ $4, SI
-
+	ADDQ $8, SI
 loop_end:
 	CMPQ SI, DX
 	JL   loop_body
@@ -120,28 +114,32 @@ TEXT ·elementWiseMulAddCmplxAssignAVX2(SB), $0-72
 	MOVQ vOut+48(FP), CX
 
 	MOVQ vOut_len+56(FP), DX
-	ADDQ DX, DX
 
 	XORQ SI, SI
 	JMP  loop_end
 
 loop_body:
 	VMOVUPD (AX)(SI*8), Y0
-	VMOVUPD (BX)(SI*8), Y1
+	VMOVUPD 32(AX)(SI*8), Y1
+	VMOVUPD (BX)(SI*8), Y2
+	VMOVUPD 32(BX)(SI*8), Y3
 
-	VSHUFPD $0b0101, Y1, Y1, Y2
-	VSHUFPD $0b1111, Y0, Y0, Y3
-	VSHUFPD $0b0000, Y0, Y0, Y4
+	VMULPD Y1, Y3, Y4
+	VFMSUB231PD Y0, Y2, Y4
 
-	VMULPD         Y2, Y3, Y5
-	VFMADDSUB231PD Y1, Y4, Y5
+	VMULPD Y0, Y3, Y5
+	VFMADD231PD Y1, Y2, Y5
 
 	VMOVUPD (CX)(SI*8), Y6
-	VADDPD  Y5, Y6, Y6
-	VMOVUPD Y6, (CX)(SI*8)
+	VMOVUPD 32(CX)(SI*8), Y7
 
-	ADDQ $4, SI
+	VADDPD Y4, Y6, Y4
+	VADDPD Y5, Y7, Y5
 
+	VMOVUPD Y4, (CX)(SI*8)
+	VMOVUPD Y5, 32(CX)(SI*8)
+
+	ADDQ $8, SI
 loop_end:
 	CMPQ SI, DX
 	JL   loop_body
@@ -154,28 +152,32 @@ TEXT ·elementWiseMulSubCmplxAssignAVX2(SB), $0-72
 	MOVQ vOut+48(FP), CX
 
 	MOVQ vOut_len+56(FP), DX
-	ADDQ DX, DX
 
 	XORQ SI, SI
 	JMP  loop_end
 
 loop_body:
 	VMOVUPD (AX)(SI*8), Y0
-	VMOVUPD (BX)(SI*8), Y1
+	VMOVUPD 32(AX)(SI*8), Y1
+	VMOVUPD (BX)(SI*8), Y2
+	VMOVUPD 32(BX)(SI*8), Y3
 
-	VSHUFPD $0b0101, Y1, Y1, Y2
-	VSHUFPD $0b1111, Y0, Y0, Y3
-	VSHUFPD $0b0000, Y0, Y0, Y4
+	VMULPD Y1, Y3, Y4
+	VFMSUB231PD Y0, Y2, Y4
 
-	VMULPD         Y2, Y3, Y5
-	VFMADDSUB231PD Y1, Y4, Y5
+	VMULPD Y0, Y3, Y5
+	VFMADD231PD Y1, Y2, Y5
 
 	VMOVUPD (CX)(SI*8), Y6
-	VSUBPD  Y5, Y6, Y6
-	VMOVUPD Y6, (CX)(SI*8)
+	VMOVUPD 32(CX)(SI*8), Y7
 
-	ADDQ $4, SI
+	VSUBPD Y4, Y6, Y4
+	VSUBPD Y5, Y7, Y5
 
+	VMOVUPD Y4, (CX)(SI*8)
+	VMOVUPD Y5, 32(CX)(SI*8)
+
+	ADDQ $8, SI
 loop_end:
 	CMPQ SI, DX
 	JL   loop_body
