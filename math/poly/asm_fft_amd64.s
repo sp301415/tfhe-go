@@ -165,7 +165,7 @@ last_loop_2_end:
 	JL   last_loop_2
 
 	// Last Loop - stride 1
-	VBROADCASTSD fftStride2Mask<>+16(SB), Y10 // (-1, -1, -1, -1)
+	VPXOR Y10, Y10, Y10 // (0, 0, 0, 0)
 
 	// We read wNj with stride 32 from here,
 	// So we offset it by -16.
@@ -194,8 +194,8 @@ last_loop_1:
 
 	VSHUFPD $0b0000, Y5, Y5, Y0 // (Vr0 * W, Vr0 * W, Vr1 * W, Vr1 * W)
 	VSHUFPD $0b1111, Y5, Y5, Y1 // (Vi0 * W, Vi0 * W, Vi1 * W, Vi1 * W)
-	VPXOR   Y0, Y10, Y0
-	VPXOR   Y1, Y10, Y1
+	VSUBPD  Y0, Y10, Y0
+	VSUBPD  Y1, Y10, Y1
 
 	VADDSUBPD Y0, Y6, Y0
 	VADDSUBPD Y1, Y7, Y1

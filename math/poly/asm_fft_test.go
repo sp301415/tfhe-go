@@ -114,19 +114,29 @@ func BenchmarkFFTAssembly(b *testing.B) {
 	}
 	coeffsAVX2 := vec.CmplxToFloat4(coeffs)
 
-	wNj := make([]complex128, N/2)
-	wNjInv := make([]complex128, N/2)
+	wNj := make([]complex128, N)
+	wNjInv := make([]complex128, N)
 	for j := 0; j < N/2; j++ {
 		e := -4 * math.Pi * float64(j) / float64(N)
-		wNj[j] = cmplx.Exp(complex(0, e))
+		wNj[j+N/2] = cmplx.Exp(complex(0, e))
 		wNjInv[j] = cmplx.Exp(-complex(0, e))
 	}
-	vec.BitReverseInPlace(wNj)
-	vec.BitReverseInPlace(wNjInv)
+	vec.BitReverseInPlace(wNj[N/2:])
+	vec.BitReverseInPlace(wNjInv[:N/2])
+	for i := 1; i < N/2; i <<= 1 {
+		for j := 0; j < i; j++ {
+			wNj[i+j] = wNj[j+N/2]
+		}
+	}
+	for i, x := N/4, 0; i >= 1; i, x = i>>1, x+i {
+		for j := 0; j < i; j++ {
+			wNjInv[x+j+N/2] = wNjInv[j]
+		}
+	}
 
 	b.Run("FFT", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			fftInPlaceGeneric(coeffs, wNj)
+			fftInPlaceGeneric(coeffs, wNj[N/2:])
 		}
 	})
 
@@ -138,7 +148,7 @@ func BenchmarkFFTAssembly(b *testing.B) {
 
 	b.Run("InvFFT", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			invFFTInPlaceGeneric(coeffs, wNj)
+			invFFTInPlaceGeneric(coeffs, wNj[:N/2])
 		}
 	})
 
