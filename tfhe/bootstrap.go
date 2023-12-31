@@ -147,6 +147,7 @@ func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T]
 // This is equivalent to the blind rotation algorithm using extended polynomials, as explained in https://eprint.iacr.org/2023/402.
 func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
 	ctAccFourierDecomposedSub := e.buffer.ctAccFourierDecomposed[e.Parameters.polyExtendFactor]
+	polyDecomposed := e.buffer.polyDecomposed[:e.Parameters.bootstrapParameters.level]
 
 	// Implementation of Algorithm 4 from https://eprint.iacr.org/2023/402
 	// Slightly modified for Block Binary Keys
@@ -174,7 +175,10 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 	}
 
 	for j := 0; j < e.Parameters.polyExtendFactor; j++ {
-		e.FourierDecomposePolyAssign(e.buffer.ctAcc[j].Value[0], e.Parameters.bootstrapParameters, e.buffer.ctAccFourierDecomposed[j][0])
+		e.DecomposePolyAssign(e.buffer.ctAcc[j].Value[0], e.Parameters.bootstrapParameters, polyDecomposed)
+		for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
+			e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[k], e.buffer.ctAccFourierDecomposed[j][0][k])
+		}
 	}
 
 	for j := 0; j < e.Parameters.blockSize; j++ {
@@ -217,7 +221,10 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 	for i := 1; i < e.Parameters.blockCount-1; i++ {
 		for j := 0; j < e.Parameters.polyExtendFactor; j++ {
 			for k := 0; k < e.Parameters.glweDimension+1; k++ {
-				e.FourierDecomposePolyAssign(e.buffer.ctAcc[j].Value[k], e.Parameters.bootstrapParameters, e.buffer.ctAccFourierDecomposed[j][k])
+				e.DecomposePolyAssign(e.buffer.ctAcc[j].Value[k], e.Parameters.bootstrapParameters, polyDecomposed)
+				for l := 0; l < e.Parameters.bootstrapParameters.level; l++ {
+					e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[l], e.buffer.ctAccFourierDecomposed[j][k][l])
+				}
 			}
 		}
 
@@ -267,7 +274,10 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 
 	for j := 0; j < e.Parameters.polyExtendFactor; j++ {
 		for k := 0; k < e.Parameters.glweDimension+1; k++ {
-			e.FourierDecomposePolyAssign(e.buffer.ctAcc[j].Value[k], e.Parameters.bootstrapParameters, e.buffer.ctAccFourierDecomposed[j][k])
+			e.DecomposePolyAssign(e.buffer.ctAcc[j].Value[k], e.Parameters.bootstrapParameters, polyDecomposed)
+			for l := 0; l < e.Parameters.bootstrapParameters.level; l++ {
+				e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[l], e.buffer.ctAccFourierDecomposed[j][k][l])
+			}
 		}
 	}
 
