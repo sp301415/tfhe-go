@@ -51,8 +51,8 @@ func NewEncryptor[T Tint](params Parameters[T]) *Encryptor[T] {
 		uniformSampler: csprng.NewUniformSampler[T](),
 		binarySampler:  csprng.NewBinarySampler[T](),
 		blockSampler:   csprng.NewBlockSampler[T](params.blockSize),
-		lweSampler:     csprng.NewGaussianSamplerTorus[T](params.lweStdDev),
-		glweSampler:    csprng.NewGaussianSamplerTorus[T](params.glweStdDev),
+		lweSampler:     csprng.NewGaussianSamplerScaled[T](params.lweStdDev),
+		glweSampler:    csprng.NewGaussianSamplerScaled[T](params.glweStdDev),
 
 		PolyEvaluator:    poly.NewEvaluator[T](params.polyDegree),
 		FourierEvaluator: poly.NewFourierEvaluator[T](params.polyDegree),
@@ -76,8 +76,8 @@ func NewEncryptorWithKey[T Tint](params Parameters[T], sk SecretKey[T]) *Encrypt
 		uniformSampler: csprng.NewUniformSampler[T](),
 		binarySampler:  csprng.NewBinarySampler[T](),
 		blockSampler:   csprng.NewBlockSampler[T](params.blockSize),
-		lweSampler:     csprng.NewGaussianSamplerTorus[T](params.lweStdDev),
-		glweSampler:    csprng.NewGaussianSamplerTorus[T](params.glweStdDev),
+		lweSampler:     csprng.NewGaussianSamplerScaled[T](params.lweStdDev),
+		glweSampler:    csprng.NewGaussianSamplerScaled[T](params.glweStdDev),
 
 		PolyEvaluator:    poly.NewEvaluator[T](params.polyDegree),
 		FourierEvaluator: poly.NewFourierEvaluator[T](params.polyDegree),
@@ -108,8 +108,8 @@ func (e *Encryptor[T]) ShallowCopy() *Encryptor[T] {
 
 		uniformSampler: csprng.NewUniformSampler[T](),
 		binarySampler:  csprng.NewBinarySampler[T](),
-		lweSampler:     csprng.NewGaussianSamplerTorus[T](e.Parameters.lweStdDev),
-		glweSampler:    csprng.NewGaussianSamplerTorus[T](e.Parameters.glweStdDev),
+		lweSampler:     csprng.NewGaussianSamplerScaled[T](e.Parameters.lweStdDev),
+		glweSampler:    csprng.NewGaussianSamplerScaled[T](e.Parameters.glweStdDev),
 
 		SecretKey: e.SecretKey,
 

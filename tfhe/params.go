@@ -20,7 +20,7 @@ const (
 	MaxPolyDegree = 1 << 20
 )
 
-// Tint represents the integer in the discretized torus.
+// Tint represents the modulus of the discretized torus.
 // Currently, it supports Q = 2^32 and Q = 2^64 (uint32 and uint64).
 type Tint interface {
 	uint32 | uint64
