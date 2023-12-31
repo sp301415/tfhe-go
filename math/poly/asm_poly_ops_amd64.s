@@ -13,7 +13,6 @@ TEXT ·monomialSubOneMulAssignUint32AVX2(SB), $0-56
 	JLE  case_1
 
 case_0:
-
 	// for j, jj := 0, polyDegree-d; jj < polyDegree; j, jj = j+1, jj+1
 	XORQ SI, SI
 	MOVQ R11, DI
@@ -102,7 +101,6 @@ case_0_loop_1_leftover_end:
 	RET
 
 case_1:
-
 	// for j, jj := 0, -d; jj < polyDegree; j, jj = j+1, jj+1
 	XORQ SI, SI
 	XORQ DI, DI
@@ -202,7 +200,6 @@ TEXT ·monomialSubOneMulAssignUint64AVX2(SB), $0-56
 	JLE  case_1
 
 case_0:
-
 	// for j, jj := 0, polyDegree-d; jj < polyDegree; j, jj = j+1, jj+1
 	XORQ SI, SI
 	MOVQ R11, DI
@@ -291,7 +288,6 @@ case_0_loop_1_leftover_end:
 	RET
 
 case_1:
-
 	// for j, jj := 0, -d; jj < polyDegree; j, jj = j+1, jj+1
 	XORQ SI, SI
 	XORQ DI, DI
@@ -391,7 +387,6 @@ TEXT ·monomialSubOneMulAddAssignUint32AVX2(SB), $0-56
 	JLE  case_1
 
 case_0:
-
 	// for j, jj := 0, polyDegree-d; jj < polyDegree; j, jj = j+1, jj+1
 	XORQ SI, SI
 	MOVQ R11, DI
@@ -484,7 +479,6 @@ case_0_loop_1_leftover_end:
 	RET
 
 case_1:
-
 	// for j, jj := 0, -d; jj < polyDegree; j, jj = j+1, jj+1
 	XORQ SI, SI
 	XORQ DI, DI
@@ -588,7 +582,6 @@ TEXT ·monomialSubOneMulAddAssignUint64AVX2(SB), $0-56
 	JLE  case_1
 
 case_0:
-
 	// for j, jj := 0, polyDegree-d; jj < polyDegree; j, jj = j+1, jj+1
 	XORQ SI, SI
 	MOVQ R11, DI
@@ -681,7 +674,6 @@ case_0_loop_1_leftover_end:
 	RET
 
 case_1:
-
 	// for j, jj := 0, -d; jj < polyDegree; j, jj = j+1, jj+1
 	XORQ SI, SI
 	XORQ DI, DI
