@@ -117,9 +117,9 @@ func (e *Evaluator[T]) BootstrapLUTAssign(ct LWECiphertext[T], lut LookUpTable[T
 
 // ModSwitch calculates round(2N * x / Q) mod 2N.
 func (e *Evaluator[T]) ModSwitch(x T) int {
-	x2N := int(num.RoundRatioBits(x, e.Parameters.sizeT-(e.Parameters.polyLargeDegreeLog+1))) & (2*e.Parameters.polyLargeDegree - 1)
+	x2N := int(num.RoundRatioBits(x, e.Parameters.sizeT-(e.Parameters.polyLargeDegreeLog+1))) & (e.Parameters.polyLargeDegree<<1 - 1)
 	if x2N >= e.Parameters.polyLargeDegree {
-		x2N -= 2 * e.Parameters.polyLargeDegree
+		x2N -= e.Parameters.polyLargeDegree << 1
 	}
 	return x2N
 }
@@ -430,10 +430,9 @@ func (e *Evaluator[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[
 // Input ciphertext should be of dimension LWELargeDimension + 1.
 // Output ciphertext should be of dimension LWEDimension + 1.
 func (e *Evaluator[T]) KeySwitchForBootstrapAssign(ct, ctOut LWECiphertext[T]) {
-	vec.CopyAssign(ct.Value[:e.Parameters.lweDimension+1], ctOut.Value)
-
 	decomposed := e.buffer.decomposed[:e.Parameters.keyswitchParameters.level]
 
+	vec.CopyAssign(ct.Value[:e.Parameters.lweDimension+1], ctOut.Value)
 	for i, ii := e.Parameters.lweDimension, 0; i < e.Parameters.lweLargeDimension; i, ii = i+1, ii+1 {
 		e.DecomposeAssign(ct.Value[i+1], e.Parameters.keyswitchParameters, decomposed)
 		for j := 0; j < e.Parameters.keyswitchParameters.level; j++ {
