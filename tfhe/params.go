@@ -228,6 +228,9 @@ type ParametersLiteral[T Tint] struct {
 	// PolyDegree is the degree of polynomials in GLWE entities. Usually this is denoted by N.
 	PolyDegree int
 	// PolyLargeDegree is the degree of polynomial used in Blind Roation.
+	//
+	// This is used in Extended Bootstrapping, as explained in https://eprint.iacr.org/2023/402.
+	// To use the original TFHE bootstrapping, set this to PolyDegree.
 	PolyLargeDegree int
 
 	// LWEStdDev is the standard deviation used for gaussian error sampling in LWE encryption.
@@ -236,6 +239,9 @@ type ParametersLiteral[T Tint] struct {
 	GLWEStdDev float64
 
 	// BlockSize is the size of block to be used for LWE key sampling.
+	//
+	// This is used in Block Binary Key distribution, as explained in https://eprint.iacr.org/2023/958.
+	// To use the original TFHE bootstrapping, set this to 1.
 	BlockSize int
 
 	// MessageModulus is the modulus of the encoded message.
@@ -403,13 +409,13 @@ type Parameters[T Tint] struct {
 }
 
 // DefaultLWEDimension returns the default dimension for LWE entities.
-// Returns LWELargeDimension if BootstrapOrder is OrderKeySwitchBlindRotate,
-// and LWEDimension otherwise.
+// Returns LWEDimension if BootstrapOrder is OrderBlindRotateKeySwitch,
+// and LWELargeDimension otherwise.
 func (p Parameters[T]) DefaultLWEDimension() int {
-	if p.bootstrapOrder == OrderKeySwitchBlindRotate {
-		return p.lweLargeDimension
+	if p.bootstrapOrder == OrderBlindRotateKeySwitch {
+		return p.lweDimension
 	}
-	return p.lweDimension
+	return p.lweLargeDimension
 }
 
 // LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.

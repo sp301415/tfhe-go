@@ -30,7 +30,7 @@ type SecretKey[T Tint] struct {
 	LWEKey LWEKey[T]
 }
 
-// NewSecretKey allocates an empty secret key.
+// NewSecretKey allocates an empty SecretKey.
 // Each key shares the same backing slice, held by LWEKey.
 func NewSecretKey[T Tint](params Parameters[T]) SecretKey[T] {
 	lweLargeKey := LWEKey[T]{Value: make([]T, params.lweLargeDimension)}
@@ -51,7 +51,7 @@ func NewSecretKey[T Tint](params Parameters[T]) SecretKey[T] {
 	}
 }
 
-// NewSecretKeyCustom allocates an empty secret key with given dimension and polyDegree.
+// NewSecretKeyCustom allocates an empty SecretKey with given dimension and polyDegree.
 // Each key shares the same backing slice, held by LWEKey.
 func NewSecretKeyCustom[T Tint](lweDimension, glweDimension, polyDegree int) SecretKey[T] {
 	lweLargeKey := LWEKey[T]{Value: make([]T, glweDimension*polyDegree)}

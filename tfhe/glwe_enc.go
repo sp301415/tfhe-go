@@ -141,9 +141,9 @@ func (e *Encryptor[T]) EncryptGLWEPlaintextAssign(pt GLWEPlaintext[T], ctOut GLW
 // This avoids the need for most buffers.
 func (e *Encryptor[T]) EncryptGLWEBody(ct GLWECiphertext[T]) {
 	for i := 1; i < e.Parameters.glweDimension+1; i++ {
-		e.uniformSampler.SampleSliceAssign(ct.Value[i].Coeffs)
+		e.UniformSampler.SampleSliceAssign(ct.Value[i].Coeffs)
 	}
-	e.glweSampler.SampleSliceAddAssign(ct.Value[0].Coeffs)
+	e.GLWESampler.SampleSliceAddAssign(ct.Value[0].Coeffs)
 	for i := 0; i < e.Parameters.glweDimension; i++ {
 		e.mulFourierGLWEKeySubAssign(ct.Value[i+1], e.SecretKey.FourierGLWEKey.Value[i], ct.Value[0])
 	}

@@ -21,9 +21,9 @@ func (e *Encryptor[T]) DefaultLWEKey() LWEKey[T] {
 // or LWESampler otherwise.
 func (e *Encryptor[T]) DefaultLWESampler() csprng.GaussianSampler[T] {
 	if e.Parameters.bootstrapOrder == OrderKeySwitchBlindRotate {
-		return e.glweSampler
+		return e.GLWESampler
 	}
-	return e.lweSampler
+	return e.LWESampler
 }
 
 // EncryptLWE encodes and encrypts integer message to LWE ciphertext.
@@ -47,7 +47,7 @@ func (e *Encryptor[T]) EncryptLWEPlaintextAssign(pt LWEPlaintext[T], ctOut LWECi
 // EncryptLWEBody encrypts the value in the body of LWE ciphertext and overrides it.
 // This avoids the need for most buffers.
 func (e *Encryptor[T]) EncryptLWEBody(ct LWECiphertext[T]) {
-	e.uniformSampler.SampleSliceAssign(ct.Value[1:])
+	e.UniformSampler.SampleSliceAssign(ct.Value[1:])
 	ct.Value[0] += -vec.Dot(ct.Value[1:], e.DefaultLWEKey().Value) + e.DefaultLWESampler().Sample()
 }
 

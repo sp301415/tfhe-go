@@ -8,21 +8,40 @@ import (
 // Encryptor encrypts and decrypts TFHE plaintexts and ciphertexts.
 // This is meant to be private, only for clients.
 type Encryptor[T Tint] struct {
+	// Encoder is an embedded encoder for this Encryptor.
 	*Encoder[T]
 
+	// Parameters holds the parameters for this Encryptor.
 	Parameters Parameters[T]
 
-	uniformSampler csprng.UniformSampler[T]
-	binarySampler  csprng.BinarySampler[T]
-	blockSampler   csprng.BlockSampler[T]
-	lweSampler     csprng.GaussianSampler[T]
-	glweSampler    csprng.GaussianSampler[T]
+	// UniformSampler is used for sampling the mask of encryptions.
+	UniformSampler csprng.UniformSampler[T]
+	// BinarySampler is used for sampling GLWE key.
+	BinarySampler csprng.BinarySampler[T]
+	// BlockSampler is used for sampling LWE key.
+	BlockSampler csprng.BlockSampler[T]
+	// LWESampler is used for sampling the error of LWE encryption.
+	//
+	// In case of LWE ciphertexts, the error distribution
+	// is determinted by BootstrapOrder.
+	// For sampling error for LWE ciphertexts, use DefaultLWESampler().
+	LWESampler csprng.GaussianSampler[T]
+	// GLWESampler is used for sampling the error of GLWE encryption.
+	GLWESampler csprng.GaussianSampler[T]
 
-	PolyEvaluator    *poly.Evaluator[T]
+	// PolyEvaluator holds the PolyEvaluator for this Encryptor.
+	PolyEvaluator *poly.Evaluator[T]
+	// FourierEvaluator holds the FourierEvaluator for this Encryptor.
 	FourierEvaluator *poly.FourierEvaluator[T]
 
+	// SecretKey holds the LWE and GLWE key for this Encryptor.
+	//
+	// The LWE key used for LWE ciphertexts is determined by
+	// BootstrapOrder.
+	// For encrypting/decrypting LWE ciphertexts, use DefaultLWEKey().
 	SecretKey SecretKey[T]
 
+	// buffer holds the buffer values for this Encryptor.
 	buffer encryptionBuffer[T]
 }
 
@@ -48,11 +67,11 @@ func NewEncryptor[T Tint](params Parameters[T]) *Encryptor[T] {
 
 		Parameters: params,
 
-		uniformSampler: csprng.NewUniformSampler[T](),
-		binarySampler:  csprng.NewBinarySampler[T](),
-		blockSampler:   csprng.NewBlockSampler[T](params.blockSize),
-		lweSampler:     csprng.NewGaussianSamplerScaled[T](params.lweStdDev),
-		glweSampler:    csprng.NewGaussianSamplerScaled[T](params.glweStdDev),
+		UniformSampler: csprng.NewUniformSampler[T](),
+		BinarySampler:  csprng.NewBinarySampler[T](),
+		BlockSampler:   csprng.NewBlockSampler[T](params.blockSize),
+		LWESampler:     csprng.NewGaussianSamplerScaled[T](params.lweStdDev),
+		GLWESampler:    csprng.NewGaussianSamplerScaled[T](params.glweStdDev),
 
 		PolyEvaluator:    poly.NewEvaluator[T](params.polyDegree),
 		FourierEvaluator: poly.NewFourierEvaluator[T](params.polyDegree),
@@ -66,18 +85,18 @@ func NewEncryptor[T Tint](params Parameters[T]) *Encryptor[T] {
 
 // NewEncryptorWithKey returns a initialized Encryptor with given parameters,
 // with the supplied SecretKey.
-// This does not copy the secret key.
+// This does not copy the SecretKey.
 func NewEncryptorWithKey[T Tint](params Parameters[T], sk SecretKey[T]) *Encryptor[T] {
 	return &Encryptor[T]{
 		Encoder: NewEncoder(params),
 
 		Parameters: params,
 
-		uniformSampler: csprng.NewUniformSampler[T](),
-		binarySampler:  csprng.NewBinarySampler[T](),
-		blockSampler:   csprng.NewBlockSampler[T](params.blockSize),
-		lweSampler:     csprng.NewGaussianSamplerScaled[T](params.lweStdDev),
-		glweSampler:    csprng.NewGaussianSamplerScaled[T](params.glweStdDev),
+		UniformSampler: csprng.NewUniformSampler[T](),
+		BinarySampler:  csprng.NewBinarySampler[T](),
+		BlockSampler:   csprng.NewBlockSampler[T](params.blockSize),
+		LWESampler:     csprng.NewGaussianSamplerScaled[T](params.lweStdDev),
+		GLWESampler:    csprng.NewGaussianSamplerScaled[T](params.glweStdDev),
 
 		PolyEvaluator:    poly.NewEvaluator[T](params.polyDegree),
 		FourierEvaluator: poly.NewFourierEvaluator[T](params.polyDegree),
@@ -106,10 +125,10 @@ func (e *Encryptor[T]) ShallowCopy() *Encryptor[T] {
 
 		Parameters: e.Parameters,
 
-		uniformSampler: csprng.NewUniformSampler[T](),
-		binarySampler:  csprng.NewBinarySampler[T](),
-		lweSampler:     csprng.NewGaussianSamplerScaled[T](e.Parameters.lweStdDev),
-		glweSampler:    csprng.NewGaussianSamplerScaled[T](e.Parameters.glweStdDev),
+		UniformSampler: csprng.NewUniformSampler[T](),
+		BinarySampler:  csprng.NewBinarySampler[T](),
+		LWESampler:     csprng.NewGaussianSamplerScaled[T](e.Parameters.lweStdDev),
+		GLWESampler:    csprng.NewGaussianSamplerScaled[T](e.Parameters.glweStdDev),
 
 		SecretKey: e.SecretKey,
 
@@ -125,10 +144,10 @@ func (e *Encryptor[T]) GenSecretKey() SecretKey[T] {
 	sk := NewSecretKey(e.Parameters)
 
 	if e.Parameters.blockSize == 1 {
-		e.binarySampler.SampleSliceAssign(sk.LWELargeKey.Value)
+		e.BinarySampler.SampleSliceAssign(sk.LWELargeKey.Value)
 	} else {
-		e.blockSampler.SampleSliceAssign(sk.LWELargeKey.Value[:e.Parameters.lweDimension])
-		e.binarySampler.SampleSliceAssign(sk.LWELargeKey.Value[e.Parameters.lweDimension:])
+		e.BlockSampler.SampleSliceAssign(sk.LWELargeKey.Value[:e.Parameters.lweDimension])
+		e.BinarySampler.SampleSliceAssign(sk.LWELargeKey.Value[e.Parameters.lweDimension:])
 	}
 
 	e.ToFourierGLWEKeyAssign(sk.GLWEKey, sk.FourierGLWEKey)

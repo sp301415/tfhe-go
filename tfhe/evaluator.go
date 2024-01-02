@@ -7,15 +7,21 @@ import (
 // Evaluator evaluates homomorphic operations on ciphertexts.
 // This is meant to be public, usually for servers.
 type Evaluator[T Tint] struct {
+	// Encoder is an embedded encoder for this Evaluator.
 	*Encoder[T]
 
+	// Parameters holds the parameters for this Evaluator.
 	Parameters Parameters[T]
 
-	PolyEvaluator    *poly.Evaluator[T]
+	// PolyEvaluator holds the PolyEvaluator for this Evaluator.
+	PolyEvaluator *poly.Evaluator[T]
+	// FourierEvaluator holds the FourierEvaluator for this Evaluator.
 	FourierEvaluator *poly.FourierEvaluator[T]
 
+	// EvaluationKey holds the evaluation key for this Evaluator.
 	EvaluationKey EvaluationKey[T]
 
+	// buffer holds the buffer values for this Evaluator.
 	buffer evaluationBuffer[T]
 }
 
