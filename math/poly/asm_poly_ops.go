@@ -11,19 +11,19 @@ import (
 // d is assumed to be in [-N, N]. p0 and pOut should not overlap.
 func monomialSubOneMulAssign[T num.Integer](p0 Poly[T], d int, pOut Poly[T]) {
 	polyDegree := pOut.Degree()
-	if d > 0 {
-		for j, jj := 0, polyDegree-d; jj < polyDegree; j, jj = j+1, jj+1 {
-			pOut.Coeffs[j] = -p0.Coeffs[jj] - p0.Coeffs[j]
+	if d < polyDegree {
+		for i, ii := 0, polyDegree-d; ii < polyDegree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] += -p0.Coeffs[ii] - p0.Coeffs[i]
 		}
-		for j, jj := d, 0; j < polyDegree; j, jj = j+1, jj+1 {
-			pOut.Coeffs[j] = p0.Coeffs[jj] - p0.Coeffs[j]
+		for i, ii := d, 0; i < polyDegree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] += p0.Coeffs[ii] - p0.Coeffs[i]
 		}
 	} else {
-		for j, jj := 0, -d; jj < polyDegree; j, jj = j+1, jj+1 {
-			pOut.Coeffs[j] = p0.Coeffs[jj] - p0.Coeffs[j]
+		for i, ii := 0, (polyDegree<<1)-d; ii < polyDegree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] += p0.Coeffs[ii] - p0.Coeffs[i]
 		}
-		for j, jj := polyDegree+d, 0; j < polyDegree; j, jj = j+1, jj+1 {
-			pOut.Coeffs[j] = -p0.Coeffs[jj] - p0.Coeffs[j]
+		for i, ii := d-polyDegree, 0; i < polyDegree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] += -p0.Coeffs[ii] - p0.Coeffs[i]
 		}
 	}
 }
@@ -33,19 +33,19 @@ func monomialSubOneMulAssign[T num.Integer](p0 Poly[T], d int, pOut Poly[T]) {
 // d is assumed to be in [-N, N]. p0 and pOut should not overlap.
 func monomialSubOneMulAddAssign[T num.Integer](p0 Poly[T], d int, pOut Poly[T]) {
 	polyDegree := pOut.Degree()
-	if d > 0 {
-		for j, jj := 0, polyDegree-d; jj < polyDegree; j, jj = j+1, jj+1 {
-			pOut.Coeffs[j] += -p0.Coeffs[jj] - p0.Coeffs[j]
+	if d < polyDegree {
+		for i, ii := 0, polyDegree-d; ii < polyDegree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] += -p0.Coeffs[ii] - p0.Coeffs[i]
 		}
-		for j, jj := d, 0; j < polyDegree; j, jj = j+1, jj+1 {
-			pOut.Coeffs[j] += p0.Coeffs[jj] - p0.Coeffs[j]
+		for i, ii := d, 0; i < polyDegree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] += p0.Coeffs[ii] - p0.Coeffs[i]
 		}
 	} else {
-		for j, jj := 0, -d; jj < polyDegree; j, jj = j+1, jj+1 {
-			pOut.Coeffs[j] += p0.Coeffs[jj] - p0.Coeffs[j]
+		for i, ii := 0, (polyDegree<<1)-d; ii < polyDegree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] += p0.Coeffs[ii] - p0.Coeffs[i]
 		}
-		for j, jj := polyDegree+d, 0; j < polyDegree; j, jj = j+1, jj+1 {
-			pOut.Coeffs[j] += -p0.Coeffs[jj] - p0.Coeffs[j]
+		for i, ii := d-polyDegree, 0; i < polyDegree; i, ii = i+1, ii+1 {
+			pOut.Coeffs[i] += -p0.Coeffs[ii] - p0.Coeffs[i]
 		}
 	}
 }

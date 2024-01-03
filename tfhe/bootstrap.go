@@ -115,13 +115,16 @@ func (e *Evaluator[T]) BootstrapLUTAssign(ct LWECiphertext[T], lut LookUpTable[T
 	}
 }
 
-// ModSwitch calculates round(2N * x / Q) mod 2N.
+// ModSwitch computes x2N = round(2N * x / Q) mod 2N
+// and returns x2N as an unsigned representation.
 func (e *Evaluator[T]) ModSwitch(x T) int {
-	x2N := int(num.RoundRatioBits(x, e.Parameters.sizeT-(e.Parameters.polyLargeDegreeLog+1))) & (e.Parameters.polyLargeDegree<<1 - 1)
-	if x2N >= e.Parameters.polyLargeDegree {
-		x2N -= e.Parameters.polyLargeDegree << 1
-	}
-	return x2N
+	return int(num.RoundRatioBits(x, e.Parameters.sizeT-(e.Parameters.polyLargeDegreeLog+1))) & (e.Parameters.polyLargeDegree<<1 - 1)
+}
+
+// ModSwitchNeg computes x2N = round(2N * (-x) / Q) mod 2N
+// and returns -x2N as an unsigned representation.
+func (e *Evaluator[T]) ModSwitchNeg(x T) int {
+	return int(-num.RoundRatioBits(x, e.Parameters.sizeT-(e.Parameters.polyLargeDegreeLog+1))) & (e.Parameters.polyLargeDegree<<1 - 1)
 }
 
 // BlindRotate calculates the blind rotation of LWE ciphertext with respect to LUT.
@@ -151,10 +154,7 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 
 	// Implementation of Algorithm 4 from https://eprint.iacr.org/2023/402
 	// Slightly modified for Block Binary Keys
-	b2N := -e.ModSwitch(ct.Value[0])
-	if b2N < 0 {
-		b2N += 2 * e.Parameters.polyLargeDegree
-	}
+	b2N := e.ModSwitchNeg(ct.Value[0])
 	b2NSmall, b2NIdx := b2N>>e.Parameters.polyExtendFactorLog, b2N&(e.Parameters.polyExtendFactor-1)
 
 	for i := 0; i < e.Parameters.polyExtendFactor; i++ {
@@ -182,10 +182,7 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 	}
 
 	for j := 0; j < e.Parameters.blockSize; j++ {
-		a2N := -e.ModSwitch(ct.Value[j+1])
-		if a2N < 0 {
-			a2N += 2 * e.Parameters.polyLargeDegree
-		}
+		a2N := e.ModSwitchNeg(ct.Value[j+1])
 		a2NSmall, a2NIdx := a2N>>e.Parameters.polyExtendFactorLog, a2N&(e.Parameters.polyExtendFactor-1)
 
 		if a2NIdx == 0 {
@@ -229,10 +226,7 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 		}
 
 		for j := i * e.Parameters.blockSize; j < (i+1)*e.Parameters.blockSize; j++ {
-			a2N := -e.ModSwitch(ct.Value[j+1])
-			if a2N < 0 {
-				a2N += 2 * e.Parameters.polyLargeDegree
-			}
+			a2N := e.ModSwitchNeg(ct.Value[j+1])
 			a2NSmall, a2NIdx := a2N>>e.Parameters.polyExtendFactorLog, a2N&(e.Parameters.polyExtendFactor-1)
 
 			if a2NIdx == 0 {
@@ -282,10 +276,7 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 	}
 
 	for j := e.Parameters.lweDimension - e.Parameters.blockSize; j < e.Parameters.lweDimension; j++ {
-		a2N := -e.ModSwitch(ct.Value[j+1])
-		if a2N < 0 {
-			a2N += 2 * e.Parameters.polyLargeDegree
-		}
+		a2N := e.ModSwitchNeg(ct.Value[j+1])
 		a2NSmall, a2NIdx := a2N>>e.Parameters.polyExtendFactorLog, a2N&(e.Parameters.polyExtendFactor-1)
 
 		if a2NIdx == 0 {
@@ -321,7 +312,7 @@ func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTab
 	polyDecomposed := e.buffer.polyDecomposed[:e.Parameters.bootstrapParameters.level]
 
 	// Implementation of Algorithm 2 and Section 5.1 from https://eprint.iacr.org/2023/958
-	e.PolyEvaluator.MonomialMulAssign(poly.Poly[T](lut), -e.ModSwitch(ct.Value[0]), ctOut.Value[0])
+	e.PolyEvaluator.MonomialMulAssign(poly.Poly[T](lut), e.ModSwitchNeg(ct.Value[0]), ctOut.Value[0])
 
 	e.DecomposePolyAssign(ctOut.Value[0], e.Parameters.bootstrapParameters, polyDecomposed)
 	for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
@@ -330,7 +321,7 @@ func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTab
 
 	for j := 0; j < e.Parameters.blockSize; j++ {
 		e.GadgetProductFourierDecomposedAssign(e.EvaluationKey.BootstrapKey.Value[j].Value[0], e.buffer.ctAccFourierDecomposed[0][0], e.buffer.ctAcc[0])
-		e.MonomialSubOneMulAddAssign(e.buffer.ctAcc[0], -e.ModSwitch(ct.Value[j+1]), ctOut)
+		e.MonomialSubOneMulAddAssign(e.buffer.ctAcc[0], e.ModSwitchNeg(ct.Value[j+1]), ctOut)
 	}
 
 	for i := 1; i < e.Parameters.blockCount; i++ {
@@ -343,7 +334,7 @@ func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTab
 
 		for j := i * e.Parameters.blockSize; j < (i+1)*e.Parameters.blockSize; j++ {
 			e.ExternalProductFourierDecomposedAssign(e.EvaluationKey.BootstrapKey.Value[j], e.buffer.ctAccFourierDecomposed[0], e.buffer.ctAcc[0])
-			e.MonomialSubOneMulAddAssign(e.buffer.ctAcc[0], -e.ModSwitch(ct.Value[j+1]), ctOut)
+			e.MonomialSubOneMulAddAssign(e.buffer.ctAcc[0], e.ModSwitchNeg(ct.Value[j+1]), ctOut)
 		}
 	}
 }
@@ -353,12 +344,12 @@ func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTab
 func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
 	ctOut.Clear()
 
-	e.PolyEvaluator.MonomialMulAssign(poly.Poly[T](lut), -e.ModSwitch(ct.Value[0]), ctOut.Value[0])
+	e.PolyEvaluator.MonomialMulAssign(poly.Poly[T](lut), e.ModSwitchNeg(ct.Value[0]), ctOut.Value[0])
 
-	e.PolyEvaluator.MonomialSubOneMulAssign(ctOut.Value[0], -e.ModSwitch(ct.Value[1]), e.buffer.ctAcc[0].Value[0])
+	e.PolyEvaluator.MonomialSubOneMulAssign(ctOut.Value[0], e.ModSwitchNeg(ct.Value[1]), e.buffer.ctAcc[0].Value[0])
 	e.GadgetProductAddAssign(e.EvaluationKey.BootstrapKey.Value[0].Value[0], e.buffer.ctAcc[0].Value[0], ctOut)
 	for i := 1; i < e.Parameters.lweDimension; i++ {
-		e.MonomialSubOneMulAssign(ctOut, -e.ModSwitch(ct.Value[i+1]), e.buffer.ctAcc[0])
+		e.MonomialSubOneMulAssign(ctOut, e.ModSwitchNeg(ct.Value[i+1]), e.buffer.ctAcc[0])
 		e.ExternalProductAddAssign(e.EvaluationKey.BootstrapKey.Value[i], e.buffer.ctAcc[0], ctOut)
 	}
 }

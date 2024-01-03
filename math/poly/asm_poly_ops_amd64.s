@@ -6,17 +6,19 @@ TEXT ·monomialSubOneMulAssignUint32AVX2(SB), $0-56
 	MOVQ v0+0(FP), AX
 	MOVQ vOut+32(FP), BX
 
-	MOVQ d+24(FP), R10
-	MOVQ vOut_len+40(FP), R11
+	MOVQ d+24(FP), DX
+	MOVQ vOut_len+40(FP), CX
 
-	CMPQ R10, $0
-	JLE  case_1
+	VPXOR Y5, Y5, Y5 // (0, 0, 0, 0)
+
+	CMPQ DX, CX
+	JGE  case_1
 
 case_0:
-	// for j, jj := 0, polyDegree-d; jj < polyDegree; j, jj = j+1, jj+1
+	// for i, ii := 0, polyDegree-d; ii < polyDegree; i, ii = i+1, ii+1
 	XORQ SI, SI
-	MOVQ R11, DI
-	SUBQ R10, DI
+	MOVQ CX, DI
+	SUBQ DX, DI
 
 	JMP case_0_loop_0_end
 
@@ -24,8 +26,7 @@ case_0_loop_0:
 	VMOVDQU (AX)(SI*4), Y0
 	VMOVDQU (AX)(DI*4), Y1
 
-	VPADDD Y0, Y1, Y1
-	VPXOR  Y2, Y2, Y2
+	VPSUBD Y0, Y5, Y2
 	VPSUBD Y1, Y2, Y2
 
 	VMOVDQU Y2, (BX)(SI*4)
@@ -34,32 +35,32 @@ case_0_loop_0:
 	ADDQ $8, DI
 
 case_0_loop_0_end:
-	MOVQ DI, R12
-	ADDQ $8, R12
-	CMPQ R12, R11
+	MOVQ DI, R10
+	ADDQ $8, R10
+	CMPQ R10, CX
 	JLE  case_0_loop_0
 
 	JMP case_0_loop_0_leftover_end
 
 case_0_loop_0_leftover:
-	MOVL (AX)(SI*4), R12
-	MOVL (AX)(DI*4), R13
+	MOVL (AX)(SI*4), R10
+	MOVL (AX)(DI*4), R11
 
-	ADDL R12, R13
-	XORL R14, R14
-	SUBL R13, R14
+	XORL R13, R13
+	SUBL R10, R13
+	SUBL R11, R13
 
-	MOVL R14, (BX)(SI*4)
+	MOVL R13, (BX)(SI*4)
 
 	ADDQ $1, SI
 	ADDQ $1, DI
 
 case_0_loop_0_leftover_end:
-	CMPQ DI, R11
+	CMPQ DI, CX
 	JL   case_0_loop_0_leftover
 
-	// for j, jj := d, 0; j < polyDegree; j, jj = j+1, jj+1
-	MOVQ R10, SI
+	// for i, ii := d, 0; i < polyDegree; i, ii = i+1, ii+1
+	MOVQ DX, SI
 	XORQ DI, DI
 
 	JMP case_0_loop_1_end
@@ -76,35 +77,36 @@ case_0_loop_1:
 	ADDQ $8, DI
 
 case_0_loop_1_end:
-	MOVQ SI, R12
-	ADDQ $8, R12
-	CMPQ R12, R11
+	MOVQ SI, R10
+	ADDQ $8, R10
+	CMPQ R10, CX
 	JLE  case_0_loop_1
 
 	JMP case_0_loop_1_leftover_end
 
 case_0_loop_1_leftover:
-	MOVL (AX)(SI*4), R12
-	MOVL (AX)(DI*4), R13
+	MOVL (AX)(SI*4), R10
+	MOVL (AX)(DI*4), R11
 
-	SUBL R12, R13
+	SUBL R10, R11
 
-	MOVL R13, (BX)(SI*4)
+	MOVL R11, (BX)(SI*4)
 
 	ADDQ $1, SI
 	ADDQ $1, DI
 
 case_0_loop_1_leftover_end:
-	CMPQ SI, R11
+	CMPQ SI, CX
 	JL   case_0_loop_1_leftover
 
 	RET
 
 case_1:
-	// for j, jj := 0, -d; jj < polyDegree; j, jj = j+1, jj+1
+	// for i, ii := 0, (polyDegree<<1)-d; ii < polyDegree; i, ii = i+1, ii+1
 	XORQ SI, SI
-	XORQ DI, DI
-	SUBQ R10, DI
+	MOVQ CX, DI
+	ADDQ CX, DI
+	SUBQ DX, DI
 
 	JMP case_1_loop_0_end
 
@@ -120,31 +122,31 @@ case_1_loop_0:
 	ADDQ $8, DI
 
 case_1_loop_0_end:
-	MOVQ DI, R12
-	ADDQ $8, R12
-	CMPQ R12, R11
+	MOVQ DI, R10
+	ADDQ $8, R10
+	CMPQ R10, CX
 	JLE  case_1_loop_0
 
 	JMP case_1_loop_0_leftover_end
 
 case_1_loop_0_leftover:
-	MOVL (AX)(SI*4), R12
-	MOVL (AX)(DI*4), R13
+	MOVL (AX)(SI*4), R10
+	MOVL (AX)(DI*4), R11
 
-	SUBL R12, R13
+	SUBL R10, R11
 
-	MOVL R13, (BX)(SI*4)
+	MOVL R11, (BX)(SI*4)
 
 	ADDQ $1, SI
 	ADDQ $1, DI
 
 case_1_loop_0_leftover_end:
-	CMPQ DI, R11
+	CMPQ DI, CX
 	JL   case_1_loop_0_leftover
 
-	// for j, jj := polyDegree+d, 0; j < polyDegree; j, jj = j+1, jj+1
-	MOVQ R11, SI
-	ADDQ R10, SI
+	// for i, ii := d-polyDegree, 0; i < polyDegree; i, ii = i+1, ii+1
+	MOVQ DX, SI
+	SUBQ CX, SI
 	XORQ DI, DI
 
 	JMP case_1_loop_1_end
@@ -153,8 +155,7 @@ case_1_loop_1:
 	VMOVDQU (AX)(SI*4), Y0
 	VMOVDQU (AX)(DI*4), Y1
 
-	VPADDD Y0, Y1, Y1
-	VPXOR  Y2, Y2, Y2
+	VPSUBD Y0, Y5, Y2
 	VPSUBD Y1, Y2, Y2
 
 	VMOVDQU Y2, (BX)(SI*4)
@@ -163,28 +164,28 @@ case_1_loop_1:
 	ADDQ $8, DI
 
 case_1_loop_1_end:
-	MOVQ SI, R12
-	ADDQ $8, R12
-	CMPQ R12, R11
+	MOVQ SI, R10
+	ADDQ $8, R10
+	CMPQ R10, CX
 	JLE  case_1_loop_1
 
 	JMP case_1_loop_1_leftover_end
 
 case_1_loop_1_leftover:
-	MOVL (AX)(SI*4), R12
-	MOVL (AX)(DI*4), R13
+	MOVL (AX)(SI*4), R10
+	MOVL (AX)(DI*4), R11
 
-	ADDL R12, R13
-	XORL R14, R14
-	SUBL R13, R14
+	XORL R13, R13
+	SUBL R10, R13
+	SUBL R11, R13
 
-	MOVL R14, (BX)(SI*4)
+	MOVL R13, (BX)(SI*4)
 
 	ADDQ $1, SI
 	ADDQ $1, DI
 
 case_1_loop_1_leftover_end:
-	CMPQ SI, R11
+	CMPQ SI, CX
 	JL   case_1_loop_1_leftover
 
 	RET
@@ -193,17 +194,19 @@ TEXT ·monomialSubOneMulAssignUint64AVX2(SB), $0-56
 	MOVQ v0+0(FP), AX
 	MOVQ vOut+32(FP), BX
 
-	MOVQ d+24(FP), R10
-	MOVQ vOut_len+40(FP), R11
+	MOVQ d+24(FP), DX
+	MOVQ vOut_len+40(FP), CX
 
-	CMPQ R10, $0
-	JLE  case_1
+	VPXOR Y5, Y5, Y5 // (0, 0, 0, 0)
+
+	CMPQ DX, CX
+	JGE  case_1
 
 case_0:
-	// for j, jj := 0, polyDegree-d; jj < polyDegree; j, jj = j+1, jj+1
+	// for i, ii := 0, polyDegree-d; ii < polyDegree; i, ii = i+1, ii+1
 	XORQ SI, SI
-	MOVQ R11, DI
-	SUBQ R10, DI
+	MOVQ CX, DI
+	SUBQ DX, DI
 
 	JMP case_0_loop_0_end
 
@@ -211,8 +214,7 @@ case_0_loop_0:
 	VMOVDQU (AX)(SI*8), Y0
 	VMOVDQU (AX)(DI*8), Y1
 
-	VPADDQ Y0, Y1, Y1
-	VPXOR  Y2, Y2, Y2
+	VPSUBQ Y0, Y5, Y2
 	VPSUBQ Y1, Y2, Y2
 
 	VMOVDQU Y2, (BX)(SI*8)
@@ -221,32 +223,32 @@ case_0_loop_0:
 	ADDQ $4, DI
 
 case_0_loop_0_end:
-	MOVQ DI, R12
-	ADDQ $4, R12
-	CMPQ R12, R11
+	MOVQ DI, R10
+	ADDQ $4, R10
+	CMPQ R10, CX
 	JLE  case_0_loop_0
 
 	JMP case_0_loop_0_leftover_end
 
 case_0_loop_0_leftover:
-	MOVQ (AX)(SI*8), R12
-	MOVQ (AX)(DI*8), R13
+	MOVQ (AX)(SI*8), R10
+	MOVQ (AX)(DI*8), R11
 
-	ADDQ R12, R13
-	XORQ R14, R14
-	SUBQ R13, R14
+	XORQ R13, R13
+	SUBQ R10, R13
+	SUBQ R11, R13
 
-	MOVQ R14, (BX)(SI*8)
+	MOVQ R13, (BX)(SI*8)
 
 	ADDQ $1, SI
 	ADDQ $1, DI
 
 case_0_loop_0_leftover_end:
-	CMPQ DI, R11
+	CMPQ DI, CX
 	JL   case_0_loop_0_leftover
 
-	// for j, jj := d, 0; j < polyDegree; j, jj = j+1, jj+1
-	MOVQ R10, SI
+	// for i, ii := d, 0; i < polyDegree; i, ii = i+1, ii+1
+	MOVQ DX, SI
 	XORQ DI, DI
 
 	JMP case_0_loop_1_end
@@ -263,35 +265,36 @@ case_0_loop_1:
 	ADDQ $4, DI
 
 case_0_loop_1_end:
-	MOVQ SI, R12
-	ADDQ $4, R12
-	CMPQ R12, R11
+	MOVQ SI, R10
+	ADDQ $4, R10
+	CMPQ R10, CX
 	JLE  case_0_loop_1
 
 	JMP case_0_loop_1_leftover_end
 
 case_0_loop_1_leftover:
-	MOVQ (AX)(SI*8), R12
-	MOVQ (AX)(DI*8), R13
+	MOVQ (AX)(SI*8), R10
+	MOVQ (AX)(DI*8), R11
 
-	SUBQ R12, R13
+	SUBQ R10, R11
 
-	MOVQ R13, (BX)(SI*8)
+	MOVQ R11, (BX)(SI*8)
 
 	ADDQ $1, SI
 	ADDQ $1, DI
 
 case_0_loop_1_leftover_end:
-	CMPQ SI, R11
+	CMPQ SI, CX
 	JL   case_0_loop_1_leftover
 
 	RET
 
 case_1:
-	// for j, jj := 0, -d; jj < polyDegree; j, jj = j+1, jj+1
+	// for i, ii := 0, (polyDegree<<1)-d; ii < polyDegree; i, ii = i+1, ii+1
 	XORQ SI, SI
-	XORQ DI, DI
-	SUBQ R10, DI
+	MOVQ CX, DI
+	ADDQ CX, DI
+	SUBQ DX, DI
 
 	JMP case_1_loop_0_end
 
@@ -307,31 +310,31 @@ case_1_loop_0:
 	ADDQ $4, DI
 
 case_1_loop_0_end:
-	MOVQ DI, R12
-	ADDQ $4, R12
-	CMPQ R12, R11
+	MOVQ DI, R10
+	ADDQ $4, R10
+	CMPQ R10, CX
 	JLE  case_1_loop_0
 
 	JMP case_1_loop_0_leftover_end
 
 case_1_loop_0_leftover:
-	MOVQ (AX)(SI*8), R12
-	MOVQ (AX)(DI*8), R13
+	MOVQ (AX)(SI*8), R10
+	MOVQ (AX)(DI*8), R11
 
-	SUBQ R12, R13
+	SUBQ R10, R11
 
-	MOVQ R13, (BX)(SI*8)
+	MOVQ R11, (BX)(SI*8)
 
 	ADDQ $1, SI
 	ADDQ $1, DI
 
 case_1_loop_0_leftover_end:
-	CMPQ DI, R11
+	CMPQ DI, CX
 	JL   case_1_loop_0_leftover
 
-	// for j, jj := polyDegree+d, 0; j < polyDegree; j, jj = j+1, jj+1
-	MOVQ R11, SI
-	ADDQ R10, SI
+	// for i, ii := d-polyDegree, 0; i < polyDegree; i, ii = i+1, ii+1
+	MOVQ DX, SI
+	SUBQ CX, SI
 	XORQ DI, DI
 
 	JMP case_1_loop_1_end
@@ -340,8 +343,7 @@ case_1_loop_1:
 	VMOVDQU (AX)(SI*8), Y0
 	VMOVDQU (AX)(DI*8), Y1
 
-	VPADDQ Y0, Y1, Y1
-	VPXOR  Y2, Y2, Y2
+	VPSUBQ Y0, Y5, Y2
 	VPSUBQ Y1, Y2, Y2
 
 	VMOVDQU Y2, (BX)(SI*8)
@@ -350,28 +352,28 @@ case_1_loop_1:
 	ADDQ $4, DI
 
 case_1_loop_1_end:
-	MOVQ SI, R12
-	ADDQ $4, R12
-	CMPQ R12, R11
+	MOVQ SI, R10
+	ADDQ $4, R10
+	CMPQ R10, CX
 	JLE  case_1_loop_1
 
 	JMP case_1_loop_1_leftover_end
 
 case_1_loop_1_leftover:
-	MOVQ (AX)(SI*8), R12
-	MOVQ (AX)(DI*8), R13
+	MOVQ (AX)(SI*8), R10
+	MOVQ (AX)(DI*8), R11
 
-	ADDQ R12, R13
-	XORQ R14, R14
-	SUBQ R13, R14
+	XORQ R13, R13
+	SUBQ R10, R13
+	SUBQ R11, R13
 
-	MOVQ R14, (BX)(SI*8)
+	MOVQ R13, (BX)(SI*8)
 
 	ADDQ $1, SI
 	ADDQ $1, DI
 
 case_1_loop_1_leftover_end:
-	CMPQ SI, R11
+	CMPQ SI, CX
 	JL   case_1_loop_1_leftover
 
 	RET
@@ -380,60 +382,65 @@ TEXT ·monomialSubOneMulAddAssignUint32AVX2(SB), $0-56
 	MOVQ v0+0(FP), AX
 	MOVQ vOut+32(FP), BX
 
-	MOVQ d+24(FP), R10
-	MOVQ vOut_len+40(FP), R11
+	MOVQ d+24(FP), DX
+	MOVQ vOut_len+40(FP), CX
 
-	CMPQ R10, $0
-	JLE  case_1
+	VPXOR Y5, Y5, Y5 // (0, 0, 0, 0)
+
+	CMPQ DX, CX
+	JGE  case_1
 
 case_0:
-	// for j, jj := 0, polyDegree-d; jj < polyDegree; j, jj = j+1, jj+1
+	// for i, ii := 0, polyDegree-d; ii < polyDegree; i, ii = i+1, ii+1
 	XORQ SI, SI
-	MOVQ R11, DI
-	SUBQ R10, DI
+	MOVQ CX, DI
+	SUBQ DX, DI
 
 	JMP case_0_loop_0_end
 
 case_0_loop_0:
 	VMOVDQU (AX)(SI*4), Y0
 	VMOVDQU (AX)(DI*4), Y1
-	VMOVDQU (BX)(SI*4), Y2
 
-	VPADDD Y0, Y1, Y1
+	VPSUBD Y0, Y5, Y2
 	VPSUBD Y1, Y2, Y2
 
-	VMOVDQU Y2, (BX)(SI*4)
+	VMOVDQU (BX)(SI*4), Y3
+	VPADDD Y2, Y3, Y3
+	VMOVDQU Y3, (BX)(SI*4)
 
 	ADDQ $8, SI
 	ADDQ $8, DI
 
 case_0_loop_0_end:
-	MOVQ DI, R12
-	ADDQ $8, R12
-	CMPQ R12, R11
+	MOVQ DI, R10
+	ADDQ $8, R10
+	CMPQ R10, CX
 	JLE  case_0_loop_0
 
 	JMP case_0_loop_0_leftover_end
 
 case_0_loop_0_leftover:
-	MOVL (AX)(SI*4), R12
-	MOVL (AX)(DI*4), R13
+	MOVL (AX)(SI*4), R10
+	MOVL (AX)(DI*4), R11
+
+	XORL R13, R13
+	SUBL R10, R13
+	SUBL R11, R13
+
 	MOVL (BX)(SI*4), R14
-
-	ADDL R12, R13
-	SUBL R13, R14
-
+	ADDL R13, R14
 	MOVL R14, (BX)(SI*4)
 
 	ADDQ $1, SI
 	ADDQ $1, DI
 
 case_0_loop_0_leftover_end:
-	CMPQ DI, R11
+	CMPQ DI, CX
 	JL   case_0_loop_0_leftover
 
-	// for j, jj := d, 0; j < polyDegree; j, jj = j+1, jj+1
-	MOVQ R10, SI
+	// for i, ii := d, 0; i < polyDegree; i, ii = i+1, ii+1
+	MOVQ DX, SI
 	XORQ DI, DI
 
 	JMP case_0_loop_1_end
@@ -441,92 +448,93 @@ case_0_loop_0_leftover_end:
 case_0_loop_1:
 	VMOVDQU (AX)(SI*4), Y0
 	VMOVDQU (AX)(DI*4), Y1
-	VMOVDQU (BX)(SI*4), Y2
 
-	VPSUBD Y0, Y1, Y1
-	VPADDD Y1, Y2, Y2
+	VPSUBD Y0, Y1, Y2
 
-	VMOVDQU Y2, (BX)(SI*4)
+	VMOVDQU (BX)(SI*4), Y3
+	VPADDD Y2, Y3, Y3
+	VMOVDQU Y3, (BX)(SI*4)
 
 	ADDQ $8, SI
 	ADDQ $8, DI
 
 case_0_loop_1_end:
-	MOVQ SI, R12
-	ADDQ $8, R12
-	CMPQ R12, R11
+	MOVQ SI, R10
+	ADDQ $8, R10
+	CMPQ R10, CX
 	JLE  case_0_loop_1
 
 	JMP case_0_loop_1_leftover_end
 
 case_0_loop_1_leftover:
-	MOVL (AX)(SI*4), R12
-	MOVL (AX)(DI*4), R13
-	MOVL (BX)(SI*4), R14
+	MOVL (AX)(SI*4), R10
+	MOVL (AX)(DI*4), R11
 
-	SUBL R12, R13
-	ADDL R13, R14
+	SUBL R10, R11
 
-	MOVL R14, (BX)(SI*4)
+	MOVL (BX)(SI*4), R12
+	ADDL R11, R12
+	MOVL R12, (BX)(SI*4)
 
 	ADDQ $1, SI
 	ADDQ $1, DI
 
 case_0_loop_1_leftover_end:
-	CMPQ SI, R11
+	CMPQ SI, CX
 	JL   case_0_loop_1_leftover
 
 	RET
 
 case_1:
-	// for j, jj := 0, -d; jj < polyDegree; j, jj = j+1, jj+1
+	// for i, ii := 0, (polyDegree<<1)-d; ii < polyDegree; i, ii = i+1, ii+1
 	XORQ SI, SI
-	XORQ DI, DI
-	SUBQ R10, DI
+	MOVQ CX, DI
+	ADDQ CX, DI
+	SUBQ DX, DI
 
 	JMP case_1_loop_0_end
 
 case_1_loop_0:
 	VMOVDQU (AX)(SI*4), Y0
 	VMOVDQU (AX)(DI*4), Y1
-	VMOVDQU (BX)(SI*4), Y2
 
-	VPSUBD Y0, Y1, Y1
-	VPADDD Y1, Y2, Y2
+	VPSUBD Y0, Y1, Y2
 
-	VMOVDQU Y2, (BX)(SI*4)
+	VMOVDQU (BX)(SI*4), Y3
+	VPADDD Y2, Y3, Y3
+	VMOVDQU Y3, (BX)(SI*4)
 
 	ADDQ $8, SI
 	ADDQ $8, DI
 
 case_1_loop_0_end:
-	MOVQ DI, R12
-	ADDQ $8, R12
-	CMPQ R12, R11
+	MOVQ DI, R10
+	ADDQ $8, R10
+	CMPQ R10, CX
 	JLE  case_1_loop_0
 
 	JMP case_1_loop_0_leftover_end
 
 case_1_loop_0_leftover:
-	MOVL (AX)(SI*4), R12
-	MOVL (AX)(DI*4), R13
-	MOVL (BX)(SI*4), R14
+	MOVL (AX)(SI*4), R10
+	MOVL (AX)(DI*4), R11
 
-	SUBL R12, R13
-	ADDL R13, R14
+	SUBL R10, R11
 
-	MOVL R14, (BX)(SI*4)
+	MOVL (BX)(SI*4), R12
+	ADDL R11, R12
+	MOVL R12, (BX)(SI*4)
 
 	ADDQ $1, SI
 	ADDQ $1, DI
 
 case_1_loop_0_leftover_end:
-	CMPQ DI, R11
+	CMPQ DI, CX
 	JL   case_1_loop_0_leftover
 
-	// for j, jj := polyDegree+d, 0; j < polyDegree; j, jj = j+1, jj+1
-	MOVQ R11, SI
-	ADDQ R10, SI
+	// for i, ii := d-polyDegree, 0; i < polyDegree; i, ii = i+1, ii+1
+	MOVQ DX, SI
+	SUBQ CX, SI
 	XORQ DI, DI
 
 	JMP case_1_loop_1_end
@@ -534,39 +542,42 @@ case_1_loop_0_leftover_end:
 case_1_loop_1:
 	VMOVDQU (AX)(SI*4), Y0
 	VMOVDQU (AX)(DI*4), Y1
-	VMOVDQU (BX)(SI*4), Y2
 
-	VPADDD Y0, Y1, Y1
+	VPSUBD Y0, Y5, Y2
 	VPSUBD Y1, Y2, Y2
 
-	VMOVDQU Y2, (BX)(SI*4)
+	VMOVDQU (BX)(SI*4), Y3
+	VPADDD Y2, Y3, Y3
+	VMOVDQU Y3, (BX)(SI*4)
 
 	ADDQ $8, SI
 	ADDQ $8, DI
 
 case_1_loop_1_end:
-	MOVQ SI, R12
-	ADDQ $8, R12
-	CMPQ R12, R11
+	MOVQ SI, R10
+	ADDQ $8, R10
+	CMPQ R10, CX
 	JLE  case_1_loop_1
 
 	JMP case_1_loop_1_leftover_end
 
 case_1_loop_1_leftover:
-	MOVL (AX)(SI*4), R12
-	MOVL (AX)(DI*4), R13
+	MOVL (AX)(SI*4), R10
+	MOVL (AX)(DI*4), R11
+
+	XORL R13, R13
+	SUBL R10, R13
+	SUBL R11, R13
+
 	MOVL (BX)(SI*4), R14
-
-	ADDL R12, R13
-	SUBL R13, R14
-
+	ADDL R13, R14
 	MOVL R14, (BX)(SI*4)
 
 	ADDQ $1, SI
 	ADDQ $1, DI
 
 case_1_loop_1_leftover_end:
-	CMPQ SI, R11
+	CMPQ SI, CX
 	JL   case_1_loop_1_leftover
 
 	RET
@@ -575,60 +586,65 @@ TEXT ·monomialSubOneMulAddAssignUint64AVX2(SB), $0-56
 	MOVQ v0+0(FP), AX
 	MOVQ vOut+32(FP), BX
 
-	MOVQ d+24(FP), R10
-	MOVQ vOut_len+40(FP), R11
+	MOVQ d+24(FP), DX
+	MOVQ vOut_len+40(FP), CX
 
-	CMPQ R10, $0
-	JLE  case_1
+	VPXOR Y5, Y5, Y5 // (0, 0, 0, 0)
+
+	CMPQ DX, CX
+	JGE  case_1
 
 case_0:
-	// for j, jj := 0, polyDegree-d; jj < polyDegree; j, jj = j+1, jj+1
+	// for i, ii := 0, polyDegree-d; ii < polyDegree; i, ii = i+1, ii+1
 	XORQ SI, SI
-	MOVQ R11, DI
-	SUBQ R10, DI
+	MOVQ CX, DI
+	SUBQ DX, DI
 
 	JMP case_0_loop_0_end
 
 case_0_loop_0:
 	VMOVDQU (AX)(SI*8), Y0
 	VMOVDQU (AX)(DI*8), Y1
-	VMOVDQU (BX)(SI*8), Y2
 
-	VPADDQ Y0, Y1, Y1
+	VPSUBQ Y0, Y5, Y2
 	VPSUBQ Y1, Y2, Y2
 
-	VMOVDQU Y2, (BX)(SI*8)
+	VMOVDQU (BX)(SI*8), Y3
+	VPADDQ Y2, Y3, Y3
+	VMOVDQU Y3, (BX)(SI*8)
 
 	ADDQ $4, SI
 	ADDQ $4, DI
 
 case_0_loop_0_end:
-	MOVQ DI, R12
-	ADDQ $4, R12
-	CMPQ R12, R11
+	MOVQ DI, R10
+	ADDQ $4, R10
+	CMPQ R10, CX
 	JLE  case_0_loop_0
 
 	JMP case_0_loop_0_leftover_end
 
 case_0_loop_0_leftover:
-	MOVQ (AX)(SI*8), R12
-	MOVQ (AX)(DI*8), R13
+	MOVQ (AX)(SI*8), R10
+	MOVQ (AX)(DI*8), R11
+
+	XORQ R13, R13
+	SUBQ R10, R13
+	SUBQ R11, R13
+
 	MOVQ (BX)(SI*8), R14
-
-	ADDQ R12, R13
-	SUBQ R13, R14
-
+	ADDQ R13, R14
 	MOVQ R14, (BX)(SI*8)
 
 	ADDQ $1, SI
 	ADDQ $1, DI
 
 case_0_loop_0_leftover_end:
-	CMPQ DI, R11
+	CMPQ DI, CX
 	JL   case_0_loop_0_leftover
 
-	// for j, jj := d, 0; j < polyDegree; j, jj = j+1, jj+1
-	MOVQ R10, SI
+	// for i, ii := d, 0; i < polyDegree; i, ii = i+1, ii+1
+	MOVQ DX, SI
 	XORQ DI, DI
 
 	JMP case_0_loop_1_end
@@ -636,92 +652,93 @@ case_0_loop_0_leftover_end:
 case_0_loop_1:
 	VMOVDQU (AX)(SI*8), Y0
 	VMOVDQU (AX)(DI*8), Y1
-	VMOVDQU (BX)(SI*8), Y2
 
-	VPSUBQ Y0, Y1, Y1
-	VPADDQ Y1, Y2, Y2
+	VPSUBQ Y0, Y1, Y2
 
-	VMOVDQU Y2, (BX)(SI*8)
+	VMOVDQU (BX)(SI*8), Y3
+	VPADDQ Y2, Y3, Y3
+	VMOVDQU Y3, (BX)(SI*8)
 
 	ADDQ $4, SI
 	ADDQ $4, DI
 
 case_0_loop_1_end:
-	MOVQ SI, R12
-	ADDQ $4, R12
-	CMPQ R12, R11
+	MOVQ SI, R10
+	ADDQ $4, R10
+	CMPQ R10, CX
 	JLE  case_0_loop_1
 
 	JMP case_0_loop_1_leftover_end
 
 case_0_loop_1_leftover:
-	MOVQ (AX)(SI*8), R12
-	MOVQ (AX)(DI*8), R13
-	MOVQ (BX)(SI*8), R14
+	MOVQ (AX)(SI*8), R10
+	MOVQ (AX)(DI*8), R11
 
-	SUBQ R12, R13
-	ADDQ R13, R14
+	SUBQ R10, R11
 
-	MOVQ R14, (BX)(SI*8)
+	MOVQ (BX)(SI*8), R12
+	ADDQ R11, R12
+	MOVQ R12, (BX)(SI*8)
 
 	ADDQ $1, SI
 	ADDQ $1, DI
 
 case_0_loop_1_leftover_end:
-	CMPQ SI, R11
+	CMPQ SI, CX
 	JL   case_0_loop_1_leftover
 
 	RET
 
 case_1:
-	// for j, jj := 0, -d; jj < polyDegree; j, jj = j+1, jj+1
+	// for i, ii := 0, (polyDegree<<1)-d; ii < polyDegree; i, ii = i+1, ii+1
 	XORQ SI, SI
-	XORQ DI, DI
-	SUBQ R10, DI
+	MOVQ CX, DI
+	ADDQ CX, DI
+	SUBQ DX, DI
 
 	JMP case_1_loop_0_end
 
 case_1_loop_0:
 	VMOVDQU (AX)(SI*8), Y0
 	VMOVDQU (AX)(DI*8), Y1
-	VMOVDQU (BX)(SI*8), Y2
 
-	VPSUBQ Y0, Y1, Y1
-	VPADDQ Y1, Y2, Y2
+	VPSUBQ Y0, Y1, Y2
 
-	VMOVDQU Y2, (BX)(SI*8)
+	VMOVDQU (BX)(SI*8), Y3
+	VPADDQ Y2, Y3, Y3
+	VMOVDQU Y3, (BX)(SI*8)
 
 	ADDQ $4, SI
 	ADDQ $4, DI
 
 case_1_loop_0_end:
-	MOVQ DI, R12
-	ADDQ $4, R12
-	CMPQ R12, R11
+	MOVQ DI, R10
+	ADDQ $4, R10
+	CMPQ R10, CX
 	JLE  case_1_loop_0
 
 	JMP case_1_loop_0_leftover_end
 
 case_1_loop_0_leftover:
-	MOVQ (AX)(SI*8), R12
-	MOVQ (AX)(DI*8), R13
-	MOVQ (BX)(SI*8), R14
+	MOVQ (AX)(SI*8), R10
+	MOVQ (AX)(DI*8), R11
 
-	SUBQ R12, R13
-	ADDQ R13, R14
+	SUBQ R10, R11
 
-	MOVQ R14, (BX)(SI*8)
+	MOVQ (BX)(SI*8), R12
+	ADDQ R11, R12
+	MOVQ R12, (BX)(SI*8)
 
 	ADDQ $1, SI
 	ADDQ $1, DI
 
 case_1_loop_0_leftover_end:
-	CMPQ DI, R11
+	CMPQ DI, CX
 	JL   case_1_loop_0_leftover
 
-	// for j, jj := polyDegree+d, 0; j < polyDegree; j, jj = j+1, jj+1
-	MOVQ R11, SI
-	ADDQ R10, SI
+	// for i, ii := d-polyDegree, 0; i < polyDegree; i, ii = i+1, ii+1
+	MOVQ DX, SI
+	SUBQ CX, SI
 	XORQ DI, DI
 
 	JMP case_1_loop_1_end
@@ -729,39 +746,42 @@ case_1_loop_0_leftover_end:
 case_1_loop_1:
 	VMOVDQU (AX)(SI*8), Y0
 	VMOVDQU (AX)(DI*8), Y1
-	VMOVDQU (BX)(SI*8), Y2
 
-	VPADDQ Y0, Y1, Y1
+	VPSUBQ Y0, Y5, Y2
 	VPSUBQ Y1, Y2, Y2
 
-	VMOVDQU Y2, (BX)(SI*8)
+	VMOVDQU (BX)(SI*8), Y3
+	VPADDQ Y2, Y3, Y3
+	VMOVDQU Y3, (BX)(SI*8)
 
 	ADDQ $4, SI
 	ADDQ $4, DI
 
 case_1_loop_1_end:
-	MOVQ SI, R12
-	ADDQ $4, R12
-	CMPQ R12, R11
+	MOVQ SI, R10
+	ADDQ $4, R10
+	CMPQ R10, CX
 	JLE  case_1_loop_1
 
 	JMP case_1_loop_1_leftover_end
 
 case_1_loop_1_leftover:
-	MOVQ (AX)(SI*8), R12
-	MOVQ (AX)(DI*8), R13
+	MOVQ (AX)(SI*8), R10
+	MOVQ (AX)(DI*8), R11
+
+	XORQ R13, R13
+	SUBQ R10, R13
+	SUBQ R11, R13
+
 	MOVQ (BX)(SI*8), R14
-
-	ADDQ R12, R13
-	SUBQ R13, R14
-
+	ADDQ R13, R14
 	MOVQ R14, (BX)(SI*8)
 
 	ADDQ $1, SI
 	ADDQ $1, DI
 
 case_1_loop_1_leftover_end:
-	CMPQ SI, R11
+	CMPQ SI, CX
 	JL   case_1_loop_1_leftover
 
 	RET

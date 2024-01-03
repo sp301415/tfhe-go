@@ -237,18 +237,14 @@ func (e *Evaluator[T]) MonomialMulSubAssign(p0 Poly[T], d int, pOut Poly[T]) {
 
 // MonomialMulSubOneMulAssign multiplies X^d - 1 to p0, and writes it to pOut.
 //
-// This method is frequently used in Blind Rotation,
-// so this is tailor-made for that:
-// Namely, d is assumed to be in [-N, N], and p0 and pOut should not overlap.
+// d should be positive, and p0 and pOut should not overlap.
 func (e *Evaluator[T]) MonomialSubOneMulAssign(p0 Poly[T], d int, pOut Poly[T]) {
-	monomialSubOneMulAssign(p0, d, pOut)
+	monomialSubOneMulAssign(p0, d&((e.degree<<1)-1), pOut)
 }
 
 // MonomialMulSubOneMulAddAssign multiplies X^d - 1 to p0, and adds it to pOut.
 //
-// This method is frequently used in Blind Rotation,
-// so this is tailor-made for that:
-// Namely, d is assumed to be in [-N, N], and p0 and pOut should not overlap.
+// d should be positive, and p0 and pOut should not overlap.
 func (e *Evaluator[T]) MonomialSubOneMulAddAssign(p0 Poly[T], d int, pOut Poly[T]) {
-	monomialSubOneMulAddAssign(p0, d, pOut)
+	monomialSubOneMulAddAssign(p0, d&((e.degree<<1)-1), pOut)
 }
