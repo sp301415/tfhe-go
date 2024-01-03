@@ -406,7 +406,7 @@ case_0_loop_0:
 	VPSUBD Y1, Y2, Y2
 
 	VMOVDQU (BX)(SI*4), Y3
-	VPADDD Y2, Y3, Y3
+	VPADDD  Y2, Y3, Y3
 	VMOVDQU Y3, (BX)(SI*4)
 
 	ADDQ $8, SI
@@ -452,7 +452,7 @@ case_0_loop_1:
 	VPSUBD Y0, Y1, Y2
 
 	VMOVDQU (BX)(SI*4), Y3
-	VPADDD Y2, Y3, Y3
+	VPADDD  Y2, Y3, Y3
 	VMOVDQU Y3, (BX)(SI*4)
 
 	ADDQ $8, SI
@@ -501,7 +501,7 @@ case_1_loop_0:
 	VPSUBD Y0, Y1, Y2
 
 	VMOVDQU (BX)(SI*4), Y3
-	VPADDD Y2, Y3, Y3
+	VPADDD  Y2, Y3, Y3
 	VMOVDQU Y3, (BX)(SI*4)
 
 	ADDQ $8, SI
@@ -547,7 +547,7 @@ case_1_loop_1:
 	VPSUBD Y1, Y2, Y2
 
 	VMOVDQU (BX)(SI*4), Y3
-	VPADDD Y2, Y3, Y3
+	VPADDD  Y2, Y3, Y3
 	VMOVDQU Y3, (BX)(SI*4)
 
 	ADDQ $8, SI
@@ -610,7 +610,7 @@ case_0_loop_0:
 	VPSUBQ Y1, Y2, Y2
 
 	VMOVDQU (BX)(SI*8), Y3
-	VPADDQ Y2, Y3, Y3
+	VPADDQ  Y2, Y3, Y3
 	VMOVDQU Y3, (BX)(SI*8)
 
 	ADDQ $4, SI
@@ -656,7 +656,7 @@ case_0_loop_1:
 	VPSUBQ Y0, Y1, Y2
 
 	VMOVDQU (BX)(SI*8), Y3
-	VPADDQ Y2, Y3, Y3
+	VPADDQ  Y2, Y3, Y3
 	VMOVDQU Y3, (BX)(SI*8)
 
 	ADDQ $4, SI
@@ -705,7 +705,7 @@ case_1_loop_0:
 	VPSUBQ Y0, Y1, Y2
 
 	VMOVDQU (BX)(SI*8), Y3
-	VPADDQ Y2, Y3, Y3
+	VPADDQ  Y2, Y3, Y3
 	VMOVDQU Y3, (BX)(SI*8)
 
 	ADDQ $4, SI
@@ -751,7 +751,7 @@ case_1_loop_1:
 	VPSUBQ Y1, Y2, Y2
 
 	VMOVDQU (BX)(SI*8), Y3
-	VPADDQ Y2, Y3, Y3
+	VPADDQ  Y2, Y3, Y3
 	VMOVDQU Y3, (BX)(SI*8)
 
 	ADDQ $4, SI
