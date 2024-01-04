@@ -34,18 +34,18 @@ type FourierEvaluator[T num.Integer] struct {
 	// ordered in bit-reversed order.
 	// Unlike other complex128 slices, wNjInv is in natural order.
 	wNjInv []complex128
-	// w2Nj holds the twisting factors exp(pi*j/N) where j = 0 ~ N/2.
+	// w4Nj holds the twisting factors exp(pi*j/N) where j = 0 ~ N/2.
 	// Ordered as float4 representation.
-	w2Nj []float64
-	// w2NjScaled holds the scaled twisting factors w2Nj * maxT.
+	w4Nj []float64
+	// w4NjScaled holds the scaled twisting factors w4Nj / maxT.
 	// Ordered as float4 representation.
-	w2NjScaled []float64
-	// w2NjInv holds the inverse twisting factors exp(-pi*j/N) where j = 0 ~ N/2.
+	w4NjScaled []float64
+	// w4NjInv holds the inverse twisting factors exp(-pi*j/N) where j = 0 ~ N/2.
 	// Ordered as float4 representation.
-	w2NjInv []float64
-	// w2NjMono holds the twisting factors for monomials: exp(-pi*j/N) where j = 0 ~ 2N.
-	// Unlike other complex128 slices, w2NjMono is in natural order.
-	w2NjMono []complex128
+	w4NjInv []float64
+	// w4NjMono holds the twisting factors for monomials: exp(-pi*j/N) where j = 0 ~ 2N.
+	// Unlike other complex128 slices, w4NjMono is in natural order.
+	w4NjMono []complex128
 	// revMonoIdx holds the precomputed bit-reversed index for MonomialToFourierPoly.
 	// Equivalent to BitReverse([-1, 3, 7, ..., 2N-1]).
 	revMonoIdx []int
@@ -75,43 +75,15 @@ func NewFourierEvaluator[T num.Integer](N int) *FourierEvaluator[T] {
 
 	maxT := math.Exp2(float64(num.SizeT[T]()))
 
-	wNj := make([]complex128, N/2)
-	wNjInv := make([]complex128, N/2)
-	for j := 0; j < N/4; j++ {
-		e := -4 * math.Pi * float64(j) / float64(N)
-		wNj[j+N/4] = cmplx.Exp(complex(0, e))
-		wNjInv[j] = cmplx.Exp(-complex(0, e))
-	}
-	vec.BitReverseInPlace(wNj[N/4:])
-	vec.BitReverseInPlace(wNjInv[:N/4])
-	for i := 1; i < N/4; i <<= 1 {
-		for j := 0; j < i; j++ {
-			wNj[i+j] = wNj[j+N/4]
-		}
-	}
-	for i, x := N/8, 0; i >= 1; i, x = i>>1, x+i {
-		for j := 0; j < i; j++ {
-			wNjInv[x+j+N/4] = wNjInv[j]
-		}
-	}
+	wNj, wNjInv := genTwiddleFactors(N / 2)
 
-	w2Nj := make([]complex128, N/2)
-	w2NjScaled := make([]complex128, N/2)
-	w2NjInv := make([]complex128, N/2)
-	for j := 0; j < N/2; j++ {
-		e := math.Pi * float64(j) / float64(N)
-		w2Nj[j] = cmplx.Exp(complex(0, e))
-		w2NjScaled[j] = w2Nj[j] / complex(maxT, 0)
-		w2NjInv[j] = cmplx.Exp(-complex(0, e)) / complex(float64(N/2), 0)
-	}
-	w2NjFloat4 := vec.CmplxToFloat4(w2Nj)
-	w2NjScaledFloat4 := vec.CmplxToFloat4(w2NjScaled)
-	w2NjInvFloat4 := vec.CmplxToFloat4(w2NjInv)
+	w4Nj, w4NjInv := genTwistingFactors(N / 2)
+	w4NjScaled := vec.ScalarMul(w4Nj, 1/maxT)
 
-	w2NjMono := make([]complex128, 2*N)
+	w4NjMono := make([]complex128, 2*N)
 	for j := 0; j < 2*N; j++ {
 		e := -math.Pi * float64(j) / float64(N)
-		w2NjMono[j] = cmplx.Exp(complex(0, e))
+		w4NjMono[j] = cmplx.Exp(complex(0, e))
 	}
 
 	revMonoIdx := make([]int, N/2)
@@ -127,14 +99,60 @@ func NewFourierEvaluator[T num.Integer](N int) *FourierEvaluator[T] {
 
 		wNj:        wNj,
 		wNjInv:     wNjInv,
-		w2Nj:       w2NjFloat4,
-		w2NjScaled: w2NjScaledFloat4,
-		w2NjInv:    w2NjInvFloat4,
-		w2NjMono:   w2NjMono,
+		w4Nj:       w4Nj,
+		w4NjScaled: w4NjScaled,
+		w4NjInv:    w4NjInv,
+		w4NjMono:   w4NjMono,
 		revMonoIdx: revMonoIdx,
 
 		buffer: newFourierBuffer[T](N),
 	}
+}
+
+// genTwiddleFactors generates twiddle factors for FFT.
+func genTwiddleFactors(N int) (wNj, wNjInv []complex128) {
+	wNjRef := make([]complex128, N/2)
+	wNjInvRef := make([]complex128, N/2)
+	for j := 0; j < N/2; j++ {
+		e := -2 * math.Pi * float64(j) / float64(N)
+		wNjRef[j] = cmplx.Exp(complex(0, e))
+		wNjInvRef[j] = cmplx.Exp(-complex(0, e))
+	}
+	vec.BitReverseInPlace(wNjRef)
+	vec.BitReverseInPlace(wNjInvRef)
+
+	wNj = make([]complex128, N)
+	wNjInv = make([]complex128, N)
+
+	w := 0
+	for m := 1; m < N; m <<= 1 {
+		for i := 0; i < m; i++ {
+			wNj[w] = wNjRef[i]
+			w++
+		}
+	}
+
+	w = 0
+	for m := N; m > 1; m >>= 1 {
+		for i := 0; i < m/2; i++ {
+			wNjInv[w] = wNjInvRef[i]
+			w++
+		}
+	}
+
+	return wNj, wNjInv
+}
+
+// genTwistingFactors generates twisting factors for FFT.
+func genTwistingFactors(N int) (w4Nj, w4NjInv []float64) {
+	w4NjCmplx := make([]complex128, N)
+	w4NjInvCmplx := make([]complex128, N)
+	for j := 0; j < N; j++ {
+		e := 2 * math.Pi * float64(j) / float64(4*N)
+		w4NjCmplx[j] = cmplx.Exp(complex(0, e))
+		w4NjInvCmplx[j] = cmplx.Exp(-complex(0, e)) / complex(float64(N), 0)
+	}
+	return vec.CmplxToFloat4(w4NjCmplx), vec.CmplxToFloat4(w4NjInvCmplx)
 }
 
 // newFourierBuffer allocates an empty fourierBuffer.
@@ -154,10 +172,10 @@ func (f *FourierEvaluator[T]) ShallowCopy() *FourierEvaluator[T] {
 
 		wNj:        f.wNj,
 		wNjInv:     f.wNjInv,
-		w2Nj:       f.w2Nj,
-		w2NjScaled: f.w2NjScaled,
-		w2NjInv:    f.w2NjInv,
-		w2NjMono:   f.w2NjMono,
+		w4Nj:       f.w4Nj,
+		w4NjScaled: f.w4NjScaled,
+		w4NjInv:    f.w4NjInv,
+		w4NjMono:   f.w4NjMono,
 		revMonoIdx: f.revMonoIdx,
 
 		buffer: newFourierBuffer[T](f.degree),

@@ -20,7 +20,7 @@ TEXT ·fftInPlaceAVX2(SB), $0-48
 
 	XORQ SI, SI         // j
 	XORQ DI, DI
-	ADDQ DX, DI         // j + N
+	ADDQ DX, DI         // j + N/2
 	JMP  first_loop_end
 
 first_loop:
@@ -45,16 +45,14 @@ first_loop:
 first_loop_end:
 	CMPQ SI, DX
 	JL   first_loop
-
-	// Main loop
-	// Start with wNj[1]
 	ADDQ $16, BX
 
+	// Main loop
 	// t := N >> 1
 	MOVQ DX, R8 // t
 
-	MOVQ $4, SI     // m
-	SHRQ $1, DX     // N/4
+	MOVQ $2, SI     // m
+	SHRQ $2, DX     // N/8
 	JMP  m_loop_end
 
 m_loop:
@@ -65,9 +63,10 @@ m_loop:
 	JMP  i_loop_end
 
 i_loop:
-	// j1 := i * t
+	// j1 := i * t << 1
 	MOVQ  DI, R9 // j = j1
 	IMULQ R8, R9
+	ADDQ  R9, R9
 
 	// j2 := j1 + t
 	MOVQ R9, R11 // j2
@@ -75,9 +74,9 @@ i_loop:
 
 	MOVQ R11, R10 // j + t
 
-	ADDQ         $16, BX
 	VBROADCASTSD (BX), Y13  // Wr
 	VBROADCASTSD 8(BX), Y14 // Wi
+	ADDQ         $16, BX
 
 	JMP j_loop_end
 
@@ -111,7 +110,7 @@ j_loop_end:
 	CMPQ R9, R11
 	JL   j_loop
 
-	ADDQ $2, DI
+	ADDQ $1, DI
 
 i_loop_end:
 	CMPQ DI, SI
@@ -127,19 +126,19 @@ m_loop_end:
 	// Last Loop - stride = 2
 	VMOVUPD fftStride2Mask<>+0(SB), Y10 // (1, 1, -1, -1)
 
-	XORQ DI, DI          // j
+	XORQ SI, SI          // j
 	JMP  last_loop_2_end
 
 last_loop_2:
-	ADDQ    $16, BX
 	VMOVUPD (BX), X10
 	VSHUFPD $0b00, X10, X10, X13 // Wr
 	VSHUFPD $0b11, X10, X10, X14 // Wi
+	ADDQ    $16, BX
 
-	VMOVUPD (AX)(DI*8), X0   // Ur
-	VMOVUPD 16(AX)(DI*8), X1 // Vr
-	VMOVUPD 32(AX)(DI*8), X2 // Ui
-	VMOVUPD 48(AX)(DI*8), X3 // Vi
+	VMOVUPD (AX)(SI*8), X0   // Ur
+	VMOVUPD 16(AX)(SI*8), X1 // Vr
+	VMOVUPD 32(AX)(SI*8), X2 // Ui
+	VMOVUPD 48(AX)(SI*8), X3 // Vi
 
 	VMULPD      X3, X14, X4
 	VFMSUB231PD X1, X13, X4 // Vr * W
@@ -153,35 +152,30 @@ last_loop_2:
 	VADDPD X5, X2, X8
 	VSUBPD X5, X2, X9
 
-	VMOVUPD X6, (AX)(DI*8)
-	VMOVUPD X7, 16(AX)(DI*8)
-	VMOVUPD X8, 32(AX)(DI*8)
-	VMOVUPD X9, 48(AX)(DI*8)
+	VMOVUPD X6, (AX)(SI*8)
+	VMOVUPD X7, 16(AX)(SI*8)
+	VMOVUPD X8, 32(AX)(SI*8)
+	VMOVUPD X9, 48(AX)(SI*8)
 
-	ADDQ $8, DI
+	ADDQ $8, SI
 
 last_loop_2_end:
-	CMPQ DI, CX
+	CMPQ SI, CX
 	JL   last_loop_2
 
 	// Last Loop - stride 1
 	VPXOR Y10, Y10, Y10 // (0, 0, 0, 0)
 
-	// We read wNj with stride 32 from here,
-	// So we offset it by -16.
-	SUBQ $16, BX
-
-	XORQ SI, SI          // i
-	XORQ DI, DI          // j
+	XORQ SI, SI          // j
 	JMP  last_loop_1_end
 
 last_loop_1:
-	ADDQ    $32, BX
 	VMOVUPD (BX), Y13              // (Wr0, Wi0, Wr1, Wi1)
 	VSHUFPD $0b0101, Y13, Y13, Y14
+	ADDQ    $32, BX
 
-	VMOVUPD (AX)(DI*8), Y0   // (Ur0, Vr0, Ur1, Vr1)
-	VMOVUPD 32(AX)(DI*8), Y1 // (Ui0, Vi0, Ui1, Vi1)
+	VMOVUPD (AX)(SI*8), Y0   // (Ur0, Vr0, Ur1, Vr1)
+	VMOVUPD 32(AX)(SI*8), Y1 // (Ui0, Vi0, Ui1, Vi1)
 
 	VSHUFPD $0b1111, Y0, Y0, Y2 // (Vr0, Vr0, Vr1, Vr1)
 	VSHUFPD $0b1111, Y1, Y1, Y3 // (Vi0, Vi0, Vi1, Vi1)
@@ -200,14 +194,13 @@ last_loop_1:
 	VADDSUBPD Y0, Y6, Y0
 	VADDSUBPD Y1, Y7, Y1
 
-	VMOVUPD Y0, (AX)(DI*8)
-	VMOVUPD Y1, 32(AX)(DI*8)
+	VMOVUPD Y0, (AX)(SI*8)
+	VMOVUPD Y1, 32(AX)(SI*8)
 
-	ADDQ $4, SI
-	ADDQ $8, DI
+	ADDQ $8, SI
 
 last_loop_1_end:
-	CMPQ DI, CX
+	CMPQ SI, CX
 	JL   last_loop_1
 
 	RET
@@ -220,21 +213,16 @@ TEXT ·invFFTInPlaceAVX2(SB), $0-48
 
 	// First two loops
 	// First Loop - stride 1
-	// We read wNjInv with stride 32 here,
-	// So we offset it by -32.
-	SUBQ $32, BX
-
-	XORQ SI, SI           // i
-	XORQ DI, DI           // j
+	XORQ SI, SI           // j
 	JMP  first_loop_1_end
 
 first_loop_1:
-	ADDQ    $32, BX
 	VMOVUPD (BX), Y13              // (Wr0, Wi0, Wr1, Wi1)
 	VSHUFPD $0b0101, Y13, Y13, Y14
+	ADDQ    $32, BX
 
-	VMOVUPD (AX)(DI*8), Y0   // (Ur0, Vr0, Ur1, Vr1)
-	VMOVUPD 32(AX)(DI*8), Y1 // (Ui0, Vi0, Ui1, Vi1)
+	VMOVUPD (AX)(SI*8), Y0   // (Ur0, Vr0, Ur1, Vr1)
+	VMOVUPD 32(AX)(SI*8), Y1 // (Ui0, Vi0, Ui1, Vi1)
 
 	VHADDPD Y0, Y0, Y10
 	VHADDPD Y1, Y1, Y11
@@ -253,34 +241,29 @@ first_loop_1:
 	VSHUFPD $0b0000, Y5, Y10, Y6
 	VSHUFPD $0b1111, Y5, Y11, Y7
 
-	VMOVUPD Y6, (AX)(DI*8)
-	VMOVUPD Y7, 32(AX)(DI*8)
+	VMOVUPD Y6, (AX)(SI*8)
+	VMOVUPD Y7, 32(AX)(SI*8)
 
-	ADDQ $4, SI
-	ADDQ $8, DI
+	ADDQ $8, SI
 
 first_loop_1_end:
-	CMPQ DI, CX
+	CMPQ SI, CX
 	JL   first_loop_1
 
 	// First Loop - stride 2
-	// We read wNjInv with stride 16 from here,
-	// So we offset it by 32 - 16 = 16.
-	ADDQ $16, BX
-
-	XORQ DI, DI           // j
+	XORQ SI, SI           // j
 	JMP  first_loop_2_end
 
 first_loop_2:
-	ADDQ    $16, BX
 	VMOVUPD (BX), X10
 	VSHUFPD $0b00, X10, X10, X13 // Wr
 	VSHUFPD $0b11, X10, X10, X14 // Wi
+	ADDQ    $16, BX
 
-	VMOVUPD (AX)(DI*8), X0   // Ur
-	VMOVUPD 16(AX)(DI*8), X1 // Vr
-	VMOVUPD 32(AX)(DI*8), X2 // Ui
-	VMOVUPD 48(AX)(DI*8), X3 // Vi
+	VMOVUPD (AX)(SI*8), X0   // Ur
+	VMOVUPD 16(AX)(SI*8), X1 // Vr
+	VMOVUPD 32(AX)(SI*8), X2 // Ui
+	VMOVUPD 48(AX)(SI*8), X3 // Vi
 
 	VADDPD X1, X0, X10
 	VADDPD X3, X2, X11
@@ -294,15 +277,15 @@ first_loop_2:
 	VMULPD      X5, X13, X7
 	VFMADD231PD X4, X14, X7 // Vi * W
 
-	VMOVUPD X10, (AX)(DI*8)
-	VMOVUPD X6, 16(AX)(DI*8)
-	VMOVUPD X11, 32(AX)(DI*8)
-	VMOVUPD X7, 48(AX)(DI*8)
+	VMOVUPD X10, (AX)(SI*8)
+	VMOVUPD X6, 16(AX)(SI*8)
+	VMOVUPD X11, 32(AX)(SI*8)
+	VMOVUPD X7, 48(AX)(SI*8)
 
-	ADDQ $8, DI
+	ADDQ $8, SI
 
 first_loop_2_end:
-	CMPQ DI, CX
+	CMPQ SI, CX
 	JL   first_loop_2
 
 	// Main Loop
@@ -329,9 +312,9 @@ i_loop:
 	MOVQ R9, R11
 	ADDQ R8, R11 // j + t
 
-	ADDQ         $16, BX
 	VBROADCASTSD (BX), Y13  // Wr
 	VBROADCASTSD 8(BX), Y14 // Wi
+	ADDQ         $16, BX
 
 j_loop:
 	VMOVUPD (AX)(R10*8), Y0   // Ur
@@ -419,7 +402,7 @@ last_loop_end:
 
 TEXT ·untwistInPlaceAVX2(SB), $0-48
 	MOVQ v0+0(FP), AX
-	MOVQ v1+24(FP), BX
+	MOVQ w4Nj+24(FP), BX
 
 	MOVQ v0_len+8(FP), DX
 
@@ -454,7 +437,7 @@ loop_end:
 
 TEXT ·untwistAndScaleInPlaceAVX2(SB), $0-56
 	MOVQ v0+0(FP), AX
-	MOVQ v1+24(FP), BX
+	MOVQ w4NjInv+24(FP), BX
 
 	MOVQ v0+8(FP), DX
 

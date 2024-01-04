@@ -87,7 +87,7 @@ func (f *FourierEvaluator[T]) ToFourierPolyAssign(p Poly[T], fpOut FourierPoly) 
 		}
 	}
 
-	elementWiseMulCmplxAssign(fpOut.Coeffs, f.w2Nj, fpOut.Coeffs)
+	elementWiseMulCmplxAssign(fpOut.Coeffs, f.w4Nj, fpOut.Coeffs)
 	fftInPlace(fpOut.Coeffs, f.wNj)
 }
 
@@ -105,19 +105,19 @@ func (f *FourierEvaluator[T]) MonomialToFourierPoly(d int) FourierPoly {
 // d should be positive.
 func (f *FourierEvaluator[T]) MonomialToFourierPolyAssign(d int, fpOut FourierPoly) {
 	for j, jj := 0, 0; j < f.degree; j, jj = j+8, jj+4 {
-		c0 := f.w2NjMono[(f.revMonoIdx[jj+0]*d)&((f.degree<<1)-1)]
+		c0 := f.w4NjMono[(f.revMonoIdx[jj+0]*d)&((f.degree<<1)-1)]
 		fpOut.Coeffs[j+0] = real(c0)
 		fpOut.Coeffs[j+4] = imag(c0)
 
-		c1 := f.w2NjMono[(f.revMonoIdx[jj+1]*d)&((f.degree<<1)-1)]
+		c1 := f.w4NjMono[(f.revMonoIdx[jj+1]*d)&((f.degree<<1)-1)]
 		fpOut.Coeffs[j+1] = real(c1)
 		fpOut.Coeffs[j+5] = imag(c1)
 
-		c2 := f.w2NjMono[(f.revMonoIdx[jj+2]*d)&((f.degree<<1)-1)]
+		c2 := f.w4NjMono[(f.revMonoIdx[jj+2]*d)&((f.degree<<1)-1)]
 		fpOut.Coeffs[j+2] = real(c2)
 		fpOut.Coeffs[j+6] = imag(c2)
 
-		c3 := f.w2NjMono[(f.revMonoIdx[jj+3]*d)&((f.degree<<1)-1)]
+		c3 := f.w4NjMono[(f.revMonoIdx[jj+3]*d)&((f.degree<<1)-1)]
 		fpOut.Coeffs[j+3] = real(c3)
 		fpOut.Coeffs[j+7] = imag(c3)
 	}
@@ -212,7 +212,7 @@ func (f *FourierEvaluator[T]) ToScaledFourierPolyAssign(p Poly[T], fpOut Fourier
 		}
 	}
 
-	elementWiseMulCmplxAssign(fpOut.Coeffs, f.w2NjScaled, fpOut.Coeffs)
+	elementWiseMulCmplxAssign(fpOut.Coeffs, f.w4NjScaled, fpOut.Coeffs)
 	fftInPlace(fpOut.Coeffs, f.wNj)
 }
 
@@ -229,7 +229,7 @@ func (f *FourierEvaluator[T]) ToStandardPolyAssign(fp FourierPoly, pOut Poly[T])
 
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
-	untwistInPlace(f.buffer.fpInv.Coeffs, f.w2NjInv)
+	untwistInPlace(f.buffer.fpInv.Coeffs, f.w4NjInv)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] = T(int64(f.buffer.fpInv.Coeffs[j+0]))
@@ -252,7 +252,7 @@ func (f *FourierEvaluator[T]) ToStandardPolyAssignUnsafe(fp FourierPoly, pOut Po
 	N := f.degree
 
 	invFFTInPlace(fp.Coeffs, f.wNjInv)
-	untwistInPlace(fp.Coeffs, f.w2NjInv)
+	untwistInPlace(fp.Coeffs, f.w4NjInv)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] = T(int64(fp.Coeffs[j+0]))
@@ -273,7 +273,7 @@ func (f *FourierEvaluator[T]) ToStandardPolyAddAssign(fp FourierPoly, pOut Poly[
 
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
-	untwistInPlace(f.buffer.fpInv.Coeffs, f.w2NjInv)
+	untwistInPlace(f.buffer.fpInv.Coeffs, f.w4NjInv)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] += T(int64(f.buffer.fpInv.Coeffs[j+0]))
@@ -296,7 +296,7 @@ func (f *FourierEvaluator[T]) ToStandardPolyAddAssignUnsafe(fp FourierPoly, pOut
 	N := f.degree
 
 	invFFTInPlace(fp.Coeffs, f.wNjInv)
-	untwistInPlace(fp.Coeffs, f.w2NjInv)
+	untwistInPlace(fp.Coeffs, f.w4NjInv)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] += T(int64(fp.Coeffs[j+0]))
@@ -317,7 +317,7 @@ func (f *FourierEvaluator[T]) ToStandardPolySubAssign(fp FourierPoly, pOut Poly[
 
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
-	untwistInPlace(f.buffer.fpInv.Coeffs, f.w2NjInv)
+	untwistInPlace(f.buffer.fpInv.Coeffs, f.w4NjInv)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] -= T(int64(f.buffer.fpInv.Coeffs[j+0]))
@@ -340,7 +340,7 @@ func (f *FourierEvaluator[T]) ToStandardPolySubAssignUnsafe(fp FourierPoly, pOut
 	N := f.degree
 
 	invFFTInPlace(fp.Coeffs, f.wNjInv)
-	untwistInPlace(fp.Coeffs, f.w2NjInv)
+	untwistInPlace(fp.Coeffs, f.w4NjInv)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] -= T(int64(fp.Coeffs[j+0]))
@@ -370,12 +370,7 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolyAssign(fp FourierPoly, pOut Po
 
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
-	untwistAndScaleInPlace(f.buffer.fpInv.Coeffs, f.w2NjInv, f.maxT)
-
-	for j := 0; j < N/2; j += 2 {
-		pOut.Coeffs[j] = T(int64(fp.Coeffs[j]))
-		pOut.Coeffs[j+1] = T(int64(fp.Coeffs[j+1]))
-	}
+	untwistAndScaleInPlace(f.buffer.fpInv.Coeffs, f.w4NjInv, f.maxT)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] = T(int64(f.buffer.fpInv.Coeffs[j+0]))
@@ -399,7 +394,7 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolyAssignUnsafe(fp FourierPoly, p
 	N := f.degree
 
 	invFFTInPlace(fp.Coeffs, f.wNjInv)
-	untwistAndScaleInPlace(fp.Coeffs, f.w2NjInv, f.maxT)
+	untwistAndScaleInPlace(fp.Coeffs, f.w4NjInv, f.maxT)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] = T(int64(fp.Coeffs[j+0]))
@@ -421,7 +416,7 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolyAddAssign(fp FourierPoly, pOut
 
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
-	untwistAndScaleInPlace(f.buffer.fpInv.Coeffs, f.w2NjInv, f.maxT)
+	untwistAndScaleInPlace(f.buffer.fpInv.Coeffs, f.w4NjInv, f.maxT)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] += T(int64(f.buffer.fpInv.Coeffs[j+0]))
@@ -445,7 +440,7 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolyAddAssignUnsafe(fp FourierPoly
 	N := f.degree
 
 	invFFTInPlace(fp.Coeffs, f.wNjInv)
-	untwistAndScaleInPlace(fp.Coeffs, f.w2NjInv, f.maxT)
+	untwistAndScaleInPlace(fp.Coeffs, f.w4NjInv, f.maxT)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] += T(int64(fp.Coeffs[j+0]))
@@ -467,7 +462,7 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolySubAssign(fp FourierPoly, pOut
 
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
-	untwistAndScaleInPlace(f.buffer.fpInv.Coeffs, f.w2NjInv, f.maxT)
+	untwistAndScaleInPlace(f.buffer.fpInv.Coeffs, f.w4NjInv, f.maxT)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] -= T(int64(f.buffer.fpInv.Coeffs[j+0]))
@@ -491,7 +486,7 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolySubAssignUnsafe(fp FourierPoly
 	N := f.degree
 
 	invFFTInPlace(fp.Coeffs, f.wNjInv)
-	untwistAndScaleInPlace(fp.Coeffs, f.w2NjInv, f.maxT)
+	untwistAndScaleInPlace(fp.Coeffs, f.w4NjInv, f.maxT)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] -= T(int64(fp.Coeffs[j+0]))

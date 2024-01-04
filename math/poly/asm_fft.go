@@ -10,6 +10,7 @@ import (
 // All internal FFT implementations calls this function for performance.
 func fftInPlace(coeffs []float64, wNj []complex128) {
 	N := len(coeffs)
+	w := 0
 
 	// First Loop
 	for j := 0; j < N/2; j += 8 {
@@ -53,18 +54,20 @@ func fftInPlace(coeffs []float64, wNj []complex128) {
 		coeffs[j+N/2+6] = Ui2 - Vi2
 		coeffs[j+N/2+7] = Ui3 - Vi3
 	}
+	w++
 
 	// Main Loop
-	t := N >> 1
-	for m := 4; m < N>>2; m <<= 1 {
+	t := N / 2
+	for m := 2; m < N/8; m <<= 1 {
 		t >>= 1
-		h := m >> 1
-		for i := 0; i < h; i++ {
+		for i := 0; i < m; i++ {
 			j1 := i * t << 1
 			j2 := j1 + t
 
-			Wr := real(wNj[h+i])
-			Wi := imag(wNj[h+i])
+			Wr := real(wNj[w])
+			Wi := imag(wNj[w])
+			w++
+
 			for j := j1; j < j2; j += 8 {
 				Ur0 := coeffs[j+0]
 				Ur1 := coeffs[j+1]
@@ -120,9 +123,10 @@ func fftInPlace(coeffs []float64, wNj []complex128) {
 	}
 
 	// Stride 2
-	for i, j := 0, 0; j < N; i, j = i+1, j+8 {
-		Wr := real(wNj[i+(N>>3)])
-		Wi := imag(wNj[i+(N>>3)])
+	for j := 0; j < N; j += 8 {
+		Wr := real(wNj[w])
+		Wi := imag(wNj[w])
+		w++
 
 		Ur0 := coeffs[j+0]
 		Ur1 := coeffs[j+1]
@@ -151,11 +155,12 @@ func fftInPlace(coeffs []float64, wNj []complex128) {
 	}
 
 	// Stride 1
-	for i, j := 0, 0; j < N; i, j = i+2, j+8 {
-		Wr0 := real(wNj[i+(N>>2)])
-		Wi0 := imag(wNj[i+(N>>2)])
-		Wr1 := real(wNj[i+(N>>2)+1])
-		Wi1 := imag(wNj[i+(N>>2)+1])
+	for j := 0; j < N; j += 8 {
+		Wr0 := real(wNj[w])
+		Wi0 := imag(wNj[w])
+		Wr1 := real(wNj[w+1])
+		Wi1 := imag(wNj[w+1])
+		w += 2
 
 		Ur0 := coeffs[j+0]
 		Vr0 := coeffs[j+1]
@@ -188,13 +193,15 @@ func fftInPlace(coeffs []float64, wNj []complex128) {
 // All internal inverse FFT implementations calls this function for performance.
 func invFFTInPlace(coeffs []float64, wNjInv []complex128) {
 	N := len(coeffs)
+	w := 0
 
 	// Stride 1
-	for i, j := 0, 0; j < N; i, j = i+2, j+8 {
-		Wr0 := real(wNjInv[i])
-		Wi0 := imag(wNjInv[i])
-		Wr1 := real(wNjInv[i+1])
-		Wi1 := imag(wNjInv[i+1])
+	for j := 0; j < N; j += 8 {
+		Wr0 := real(wNjInv[w])
+		Wi0 := imag(wNjInv[w])
+		Wr1 := real(wNjInv[w+1])
+		Wi1 := imag(wNjInv[w+1])
+		w += 2
 
 		Ur0 := coeffs[j+0]
 		Vr0 := coeffs[j+1]
@@ -230,9 +237,10 @@ func invFFTInPlace(coeffs []float64, wNjInv []complex128) {
 	}
 
 	// Stride 2
-	for i, j := 0, 0; j < N; i, j = i+1, j+8 {
-		Wr := real(wNjInv[i+(N>>2)])
-		Wi := imag(wNjInv[i+(N>>2)])
+	for j := 0; j < N; j += 8 {
+		Wr := real(wNjInv[w])
+		Wi := imag(wNjInv[w])
+		w++
 
 		Ur0 := coeffs[j+0]
 		Ur1 := coeffs[j+1]
@@ -269,15 +277,16 @@ func invFFTInPlace(coeffs []float64, wNjInv []complex128) {
 
 	// Main Loop
 	t := 8
-	k := (N >> 2) + (N >> 3)
 	for m := N / 8; m > 2; m >>= 1 {
 		j1 := 0
 		h := m >> 1
 		for i := 0; i < h; i++ {
 			j2 := j1 + t
 
-			Wr := real(wNjInv[k+i])
-			Wi := imag(wNjInv[k+i])
+			Wr := real(wNjInv[w])
+			Wi := imag(wNjInv[w])
+			w++
+
 			for j := j1; j < j2; j += 8 {
 				Ur0 := coeffs[j+0]
 				Ur1 := coeffs[j+1]
@@ -342,7 +351,6 @@ func invFFTInPlace(coeffs []float64, wNjInv []complex128) {
 			j1 += t << 1
 		}
 		t <<= 1
-		k += h
 	}
 
 	// Last Loop
@@ -390,18 +398,18 @@ func invFFTInPlace(coeffs []float64, wNjInv []complex128) {
 }
 
 // untwistInPlace untwists the coefficients after inverse FFT.
-// Equivalent to round(coeffs * w2NjInv).
-func untwistInPlace(coeffs, w2NjInv []float64) {
+// Equivalent to round(coeffs * w4NjInv).
+func untwistInPlace(coeffs, w4NjInv []float64) {
 	for i := 0; i < len(coeffs); i += 8 {
-		c0 := math.Round(coeffs[i+0]*w2NjInv[i+0] - coeffs[i+4]*w2NjInv[i+4])
-		c1 := math.Round(coeffs[i+1]*w2NjInv[i+1] - coeffs[i+5]*w2NjInv[i+5])
-		c2 := math.Round(coeffs[i+2]*w2NjInv[i+2] - coeffs[i+6]*w2NjInv[i+6])
-		c3 := math.Round(coeffs[i+3]*w2NjInv[i+3] - coeffs[i+7]*w2NjInv[i+7])
+		c0 := math.Round(coeffs[i+0]*w4NjInv[i+0] - coeffs[i+4]*w4NjInv[i+4])
+		c1 := math.Round(coeffs[i+1]*w4NjInv[i+1] - coeffs[i+5]*w4NjInv[i+5])
+		c2 := math.Round(coeffs[i+2]*w4NjInv[i+2] - coeffs[i+6]*w4NjInv[i+6])
+		c3 := math.Round(coeffs[i+3]*w4NjInv[i+3] - coeffs[i+7]*w4NjInv[i+7])
 
-		c4 := math.Round(coeffs[i+0]*w2NjInv[i+4] + coeffs[i+4]*w2NjInv[i+0])
-		c5 := math.Round(coeffs[i+1]*w2NjInv[i+5] + coeffs[i+5]*w2NjInv[i+1])
-		c6 := math.Round(coeffs[i+2]*w2NjInv[i+6] + coeffs[i+6]*w2NjInv[i+2])
-		c7 := math.Round(coeffs[i+3]*w2NjInv[i+7] + coeffs[i+7]*w2NjInv[i+3])
+		c4 := math.Round(coeffs[i+0]*w4NjInv[i+4] + coeffs[i+4]*w4NjInv[i+0])
+		c5 := math.Round(coeffs[i+1]*w4NjInv[i+5] + coeffs[i+5]*w4NjInv[i+1])
+		c6 := math.Round(coeffs[i+2]*w4NjInv[i+6] + coeffs[i+6]*w4NjInv[i+2])
+		c7 := math.Round(coeffs[i+3]*w4NjInv[i+7] + coeffs[i+7]*w4NjInv[i+3])
 
 		coeffs[i+0] = c0
 		coeffs[i+1] = c1
@@ -416,17 +424,17 @@ func untwistInPlace(coeffs, w2NjInv []float64) {
 }
 
 // untwistAndScaleInPlace untwists the coefficients and scales it with maxT.
-func untwistAndScaleInPlace(coeffs, w2NjInv []float64, maxT float64) {
+func untwistAndScaleInPlace(coeffs, w4NjInv []float64, maxT float64) {
 	for i := 0; i < len(coeffs); i += 8 {
-		c0 := coeffs[i+0]*w2NjInv[i+0] - coeffs[i+4]*w2NjInv[i+4]
-		c1 := coeffs[i+1]*w2NjInv[i+1] - coeffs[i+5]*w2NjInv[i+5]
-		c2 := coeffs[i+2]*w2NjInv[i+2] - coeffs[i+6]*w2NjInv[i+6]
-		c3 := coeffs[i+3]*w2NjInv[i+3] - coeffs[i+7]*w2NjInv[i+7]
+		c0 := coeffs[i+0]*w4NjInv[i+0] - coeffs[i+4]*w4NjInv[i+4]
+		c1 := coeffs[i+1]*w4NjInv[i+1] - coeffs[i+5]*w4NjInv[i+5]
+		c2 := coeffs[i+2]*w4NjInv[i+2] - coeffs[i+6]*w4NjInv[i+6]
+		c3 := coeffs[i+3]*w4NjInv[i+3] - coeffs[i+7]*w4NjInv[i+7]
 
-		c4 := coeffs[i+0]*w2NjInv[i+4] + coeffs[i+4]*w2NjInv[i+0]
-		c5 := coeffs[i+1]*w2NjInv[i+5] + coeffs[i+5]*w2NjInv[i+1]
-		c6 := coeffs[i+2]*w2NjInv[i+6] + coeffs[i+6]*w2NjInv[i+2]
-		c7 := coeffs[i+3]*w2NjInv[i+7] + coeffs[i+7]*w2NjInv[i+3]
+		c4 := coeffs[i+0]*w4NjInv[i+4] + coeffs[i+4]*w4NjInv[i+0]
+		c5 := coeffs[i+1]*w4NjInv[i+5] + coeffs[i+5]*w4NjInv[i+1]
+		c6 := coeffs[i+2]*w4NjInv[i+6] + coeffs[i+6]*w4NjInv[i+2]
+		c7 := coeffs[i+3]*w4NjInv[i+7] + coeffs[i+7]*w4NjInv[i+3]
 
 		coeffs[i+0] = (c0 - math.Round(c0)) * maxT
 		coeffs[i+1] = (c1 - math.Round(c1)) * maxT

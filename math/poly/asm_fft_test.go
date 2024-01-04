@@ -9,7 +9,7 @@ import (
 	"github.com/sp301415/tfhe-go/math/vec"
 )
 
-func fftInPlaceGeneric(coeffs, wNj []complex128) {
+func fftInPlaceRef(coeffs, wNj []complex128) {
 	N := len(coeffs)
 
 	t := N
@@ -26,7 +26,7 @@ func fftInPlaceGeneric(coeffs, wNj []complex128) {
 	}
 }
 
-func invFFTInPlaceGeneric(coeffs, wNjInv []complex128) {
+func invFFTInPlaceRef(coeffs, wNjInv []complex128) {
 	N := len(coeffs)
 
 	t := 1
@@ -56,29 +56,21 @@ func TestFFTAssembly(t *testing.T) {
 	coeffsAVX2 := vec.CmplxToFloat4(coeffs)
 	coeffsAVX2Out := make([]complex128, N)
 
-	wNj := make([]complex128, N)
-	wNjInv := make([]complex128, N)
+	wNjRef := make([]complex128, N/2)
+	wNjInvRef := make([]complex128, N/2)
 	for j := 0; j < N/2; j++ {
-		e := -4 * math.Pi * float64(j) / float64(N)
-		wNj[j+N/2] = cmplx.Exp(complex(0, e))
-		wNjInv[j] = cmplx.Exp(-complex(0, e))
+		e := -2 * math.Pi * float64(j) / float64(N)
+		wNjRef[j] = cmplx.Exp(complex(0, e))
+		wNjInvRef[j] = cmplx.Exp(-complex(0, e))
 	}
-	vec.BitReverseInPlace(wNj[N/2:])
-	vec.BitReverseInPlace(wNjInv[:N/2])
-	for i := 1; i < N/2; i <<= 1 {
-		for j := 0; j < i; j++ {
-			wNj[i+j] = wNj[j+N/2]
-		}
-	}
-	for i, x := N/4, 0; i >= 1; i, x = i>>1, x+i {
-		for j := 0; j < i; j++ {
-			wNjInv[x+j+N/2] = wNjInv[j]
-		}
-	}
+	vec.BitReverseInPlace(wNjRef)
+	vec.BitReverseInPlace(wNjInvRef)
+
+	wNj, wNjInv := genTwiddleFactors(N)
 
 	t.Run("FFT", func(t *testing.T) {
 		vec.CmplxToFloat4Assign(coeffs, coeffsAVX2)
-		fftInPlaceGeneric(coeffs, wNj[N/2:])
+		fftInPlaceRef(coeffs, wNjRef)
 
 		fftInPlace(coeffsAVX2, wNj)
 		vec.Float4ToCmplxAssign(coeffsAVX2, coeffsAVX2Out)
@@ -92,7 +84,7 @@ func TestFFTAssembly(t *testing.T) {
 
 	t.Run("InvFFT", func(t *testing.T) {
 		vec.CmplxToFloat4Assign(coeffs, coeffsAVX2)
-		invFFTInPlaceGeneric(coeffs, wNjInv[:N/2])
+		invFFTInPlaceRef(coeffs, wNjInvRef)
 
 		invFFTInPlace(coeffsAVX2, wNjInv)
 		vec.Float4ToCmplxAssign(coeffsAVX2, coeffsAVX2Out)
@@ -114,29 +106,21 @@ func BenchmarkFFTAssembly(b *testing.B) {
 	}
 	coeffsAVX2 := vec.CmplxToFloat4(coeffs)
 
-	wNj := make([]complex128, N)
-	wNjInv := make([]complex128, N)
+	wNjRef := make([]complex128, N/2)
+	wNjInvRef := make([]complex128, N/2)
 	for j := 0; j < N/2; j++ {
-		e := -4 * math.Pi * float64(j) / float64(N)
-		wNj[j+N/2] = cmplx.Exp(complex(0, e))
-		wNjInv[j] = cmplx.Exp(-complex(0, e))
+		e := -2 * math.Pi * float64(j) / float64(N)
+		wNjRef[j] = cmplx.Exp(complex(0, e))
+		wNjInvRef[j] = cmplx.Exp(-complex(0, e))
 	}
-	vec.BitReverseInPlace(wNj[N/2:])
-	vec.BitReverseInPlace(wNjInv[:N/2])
-	for i := 1; i < N/2; i <<= 1 {
-		for j := 0; j < i; j++ {
-			wNj[i+j] = wNj[j+N/2]
-		}
-	}
-	for i, x := N/4, 0; i >= 1; i, x = i>>1, x+i {
-		for j := 0; j < i; j++ {
-			wNjInv[x+j+N/2] = wNjInv[j]
-		}
-	}
+	vec.BitReverseInPlace(wNjRef)
+	vec.BitReverseInPlace(wNjInvRef)
+
+	wNj, wNjInv := genTwiddleFactors(N)
 
 	b.Run("FFT", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			fftInPlaceGeneric(coeffs, wNj[N/2:])
+			fftInPlaceRef(coeffs, wNjRef)
 		}
 	})
 
@@ -148,13 +132,13 @@ func BenchmarkFFTAssembly(b *testing.B) {
 
 	b.Run("InvFFT", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			invFFTInPlaceGeneric(coeffs, wNj[:N/2])
+			invFFTInPlaceRef(coeffs, wNjInvRef)
 		}
 	})
 
 	b.Run("InvFFTAVX2", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			invFFTInPlace(coeffsAVX2, wNj)
+			invFFTInPlace(coeffsAVX2, wNjInv)
 		}
 	})
 }
