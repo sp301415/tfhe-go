@@ -432,8 +432,8 @@ func invFFTInPlace(coeffs []float64, wNjInv []complex128) {
 	}
 }
 
-// untwistAndScaleInPlace untwists the coefficients and scales it with maxT.
-func unScaleInPlace(coeffs []float64, maxT float64) {
+// scaleMaxTInPlace scales the coefficients with MaxT.
+func scaleMaxTInPlace(coeffs []float64, maxT float64) {
 	for i := range coeffs {
 		coeffs[i] = (coeffs[i] - math.Round(coeffs[i])) * maxT
 	}

@@ -448,12 +448,12 @@ func invFFTInPlace(coeffs []float64, wNjInv []complex128) {
 	}
 }
 
-func unScaleInPlaceAVX2(coeffs []float64, maxT float64)
+func scaleMaxTInPlaceAVX2(coeffs []float64, maxT float64)
 
-// untwistAndScaleInPlace untwists the coefficients and scales it with maxT.
-func unScaleInPlace(coeffs []float64, maxT float64) {
+// scaleMaxTInPlace scales the coefficients with MaxT.
+func scaleMaxTInPlace(coeffs []float64, maxT float64) {
 	if cpu.X86.HasAVX2 {
-		unScaleInPlaceAVX2(coeffs, maxT)
+		scaleMaxTInPlaceAVX2(coeffs, maxT)
 		return
 	}
 

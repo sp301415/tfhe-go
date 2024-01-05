@@ -425,7 +425,7 @@ last_loop_end:
 
 	RET
 
-TEXT ·unScaleInPlaceAVX2(SB), $0-32
+TEXT ·scaleMaxTInPlaceAVX2(SB), $0-32
 	MOVQ v0+0(FP), AX
 
 	MOVQ v0+8(FP), DX

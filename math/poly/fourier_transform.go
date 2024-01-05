@@ -369,7 +369,7 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolyAssign(fp FourierPoly, pOut Po
 
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
-	unScaleInPlace(f.buffer.fpInv.Coeffs, f.maxT)
+	scaleMaxTInPlace(f.buffer.fpInv.Coeffs, f.maxT)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] = T(int64(f.buffer.fpInv.Coeffs[j+0]))
@@ -393,7 +393,7 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolyAssignUnsafe(fp FourierPoly, p
 	N := f.degree
 
 	invFFTInPlace(fp.Coeffs, f.wNjInv)
-	unScaleInPlace(fp.Coeffs, f.maxT)
+	scaleMaxTInPlace(fp.Coeffs, f.maxT)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] = T(int64(fp.Coeffs[j+0]))
@@ -415,7 +415,7 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolyAddAssign(fp FourierPoly, pOut
 
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
-	unScaleInPlace(f.buffer.fpInv.Coeffs, f.maxT)
+	scaleMaxTInPlace(f.buffer.fpInv.Coeffs, f.maxT)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] += T(int64(f.buffer.fpInv.Coeffs[j+0]))
@@ -439,7 +439,7 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolyAddAssignUnsafe(fp FourierPoly
 	N := f.degree
 
 	invFFTInPlace(fp.Coeffs, f.wNjInv)
-	unScaleInPlace(fp.Coeffs, f.maxT)
+	scaleMaxTInPlace(fp.Coeffs, f.maxT)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] += T(int64(fp.Coeffs[j+0]))
@@ -461,7 +461,7 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolySubAssign(fp FourierPoly, pOut
 
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.wNjInv)
-	unScaleInPlace(f.buffer.fpInv.Coeffs, f.maxT)
+	scaleMaxTInPlace(f.buffer.fpInv.Coeffs, f.maxT)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] -= T(int64(f.buffer.fpInv.Coeffs[j+0]))
@@ -485,7 +485,7 @@ func (f *FourierEvaluator[T]) ToScaledStandardPolySubAssignUnsafe(fp FourierPoly
 	N := f.degree
 
 	invFFTInPlace(fp.Coeffs, f.wNjInv)
-	unScaleInPlace(fp.Coeffs, f.maxT)
+	scaleMaxTInPlace(fp.Coeffs, f.maxT)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] -= T(int64(fp.Coeffs[j+0]))
