@@ -120,6 +120,9 @@ To cite TFHE-go, please use the following BibTeX entry:
 }
 ```
 
+## Acknowledgements
+Special thanks to Seonhong Min([@snu-lukemin](https://github.com/snu-lukemin)) for providing many helpful insights.
+
 ## References
 - TFHE: Fast Fully Homomorphic Encryption over the Torus (https://eprint.iacr.org/2018/421)
 - Guide to Fully Homomorphic Encryption over the Discretized Torus (https://eprint.iacr.org/2021/1402)
