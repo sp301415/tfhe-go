@@ -72,7 +72,7 @@ type evaluationBuffer[T Tint] struct {
 
 // NewEvaluator creates a new Evaluator based on parameters.
 // This does not copy evaluation keys, since they are large.
-func NewEvaluator[T Tint](params Parameters[T], evkey EvaluationKey[T]) *Evaluator[T] {
+func NewEvaluator[T Tint](params Parameters[T], evk EvaluationKey[T]) *Evaluator[T] {
 	return &Evaluator[T]{
 		Encoder: NewEncoder(params),
 
@@ -81,7 +81,7 @@ func NewEvaluator[T Tint](params Parameters[T], evkey EvaluationKey[T]) *Evaluat
 		PolyEvaluator:    poly.NewEvaluator[T](params.polyDegree),
 		FourierEvaluator: poly.NewFourierEvaluator[T](params.polyDegree),
 
-		EvaluationKey: evkey,
+		EvaluationKey: evk,
 
 		buffer: newEvaluationBuffer(params),
 	}
