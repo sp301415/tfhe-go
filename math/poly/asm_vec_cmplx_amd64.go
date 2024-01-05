@@ -3,8 +3,24 @@
 package poly
 
 import (
+	"math"
+
 	"golang.org/x/sys/cpu"
 )
+
+func roundCmplxAssignAVX2(v0 []float64, vOut []float64)
+
+// roundCmplxAssign rounds v0 and writes it to vOut.
+func roundCmplxAssign(v0 []float64, vOut []float64) {
+	if cpu.X86.HasAVX2 {
+		roundCmplxAssignAVX2(v0, vOut)
+		return
+	}
+
+	for i := range vOut {
+		vOut[i] = math.Round(v0[i])
+	}
+}
 
 func addCmplxAssignAVX2(v0, v1, vOut []float64)
 
@@ -45,6 +61,20 @@ func negCmplxAssign(v0, vOut []float64) {
 
 	for i := range vOut {
 		vOut[i] = -v0[i]
+	}
+}
+
+func floatMulCmplxAssignAVX2(v0 []float64, c float64, vOut []float64)
+
+// floatMulCmplxAssign multiplies v0, c and writes it to vOut.
+func floatMulCmplxAssign(v0 []float64, c float64, vOut []float64) {
+	if cpu.X86.HasAVX2 {
+		floatMulCmplxAssignAVX2(v0, c, vOut)
+		return
+	}
+
+	for i := range vOut {
+		vOut[i] = c * v0[i]
 	}
 }
 

@@ -61,7 +61,7 @@ func (p Poly[T]) Equals(p0 Poly[T]) bool {
 	return vec.Equals(p.Coeffs, p0.Coeffs)
 }
 
-// FourierPoly is a polynomial in the fourier domain, C[X]/(X^N/2-1).
+// FourierPoly is a polynomial in the fourier domain.
 type FourierPoly struct {
 	// Coeffs is ordered as float4 representation
 	// for efficient computation.

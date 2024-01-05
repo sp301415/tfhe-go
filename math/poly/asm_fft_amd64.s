@@ -18,6 +18,10 @@ TEXT ·fftInPlaceAVX2(SB), $0-48
 	MOVQ CX, DX
 	SHRQ $1, DX // N/2
 
+	VBROADCASTSD (BX), Y13  // Wr
+	VBROADCASTSD 8(BX), Y14 // Wi
+	ADDQ         $16, BX
+
 	XORQ SI, SI         // j
 	XORQ DI, DI
 	ADDQ DX, DI         // j + N/2
@@ -29,15 +33,22 @@ first_loop:
 	VMOVUPD (AX)(DI*8), Y2   // Vr
 	VMOVUPD 32(AX)(DI*8), Y3 // Vi
 
-	VADDPD Y2, Y0, Y4
-	VADDPD Y3, Y1, Y5
-	VSUBPD Y2, Y0, Y6
-	VSUBPD Y3, Y1, Y7
+	// V * W
+	VMULPD      Y3, Y14, Y4
+	VFMSUB231PD Y2, Y13, Y4 // Vr * W
 
-	VMOVUPD Y4, (AX)(SI*8)
-	VMOVUPD Y5, 32(AX)(SI*8)
-	VMOVUPD Y6, (AX)(DI*8)
-	VMOVUPD Y7, 32(AX)(DI*8)
+	VMULPD      Y2, Y14, Y5
+	VFMADD231PD Y3, Y13, Y5 // Vi * W
+
+	VADDPD Y4, Y0, Y6
+	VADDPD Y5, Y1, Y7
+	VSUBPD Y4, Y0, Y8
+	VSUBPD Y5, Y1, Y9
+
+	VMOVUPD Y6, (AX)(SI*8)
+	VMOVUPD Y7, 32(AX)(SI*8)
+	VMOVUPD Y8, (AX)(DI*8)
+	VMOVUPD Y9, 32(AX)(DI*8)
 
 	ADDQ $8, SI
 	ADDQ $8, DI
@@ -45,7 +56,6 @@ first_loop:
 first_loop_end:
 	CMPQ SI, DX
 	JL   first_loop
-	ADDQ $16, BX
 
 	// Main loop
 	// t := N >> 1
@@ -205,7 +215,7 @@ last_loop_1_end:
 
 	RET
 
-TEXT ·invFFTInPlaceAVX2(SB), $0-48
+TEXT ·invFFTInPlaceAVX2(SB), $0-56
 	MOVQ coeffs+0(FP), AX
 	MOVQ wNjInv+24(FP), BX
 
@@ -370,6 +380,10 @@ m_loop_end:
 	MOVQ CX, DX
 	SHRQ $1, DX // N/2
 
+	VBROADCASTSD NInv+48(FP), Y12
+	VBROADCASTSD (BX), Y13
+	VBROADCASTSD 8(BX), Y14
+
 	XORQ SI, SI        // j
 	XORQ DI, DI
 	ADDQ DX, DI        // j + N/2
@@ -383,13 +397,24 @@ last_loop:
 
 	VADDPD Y2, Y0, Y4
 	VADDPD Y3, Y1, Y5
-	VSUBPD Y2, Y0, Y6
-	VSUBPD Y3, Y1, Y7
+
+	VMULPD Y4, Y12, Y4
+	VMULPD Y5, Y12, Y5
+
+	VSUBPD Y2, Y0, Y6 // UVr
+	VSUBPD Y3, Y1, Y7 // UVi
+
+	// UV * W
+	VMULPD      Y7, Y14, Y8
+	VFMSUB231PD Y6, Y13, Y8 // UVr * W
+
+	VMULPD      Y6, Y14, Y9
+	VFMADD231PD Y7, Y13, Y9 // UVi * W
 
 	VMOVUPD Y4, (AX)(SI*8)
 	VMOVUPD Y5, 32(AX)(SI*8)
-	VMOVUPD Y6, (AX)(DI*8)
-	VMOVUPD Y7, 32(AX)(DI*8)
+	VMOVUPD Y8, (AX)(DI*8)
+	VMOVUPD Y9, 32(AX)(DI*8)
 
 	ADDQ $8, SI
 	ADDQ $8, DI
@@ -400,76 +425,26 @@ last_loop_end:
 
 	RET
 
-TEXT ·untwistInPlaceAVX2(SB), $0-48
+TEXT ·unScaleInPlaceAVX2(SB), $0-32
 	MOVQ v0+0(FP), AX
-	MOVQ w4Nj+24(FP), BX
-
-	MOVQ v0_len+8(FP), DX
-
-	XORQ SI, SI
-	JMP  loop_end
-
-loop_body:
-	VMOVUPD (AX)(SI*8), Y0
-	VMOVUPD 32(AX)(SI*8), Y1
-	VMOVUPD (BX)(SI*8), Y2
-	VMOVUPD 32(BX)(SI*8), Y3
-
-	VMULPD      Y1, Y3, Y4
-	VFMSUB231PD Y0, Y2, Y4
-
-	VMULPD      Y0, Y3, Y5
-	VFMADD231PD Y1, Y2, Y5
-
-	VROUNDPD $0, Y4, Y4
-	VROUNDPD $0, Y5, Y5
-
-	VMOVUPD Y4, (AX)(SI*8)
-	VMOVUPD Y5, 32(AX)(SI*8)
-
-	ADDQ $8, SI
-
-loop_end:
-	CMPQ SI, DX
-	JL   loop_body
-
-	RET
-
-TEXT ·untwistAndScaleInPlaceAVX2(SB), $0-56
-	MOVQ v0+0(FP), AX
-	MOVQ w4NjInv+24(FP), BX
 
 	MOVQ v0+8(FP), DX
 
-	VBROADCASTSD T+48(FP), Y10
+	VBROADCASTSD T+24(FP), Y10
 
 	XORQ SI, SI
 	JMP  loop_end
 
 loop_body:
 	VMOVUPD (AX)(SI*8), Y0
-	VMOVUPD 32(AX)(SI*8), Y1
-	VMOVUPD (BX)(SI*8), Y2
-	VMOVUPD 32(BX)(SI*8), Y3
 
-	VMULPD      Y1, Y3, Y4
-	VFMSUB231PD Y0, Y2, Y4
+	VROUNDPD $0, Y0, Y1
+	VSUBPD Y1, Y0, Y1
+	VMULPD Y1, Y10, Y1
 
-	VMULPD      Y0, Y3, Y5
-	VFMADD231PD Y1, Y2, Y5
+	VMOVUPD Y1, (AX)(SI*8)
 
-	VROUNDPD $0, Y4, Y6
-	VSUBPD   Y6, Y4, Y4
-	VMULPD   Y4, Y10, Y4
-
-	VROUNDPD $0, Y5, Y6
-	VSUBPD   Y6, Y5, Y5
-	VMULPD   Y5, Y10, Y5
-
-	VMOVUPD Y4, (AX)(SI*8)
-	VMOVUPD Y5, 32(AX)(SI*8)
-
-	ADDQ $8, SI
+	ADDQ $4, SI
 
 loop_end:
 	CMPQ SI, DX

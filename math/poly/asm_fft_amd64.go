@@ -22,6 +22,9 @@ func fftInPlace(coeffs []float64, wNj []complex128) {
 	w := 0
 
 	// First Loop
+	Wr := real(wNj[w])
+	Wi := imag(wNj[w])
+	w++
 	for j := 0; j < N/2; j += 8 {
 		Ur0 := coeffs[j+0]
 		Ur1 := coeffs[j+1]
@@ -43,27 +46,36 @@ func fftInPlace(coeffs []float64, wNj []complex128) {
 		Vi2 := coeffs[j+N/2+6]
 		Vi3 := coeffs[j+N/2+7]
 
-		coeffs[j+0] = Ur0 + Vr0
-		coeffs[j+1] = Ur1 + Vr1
-		coeffs[j+2] = Ur2 + Vr2
-		coeffs[j+3] = Ur3 + Vr3
+		Vr0W := Vr0*Wr - Vi0*Wi
+		Vr1W := Vr1*Wr - Vi1*Wi
+		Vr2W := Vr2*Wr - Vi2*Wi
+		Vr3W := Vr3*Wr - Vi3*Wi
 
-		coeffs[j+4] = Ui0 + Vi0
-		coeffs[j+5] = Ui1 + Vi1
-		coeffs[j+6] = Ui2 + Vi2
-		coeffs[j+7] = Ui3 + Vi3
+		Vi0W := Vr0*Wi + Vi0*Wr
+		Vi1W := Vr1*Wi + Vi1*Wr
+		Vi2W := Vr2*Wi + Vi2*Wr
+		Vi3W := Vr3*Wi + Vi3*Wr
 
-		coeffs[j+N/2+0] = Ur0 - Vr0
-		coeffs[j+N/2+1] = Ur1 - Vr1
-		coeffs[j+N/2+2] = Ur2 - Vr2
-		coeffs[j+N/2+3] = Ur3 - Vr3
+		coeffs[j+0] = Ur0 + Vr0W
+		coeffs[j+1] = Ur1 + Vr1W
+		coeffs[j+2] = Ur2 + Vr2W
+		coeffs[j+3] = Ur3 + Vr3W
 
-		coeffs[j+N/2+4] = Ui0 - Vi0
-		coeffs[j+N/2+5] = Ui1 - Vi1
-		coeffs[j+N/2+6] = Ui2 - Vi2
-		coeffs[j+N/2+7] = Ui3 - Vi3
+		coeffs[j+4] = Ui0 + Vi0W
+		coeffs[j+5] = Ui1 + Vi1W
+		coeffs[j+6] = Ui2 + Vi2W
+		coeffs[j+7] = Ui3 + Vi3W
+
+		coeffs[j+N/2+0] = Ur0 - Vr0W
+		coeffs[j+N/2+1] = Ur1 - Vr1W
+		coeffs[j+N/2+2] = Ur2 - Vr2W
+		coeffs[j+N/2+3] = Ur3 - Vr3W
+
+		coeffs[j+N/2+4] = Ui0 - Vi0W
+		coeffs[j+N/2+5] = Ui1 - Vi1W
+		coeffs[j+N/2+6] = Ui2 - Vi2W
+		coeffs[j+N/2+7] = Ui3 - Vi3W
 	}
-	w++
 
 	// Main Loop
 	t := N / 2
@@ -198,13 +210,13 @@ func fftInPlace(coeffs []float64, wNj []complex128) {
 	}
 }
 
-func invFFTInPlaceAVX2(coeffs []float64, wNjInv []complex128)
+func invFFTInPlaceAVX2(coeffs []float64, wNjInv []complex128, NInv float64)
 
 // InvfftInPlace is a top-level function for inverse FFT.
 // All internal inverse FFT implementations calls this function for performance.
 func invFFTInPlace(coeffs []float64, wNjInv []complex128) {
 	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
-		invFFTInPlaceAVX2(coeffs, wNjInv)
+		invFFTInPlaceAVX2(coeffs, wNjInv, 2/float64(len(coeffs)))
 		return
 	}
 
@@ -370,6 +382,9 @@ func invFFTInPlace(coeffs []float64, wNjInv []complex128) {
 	}
 
 	// Last Loop
+	NInv := 2 / float64(N)
+	Wr := real(wNjInv[w])
+	Wi := imag(wNjInv[w])
 	for j := 0; j < N/2; j += 8 {
 		Ur0 := coeffs[j+0]
 		Ur1 := coeffs[j+1]
@@ -391,89 +406,58 @@ func invFFTInPlace(coeffs []float64, wNjInv []complex128) {
 		Vi2 := coeffs[j+N/2+6]
 		Vi3 := coeffs[j+N/2+7]
 
-		coeffs[j+0] = Ur0 + Vr0
-		coeffs[j+1] = Ur1 + Vr1
-		coeffs[j+2] = Ur2 + Vr2
-		coeffs[j+3] = Ur3 + Vr3
+		coeffs[j+0] = (Ur0 + Vr0) * NInv
+		coeffs[j+1] = (Ur1 + Vr1) * NInv
+		coeffs[j+2] = (Ur2 + Vr2) * NInv
+		coeffs[j+3] = (Ur3 + Vr3) * NInv
 
-		coeffs[j+4] = Ui0 + Vi0
-		coeffs[j+5] = Ui1 + Vi1
-		coeffs[j+6] = Ui2 + Vi2
-		coeffs[j+7] = Ui3 + Vi3
+		coeffs[j+4] = (Ui0 + Vi0) * NInv
+		coeffs[j+5] = (Ui1 + Vi1) * NInv
+		coeffs[j+6] = (Ui2 + Vi2) * NInv
+		coeffs[j+7] = (Ui3 + Vi3) * NInv
 
-		coeffs[j+N/2+0] = Ur0 - Vr0
-		coeffs[j+N/2+1] = Ur1 - Vr1
-		coeffs[j+N/2+2] = Ur2 - Vr2
-		coeffs[j+N/2+3] = Ur3 - Vr3
+		UVr0 := Ur0 - Vr0
+		UVr1 := Ur1 - Vr1
+		UVr2 := Ur2 - Vr2
+		UVr3 := Ur3 - Vr3
 
-		coeffs[j+N/2+4] = Ui0 - Vi0
-		coeffs[j+N/2+5] = Ui1 - Vi1
-		coeffs[j+N/2+6] = Ui2 - Vi2
-		coeffs[j+N/2+7] = Ui3 - Vi3
+		UVi0 := Ui0 - Vi0
+		UVi1 := Ui1 - Vi1
+		UVi2 := Ui2 - Vi2
+		UVi3 := Ui3 - Vi3
+
+		UVr0W := UVr0*Wr - UVi0*Wi
+		UVr1W := UVr1*Wr - UVi1*Wi
+		UVr2W := UVr2*Wr - UVi2*Wi
+		UVr3W := UVr3*Wr - UVi3*Wi
+
+		UVi0W := UVr0*Wi + UVi0*Wr
+		UVi1W := UVr1*Wi + UVi1*Wr
+		UVi2W := UVr2*Wi + UVi2*Wr
+		UVi3W := UVr3*Wi + UVi3*Wr
+
+		coeffs[j+N/2+0] = UVr0W
+		coeffs[j+N/2+1] = UVr1W
+		coeffs[j+N/2+2] = UVr2W
+		coeffs[j+N/2+3] = UVr3W
+
+		coeffs[j+N/2+4] = UVi0W
+		coeffs[j+N/2+5] = UVi1W
+		coeffs[j+N/2+6] = UVi2W
+		coeffs[j+N/2+7] = UVi3W
 	}
 }
 
-func untwistInPlaceAVX2(coeffs, w4NjInv []float64)
-
-// untwistInPlace untwists the coefficients after inverse FFT.
-// Equivalent to round(coeffs * w4NjInv).
-func untwistInPlace(coeffs, w4NjInv []float64) {
-	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
-		untwistInPlaceAVX2(coeffs, w4NjInv)
-		return
-	}
-
-	for i := 0; i < len(coeffs); i += 8 {
-		c0 := math.Round(coeffs[i+0]*w4NjInv[i+0] - coeffs[i+4]*w4NjInv[i+4])
-		c1 := math.Round(coeffs[i+1]*w4NjInv[i+1] - coeffs[i+5]*w4NjInv[i+5])
-		c2 := math.Round(coeffs[i+2]*w4NjInv[i+2] - coeffs[i+6]*w4NjInv[i+6])
-		c3 := math.Round(coeffs[i+3]*w4NjInv[i+3] - coeffs[i+7]*w4NjInv[i+7])
-
-		c4 := math.Round(coeffs[i+0]*w4NjInv[i+4] + coeffs[i+4]*w4NjInv[i+0])
-		c5 := math.Round(coeffs[i+1]*w4NjInv[i+5] + coeffs[i+5]*w4NjInv[i+1])
-		c6 := math.Round(coeffs[i+2]*w4NjInv[i+6] + coeffs[i+6]*w4NjInv[i+2])
-		c7 := math.Round(coeffs[i+3]*w4NjInv[i+7] + coeffs[i+7]*w4NjInv[i+3])
-
-		coeffs[i+0] = c0
-		coeffs[i+1] = c1
-		coeffs[i+2] = c2
-		coeffs[i+3] = c3
-
-		coeffs[i+4] = c4
-		coeffs[i+5] = c5
-		coeffs[i+6] = c6
-		coeffs[i+7] = c7
-	}
-}
-
-func untwistAndScaleInPlaceAVX2(coeffs, w4NjInv []float64, maxT float64)
+func unScaleInPlaceAVX2(coeffs []float64, maxT float64)
 
 // untwistAndScaleInPlace untwists the coefficients and scales it with maxT.
-func untwistAndScaleInPlace(coeffs, w4NjInv []float64, maxT float64) {
-	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
-		untwistAndScaleInPlaceAVX2(coeffs, w4NjInv, maxT)
+func unScaleInPlace(coeffs []float64, maxT float64) {
+	if cpu.X86.HasAVX2 {
+		unScaleInPlaceAVX2(coeffs, maxT)
 		return
 	}
 
-	for i := 0; i < len(coeffs); i += 8 {
-		c0 := coeffs[i+0]*w4NjInv[i+0] - coeffs[i+4]*w4NjInv[i+4]
-		c1 := coeffs[i+1]*w4NjInv[i+1] - coeffs[i+5]*w4NjInv[i+5]
-		c2 := coeffs[i+2]*w4NjInv[i+2] - coeffs[i+6]*w4NjInv[i+6]
-		c3 := coeffs[i+3]*w4NjInv[i+3] - coeffs[i+7]*w4NjInv[i+7]
-
-		c4 := coeffs[i+0]*w4NjInv[i+4] + coeffs[i+4]*w4NjInv[i+0]
-		c5 := coeffs[i+1]*w4NjInv[i+5] + coeffs[i+5]*w4NjInv[i+1]
-		c6 := coeffs[i+2]*w4NjInv[i+6] + coeffs[i+6]*w4NjInv[i+2]
-		c7 := coeffs[i+3]*w4NjInv[i+7] + coeffs[i+7]*w4NjInv[i+3]
-
-		coeffs[i+0] = (c0 - math.Round(c0)) * maxT
-		coeffs[i+1] = (c1 - math.Round(c1)) * maxT
-		coeffs[i+2] = (c2 - math.Round(c2)) * maxT
-		coeffs[i+3] = (c3 - math.Round(c3)) * maxT
-
-		coeffs[i+4] = (c4 - math.Round(c4)) * maxT
-		coeffs[i+5] = (c5 - math.Round(c5)) * maxT
-		coeffs[i+6] = (c6 - math.Round(c6)) * maxT
-		coeffs[i+7] = (c7 - math.Round(c7)) * maxT
+	for i := range coeffs {
+		coeffs[i] = (coeffs[i] - math.Round(coeffs[i])) * maxT
 	}
 }
