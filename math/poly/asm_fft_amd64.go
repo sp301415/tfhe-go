@@ -212,7 +212,7 @@ func fftInPlace(coeffs []float64, wNj []complex128) {
 
 func invFFTInPlaceAVX2(coeffs []float64, wNjInv []complex128, NInv float64)
 
-// InvfftInPlace is a top-level function for inverse FFT.
+// invfftInPlace is a top-level function for inverse FFT.
 // All internal inverse FFT implementations calls this function for performance.
 func invFFTInPlace(coeffs []float64, wNjInv []complex128) {
 	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {

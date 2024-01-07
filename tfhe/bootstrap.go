@@ -321,7 +321,7 @@ func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTab
 
 	for j := 0; j < e.Parameters.blockSize; j++ {
 		e.GadgetProductFourierDecomposedAssign(e.EvaluationKey.BootstrapKey.Value[j].Value[0], e.buffer.ctAccFourierDecomposed[0][0], e.buffer.ctAcc[0])
-		e.MonomialSubOneMulAddAssign(e.buffer.ctAcc[0], e.ModSwitchNeg(ct.Value[j+1]), ctOut)
+		e.MonomialSubOneMulAddGLWEAssign(e.buffer.ctAcc[0], e.ModSwitchNeg(ct.Value[j+1]), ctOut)
 	}
 
 	for i := 1; i < e.Parameters.blockCount; i++ {
@@ -334,7 +334,7 @@ func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTab
 
 		for j := i * e.Parameters.blockSize; j < (i+1)*e.Parameters.blockSize; j++ {
 			e.ExternalProductFourierDecomposedAssign(e.EvaluationKey.BootstrapKey.Value[j], e.buffer.ctAccFourierDecomposed[0], e.buffer.ctAcc[0])
-			e.MonomialSubOneMulAddAssign(e.buffer.ctAcc[0], e.ModSwitchNeg(ct.Value[j+1]), ctOut)
+			e.MonomialSubOneMulAddGLWEAssign(e.buffer.ctAcc[0], e.ModSwitchNeg(ct.Value[j+1]), ctOut)
 		}
 	}
 }
@@ -349,7 +349,7 @@ func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUp
 	e.PolyEvaluator.MonomialSubOneMulAssign(ctOut.Value[0], e.ModSwitchNeg(ct.Value[1]), e.buffer.ctAcc[0].Value[0])
 	e.GadgetProductAddAssign(e.EvaluationKey.BootstrapKey.Value[0].Value[0], e.buffer.ctAcc[0].Value[0], ctOut)
 	for i := 1; i < e.Parameters.lweDimension; i++ {
-		e.MonomialSubOneMulAssign(ctOut, e.ModSwitchNeg(ct.Value[i+1]), e.buffer.ctAcc[0])
+		e.MonomialSubOneMulGLWEAssign(ctOut, e.ModSwitchNeg(ct.Value[i+1]), e.buffer.ctAcc[0])
 		e.ExternalProductAddAssign(e.EvaluationKey.BootstrapKey.Value[i], e.buffer.ctAcc[0], ctOut)
 	}
 }

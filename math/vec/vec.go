@@ -113,7 +113,7 @@ func ReverseInPlace[T any](v []T) {
 	}
 }
 
-// BitReverseInPlace reorders v into bit-reversal order.
+// BitReverseInPlace reorders v into bit-reversal order in-place.
 func BitReverseInPlace[T any](v []T) {
 	var bit, j int
 	for i := 1; i < len(v); i++ {
