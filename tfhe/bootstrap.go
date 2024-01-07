@@ -355,6 +355,10 @@ func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUp
 }
 
 // SampleExtract extracts LWE ciphertext of given index from GLWE ciphertext and returns it.
+// The output ciphertext will be of dimension LWELargeDimension + 1,
+// encrypted with LWELargeKey.
+//
+// Equivalent to GLWECiphertext.ToLWECiphertext.
 func (e *Evaluator[T]) SampleExtract(ct GLWECiphertext[T], idx int) LWECiphertext[T] {
 	ctOut := NewLWECiphertextCustom[T](e.Parameters.lweLargeDimension)
 	e.SampleExtractAssign(ct, idx, ctOut)
@@ -362,6 +366,10 @@ func (e *Evaluator[T]) SampleExtract(ct GLWECiphertext[T], idx int) LWECiphertex
 }
 
 // SampleExtractAssign extracts LWE ciphertext of given index from GLWE ciphertext, and writes it to ctOut.
+// The output ciphertext should be of dimension LWELargeDimension + 1,
+// and it will be a ciphertext encrypted with LWELargeKey.
+//
+// Equivalent to Evaluator.SampleExtract.
 func (e *Evaluator[T]) SampleExtractAssign(ct GLWECiphertext[T], idx int, ctOut LWECiphertext[T]) {
 	ctOut.Value[0] = ct.Value[0].Coeffs[idx]
 
