@@ -52,16 +52,25 @@ func (sk *GLWEKey[T]) Clear() {
 	}
 }
 
-// ToLWEKey returns a new LWE secret key derived from the GLWE secret key.
+// ToLWEKey derives a new LWE secret key from the GLWE secret key,
+// and returns it.
+// Returned LWEKey will be of dimension LWELargeDimension.
 func (sk GLWEKey[T]) ToLWEKey() LWEKey[T] {
+	lweKey := NewLWEKeyCustom[T](len(sk.Value) * sk.Value[0].Degree())
+	sk.ToLWEKeyAssign(lweKey)
+	return lweKey
+}
+
+// ToLWEKeyAssign derives a new LWE secret key from the GLWE secret key,
+// and writes it to skOut.
+// skOut should have dimension LWELargeDimension.
+func (sk GLWEKey[T]) ToLWEKeyAssign(skOut LWEKey[T]) {
 	glweDimension := len(sk.Value)
 	degree := sk.Value[0].Degree()
 
-	lweKey := LWEKey[T]{Value: make([]T, glweDimension*degree)}
 	for i := 0; i < glweDimension; i++ {
-		vec.CopyAssign(sk.Value[i].Coeffs, lweKey.Value[i*degree:(i+1)*degree])
+		vec.CopyAssign(sk.Value[i].Coeffs, skOut.Value[i*degree:(i+1)*degree])
 	}
-	return lweKey
 }
 
 // GLWEPlaintext represents an encoded GLWE plaintext.
@@ -150,6 +159,40 @@ type GLevCiphertext[T Tint] struct {
 
 	// Value has length Level.
 	Value []GLWECiphertext[T]
+}
+
+// ToLWECiphertext extracts LWE ciphertext of given index from GLWE ciphertext and returns it.
+// The output ciphertext will be of dimension LWELargeDimension + 1,
+// encrypted with LWELargeKey.
+//
+// Equivalent to Evaluator.SampleExtract.
+func (ct GLWECiphertext[T]) ToLWECiphertext(idx int) LWECiphertext[T] {
+	ctOut := NewLWECiphertextCustom[T](len(ct.Value) * ct.Value[0].Degree())
+	ct.ToLWECiphertextAssign(idx, ctOut)
+	return ctOut
+}
+
+// ToLWECiphertextAssign extracts LWE ciphertext of given index from GLWE ciphertext and writes it to ctOut.
+// The output ciphertext should be of dimension LWELargeDimension + 1,
+// and it will be a ciphertext encrypted with LWELargeKey.
+//
+// Equivalent to Evaluator.SampleExtractAssign.
+func (ct GLWECiphertext[T]) ToLWECiphertextAssign(idx int, ctOut LWECiphertext[T]) {
+	glweDimension := len(ct.Value) - 1
+	degree := ct.Value[0].Degree()
+
+	ctOut.Value[0] = ct.Value[0].Coeffs[idx]
+
+	ctMask, ctOutMask := ct.Value[1:], ctOut.Value[1:]
+	for i := 0; i < glweDimension; i++ {
+		start := i * degree
+		end := (i + 1) * degree
+
+		vec.ReverseAssign(ctMask[i].Coeffs, ctOutMask[start:end])
+
+		vec.RotateInPlace(ctOutMask[start:end], idx+1)
+		vec.NegAssign(ctOutMask[start+idx+1:end], ctOutMask[start+idx+1:end])
+	}
 }
 
 // NewGLevCiphertext allocates an empty GLevCiphertext.

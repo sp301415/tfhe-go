@@ -355,15 +355,15 @@ func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUp
 }
 
 // SampleExtract extracts LWE ciphertext of given index from GLWE ciphertext and returns it.
-func (e *Evaluator[T]) SampleExtract(ct GLWECiphertext[T], index int) LWECiphertext[T] {
+func (e *Evaluator[T]) SampleExtract(ct GLWECiphertext[T], idx int) LWECiphertext[T] {
 	ctOut := NewLWECiphertextCustom[T](e.Parameters.lweLargeDimension)
-	e.SampleExtractAssign(ct, index, ctOut)
+	e.SampleExtractAssign(ct, idx, ctOut)
 	return ctOut
 }
 
 // SampleExtractAssign extracts LWE ciphertext of given index from GLWE ciphertext, and writes it to ctOut.
-func (e *Evaluator[T]) SampleExtractAssign(ct GLWECiphertext[T], index int, ctOut LWECiphertext[T]) {
-	ctOut.Value[0] = ct.Value[0].Coeffs[index]
+func (e *Evaluator[T]) SampleExtractAssign(ct GLWECiphertext[T], idx int, ctOut LWECiphertext[T]) {
+	ctOut.Value[0] = ct.Value[0].Coeffs[idx]
 
 	ctMask, ctOutMask := ct.Value[1:], ctOut.Value[1:]
 	for i := 0; i < e.Parameters.glweDimension; i++ {
@@ -372,8 +372,8 @@ func (e *Evaluator[T]) SampleExtractAssign(ct GLWECiphertext[T], index int, ctOu
 
 		vec.ReverseAssign(ctMask[i].Coeffs, ctOutMask[start:end])
 
-		vec.RotateInPlace(ctOutMask[start:end], index+1)
-		vec.NegAssign(ctOutMask[start+index+1:end], ctOutMask[start+index+1:end])
+		vec.RotateInPlace(ctOutMask[start:end], idx+1)
+		vec.NegAssign(ctOutMask[start+idx+1:end], ctOutMask[start+idx+1:end])
 	}
 }
 
