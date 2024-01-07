@@ -63,7 +63,7 @@ func (p Poly[T]) Equals(p0 Poly[T]) bool {
 
 // FourierPoly is a polynomial in the fourier domain.
 type FourierPoly struct {
-	// Coeffs is ordered as float4 representation
+	// Coeffs is represented as float-4 complex vector
 	// for efficient computation.
 	//
 	// Namely,
@@ -77,7 +77,8 @@ type FourierPoly struct {
 }
 
 // NewFourierPoly creates a fourier polynomial with degree N with empty coefficients.
-// N should be power of two. Otherwise, it panics.
+// N should be power of two, and at least MinDegree.
+// Otherwise, it panics.
 func NewFourierPoly(N int) FourierPoly {
 	if !num.IsPowerOfTwo(N) {
 		panic("degree not power of two")

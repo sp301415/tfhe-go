@@ -6,17 +6,16 @@ import (
 
 const (
 	// MinDegree is the minimum degree of polynomial that Evaluator can handle.
-	// Currently, this is set to 8, because AVX2 implementation of FFT and inverse FFT
-	// handles first and last loop separately.
-	// This implies that the degree of fourier polynomial should be at least 16.
+	// Currently, this is set to 16, because AVX2 implementation of FFT and inverse FFT
+	// handles first/last two loops seperately.
 	MinDegree = 1 << 4
 )
 
 // Evaluator calculates polynomial algorithms.
 //
 // Operations usually take two forms: for example,
-//   - Add(p0, p1) adds p0, p1, allocates a new polynomial to store the result, and returns it.
-//   - AddAssign(p0, p1, pOut) adds p0, p1 and writes the result to pre-existing pOut without returning.
+//   - Add(p0, p1) adds p0, p1, allocates a new polynomial to store the result and returns it.
+//   - AddAssign(p0, p1, pOut) adds p0, p1 and writes the result to pre-allocated pOut without returning.
 //
 // Note that in most cases, p0, p1, and pOut can overlap.
 // However, for operations that cannot, InPlace methods are implemented separately.

@@ -12,10 +12,10 @@ import (
 // most notably the polynomial multiplication.
 //
 // Operations usually take two forms: for example,
-//   - Add(p0, p1) adds p0, p1, allocates a new polynomial to store the result, and returns it.
-//   - AddAssign(p0, p1, pOut) adds p0, p1 and writes the result to pre-existing pOut without returning.
+//   - Add(fp0, fp1) adds fp0, fp1, allocates a new polynomial to store the result and returns it.
+//   - AddAssign(fp0, fp1, fpOut) adds fp0, fp1 and writes the result to pre-allocated pOut without returning.
 //
-// Note that in most cases, p0, p1, and pOut can overlap.
+// Note that in most cases, fp0, fp1, and fpOut can overlap.
 // However, for operations that cannot, InPlace methods are implemented separately.
 //
 // For performance reasons, most methods in this package don't implement bound checks.
@@ -26,16 +26,16 @@ type FourierEvaluator[T num.Integer] struct {
 	// maxT is a float64 value of MaxT.
 	maxT float64
 
-	// wNj holds the twiddle factors exp(-2pi*j/N) where j = 0 ~ N/2,
-	// ordered in bit-reversed order.
-	// Unlike other complex128 slices, wNj is in natural order.
+	// wNj holds the twiddle factors for Fourier Transform.
+	// This is stored as "long" form, so that access to the factors are contiguous.
+	// Unlike other complex128 slices, wNj is in natural representation.
 	wNj []complex128
-	// wNjInv holds the inverse twiddle factors exp(2pi*j/N) where j = 0 ~ N/2,
-	// ordered in bit-reversed order.
-	// Unlike other complex128 slices, wNjInv is in natural order.
+	// wNjInv holds the twiddle factors for Inverse Fourier Transform.
+	// This is stored as "long" form, so that access to the factors are contiguous.
+	// Unlike other complex128 slices, wNjInv is in natural representation.
 	wNjInv []complex128
 	// w4NjMono holds the twisting factors for monomials: exp(-pi*j/N) where j = 0 ~ 2N.
-	// Unlike other complex128 slices, w4NjMono is in natural order.
+	// Unlike other complex128 slices, w4NjMono is in natural representation.
 	w4NjMono []complex128
 	// revMonoIdx holds the precomputed bit-reversed index for MonomialToFourierPoly.
 	// Equivalent to BitReverse([-1, 3, 7, ..., 2N-1]).

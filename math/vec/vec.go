@@ -1,8 +1,8 @@
 // Package vec implements vector operations acting on slices.
 //
 // Operations usually take two forms: for example,
-//   - Add(v0, v1) adds v0, v1, allocates a new vector to store the result, and returns it.
-//   - AddAssign(v0, v1, vOut) adds v0, v1 and writes the result to pre-existing vOut without returning.
+//   - Add(v0, v1) adds v0, v1, allocates a new vector to store the result and returns it.
+//   - AddAssign(v0, v1, vOut) adds v0, v1 and writes the result to pre-allocated vOut without returning.
 //
 // Note that in most cases, v0, v1, and vOut can overlap.
 // However, for operations that cannot, InPlace methods are implemented separately.
@@ -295,7 +295,7 @@ func CmplxToFloat4Assign(v []complex128, vOut []float64) {
 }
 
 // Float4ToCmplx converts a float-4 complex vector to
-// naturally ordered complex128 vector.
+// naturally represented complex128 vector.
 //
 // Namely, it converts
 //
@@ -313,7 +313,7 @@ func Float4ToCmplx(v []float64) []complex128 {
 }
 
 // Float4ToCmplxAssign converts a float-4 complex vector to
-// naturally ordered complex128 vector and writes it to vOut.
+// naturally represented complex128 vector and writes it to vOut.
 //
 // Namely, it converts
 //
