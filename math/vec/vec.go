@@ -2,7 +2,7 @@
 //
 // Operations usually take two forms: for example,
 //   - Add(v0, v1) adds v0, v1, allocates a new vector to store the result, and returns it.
-//   - AddAssign(v0, v1, vOut) adds v0, v1, and writes the result to pre-existing vOut without returning.
+//   - AddAssign(v0, v1, vOut) adds v0, v1 and writes the result to pre-existing vOut without returning.
 //
 // Note that in most cases, v0, v1, and vOut can overlap.
 // However, for operations that cannot, InPlace methods are implemented separately.
@@ -36,7 +36,7 @@ func Fill[T any](v []T, x T) {
 	}
 }
 
-// Cast casts and returns vector v of type []T1 to []T2.
+// Cast casts vector v of type []T1 to []T2.
 func Cast[T1, T2 num.Real](v []T1) []T2 {
 	vOut := make([]T2, len(v))
 	CastAssign(v, vOut)
@@ -50,7 +50,7 @@ func CastAssign[T1, T2 num.Real](v []T1, vOut []T2) {
 	}
 }
 
-// Rotate rotates v l times to the right, and returns it.
+// Rotate rotates v l times to the right.
 // If l < 0, then it rotates the vector l times to the left.
 // If Abs(l) > len(s), it may panic.
 func Rotate[T any](v []T, l int) []T {
@@ -59,7 +59,7 @@ func Rotate[T any](v []T, l int) []T {
 	return vOut
 }
 
-// RotateAssign rotates v l times to the right, and writes it to vOut.
+// RotateAssign rotates v l times to the right and writes it to vOut.
 // If l < 0, then it rotates the vector l times to the left.
 //
 // v and vOut should not overlap. For rotating a slice inplace,
@@ -75,7 +75,7 @@ func RotateAssign[T any](v []T, l int, vOut []T) {
 	CopyAssign(v[len(v)-l:], vOut[:l])
 }
 
-// RotateInPlace rotates v l times to the right.
+// RotateInPlace rotates v l times to the right in-place.
 // If l < 0, then it rotates the vector l times to the left.
 func RotateInPlace[T any](v []T, l int) {
 	if l < 0 {
@@ -89,7 +89,7 @@ func RotateInPlace[T any](v []T, l int) {
 	ReverseInPlace(v[l:])
 }
 
-// Reverse reverses v and returns it.
+// Reverse reverses v.
 func Reverse[T any](v []T) []T {
 	vOut := make([]T, len(v))
 	ReverseAssign(v, vOut)
@@ -106,7 +106,7 @@ func ReverseAssign[T any](v, vOut []T) {
 	}
 }
 
-// ReverseInPlace reverses v.
+// ReverseInPlace reverses v in-place.
 func ReverseInPlace[T any](v []T) {
 	for i, j := 0, len(v)-1; i < j; i, j = i+1, j-1 {
 		v[i], v[j] = v[j], v[i]
@@ -151,7 +151,7 @@ func Dot[T num.Number](v0, v1 []T) T {
 	return res
 }
 
-// Add adds v0, v1 and returns the result.
+// Add adds v0, v1.
 func Add[T num.Number](v0, v1 []T) []T {
 	v := make([]T, len(v0))
 	AddAssign(v0, v1, v)
@@ -165,7 +165,7 @@ func AddAssign[T num.Number](v0, v1, vOut []T) {
 	}
 }
 
-// Sub subtracts v0, v1 and returns the result.
+// Sub subtracts v0, v1.
 func Sub[T num.Number](v0, v1 []T) []T {
 	v := make([]T, len(v0))
 	SubAssign(v0, v1, v)
@@ -179,7 +179,7 @@ func SubAssign[T num.Number](v0, v1, vOut []T) {
 	}
 }
 
-// Neg negates v0 and returns the result.
+// Neg negates v0.
 func Neg[T num.Number](v0 []T) []T {
 	v := make([]T, len(v0))
 	NegAssign(v0, v)
@@ -193,7 +193,7 @@ func NegAssign[T num.Number](v0, vOut []T) {
 	}
 }
 
-// ScalarMul multiplies c to v0 and returns the result.
+// ScalarMul multiplies c to v0.
 func ScalarMul[T num.Number](v0 []T, c T) []T {
 	v := make([]T, len(v0))
 	ScalarMulAssign(v0, c, v)
@@ -221,7 +221,7 @@ func ScalarMulSubAssign[T num.Number](v0 []T, c T, vOut []T) {
 	}
 }
 
-// ElementWiseMul multiplies v0, v1 and returns the result.
+// ElementWiseMul multiplies v0, v1.
 func ElementWiseMul[T num.Number](v0 []T, v1 []T) []T {
 	v := make([]T, len(v0))
 	ElementWiseMulAssign(v0, v1, v)
@@ -250,7 +250,7 @@ func ElementWiseMulSubAssign[T num.Number](v0 []T, v1 []T, vOut []T) {
 }
 
 // CmplxToFloat4 converts a complex128 vector to
-// float-4 representation used in fourier polynomials, and returns it.
+// float-4 representation used in fourier polynomials.
 //
 // Namely, it converts
 //
@@ -268,7 +268,7 @@ func CmplxToFloat4(v []complex128) []float64 {
 }
 
 // CmplxToFloat4Assign converts a complex128 vector to
-// float-4 representation used in fourier polynomials, and writes it to vOut.
+// float-4 representation used in fourier polynomials and writes it to vOut.
 //
 // Namely, it converts
 //
@@ -295,7 +295,7 @@ func CmplxToFloat4Assign(v []complex128, vOut []float64) {
 }
 
 // Float4ToCmplx converts a float-4 complex vector to
-// naturally ordered complex128 vector, and returns it.
+// naturally ordered complex128 vector.
 //
 // Namely, it converts
 //
@@ -313,7 +313,7 @@ func Float4ToCmplx(v []float64) []complex128 {
 }
 
 // Float4ToCmplxAssign converts a float-4 complex vector to
-// naturally ordered complex128 vector, and writes it to vOut.
+// naturally ordered complex128 vector and writes it to vOut.
 //
 // Namely, it converts
 //

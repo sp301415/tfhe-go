@@ -13,7 +13,7 @@ import (
 func decomposePolyAssignUint32AVX2(p []uint32, base uint32, baseLog uint32, lastScaledBaseLog uint32, d [][]uint32)
 func decomposePolyAssignUint64AVX2(p []uint64, base uint64, baseLog uint64, lastScaledBaseLog uint64, d [][]uint64)
 
-// decomposePolyAssign decomposes p with respect to gadgetParams, and writes it to decomposedOut.
+// decomposePolyAssign decomposes p with respect to gadgetParams and writes it to decomposedOut.
 func decomposePolyAssign[T Tint](p poly.Poly[T], gadgetParams GadgetParameters[T], decomposedOut []poly.Poly[T]) {
 	if cpu.X86.HasAVX2 {
 		var z T

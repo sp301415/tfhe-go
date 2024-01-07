@@ -4,7 +4,7 @@ import (
 	"github.com/sp301415/tfhe-go/math/vec"
 )
 
-// Add adds p0, p1 and returns the result.
+// Add adds p0, p1.
 func (e *Evaluator[T]) Add(p0, p1 Poly[T]) Poly[T] {
 	p := e.NewPoly()
 	e.AddAssign(p0, p1, p)
@@ -16,7 +16,7 @@ func (e *Evaluator[T]) AddAssign(p0, p1, pOut Poly[T]) {
 	vec.AddAssign(p0.Coeffs, p1.Coeffs, pOut.Coeffs)
 }
 
-// Sub subtracts p0, p1 and returns the result.
+// Sub subtracts p0, p1.
 func (e *Evaluator[T]) Sub(p0, p1 Poly[T]) Poly[T] {
 	p := e.NewPoly()
 	e.SubAssign(p0, p1, p)
@@ -28,7 +28,7 @@ func (e *Evaluator[T]) SubAssign(p0, p1, pOut Poly[T]) {
 	vec.SubAssign(p0.Coeffs, p1.Coeffs, pOut.Coeffs)
 }
 
-// Neg negates p0 and returns the result.
+// Neg negates p0.
 func (e *Evaluator[T]) Neg(p0 Poly[T]) Poly[T] {
 	p := e.NewPoly()
 	e.NegAssign(p0, p)
@@ -40,7 +40,7 @@ func (e *Evaluator[T]) NegAssign(p0, pOut Poly[T]) {
 	vec.NegAssign(p0.Coeffs, pOut.Coeffs)
 }
 
-// Mul multiplies p0, p1 and returns the result.
+// Mul multiplies p0, p1.
 func (e *Evaluator[T]) Mul(p0, p1 Poly[T]) Poly[T] {
 	if e.degree <= karatsubaRecurseThreshold {
 		return e.mulNaive(p0, p1)
@@ -72,7 +72,7 @@ func (e *Evaluator[T]) MulSubAssign(p0, p1, pOut Poly[T]) {
 	e.SubAssign(pOut, e.buffer.pOut, pOut)
 }
 
-// ScalarMul multiplies c to p0 and returns the result.
+// ScalarMul multiplies c to p0.
 func (e *Evaluator[T]) ScalarMul(p0 Poly[T], c T) Poly[T] {
 	p := e.NewPoly()
 	e.ScalarMulAssign(p0, c, p)
@@ -94,7 +94,7 @@ func (e *Evaluator[T]) ScalarMulSubAssign(p0 Poly[T], c T, pOut Poly[T]) {
 	vec.ScalarMulSubAssign(p0.Coeffs, c, pOut.Coeffs)
 }
 
-// MonomialMul multiplies X^d to p0 and returns the result.
+// MonomialMul multiplies X^d to p0.
 func (e *Evaluator[T]) MonomialMul(p0 Poly[T], d int) Poly[T] {
 	p := e.NewPoly()
 	e.MonomialMulAssign(p0, d, p)
@@ -235,14 +235,14 @@ func (e *Evaluator[T]) MonomialMulSubAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	}
 }
 
-// MonomialMulSubOneMulAssign multiplies X^d - 1 to p0, and writes it to pOut.
+// MonomialMulSubOneMulAssign multiplies X^d - 1 to p0 and writes it to pOut.
 //
 // d should be positive, and p0 and pOut should not overlap.
 func (e *Evaluator[T]) MonomialSubOneMulAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	monomialSubOneMulAssign(p0, d&((e.degree<<1)-1), pOut)
 }
 
-// MonomialMulSubOneMulAddAssign multiplies X^d - 1 to p0, and adds it to pOut.
+// MonomialMulSubOneMulAddAssign multiplies X^d - 1 to p0 and adds it to pOut.
 //
 // d should be positive, and p0 and pOut should not overlap.
 func (e *Evaluator[T]) MonomialSubOneMulAddAssign(p0 Poly[T], d int, pOut Poly[T]) {

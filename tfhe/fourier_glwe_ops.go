@@ -4,7 +4,7 @@ import (
 	"github.com/sp301415/tfhe-go/math/poly"
 )
 
-// AddFourierGLWE adds two FourierGLWE cipheretexts ct0, ct1 and returns the result.
+// AddFourierGLWE adds two FourierGLWE cipheretexts ct0, ct1.
 func (e *Evaluator[T]) AddFourierGLWE(ct0, ct1 FourierGLWECiphertext[T]) FourierGLWECiphertext[T] {
 	ctOut := NewFourierGLWECiphertext(e.Parameters)
 	e.AddFourierGLWEAssign(ct0, ct1, ctOut)
@@ -18,7 +18,7 @@ func (e *Evaluator[T]) AddFourierGLWEAssign(ct0, ct1, ctOut FourierGLWECiphertex
 	}
 }
 
-// SubFourierGLWE subtracts two FourierGLWE cipheretexts ct0, ct1 and returns the result.
+// SubFourierGLWE subtracts two FourierGLWE cipheretexts ct0, ct1.
 func (e *Evaluator[T]) SubFourierGLWE(ct0, ct1 FourierGLWECiphertext[T]) FourierGLWECiphertext[T] {
 	ctOut := NewFourierGLWECiphertext(e.Parameters)
 	e.SubFourierGLWEAssign(ct0, ct1, ctOut)
@@ -32,7 +32,7 @@ func (e *Evaluator[T]) SubFourierGLWEAssign(ct0, ct1, ctOut FourierGLWECiphertex
 	}
 }
 
-// NegFourierGLWE negates ct0 and returns the result.
+// NegFourierGLWE negates ct0.
 func (e *Evaluator[T]) NegFourierGLWE(ct0 FourierGLWECiphertext[T]) FourierGLWECiphertext[T] {
 	ctOut := NewFourierGLWECiphertext(e.Parameters)
 	e.NegFourierGLWEAssign(ct0, ctOut)
@@ -46,7 +46,7 @@ func (e *Evaluator[T]) NegFourierGLWEAssign(ct0, ctOut FourierGLWECiphertext[T])
 	}
 }
 
-// PolyMulFourierGLWE multiplies p to ct0 and returns the result.
+// PolyMulFourierGLWE multiplies p to ct0.
 func (e *Evaluator[T]) PolyMulFourierGLWE(ct0 FourierGLWECiphertext[T], p poly.Poly[T]) FourierGLWECiphertext[T] {
 	ctOut := NewFourierGLWECiphertext(e.Parameters)
 	e.PolyMulFourierGLWEAssign(ct0, p, ctOut)
@@ -77,7 +77,7 @@ func (e *Evaluator[T]) PolyMulSubFourierGLWEAssign(ct0 FourierGLWECiphertext[T],
 	}
 }
 
-// FourierPolyMulFourierGLWE multiplies fp to ct0 and returns the result.
+// FourierPolyMulFourierGLWE multiplies fp to ct0.
 func (e *Evaluator[T]) FourierPolyMulFourierGLWE(ct0 FourierGLWECiphertext[T], fp poly.FourierPoly) FourierGLWECiphertext[T] {
 	ctOut := NewFourierGLWECiphertext(e.Parameters)
 	e.FourierPolyMulFourierGLWEAssign(ct0, fp, ctOut)

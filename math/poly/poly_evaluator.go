@@ -16,7 +16,7 @@ const (
 //
 // Operations usually take two forms: for example,
 //   - Add(p0, p1) adds p0, p1, allocates a new polynomial to store the result, and returns it.
-//   - AddAssign(p0, p1, pOut) adds p0, p1, and writes the result to pre-existing pOut without returning.
+//   - AddAssign(p0, p1, pOut) adds p0, p1 and writes the result to pre-existing pOut without returning.
 //
 // Note that in most cases, p0, p1, and pOut can overlap.
 // However, for operations that cannot, InPlace methods are implemented separately.

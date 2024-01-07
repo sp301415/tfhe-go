@@ -4,7 +4,7 @@ import (
 	"github.com/sp301415/tfhe-go/math/poly"
 )
 
-// AddGLWE adds two GLWE cipheretexts ct0, ct1 and returns the result.
+// AddGLWE adds two GLWE cipheretexts ct0, ct1.
 func (e *Evaluator[T]) AddGLWE(ct0, ct1 GLWECiphertext[T]) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
 	e.AddGLWEAssign(ct0, ct1, ctOut)
@@ -18,7 +18,7 @@ func (e *Evaluator[T]) AddGLWEAssign(ct0, ct1, ctOut GLWECiphertext[T]) {
 	}
 }
 
-// SubGLWE subtracts two GLWE cipheretexts ct0, ct1 and returns the result.
+// SubGLWE subtracts two GLWE cipheretexts ct0, ct1.
 func (e *Evaluator[T]) SubGLWE(ct0, ct1 GLWECiphertext[T]) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
 	e.SubGLWEAssign(ct0, ct1, ctOut)
@@ -32,7 +32,7 @@ func (e *Evaluator[T]) SubGLWEAssign(ct0, ct1, ctOut GLWECiphertext[T]) {
 	}
 }
 
-// NegGLWE negates ct0 and returns the result.
+// NegGLWE negates ct0.
 func (e *Evaluator[T]) NegGLWE(ct0 GLWECiphertext[T]) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
 	e.NegGLWEAssign(ct0, ctOut)
@@ -46,7 +46,7 @@ func (e *Evaluator[T]) NegGLWEAssign(ct0, ctOut GLWECiphertext[T]) {
 	}
 }
 
-// ScalarMulGLWE multiplies c to ct0 and returns the result.
+// ScalarMulGLWE multiplies c to ct0.
 func (e *Evaluator[T]) ScalarMulGLWE(ct0 GLWECiphertext[T], c T) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
 	e.ScalarMulGLWEAssign(ct0, c, ctOut)
@@ -74,7 +74,7 @@ func (e *Evaluator[T]) ScalarMulSubGLWEAssign(ct0 GLWECiphertext[T], c T, ctOut 
 	}
 }
 
-// PlaintextAddGLWE adds pt to ct0 and returns the result.
+// PlaintextAddGLWE adds pt to ct0.
 func (e *Evaluator[T]) PlaintextAddGLWE(ct0 GLWECiphertext[T], pt GLWEPlaintext[T]) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
 	e.PlaintextAddGLWEAssign(ct0, pt, ctOut)
@@ -87,7 +87,7 @@ func (e *Evaluator[T]) PlaintextAddGLWEAssign(ct0 GLWECiphertext[T], pt GLWEPlai
 
 }
 
-// PolyMulGLWE multiplies p to ct0 and returns the result.
+// PolyMulGLWE multiplies p to ct0.
 func (e *Evaluator[T]) PolyMulGLWE(ct0 GLWECiphertext[T], p poly.Poly[T]) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
 	e.PolyMulGLWEAssign(ct0, p, ctOut)
@@ -115,7 +115,7 @@ func (e *Evaluator[T]) PolyMulSubGLWEAssign(ct0 GLWECiphertext[T], p poly.Poly[T
 	}
 }
 
-// MonomialMulGLWE multiplies X^d to ct0 and returns the result.
+// MonomialMulGLWE multiplies X^d to ct0.
 func (e *Evaluator[T]) MonomialMulGLWE(ct0 GLWECiphertext[T], d int) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
 	e.MonomialMulGLWEAssign(ct0, d, ctOut)
@@ -156,7 +156,7 @@ func (e *Evaluator[T]) MonomialMulSubGLWEAssign(ct0 GLWECiphertext[T], d int, ct
 	}
 }
 
-// MonomialMulSubOneMulAssign multiplies X^d - 1 to ct0, and writes it to ctOut.
+// MonomialMulSubOneMulAssign multiplies X^d - 1 to ct0 and writes it to ctOut.
 //
 // This method is frequently used in Blind Rotation,
 // so this is tailor-made for that:
@@ -167,7 +167,7 @@ func (e *Evaluator[T]) MonomialSubOneMulAssign(p0 GLWECiphertext[T], d int, pOut
 	}
 }
 
-// MonomialMulSubOneMulAddAssign multiplies X^d - 1 to ct0, and adds it to ctOut.
+// MonomialMulSubOneMulAddAssign multiplies X^d - 1 to ct0 and adds it to ctOut.
 //
 // This method is frequently used in Blind Rotation,
 // so this is tailor-made for that:

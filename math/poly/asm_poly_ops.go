@@ -6,7 +6,7 @@ import (
 	"github.com/sp301415/tfhe-go/math/num"
 )
 
-// monomialSubOneMulAssign multiplies X^d - 1 to p0, and writes it to pOut.
+// monomialSubOneMulAssign multiplies X^d - 1 to p0 and writes it to pOut.
 //
 // d is assumed to be in [-N, N]. p0 and pOut should not overlap.
 func monomialSubOneMulAssign[T num.Integer](p0 Poly[T], d int, pOut Poly[T]) {
@@ -28,7 +28,7 @@ func monomialSubOneMulAssign[T num.Integer](p0 Poly[T], d int, pOut Poly[T]) {
 	}
 }
 
-// monomialSubOneMulAddAssign multiplies X^d - 1 to p0, and adds it to pOut.
+// monomialSubOneMulAddAssign multiplies X^d - 1 to p0 and adds it to pOut.
 //
 // d is assumed to be in [-N, N]. p0 and pOut should not overlap.
 func monomialSubOneMulAddAssign[T num.Integer](p0 Poly[T], d int, pOut Poly[T]) {

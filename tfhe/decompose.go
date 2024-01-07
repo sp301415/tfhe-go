@@ -12,7 +12,7 @@ func (e *Evaluator[T]) Decompose(x T, gadgetParams GadgetParameters[T]) []T {
 	return decomposedOut
 }
 
-// DecomposeAssign decomposes x with respect to gadgetParams, and writes it to decomposedOut.
+// DecomposeAssign decomposes x with respect to gadgetParams and writes it to decomposedOut.
 func (e *Evaluator[T]) DecomposeAssign(x T, gadgetParams GadgetParameters[T], decomposedOut []T) {
 	lastScaledBaseLog := gadgetParams.scaledBasesLog[gadgetParams.level-1]
 	u := num.RoundRatioBits(x, lastScaledBaseLog)
@@ -36,7 +36,7 @@ func (e *Evaluator[T]) DecomposePoly(p poly.Poly[T], gadgetParams GadgetParamete
 	return decomposedOut
 }
 
-// DecomposePolyAssign decomposes p with respect to gadgetParams, and writes it to decomposedOut.
+// DecomposePolyAssign decomposes p with respect to gadgetParams and writes it to decomposedOut.
 func (e *Evaluator[T]) DecomposePolyAssign(p poly.Poly[T], gadgetParams GadgetParameters[T], decomposedOut []poly.Poly[T]) {
 	decomposePolyAssign(p, gadgetParams, decomposedOut)
 }

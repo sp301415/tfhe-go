@@ -52,8 +52,7 @@ func (sk *GLWEKey[T]) Clear() {
 	}
 }
 
-// ToLWEKey derives a new LWE secret key from the GLWE secret key,
-// and returns it.
+// ToLWEKey derives a new LWE secret key from the GLWE secret key.
 // Returned LWEKey will be of dimension LWELargeDimension.
 func (sk GLWEKey[T]) ToLWEKey() LWEKey[T] {
 	lweKey := NewLWEKeyCustom[T](len(sk.Value) * sk.Value[0].Degree())
@@ -61,8 +60,7 @@ func (sk GLWEKey[T]) ToLWEKey() LWEKey[T] {
 	return lweKey
 }
 
-// ToLWEKeyAssign derives a new LWE secret key from the GLWE secret key,
-// and writes it to skOut.
+// ToLWEKeyAssign derives a new LWE secret key from the GLWE secret key and writes it to skOut.
 // skOut should have dimension LWELargeDimension.
 func (sk GLWEKey[T]) ToLWEKeyAssign(skOut LWEKey[T]) {
 	glweDimension := len(sk.Value)
@@ -161,7 +159,7 @@ type GLevCiphertext[T Tint] struct {
 	Value []GLWECiphertext[T]
 }
 
-// ToLWECiphertext extracts LWE ciphertext of given index from GLWE ciphertext and returns it.
+// ToLWECiphertext extracts LWE ciphertext of given index from GLWE ciphertext.
 // The output ciphertext will be of dimension LWELargeDimension + 1,
 // encrypted with LWELargeKey.
 //

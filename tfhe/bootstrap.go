@@ -32,7 +32,7 @@ func (lut *LookUpTable[T]) Clear() {
 	vec.Fill(lut.Coeffs, 0)
 }
 
-// GenLookUpTable generates a lookup table based on function f and returns it.
+// GenLookUpTable generates a lookup table based on function f.
 // Input and output of f is cut by MessageModulus.
 func (e *Evaluator[T]) GenLookUpTable(f func(int) int) LookUpTable[T] {
 	lutOut := NewLookUpTable(e.Parameters)
@@ -57,7 +57,7 @@ func (e *Evaluator[T]) GenLookUpTableAssign(f func(int) int, lutOut LookUpTable[
 	}
 }
 
-// GenLookUpTableFull generates a lookup table based on function f and returns it.
+// GenLookUpTableFull generates a lookup table based on function f.
 // Output of f is encoded as-is.
 func (e *Evaluator[T]) GenLookUpTableFull(f func(int) T) LookUpTable[T] {
 	lutOut := NewLookUpTable(e.Parameters)
@@ -354,7 +354,7 @@ func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUp
 	}
 }
 
-// SampleExtract extracts LWE ciphertext of given index from GLWE ciphertext and returns it.
+// SampleExtract extracts LWE ciphertext of given index from GLWE ciphertext.
 // The output ciphertext will be of dimension LWELargeDimension + 1,
 // encrypted with LWELargeKey.
 //
@@ -365,7 +365,7 @@ func (e *Evaluator[T]) SampleExtract(ct GLWECiphertext[T], idx int) LWECiphertex
 	return ctOut
 }
 
-// SampleExtractAssign extracts LWE ciphertext of given index from GLWE ciphertext, and writes it to ctOut.
+// SampleExtractAssign extracts LWE ciphertext of given index from GLWE ciphertext and writes it to ctOut.
 // The output ciphertext should be of dimension LWELargeDimension + 1,
 // and it will be a ciphertext encrypted with LWELargeKey.
 //
@@ -385,7 +385,7 @@ func (e *Evaluator[T]) SampleExtractAssign(ct GLWECiphertext[T], idx int, ctOut 
 	}
 }
 
-// KeySwitch switches key of ct, and returns a new ciphertext.
+// KeySwitch switches key of ct.
 // Input ciphertext should be of dimension ksk.InputLWEDimension + 1,
 // and output ciphertext will be of dimension ksk.OutputLWEDimension + 1.
 func (e *Evaluator[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchKey[T]) LWECiphertext[T] {
@@ -394,7 +394,7 @@ func (e *Evaluator[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchKey[T]) LWECi
 	return ctOut
 }
 
-// KeySwitchAssign switches key of ct, and writes it to ctOut.
+// KeySwitchAssign switches key of ct and writes it to ctOut.
 // Input ciphertext should be of dimension ksk.InputLWEDimension + 1,
 // and output ciphertext should be of dimension ksk.OutputLWEDimension + 1.
 func (e *Evaluator[T]) KeySwitchAssign(ct LWECiphertext[T], ksk KeySwitchKey[T], ctOut LWECiphertext[T]) {

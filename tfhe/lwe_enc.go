@@ -75,7 +75,7 @@ func (e *Encryptor[T]) EncryptLevPlaintext(pt LWEPlaintext[T], gadgetParams Gadg
 	return ctOut
 }
 
-// EncryptLevPlaintextAssign encrypts LWE plaintext to Lev ciphertext, and writes it to ctOut.
+// EncryptLevPlaintextAssign encrypts LWE plaintext to Lev ciphertext and writes it to ctOut.
 func (e *Encryptor[T]) EncryptLevPlaintextAssign(pt LWEPlaintext[T], ctOut LevCiphertext[T]) {
 	for i := 0; i < ctOut.GadgetParameters.level; i++ {
 		ctOut.Value[i].Value[0] = pt.Value << ctOut.GadgetParameters.ScaledBaseLog(i)
@@ -108,7 +108,7 @@ func (e *Encryptor[T]) EncryptGSWPlaintext(pt LWEPlaintext[T], gadgetParams Gadg
 	return ctOut
 }
 
-// EncryptGSWPlaintextAssign encrypts LWE plaintext to GSW ciphertext, and writes it to ctOut.
+// EncryptGSWPlaintextAssign encrypts LWE plaintext to GSW ciphertext and writes it to ctOut.
 func (e *Encryptor[T]) EncryptGSWPlaintextAssign(pt LWEPlaintext[T], ctOut GSWCiphertext[T]) {
 	e.EncryptLevPlaintextAssign(pt, ctOut.Value[0])
 

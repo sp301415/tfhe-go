@@ -12,7 +12,7 @@ import (
 func monomialSubOneMulAssignUint32AVX2(p0 []uint32, d int, pOut []uint32)
 func monomialSubOneMulAssignUint64AVX2(p0 []uint64, d int, pOut []uint64)
 
-// monomialSubOneMulAssign multiplies X^d - 1 to p0, and writes it to pOut.
+// monomialSubOneMulAssign multiplies X^d - 1 to p0 and writes it to pOut.
 //
 // d is assumed to be in [-N, N]. p0 and pOut should not overlap.
 func monomialSubOneMulAssign[T num.Integer](p0 Poly[T], d int, pOut Poly[T]) {
@@ -49,7 +49,7 @@ func monomialSubOneMulAssign[T num.Integer](p0 Poly[T], d int, pOut Poly[T]) {
 func monomialSubOneMulAddAssignUint32AVX2(p0 []uint32, d int, pOut []uint32)
 func monomialSubOneMulAddAssignUint64AVX2(p0 []uint64, d int, pOut []uint64)
 
-// monomialSubOneMulAddAssign multiplies X^d - 1 to p0, and adds it to pOut.
+// monomialSubOneMulAddAssign multiplies X^d - 1 to p0 and adds it to pOut.
 //
 // d should to be in [0, 2N), and p0 and pOut should not overlap.
 func monomialSubOneMulAddAssign[T num.Integer](p0 Poly[T], d int, pOut Poly[T]) {
