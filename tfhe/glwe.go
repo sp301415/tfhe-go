@@ -167,7 +167,7 @@ type GLevCiphertext[T Tint] struct {
 //
 // Equivalent to Evaluator.SampleExtract.
 func (ct GLWECiphertext[T]) ToLWECiphertext(idx int) LWECiphertext[T] {
-	ctOut := NewLWECiphertextCustom[T](len(ct.Value) * ct.Value[0].Degree())
+	ctOut := NewLWECiphertextCustom[T]((len(ct.Value) - 1) * ct.Value[0].Degree())
 	ct.ToLWECiphertextAssign(idx, ctOut)
 	return ctOut
 }
