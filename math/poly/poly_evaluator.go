@@ -7,7 +7,7 @@ import (
 const (
 	// MinDegree is the minimum degree of polynomial that Evaluator can handle.
 	// Currently, this is set to 16, because AVX2 implementation of FFT and inverse FFT
-	// handles first/last two loops seperately.
+	// handles first/last two loops separately.
 	MinDegree = 1 << 4
 )
 
