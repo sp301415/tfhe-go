@@ -6,43 +6,43 @@ import (
 	"math"
 )
 
-// roundCmplxAssign rounds v0 and writes it to vOut.
-func roundCmplxAssign(v0 []float64, vOut []float64) {
+// roundCmplxAssign computes vOut = round(v0).
+func roundCmplxAssign(v0, vOut []float64) {
 	for i := range vOut {
 		vOut[i] = math.Round(v0[i])
 	}
 }
 
-// addCmplxAssign adds v0, v1 and writes it to vOut.
+// addCmplxAssign computes vOut = v0 + v1.
 func addCmplxAssign(v0, v1, vOut []float64) {
 	for i := range vOut {
 		vOut[i] = v0[i] + v1[i]
 	}
 }
 
-// subCmplxAssign subtracts v0, v1 and writes it to vOut.
+// subCmplxAssign computes vOut = v0 - v1.
 func subCmplxAssign(v0, v1, vOut []float64) {
 	for i := range vOut {
 		vOut[i] = v0[i] - v1[i]
 	}
 }
 
-// negCmplxAssign negates v0 and writes it to vOut.
+// negCmplxAssign computes vOut = -v0.
 func negCmplxAssign(v0, vOut []float64) {
 	for i := range vOut {
 		vOut[i] = -v0[i]
 	}
 }
 
-// floatMulCmplxAssign multiplies v0, c and writes it to vOut.
-func floatMulCmplxAssign(v0 []float64, c float64, vOut []float64) {
+// floatMulCmplxAssign computes vOut = c * v0.
+func floatMulCmplxAssign(c float64, v0, vOut []float64) {
 	for i := range vOut {
 		vOut[i] = c * v0[i]
 	}
 }
 
-// elementWiseMulCmplxAssign multiplies v0, v1 and writes it to vOut.
-func elementWiseMulCmplxAssign(v0 []float64, v1 []float64, vOut []float64) {
+// elementWiseMulCmplxAssign computes vOut = v0 * v1.
+func elementWiseMulCmplxAssign(v0, v1, vOut []float64) {
 	for i := 0; i < len(vOut); i += 8 {
 		vOut0 := v0[i+0]*v1[i+0] - v0[i+4]*v1[i+4]
 		vOut1 := v0[i+1]*v1[i+1] - v0[i+5]*v1[i+5]
@@ -66,8 +66,8 @@ func elementWiseMulCmplxAssign(v0 []float64, v1 []float64, vOut []float64) {
 	}
 }
 
-// elementWiseMulAddCmplxAssign multiplies v0, v1 and adds to vOut.
-func elementWiseMulAddCmplxAssign(v0 []float64, v1 []float64, vOut []float64) {
+// elementWiseMulAddCmplxAssign computes vOut += v0 * v1.
+func elementWiseMulAddCmplxAssign(v0, v1, vOut []float64) {
 	for i := 0; i < len(vOut); i += 8 {
 		vOut0 := vOut[i+0] + (v0[i+0]*v1[i+0] - v0[i+4]*v1[i+4])
 		vOut1 := vOut[i+1] + (v0[i+1]*v1[i+1] - v0[i+5]*v1[i+5])
@@ -91,8 +91,8 @@ func elementWiseMulAddCmplxAssign(v0 []float64, v1 []float64, vOut []float64) {
 	}
 }
 
-// elementWiseMulSubCmplxAssign multiplies v0, v1 and subtracts from vOut.
-func elementWiseMulSubCmplxAssign(v0 []float64, v1 []float64, vOut []float64) {
+// elementWiseMulSubCmplxAssign computes vOut -= v0 * v1.
+func elementWiseMulSubCmplxAssign(v0, v1, vOut []float64) {
 	for i := 0; i < len(vOut); i += 8 {
 		vOut0 := vOut[i+0] - (v0[i+0]*v1[i+0] - v0[i+4]*v1[i+4])
 		vOut1 := vOut[i+1] - (v0[i+1]*v1[i+1] - v0[i+5]*v1[i+5])

@@ -2,9 +2,9 @@ package poly
 
 // ToFourierPoly transforms Poly to FourierPoly.
 func (f *FourierEvaluator[T]) ToFourierPoly(p Poly[T]) FourierPoly {
-	fp := NewFourierPoly(f.degree)
-	f.ToFourierPolyAssign(p, fp)
-	return fp
+	fpOut := NewFourierPoly(f.degree)
+	f.ToFourierPolyAssign(p, fpOut)
+	return fpOut
 }
 
 // ToFourierPolyAssign transforms Poly to FourierPoly and writes it to fpOut.
@@ -94,9 +94,9 @@ func (f *FourierEvaluator[T]) ToFourierPolyAssign(p Poly[T], fpOut FourierPoly) 
 //
 // d should be positive.
 func (f *FourierEvaluator[T]) MonomialToFourierPoly(d int) FourierPoly {
-	fp := NewFourierPoly(f.degree)
-	f.MonomialToFourierPolyAssign(d, fp)
-	return fp
+	fpOut := NewFourierPoly(f.degree)
+	f.MonomialToFourierPolyAssign(d, fpOut)
+	return fpOut
 }
 
 // MonomialToFourierPolyAssign transforms X^d to FourierPoly and writes it to fpOut.
@@ -125,9 +125,9 @@ func (f *FourierEvaluator[T]) MonomialToFourierPolyAssign(d int, fpOut FourierPo
 // ToScaledFourierPoly transforms Poly to FourierPoly.
 // Each coefficients are scaled by 1 / MaxT.
 func (f *FourierEvaluator[T]) ToScaledFourierPoly(p Poly[T]) FourierPoly {
-	fp := NewFourierPoly(f.degree)
-	f.ToScaledFourierPolyAssign(p, fp)
-	return fp
+	fpOut := NewFourierPoly(f.degree)
+	f.ToScaledFourierPolyAssign(p, fpOut)
+	return fpOut
 }
 
 // ToScaledFourierPolyAssign transforms Poly to FourierPoly.
@@ -211,15 +211,15 @@ func (f *FourierEvaluator[T]) ToScaledFourierPolyAssign(p Poly[T], fpOut Fourier
 		}
 	}
 
-	floatMulCmplxAssign(fpOut.Coeffs, 1/f.maxT, fpOut.Coeffs)
+	floatMulCmplxAssign(1/f.maxT, fpOut.Coeffs, fpOut.Coeffs)
 	fftInPlace(fpOut.Coeffs, f.wNj)
 }
 
 // ToStandardPoly transforms FourierPoly to Poly.
 func (f *FourierEvaluator[T]) ToStandardPoly(fp FourierPoly) Poly[T] {
-	p := NewPoly[T](f.degree)
-	f.ToStandardPolyAssign(fp, p)
-	return p
+	pOut := NewPoly[T](f.degree)
+	f.ToStandardPolyAssign(fp, pOut)
+	return pOut
 }
 
 // ToStandardPolyAssign transforms FourierPoly to Poly and writes it to pOut.
@@ -357,9 +357,9 @@ func (f *FourierEvaluator[T]) ToStandardPolySubAssignUnsafe(fp FourierPoly, pOut
 // ToScaledStandardPoly transforms FourierPoly to Poly.
 // Each coefficients are scaled by MaxT.
 func (f *FourierEvaluator[T]) ToScaledStandardPoly(fp FourierPoly) Poly[T] {
-	p := NewPoly[T](f.degree)
-	f.ToScaledStandardPolyAssign(fp, p)
-	return p
+	pOut := NewPoly[T](f.degree)
+	f.ToScaledStandardPolyAssign(fp, pOut)
+	return pOut
 }
 
 // ToScaledStandardPolyAssign transforms FourierPoly to Poly and writes it to pOut.

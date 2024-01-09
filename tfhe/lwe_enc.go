@@ -33,9 +33,9 @@ func (e *Encryptor[T]) EncryptLWE(message int) LWECiphertext[T] {
 
 // EncryptLWEPlaintext encrypts LWE plaintext to LWE ciphertext.
 func (e *Encryptor[T]) EncryptLWEPlaintext(pt LWEPlaintext[T]) LWECiphertext[T] {
-	ctOut := NewLWECiphertext(e.Parameters)
-	e.EncryptLWEPlaintextAssign(pt, ctOut)
-	return ctOut
+	ct := NewLWECiphertext(e.Parameters)
+	e.EncryptLWEPlaintextAssign(pt, ct)
+	return ct
 }
 
 // EncryptLWEPlaintextAssign encrypts LWE plaintext to LWE ciphertext and writes it to ctOut.
@@ -70,9 +70,9 @@ func (e *Encryptor[T]) EncryptLev(message int, gadgetParams GadgetParameters[T])
 
 // EncryptLevPlaintext encrypts LWE plaintext to Lev ciphertext.
 func (e *Encryptor[T]) EncryptLevPlaintext(pt LWEPlaintext[T], gadgetParams GadgetParameters[T]) LevCiphertext[T] {
-	ctOut := NewLevCiphertext(e.Parameters, gadgetParams)
-	e.EncryptLevPlaintextAssign(pt, ctOut)
-	return ctOut
+	ct := NewLevCiphertext(e.Parameters, gadgetParams)
+	e.EncryptLevPlaintextAssign(pt, ct)
+	return ct
 }
 
 // EncryptLevPlaintextAssign encrypts LWE plaintext to Lev ciphertext and writes it to ctOut.
@@ -103,9 +103,9 @@ func (e *Encryptor[T]) EncryptGSW(message int, gadgetParams GadgetParameters[T])
 
 // EncryptGSWPlaintext encrypts LWE plaintext to GSW ciphertext.
 func (e *Encryptor[T]) EncryptGSWPlaintext(pt LWEPlaintext[T], gadgetParams GadgetParameters[T]) GSWCiphertext[T] {
-	ctOut := NewGSWCiphertext(e.Parameters, gadgetParams)
-	e.EncryptGSWPlaintextAssign(pt, ctOut)
-	return ctOut
+	ct := NewGSWCiphertext(e.Parameters, gadgetParams)
+	e.EncryptGSWPlaintextAssign(pt, ct)
+	return ct
 }
 
 // EncryptGSWPlaintextAssign encrypts LWE plaintext to GSW ciphertext and writes it to ctOut.

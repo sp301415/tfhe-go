@@ -5,24 +5,24 @@ import (
 	"github.com/sp301415/tfhe-go/math/poly"
 )
 
-// mulFourierGLWEKeyAssign multiplies p with Fourier GLWE key element fp.
-func (e *Encryptor[T]) mulFourierGLWEKeyAssign(p0 poly.Poly[T], fp poly.FourierPoly, pOut poly.Poly[T]) {
+// mulFourierGLWEKeyAssign computes pOut = p * fsk, where fsk is a Fourier Transform of GLWE key.
+func (e *Encryptor[T]) mulFourierGLWEKeyAssign(p poly.Poly[T], fsk poly.FourierPoly, pOut poly.Poly[T]) {
 	// We split by 22 bits.
 	const bits = 22
 	const mask = (1 << bits) - 1
 
 	for i := 0; i < e.Parameters.polyDegree; i++ {
-		e.buffer.pSplit.Coeffs[i] = p0.Coeffs[i] & mask
+		e.buffer.pSplit.Coeffs[i] = p.Coeffs[i] & mask
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
-	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp, e.buffer.fpSplit)
+	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fsk, e.buffer.fpSplit)
 	e.FourierEvaluator.ToStandardPolyAssignUnsafe(e.buffer.fpSplit, pOut)
 
 	for i := 0; i < e.Parameters.polyDegree; i++ {
-		e.buffer.pSplit.Coeffs[i] = (p0.Coeffs[i] >> bits) & mask
+		e.buffer.pSplit.Coeffs[i] = (p.Coeffs[i] >> bits) & mask
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
-	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp, e.buffer.fpSplit)
+	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fsk, e.buffer.fpSplit)
 	e.FourierEvaluator.ToStandardPolyAssignUnsafe(e.buffer.fpSplit, e.buffer.pSplit)
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		pOut.Coeffs[i] += e.buffer.pSplit.Coeffs[i] << bits
@@ -33,34 +33,34 @@ func (e *Encryptor[T]) mulFourierGLWEKeyAssign(p0 poly.Poly[T], fp poly.FourierP
 	}
 
 	for i := 0; i < e.Parameters.polyDegree; i++ {
-		e.buffer.pSplit.Coeffs[i] = (p0.Coeffs[i] >> bits) >> bits
+		e.buffer.pSplit.Coeffs[i] = (p.Coeffs[i] >> bits) >> bits
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
-	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp, e.buffer.fpSplit)
+	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fsk, e.buffer.fpSplit)
 	e.FourierEvaluator.ToStandardPolyAssignUnsafe(e.buffer.fpSplit, e.buffer.pSplit)
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		pOut.Coeffs[i] += (e.buffer.pSplit.Coeffs[i] << bits) << bits
 	}
 }
 
-// mulFourierGLWEKeyAddAssign multiplies p with Fourier GLWE key element fp and adds it to pOut.
-func (e *Encryptor[T]) mulFourierGLWEKeyAddAssign(p0 poly.Poly[T], fp poly.FourierPoly, pOut poly.Poly[T]) {
+// mulFourierGLWEKeyAddAssign computes pOut += p * fsk, where fsk is a Fourier Transform of GLWE key.
+func (e *Encryptor[T]) mulFourierGLWEKeyAddAssign(p poly.Poly[T], fsk poly.FourierPoly, pOut poly.Poly[T]) {
 	// We split by 22 bits.
 	const bits = 22
 	const mask = (1 << bits) - 1
 
 	for i := 0; i < e.Parameters.polyDegree; i++ {
-		e.buffer.pSplit.Coeffs[i] = p0.Coeffs[i] & mask
+		e.buffer.pSplit.Coeffs[i] = p.Coeffs[i] & mask
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
-	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp, e.buffer.fpSplit)
+	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fsk, e.buffer.fpSplit)
 	e.FourierEvaluator.ToStandardPolyAddAssignUnsafe(e.buffer.fpSplit, pOut)
 
 	for i := 0; i < e.Parameters.polyDegree; i++ {
-		e.buffer.pSplit.Coeffs[i] = (p0.Coeffs[i] >> bits) & mask
+		e.buffer.pSplit.Coeffs[i] = (p.Coeffs[i] >> bits) & mask
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
-	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp, e.buffer.fpSplit)
+	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fsk, e.buffer.fpSplit)
 	e.FourierEvaluator.ToStandardPolyAssignUnsafe(e.buffer.fpSplit, e.buffer.pSplit)
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		pOut.Coeffs[i] += e.buffer.pSplit.Coeffs[i] << bits
@@ -71,34 +71,34 @@ func (e *Encryptor[T]) mulFourierGLWEKeyAddAssign(p0 poly.Poly[T], fp poly.Fouri
 	}
 
 	for i := 0; i < e.Parameters.polyDegree; i++ {
-		e.buffer.pSplit.Coeffs[i] = (p0.Coeffs[i] >> bits) >> bits
+		e.buffer.pSplit.Coeffs[i] = (p.Coeffs[i] >> bits) >> bits
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
-	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp, e.buffer.fpSplit)
+	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fsk, e.buffer.fpSplit)
 	e.FourierEvaluator.ToStandardPolyAssignUnsafe(e.buffer.fpSplit, e.buffer.pSplit)
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		pOut.Coeffs[i] += (e.buffer.pSplit.Coeffs[i] << bits) << bits
 	}
 }
 
-// mulFourierGLWEKeySubAssign multiplies p with Fourier GLWE key element fp and subtracts it from pOut.
-func (e *Encryptor[T]) mulFourierGLWEKeySubAssign(p0 poly.Poly[T], fp poly.FourierPoly, pOut poly.Poly[T]) {
+// mulFourierGLWEKeySubAssign computes pOut -= p * fsk, where fsk is a Fourier Transform of GLWE key.
+func (e *Encryptor[T]) mulFourierGLWEKeySubAssign(p poly.Poly[T], fsk poly.FourierPoly, pOut poly.Poly[T]) {
 	// We split by 22 bits.
 	const bits = 22
 	const mask = (1 << bits) - 1
 
 	for i := 0; i < e.Parameters.polyDegree; i++ {
-		e.buffer.pSplit.Coeffs[i] = p0.Coeffs[i] & mask
+		e.buffer.pSplit.Coeffs[i] = p.Coeffs[i] & mask
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
-	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp, e.buffer.fpSplit)
+	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fsk, e.buffer.fpSplit)
 	e.FourierEvaluator.ToStandardPolySubAssignUnsafe(e.buffer.fpSplit, pOut)
 
 	for i := 0; i < e.Parameters.polyDegree; i++ {
-		e.buffer.pSplit.Coeffs[i] = (p0.Coeffs[i] >> bits) & mask
+		e.buffer.pSplit.Coeffs[i] = (p.Coeffs[i] >> bits) & mask
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
-	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp, e.buffer.fpSplit)
+	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fsk, e.buffer.fpSplit)
 	e.FourierEvaluator.ToStandardPolyAssignUnsafe(e.buffer.fpSplit, e.buffer.pSplit)
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		pOut.Coeffs[i] -= e.buffer.pSplit.Coeffs[i] << bits
@@ -109,10 +109,10 @@ func (e *Encryptor[T]) mulFourierGLWEKeySubAssign(p0 poly.Poly[T], fp poly.Fouri
 	}
 
 	for i := 0; i < e.Parameters.polyDegree; i++ {
-		e.buffer.pSplit.Coeffs[i] = (p0.Coeffs[i] >> bits) >> bits
+		e.buffer.pSplit.Coeffs[i] = (p.Coeffs[i] >> bits) >> bits
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
-	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fp, e.buffer.fpSplit)
+	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fsk, e.buffer.fpSplit)
 	e.FourierEvaluator.ToStandardPolyAssignUnsafe(e.buffer.fpSplit, e.buffer.pSplit)
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		pOut.Coeffs[i] -= (e.buffer.pSplit.Coeffs[i] << bits) << bits
@@ -126,9 +126,9 @@ func (e *Encryptor[T]) EncryptGLWE(messages []int) GLWECiphertext[T] {
 
 // EncryptGLWEPlaintext encrypts GLWE plaintext to GLWE ciphertext.
 func (e *Encryptor[T]) EncryptGLWEPlaintext(pt GLWEPlaintext[T]) GLWECiphertext[T] {
-	ctOut := NewGLWECiphertext(e.Parameters)
-	e.EncryptGLWEPlaintextAssign(pt, ctOut)
-	return ctOut
+	ct := NewGLWECiphertext(e.Parameters)
+	e.EncryptGLWEPlaintextAssign(pt, ct)
+	return ct
 }
 
 // EncryptGLWEPlaintextAssign encrypts GLWE plaintext to GLWE ciphertext and writes it to ctOut.
@@ -156,9 +156,9 @@ func (e *Encryptor[T]) DecryptGLWE(ct GLWECiphertext[T]) []int {
 
 // DecryptGLWEPlaintext decrypts GLWE ciphertext to GLWE plaintext.
 func (e *Encryptor[T]) DecryptGLWEPlaintext(ct GLWECiphertext[T]) GLWEPlaintext[T] {
-	ptOut := NewGLWEPlaintext(e.Parameters)
-	e.DecryptGLWEPlaintextAssign(ct, ptOut)
-	return ptOut
+	pt := NewGLWEPlaintext(e.Parameters)
+	e.DecryptGLWEPlaintextAssign(ct, pt)
+	return pt
 }
 
 // DecryptGLWEPlaintextAssign decrypts GLWE ciphertext to GLWE plaintext and writes it to ptOut.
@@ -180,15 +180,15 @@ func (e *Encryptor[T]) EncryptGLev(messages []int, gadgetParams GadgetParameters
 
 // EncryptGLevPlaintext encrypts GLWE plaintext to GLev ciphertext.
 func (e *Encryptor[T]) EncryptGLevPlaintext(pt GLWEPlaintext[T], gadgetParams GadgetParameters[T]) GLevCiphertext[T] {
-	ctOut := NewGLevCiphertext(e.Parameters, gadgetParams)
-	e.EncryptGLevPlaintextAssign(pt, ctOut)
-	return ctOut
+	ct := NewGLevCiphertext(e.Parameters, gadgetParams)
+	e.EncryptGLevPlaintextAssign(pt, ct)
+	return ct
 }
 
 // EncryptGLevPlaintextAssign encrypts GLWE plaintext to GLev ciphertext and writes it to ctOut.
 func (e *Encryptor[T]) EncryptGLevPlaintextAssign(pt GLWEPlaintext[T], ctOut GLevCiphertext[T]) {
 	for i := 0; i < ctOut.GadgetParameters.level; i++ {
-		e.PolyEvaluator.ScalarMulAssign(pt.Value, ctOut.GadgetParameters.ScaledBase(i), ctOut.Value[i].Value[0])
+		e.PolyEvaluator.ScalarMulAssign(ctOut.GadgetParameters.ScaledBase(i), pt.Value, ctOut.Value[i].Value[0])
 		e.EncryptGLWEBody(ctOut.Value[i])
 	}
 }
@@ -205,9 +205,9 @@ func (e *Encryptor[T]) DecryptGLev(ct GLevCiphertext[T]) []int {
 
 // DecryptGLevPlaintext decrypts GLev ciphertext to GLWE plaintext.
 func (e *Encryptor[T]) DecryptGLevPlaintext(ct GLevCiphertext[T]) GLWEPlaintext[T] {
-	ptOut := NewGLWEPlaintext(e.Parameters)
-	e.DecryptGLevPlaintextAssign(ct, ptOut)
-	return ptOut
+	pt := NewGLWEPlaintext(e.Parameters)
+	e.DecryptGLevPlaintextAssign(ct, pt)
+	return pt
 }
 
 // DecryptGLevPlaintextAssign decrypts GLev ciphertext to GLWE plaintext and writes it to ptOut.
@@ -227,9 +227,9 @@ func (e *Encryptor[T]) EncryptGGSW(messages []int, gadgetParams GadgetParameters
 
 // EncryptGGSWPlaintext encrypts GLWE plaintext to GGSW ciphertext.
 func (e *Encryptor[T]) EncryptGGSWPlaintext(pt GLWEPlaintext[T], gadgetParams GadgetParameters[T]) GGSWCiphertext[T] {
-	ctOut := NewGGSWCiphertext(e.Parameters, gadgetParams)
-	e.EncryptGGSWPlaintextAssign(pt, ctOut)
-	return ctOut
+	ct := NewGGSWCiphertext(e.Parameters, gadgetParams)
+	e.EncryptGGSWPlaintextAssign(pt, ct)
+	return ct
 }
 
 // EncryptGGSWPlaintextAssign encrypts GLWE plaintext to GGSW ciphertext and writes it to ctOut.
@@ -238,7 +238,7 @@ func (e *Encryptor[T]) EncryptGGSWPlaintextAssign(pt GLWEPlaintext[T], ctOut GGS
 	for i := 1; i < e.Parameters.glweDimension+1; i++ {
 		e.mulFourierGLWEKeyAssign(pt.Value, e.SecretKey.FourierGLWEKey.Value[i-1], e.buffer.ptGGSW)
 		for j := 0; j < ctOut.GadgetParameters.level; j++ {
-			e.PolyEvaluator.ScalarMulAssign(e.buffer.ptGGSW, ctOut.GadgetParameters.ScaledBase(j), ctOut.Value[i].Value[j].Value[0])
+			e.PolyEvaluator.ScalarMulAssign(ctOut.GadgetParameters.ScaledBase(j), e.buffer.ptGGSW, ctOut.Value[i].Value[j].Value[0])
 			e.EncryptGLWEBody(ctOut.Value[i].Value[j])
 		}
 	}

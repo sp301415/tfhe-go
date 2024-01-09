@@ -151,99 +151,99 @@ func Dot[T num.Number](v0, v1 []T) T {
 	return res
 }
 
-// Add adds v0, v1.
+// Add returns v0 + v1.
 func Add[T num.Number](v0, v1 []T) []T {
-	v := make([]T, len(v0))
-	AddAssign(v0, v1, v)
-	return v
+	vOut := make([]T, len(v0))
+	AddAssign(v0, v1, vOut)
+	return vOut
 }
 
-// AddAssign adds v0, v1 and writes it to vOut.
+// AddAssign computes vOut = v0 + v1.
 func AddAssign[T num.Number](v0, v1, vOut []T) {
 	for i := range vOut {
 		vOut[i] = v0[i] + v1[i]
 	}
 }
 
-// Sub subtracts v0, v1.
+// Sub returns v0 - v1.
 func Sub[T num.Number](v0, v1 []T) []T {
-	v := make([]T, len(v0))
-	SubAssign(v0, v1, v)
-	return v
+	vOut := make([]T, len(v0))
+	SubAssign(v0, v1, vOut)
+	return vOut
 }
 
-// SubAssign subtracts v0, v1 and writes it to vOut.
+// SubAssign computes vOut = v0 - v1.
 func SubAssign[T num.Number](v0, v1, vOut []T) {
 	for i := range vOut {
 		vOut[i] = v0[i] - v1[i]
 	}
 }
 
-// Neg negates v0.
+// Neg returns -v0.
 func Neg[T num.Number](v0 []T) []T {
-	v := make([]T, len(v0))
-	NegAssign(v0, v)
-	return v
+	vOut := make([]T, len(v0))
+	NegAssign(v0, vOut)
+	return vOut
 }
 
-// NegAssign negates v0 and writes it to vOut.
+// NegAssign computes vOut = -v0.
 func NegAssign[T num.Number](v0, vOut []T) {
 	for i := range vOut {
 		vOut[i] = -v0[i]
 	}
 }
 
-// ScalarMul multiplies c to v0.
-func ScalarMul[T num.Number](v0 []T, c T) []T {
-	v := make([]T, len(v0))
-	ScalarMulAssign(v0, c, v)
-	return v
+// ScalarMul returns c * v0.
+func ScalarMul[T num.Number](c T, v0 []T) []T {
+	vOut := make([]T, len(v0))
+	ScalarMulAssign(c, v0, vOut)
+	return vOut
 }
 
-// ScalarMulAssign multiplies c to v0 and writes it to vOut.
-func ScalarMulAssign[T num.Number](v0 []T, c T, vOut []T) {
+// ScalarMulAssign computes vOut = c * v0.
+func ScalarMulAssign[T num.Number](c T, v0, vOut []T) {
 	for i := range vOut {
 		vOut[i] = c * v0[i]
 	}
 }
 
-// ScalarMulAddAssign multiplies c to v0 and adds to vOut.
-func ScalarMulAddAssign[T num.Number](v0 []T, c T, vOut []T) {
+// ScalarMulAddAssign computes vOut += c * v0.
+func ScalarMulAddAssign[T num.Number](c T, v0, vOut []T) {
 	for i := range vOut {
 		vOut[i] += c * v0[i]
 	}
 }
 
-// ScalarMulSubAssign multiplies c to v0 and subtracts from vOut.
-func ScalarMulSubAssign[T num.Number](v0 []T, c T, vOut []T) {
+// ScalarMulSubAssign computes vOut -= c * v0.
+func ScalarMulSubAssign[T num.Number](c T, v0, vOut []T) {
 	for i := range vOut {
 		vOut[i] -= c * v0[i]
 	}
 }
 
-// ElementWiseMul multiplies v0, v1.
-func ElementWiseMul[T num.Number](v0 []T, v1 []T) []T {
-	v := make([]T, len(v0))
-	ElementWiseMulAssign(v0, v1, v)
-	return v
+// ElementWiseMul returns v0 * v1, where * is an elementwise multiplication.
+func ElementWiseMul[T num.Number](v0, v1 []T) []T {
+	vOut := make([]T, len(v0))
+	ElementWiseMulAssign(v0, v1, vOut)
+	return vOut
 }
 
-// ElementWiseMulAssign multiplies v0, v1 and writes it to vOut.
-func ElementWiseMulAssign[T num.Number](v0 []T, v1 []T, vOut []T) {
+// ElementWiseMulAssign computes vOut = v0 * v1, where * is an elementwise multiplication.
+func ElementWiseMulAssign[T num.Number](v0, v1, vOut []T) {
 	for i := range vOut {
 		vOut[i] = v0[i] * v1[i]
 	}
 }
 
-// ElementWiseMulAddAssign multiplies v0, v1 and adds to vOut.
-func ElementWiseMulAddAssign[T num.Number](v0 []T, v1 []T, vOut []T) {
+// ElementWiseMulAddAssign computes vOut += v0 * v1, where * is an elementwise multiplication.
+func ElementWiseMulAddAssign[T num.Number](v0, v1, vOut []T) {
 	for i := range vOut {
 		vOut[i] += v0[i] * v1[i]
 	}
 }
 
-// ElementWiseMulSubAssign multiplies v0, v1 and subtracts from vOut.
-func ElementWiseMulSubAssign[T num.Number](v0 []T, v1 []T, vOut []T) {
+// ElementWiseMulSubAssign computes vOut -= v0 * v1, where * is an elementwise multiplication.
+func ElementWiseMulSubAssign[T num.Number](v0, v1, vOut []T) {
 	for i := range vOut {
 		vOut[i] -= v0[i] * v1[i]
 	}

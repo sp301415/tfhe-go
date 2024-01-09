@@ -4,43 +4,43 @@ import (
 	"github.com/sp301415/tfhe-go/math/vec"
 )
 
-// Add adds p0, p1.
+// Add returns p0 + p1.
 func (e *Evaluator[T]) Add(p0, p1 Poly[T]) Poly[T] {
-	p := e.NewPoly()
-	e.AddAssign(p0, p1, p)
-	return p
+	pOut := e.NewPoly()
+	e.AddAssign(p0, p1, pOut)
+	return pOut
 }
 
-// AddAssign adds p0, p1 and writes it to pOut.
+// AddAssign computes pOut = p0 + p1.
 func (e *Evaluator[T]) AddAssign(p0, p1, pOut Poly[T]) {
 	vec.AddAssign(p0.Coeffs, p1.Coeffs, pOut.Coeffs)
 }
 
-// Sub subtracts p0, p1.
+// Sub returns p0 - p1.
 func (e *Evaluator[T]) Sub(p0, p1 Poly[T]) Poly[T] {
-	p := e.NewPoly()
-	e.SubAssign(p0, p1, p)
-	return p
+	pOut := e.NewPoly()
+	e.SubAssign(p0, p1, pOut)
+	return pOut
 }
 
-// SubAssign subtracts p0, p1 and writes it to pOut.
+// SubAssign computes pOut = p0 - p1.
 func (e *Evaluator[T]) SubAssign(p0, p1, pOut Poly[T]) {
 	vec.SubAssign(p0.Coeffs, p1.Coeffs, pOut.Coeffs)
 }
 
-// Neg negates p0.
+// Neg returns pOut = -p0.
 func (e *Evaluator[T]) Neg(p0 Poly[T]) Poly[T] {
-	p := e.NewPoly()
-	e.NegAssign(p0, p)
-	return p
+	pOut := e.NewPoly()
+	e.NegAssign(p0, pOut)
+	return pOut
 }
 
-// NegAssign negates p0 and writes it to pOut.
+// NegAssign computes pOut = -p0.
 func (e *Evaluator[T]) NegAssign(p0, pOut Poly[T]) {
 	vec.NegAssign(p0.Coeffs, pOut.Coeffs)
 }
 
-// Mul multiplies p0, p1.
+// Mul returns p0 * p1.
 func (e *Evaluator[T]) Mul(p0, p1 Poly[T]) Poly[T] {
 	if e.degree <= karatsubaRecurseThreshold {
 		return e.mulNaive(p0, p1)
@@ -51,7 +51,7 @@ func (e *Evaluator[T]) Mul(p0, p1 Poly[T]) Poly[T] {
 	return pOut
 }
 
-// MulAssign multiplies p0, p1 and writes it to pOut.
+// MulAssign computes pOut = p0 * p1.
 func (e *Evaluator[T]) MulAssign(p0, p1, pOut Poly[T]) {
 	if e.degree <= karatsubaRecurseThreshold {
 		e.mulNaiveAssign(p0, p1, pOut)
@@ -60,52 +60,52 @@ func (e *Evaluator[T]) MulAssign(p0, p1, pOut Poly[T]) {
 	}
 }
 
-// MulAddAssign multiplies p0, p1 and adds it to pOut.
+// MulAddAssign computes pOut += p0 * p1.
 func (e *Evaluator[T]) MulAddAssign(p0, p1, pOut Poly[T]) {
 	e.MulAssign(p0, p1, e.buffer.pOut)
 	e.AddAssign(pOut, e.buffer.pOut, pOut)
 }
 
-// MulSubAssign multiplies p0, p1 and subtracts it from pOut.
+// MulSubAssign computes pOut -= p0 * p1.
 func (e *Evaluator[T]) MulSubAssign(p0, p1, pOut Poly[T]) {
 	e.MulAssign(p0, p1, e.buffer.pOut)
 	e.SubAssign(pOut, e.buffer.pOut, pOut)
 }
 
-// ScalarMul multiplies c to p0.
-func (e *Evaluator[T]) ScalarMul(p0 Poly[T], c T) Poly[T] {
-	p := e.NewPoly()
-	e.ScalarMulAssign(p0, c, p)
-	return p
+// ScalarMul returns c * p0.
+func (e *Evaluator[T]) ScalarMul(c T, p0 Poly[T]) Poly[T] {
+	pOut := e.NewPoly()
+	e.ScalarMulAssign(c, p0, pOut)
+	return pOut
 }
 
-// ScalarMulAssign multiplies c to p0 and writes it to pOut.
-func (e *Evaluator[T]) ScalarMulAssign(p0 Poly[T], c T, pOut Poly[T]) {
-	vec.ScalarMulAssign(p0.Coeffs, c, pOut.Coeffs)
+// ScalarMulAssign computes pOut = c * p0.
+func (e *Evaluator[T]) ScalarMulAssign(c T, p0, pOut Poly[T]) {
+	vec.ScalarMulAssign(c, p0.Coeffs, pOut.Coeffs)
 }
 
-// ScalarMulAddAssign multiplies c to p0 and adds it to pOut.
-func (e *Evaluator[T]) ScalarMulAddAssign(p0 Poly[T], c T, pOut Poly[T]) {
-	vec.ScalarMulAddAssign(p0.Coeffs, c, pOut.Coeffs)
+// ScalarMulAddAssign computes pOut += c * p0.
+func (e *Evaluator[T]) ScalarMulAddAssign(c T, p0, pOut Poly[T]) {
+	vec.ScalarMulAddAssign(c, p0.Coeffs, pOut.Coeffs)
 }
 
-// ScalarMulSubAssign multiplies c to p0 and subtracts it from pOut.
-func (e *Evaluator[T]) ScalarMulSubAssign(p0 Poly[T], c T, pOut Poly[T]) {
-	vec.ScalarMulSubAssign(p0.Coeffs, c, pOut.Coeffs)
+// ScalarMulSubAssign computes pOut -= c * p0.
+func (e *Evaluator[T]) ScalarMulSubAssign(c T, p0, pOut Poly[T]) {
+	vec.ScalarMulSubAssign(c, p0.Coeffs, pOut.Coeffs)
 }
 
-// MonomialMul multiplies X^d to p0.
-func (e *Evaluator[T]) MonomialMul(p0 Poly[T], d int) Poly[T] {
-	p := e.NewPoly()
-	e.MonomialMulAssign(p0, d, p)
-	return p
+// MonomialMul returns X^d * p0.
+func (e *Evaluator[T]) MonomialMul(d int, p0 Poly[T]) Poly[T] {
+	pOut := e.NewPoly()
+	e.MonomialMulAssign(d, p0, pOut)
+	return pOut
 }
 
-// MonomialMulAssign multiplies X^d to p0 and writes it to pOut.
+// MonomialMulAssign computes pOut = X^d * p0.
 //
 // p0 and pOut should not overlap. For inplace multiplication,
 // use MonomialMulInPlace.
-func (e *Evaluator[T]) MonomialMulAssign(p0 Poly[T], d int, pOut Poly[T]) {
+func (e *Evaluator[T]) MonomialMulAssign(d int, p0, pOut Poly[T]) {
 	switch k := d & (2*e.degree - 1); {
 	case e.degree <= k:
 		for i, ii := 0, -k+2*e.degree; ii < e.degree; i, ii = i+1, ii+1 {
@@ -138,8 +138,8 @@ func (e *Evaluator[T]) MonomialMulAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	}
 }
 
-// MonomialMulInPlace multiplies X^d to p0.
-func (e *Evaluator[T]) MonomialMulInPlace(p0 Poly[T], d int) {
+// MonomialMulInPlace computes p0 = X^d * p0.
+func (e *Evaluator[T]) MonomialMulInPlace(d int, p0 Poly[T]) {
 	kk := d & (e.degree - 1)
 	vec.RotateInPlace(p0.Coeffs, kk)
 
@@ -163,10 +163,10 @@ func (e *Evaluator[T]) MonomialMulInPlace(p0 Poly[T], d int) {
 	}
 }
 
-// MonomialMulAddAssign multiplies X^d to p0 and adds it to pOut.
+// MonomialMulAddAssign computes pOut += X^d * p0.
 //
 // p0 and pOut should not overlap.
-func (e *Evaluator[T]) MonomialMulAddAssign(p0 Poly[T], d int, pOut Poly[T]) {
+func (e *Evaluator[T]) MonomialMulAddAssign(d int, p0, pOut Poly[T]) {
 	switch k := d & (2*e.degree - 1); {
 	case e.degree <= k:
 		for i, ii := 0, -k+2*e.degree; ii < e.degree; i, ii = i+1, ii+1 {
@@ -199,10 +199,10 @@ func (e *Evaluator[T]) MonomialMulAddAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	}
 }
 
-// MonomialMulSubAssign multiplies X^d to p0 and subtracts it from pOut.
+// MonomialMulSubAssign computes pOut -= X^d * p0.
 //
 // p0 and pOut should not overlap.
-func (e *Evaluator[T]) MonomialMulSubAssign(p0 Poly[T], d int, pOut Poly[T]) {
+func (e *Evaluator[T]) MonomialMulSubAssign(d int, p0, pOut Poly[T]) {
 	switch k := d & (2*e.degree - 1); {
 	case e.degree <= k:
 		for i, ii := 0, -k+2*e.degree; ii < e.degree; i, ii = i+1, ii+1 {
@@ -235,16 +235,16 @@ func (e *Evaluator[T]) MonomialMulSubAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	}
 }
 
-// MonomialMulSubOneMulAssign multiplies X^d - 1 to p0 and writes it to pOut.
+// MonomialMulSubOneMulAssign computes pOut = (X^d - 1) * p0.
 //
 // d should be positive, and p0 and pOut should not overlap.
-func (e *Evaluator[T]) MonomialSubOneMulAssign(p0 Poly[T], d int, pOut Poly[T]) {
-	monomialSubOneMulAssign(p0, d&((e.degree<<1)-1), pOut)
+func (e *Evaluator[T]) MonomialSubOneMulAssign(d int, p0, pOut Poly[T]) {
+	monomialSubOneMulAssign(d&((e.degree<<1)-1), p0, pOut)
 }
 
-// MonomialMulSubOneMulAddAssign multiplies X^d - 1 to p0 and adds it to pOut.
+// MonomialMulSubOneMulAddAssign computes pOut += (X^d - 1) * p0.
 //
 // d should be positive, and p0 and pOut should not overlap.
-func (e *Evaluator[T]) MonomialSubOneMulAddAssign(p0 Poly[T], d int, pOut Poly[T]) {
-	monomialSubOneMulAddAssign(p0, d&((e.degree<<1)-1), pOut)
+func (e *Evaluator[T]) MonomialSubOneMulAddAssign(d int, p0, pOut Poly[T]) {
+	monomialSubOneMulAddAssign(d&((e.degree<<1)-1), p0, pOut)
 }

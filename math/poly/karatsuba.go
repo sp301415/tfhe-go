@@ -57,7 +57,6 @@ func (e *Evaluator[T]) mulNaive(p0, p1 Poly[T]) Poly[T] {
 // mulNaiveAssign multiplies two polynomials using schoolbook method,
 // taking O(N^2) time.
 func (e *Evaluator[T]) mulNaiveAssign(p0, p1, pOut Poly[T]) {
-
 	for i := 0; i < e.degree; i++ {
 		pOut.Coeffs[i] = p0.Coeffs[i] * p1.Coeffs[0]
 	}

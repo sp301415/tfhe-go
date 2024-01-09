@@ -8,10 +8,10 @@ import (
 	"golang.org/x/sys/cpu"
 )
 
-func roundCmplxAssignAVX2(v0 []float64, vOut []float64)
+func roundCmplxAssignAVX2(v0, vOut []float64)
 
-// roundCmplxAssign rounds v0 and writes it to vOut.
-func roundCmplxAssign(v0 []float64, vOut []float64) {
+// roundCmplxAssign computes vOut = round(v0).
+func roundCmplxAssign(v0, vOut []float64) {
 	if cpu.X86.HasAVX2 {
 		roundCmplxAssignAVX2(v0, vOut)
 		return
@@ -24,7 +24,7 @@ func roundCmplxAssign(v0 []float64, vOut []float64) {
 
 func addCmplxAssignAVX2(v0, v1, vOut []float64)
 
-// addCmplxAssign adds v0, v1 and writes it to vOut.
+// addCmplxAssign computes vOut = v0 + v1.
 func addCmplxAssign(v0, v1, vOut []float64) {
 	if cpu.X86.HasAVX2 {
 		addCmplxAssignAVX2(v0, v1, vOut)
@@ -38,7 +38,7 @@ func addCmplxAssign(v0, v1, vOut []float64) {
 
 func subCmplxAssignAVX2(v0, v1, vOut []float64)
 
-// subCmplxAssign subtracts v0, v1 and writes it to vOut.
+// subCmplxAssign computes vOut = v0 - v1.
 func subCmplxAssign(v0, v1, vOut []float64) {
 	if cpu.X86.HasAVX2 {
 		subCmplxAssignAVX2(v0, v1, vOut)
@@ -52,7 +52,7 @@ func subCmplxAssign(v0, v1, vOut []float64) {
 
 func negCmplxAssignAVX2(v0, vOut []float64)
 
-// negCmplxAssign negates v0 and writes it to vOut.
+// negCmplxAssign computes vOut = -v0.
 func negCmplxAssign(v0, vOut []float64) {
 	if cpu.X86.HasAVX2 {
 		negCmplxAssignAVX2(v0, vOut)
@@ -64,12 +64,12 @@ func negCmplxAssign(v0, vOut []float64) {
 	}
 }
 
-func floatMulCmplxAssignAVX2(v0 []float64, c float64, vOut []float64)
+func floatMulCmplxAssignAVX2(c float64, v0, vOut []float64)
 
-// floatMulCmplxAssign multiplies v0, c and writes it to vOut.
-func floatMulCmplxAssign(v0 []float64, c float64, vOut []float64) {
+// floatMulCmplxAssign computes vOut = c * v0.
+func floatMulCmplxAssign(c float64, v0, vOut []float64) {
 	if cpu.X86.HasAVX2 {
-		floatMulCmplxAssignAVX2(v0, c, vOut)
+		floatMulCmplxAssignAVX2(c, v0, vOut)
 		return
 	}
 
@@ -80,8 +80,8 @@ func floatMulCmplxAssign(v0 []float64, c float64, vOut []float64) {
 
 func elementWiseMulCmplxAssignAVX2(v0, v1, vOut []float64)
 
-// elementWiseMulCmplxAssign multiplies v0, v1 and writes it to vOut.
-func elementWiseMulCmplxAssign(v0 []float64, v1 []float64, vOut []float64) {
+// elementWiseMulCmplxAssign computes vOut = v0 * v1.
+func elementWiseMulCmplxAssign(v0, v1, vOut []float64) {
 	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		elementWiseMulCmplxAssignAVX2(v0, v1, vOut)
 		return
@@ -112,8 +112,8 @@ func elementWiseMulCmplxAssign(v0 []float64, v1 []float64, vOut []float64) {
 
 func elementWiseMulAddCmplxAssignAVX2(v0, v1, vOut []float64)
 
-// elementWiseMulAddCmplxAssign multiplies v0, v1 and adds to vOut.
-func elementWiseMulAddCmplxAssign(v0 []float64, v1 []float64, vOut []float64) {
+// elementWiseMulAddCmplxAssign computes vOut += v0 * v1.
+func elementWiseMulAddCmplxAssign(v0, v1, vOut []float64) {
 	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		elementWiseMulAddCmplxAssignAVX2(v0, v1, vOut)
 		return
@@ -144,8 +144,8 @@ func elementWiseMulAddCmplxAssign(v0 []float64, v1 []float64, vOut []float64) {
 
 func elementWiseMulSubCmplxAssignAVX2(v0, v1, vOut []float64)
 
-// elementWiseMulSubCmplxAssign multiplies v0, v1 and subtracts from vOut.
-func elementWiseMulSubCmplxAssign(v0 []float64, v1 []float64, vOut []float64) {
+// elementWiseMulSubCmplxAssign computes vOut -= v0 * v1.
+func elementWiseMulSubCmplxAssign(v0, v1, vOut []float64) {
 	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		elementWiseMulSubCmplxAssignAVX2(v0, v1, vOut)
 		return

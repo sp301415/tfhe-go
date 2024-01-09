@@ -4,72 +4,72 @@ import (
 	"github.com/sp301415/tfhe-go/math/vec"
 )
 
-// AddLWE adds two LWE cipheretexts ct0, ct1.
+// AddLWE returns ct0 + ct1.
 func (e *Evaluator[T]) AddLWE(ct0, ct1 LWECiphertext[T]) LWECiphertext[T] {
 	ctOut := NewLWECiphertext(e.Parameters)
 	e.AddLWEAssign(ct0, ct1, ctOut)
 	return ctOut
 }
 
-// AddLWEAssign adds two LWE ciphertexts ct0, ct1 and writes to ctOut.
+// AddLWEAssign computes ctOut = ct0 + ct1.
 func (e *Evaluator[T]) AddLWEAssign(ct0, ct1, ctOut LWECiphertext[T]) {
 	vec.AddAssign(ct0.Value, ct1.Value, ctOut.Value)
 }
 
-// SubLWE subtracts ct0, ct1.
+// SubLWE returns ct0 - ct1.
 func (e *Evaluator[T]) SubLWE(ct0, ct1 LWECiphertext[T]) LWECiphertext[T] {
 	ctOut := NewLWECiphertext(e.Parameters)
 	e.SubLWEAssign(ct0, ct1, ctOut)
 	return ctOut
 }
 
-// SubLWEAssign subtracts ct0, ct1 and writes it to ctOut.
+// SubLWEAssign computes ctOut = ct0 - ct1.
 func (e *Evaluator[T]) SubLWEAssign(ct0, ct1, ctOut LWECiphertext[T]) {
 	vec.SubAssign(ct0.Value, ct1.Value, ctOut.Value)
 }
 
-// NegLWE negates ct0.
+// NegLWE returns -ct0.
 func (e *Evaluator[T]) NegLWE(ct0 LWECiphertext[T]) LWECiphertext[T] {
 	ctOut := NewLWECiphertext(e.Parameters)
 	e.NegLWEAssign(ct0, ctOut)
 	return ctOut
 }
 
-// NegLWEAssign negates ct0 and writes it to ctOut.
+// NegLWEAssign computes ctOut = -ct0.
 func (e *Evaluator[T]) NegLWEAssign(ct0, ctOut LWECiphertext[T]) {
 	vec.NegAssign(ct0.Value, ctOut.Value)
 }
 
-// PlaintextAddLWE adds pt to ct0.
-func (e *Evaluator[T]) PlaintextAddLWE(ct0 LWECiphertext[T], pt LWEPlaintext[T]) LWECiphertext[T] {
+// PlaintextAddLWE returns pt + ct0.
+func (e *Evaluator[T]) PlaintextAddLWE(pt LWEPlaintext[T], ct0 LWECiphertext[T]) LWECiphertext[T] {
 	ctOut := NewLWECiphertext(e.Parameters)
-	e.PlaintextAddLWEAssign(ct0, pt, ctOut)
+	e.PlaintextAddLWEAssign(pt, ct0, ctOut)
 	return ctOut
 }
 
-// PlaintextAddLWEAssign adds pt to ct0 and writes it to ctOut.
-func (e *Evaluator[T]) PlaintextAddLWEAssign(ct0 LWECiphertext[T], pt LWEPlaintext[T], ctOut LWECiphertext[T]) {
+// PlaintextAddLWEAssign computes ctOut = pt + ct0.
+func (e *Evaluator[T]) PlaintextAddLWEAssign(pt LWEPlaintext[T], ct0, ctOut LWECiphertext[T]) {
 	ctOut.Value[0] += pt.Value
 }
 
-// ScalarMulLWE multiplies c to ct0.
-func (e *Evaluator[T]) ScalarMulLWE(ct0 LWECiphertext[T], c T) LWECiphertext[T] {
+// ScalarMulLWE returns c * ct0.
+func (e *Evaluator[T]) ScalarMulLWE(c T, ct0 LWECiphertext[T]) LWECiphertext[T] {
 	ctOut := NewLWECiphertext(e.Parameters)
-	e.ScalarMulLWEAssign(ct0, c, ctOut)
+	e.ScalarMulLWEAssign(c, ct0, ctOut)
 	return ctOut
 }
 
-// ScalarMulLWEAssign multiplies c to ct0 and writes it to ctOut.
-func (e *Evaluator[T]) ScalarMulLWEAssign(ct0 LWECiphertext[T], c T, ctOut LWECiphertext[T]) {
-	vec.ScalarMulAssign(ct0.Value, c, ctOut.Value)
+// ScalarMulLWEAssign computes ctOut = c * ct0.
+func (e *Evaluator[T]) ScalarMulLWEAssign(c T, ct0, ctOut LWECiphertext[T]) {
+	vec.ScalarMulAssign(c, ct0.Value, ctOut.Value)
 }
 
-// ScalarMulAddLWEAssign multiplies c to ct1 and adds to ctOut.
-func (e *Evaluator[T]) ScalarMulAddLWEAssign(ct0 LWECiphertext[T], c T, ctOut LWECiphertext[T]) {
-	vec.ScalarMulAddAssign(ct0.Value, c, ctOut.Value)
+// ScalarMulAddLWEAssign computes ctOut += c * ct0.
+func (e *Evaluator[T]) ScalarMulAddLWEAssign(c T, ct0, ctOut LWECiphertext[T]) {
+	vec.ScalarMulAddAssign(c, ct0.Value, ctOut.Value)
 }
 
-// ScalarMulSubLWEAssign multiplies c to ct0 and subtracts from ctOut.
-func (e *Evaluator[T]) ScalarMulSubLWEAssign(ct0 LWECiphertext[T], c T, ctOut LWECiphertext[T]) {
-	vec.ScalarMulSubAssign(ct0.Value, c, ctOut.Value)
+// ScalarMulSubLWEAssign computes ctOut -= c * ct0.
+func (e *Evaluator[T]) ScalarMulSubLWEAssign(c T, ct0, ctOut LWECiphertext[T]) {
+	vec.ScalarMulSubAssign(c, ct0.Value, ctOut.Value)
 }

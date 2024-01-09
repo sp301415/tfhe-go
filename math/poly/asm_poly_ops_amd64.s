@@ -3,10 +3,10 @@
 #include "textflag.h"
 
 TEXT ·monomialSubOneMulAssignUint32AVX2(SB), $0-56
-	MOVQ v0+0(FP), AX
+	MOVQ v0+8(FP), AX
 	MOVQ vOut+32(FP), BX
 
-	MOVQ d+24(FP), DX
+	MOVQ d+0(FP), DX
 	MOVQ vOut_len+40(FP), CX
 
 	VPXOR Y5, Y5, Y5 // (0, 0, 0, 0)
@@ -191,10 +191,10 @@ case_1_loop_1_leftover_end:
 	RET
 
 TEXT ·monomialSubOneMulAssignUint64AVX2(SB), $0-56
-	MOVQ v0+0(FP), AX
+	MOVQ v0+8(FP), AX
 	MOVQ vOut+32(FP), BX
 
-	MOVQ d+24(FP), DX
+	MOVQ d+0(FP), DX
 	MOVQ vOut_len+40(FP), CX
 
 	VPXOR Y5, Y5, Y5 // (0, 0, 0, 0)
@@ -379,10 +379,10 @@ case_1_loop_1_leftover_end:
 	RET
 
 TEXT ·monomialSubOneMulAddAssignUint32AVX2(SB), $0-56
-	MOVQ v0+0(FP), AX
+	MOVQ v0+8(FP), AX
 	MOVQ vOut+32(FP), BX
 
-	MOVQ d+24(FP), DX
+	MOVQ d+0(FP), DX
 	MOVQ vOut_len+40(FP), CX
 
 	VPXOR Y5, Y5, Y5 // (0, 0, 0, 0)
@@ -583,10 +583,10 @@ case_1_loop_1_leftover_end:
 	RET
 
 TEXT ·monomialSubOneMulAddAssignUint64AVX2(SB), $0-56
-	MOVQ v0+0(FP), AX
+	MOVQ v0+8(FP), AX
 	MOVQ vOut+32(FP), BX
 
-	MOVQ d+24(FP), DX
+	MOVQ d+0(FP), DX
 	MOVQ vOut_len+40(FP), CX
 
 	VPXOR Y5, Y5, Y5 // (0, 0, 0, 0)

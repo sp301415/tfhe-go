@@ -39,13 +39,13 @@ func BenchmarkOperations(b *testing.B) {
 
 	b.Run("ScalarMul", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			eval.ScalarMulAssign(p0, 512, pOut)
+			eval.ScalarMulAssign(512, p0, pOut)
 		}
 	})
 
 	b.Run("MonomialMul", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			eval.MonomialMulAssign(p0, 32, pOut)
+			eval.MonomialMulAssign(32, p0, pOut)
 		}
 	})
 
@@ -66,7 +66,7 @@ func BenchmarkOperations(b *testing.B) {
 
 	b.Run("FourierStandardMul", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			fft.PolyMulAssign(fp0, p1, fpOut)
+			fft.PolyMulAssign(p1, fp0, fpOut)
 		}
 	})
 }
