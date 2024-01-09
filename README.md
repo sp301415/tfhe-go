@@ -1,10 +1,11 @@
 # TFHE-go
 
+> [!IMPORTANT]
+> TFHE-go is still under heavy development. There may be backward-incompatible changes at any time.
+
 [![Go Reference](https://pkg.go.dev/badge/github.com/sp301415/tfhe-go.svg)](https://pkg.go.dev/github.com/sp301415/tfhe-go)
 [![Go Report Card](https://goreportcard.com/badge/github.com/sp301415/tfhe-go)](https://goreportcard.com/report/github.com/sp301415/tfhe-go)
 ![CI Test Status](https://github.com/sp301415/tfhe-go/actions/workflows/ci.yml/badge.svg)
-
-⚠️ TFHE-go is still under heavy development. There may be backward-incompatible changes at any time.
 
 **TFHE-go** is a Go implementation of the TFHE[[CGGI16](https://eprint.iacr.org/2016/870)] scheme. It provides:
 - Support for binary and integer TFHE
@@ -13,8 +14,6 @@
 - Readable code and user-friendly API using modern Go features like generics
 
 The goal of this library is to be fast, simple and versatile, offering a robust basis for researchers and developers interested in TFHE. The overall structure and design is heavily influenced by two excellent FHE libraries: [Lattigo](https://github.com/tuneinsight/lattigo) by [Tune Insight](https://tuneinsight.com), and [TFHE-rs](https://github.com/zama-ai/tfhe-rs) by [Zama](https://zama.ai).
-
-Please note that this library has not been audited or reviewed by security experts, so using it for any real-world production purposes is not recommended.
 
 ## Installation
 You can install TFHE-go in your project using `go get`:
@@ -104,7 +103,7 @@ All results were measured from Intel i5-13400F, with roughly equivalent paramete
 |Programmable Bootstrapping (6 bits)|45.14ms|74.13ms|
 
 ## Security
-TFHE-go is (probably) secure in theory, but (almost certainly) insecure in practice. See [SECURITY](https://github.com/sp301415/tfhe-go/blob/master/SECURITY.md) for more details.
+TFHE-go has not been audited or reviewed by security experts, so using it for any real-world production purposes is not recommended. See [SECURITY](https://github.com/sp301415/tfhe-go/blob/master/SECURITY.md) for more details.
 
 ## License
 TFHE-go is licensed under the Apache 2.0 License.

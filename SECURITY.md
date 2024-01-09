@@ -1,5 +1,5 @@
 # Security
-In short: TFHE-go is (probably) secure in theory, but (almost certainly) insecure in practice. Use at your own risk.
+Theoretical security of TFHE is based on hardness of [LWE](https://en.wikipedia.org/wiki/Learning_with_errors) and [RLWE](https://en.wikipedia.org/wiki/Ring_learning_with_errors) problem, which are the foundations of Lattice-based cryptography.
 
 ## Implementation-related Attacks
 TFHE-go has not been audited or reviewed by security experts. It is highly likely that it contains critical vulnerabilities to implementation-related attacks, such as side-channel attacks. Using it for any real-world production purposes is not recommended.
