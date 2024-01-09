@@ -68,10 +68,10 @@ func (e *BinaryEncryptor) EncryptLWEBits(message, bits int) []LWECiphertext[uint
 
 // EncryptLWEBitsAssign encrypts each bits of an integer message.
 // The order of the bits are little-endian,
-// and will be cut by the length of cts.
-func (e *BinaryEncryptor) EncryptLWEBitsAssign(message int, cts []LWECiphertext[uint32]) {
-	for i := 0; i < len(cts); i++ {
-		cts[i] = e.EncryptLWEBool(message&1 == 1)
+// and will be cut by the length of ctOut.
+func (e *BinaryEncryptor) EncryptLWEBitsAssign(message int, ctOut []LWECiphertext[uint32]) {
+	for i := 0; i < len(ctOut); i++ {
+		ctOut[i] = e.EncryptLWEBool(message&1 == 1)
 		message >>= 1
 	}
 }
@@ -79,15 +79,15 @@ func (e *BinaryEncryptor) EncryptLWEBitsAssign(message int, cts []LWECiphertext[
 // DecryptLWEBits decrypts a slice of binary LWE ciphertext
 // to integer message.
 // The order of bits of LWE ciphertexts are assumed to be little-endian.
-func (e *BinaryEncryptor) DecryptLWEBits(cts []LWECiphertext[uint32]) int {
-	var msg int
-	for i := len(cts) - 1; i >= 0; i-- {
-		msg <<= 1
-		if e.DecryptLWEBool(cts[i]) {
-			msg += 1
+func (e *BinaryEncryptor) DecryptLWEBits(ct []LWECiphertext[uint32]) int {
+	var message int
+	for i := len(ct) - 1; i >= 0; i-- {
+		message <<= 1
+		if e.DecryptLWEBool(ct[i]) {
+			message += 1
 		}
 	}
-	return msg
+	return message
 }
 
 // GenBootstrapKey samples a new bootstrapping key.
