@@ -257,14 +257,15 @@ type ParametersLiteral[T Tint] struct {
 	//
 	//	KeySwitch -> BlindRotate -> SampleExtract
 	//
-	// And LWE keys and ciphertexts will have size according to LWELargeDimension.
+	// and LWE keys and ciphertexts will have size according to LWELargeDimension.
+	//
 	// Otherwise, if this is set to OrderBlindRotateKeySwitch, the order is:
 	//
 	//	BlindRotate -> SampleExtract -> KeySwitch
 	//
-	// And LWE keys and ciphertexts will have size according to LWEDimension.
+	// and LWE keys and ciphertexts will have size according to LWEDimension.
 	//
-	// Essentially, there is a tradeoff:
+	// Essentially, there is a time-memory tradeoff:
 	// performing keyswitching first means that it will consume more memory,
 	// but it allows to use smaller parameters which will result in faster computation.
 	BootstrapOrder BootstrapOrder
