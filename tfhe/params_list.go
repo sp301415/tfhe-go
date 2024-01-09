@@ -57,7 +57,7 @@ var (
 		BootstrapOrder: OrderKeySwitchBlindRotate,
 	}
 
-	// ParamsBinaryOriginal is parameters from the original C++ TFHE library.
+	// ParamsBinaryOriginal is a parameter set from the original C++ TFHE library.
 	ParamsBinaryOriginal = ParametersLiteral[uint32]{
 		LWEDimension:    630,
 		GLWEDimension:   1,
@@ -83,7 +83,7 @@ var (
 		BootstrapOrder: OrderBlindRotateKeySwitch,
 	}
 
-	// ParamsUint2 ensures 2 bits of message precision.
+	// ParamsUint2 is a parameter set with 2 bits of message space.
 	ParamsUint2 = ParametersLiteral[uint64]{
 		LWEDimension:    656,
 		GLWEDimension:   2,
@@ -109,7 +109,7 @@ var (
 		BootstrapOrder: OrderKeySwitchBlindRotate,
 	}
 
-	// ParamsUint3 ensures 3 bits of message precision.
+	// ParamsUint3 is a parameter set with 3 bits of message space.
 	ParamsUint3 = ParametersLiteral[uint64]{
 		LWEDimension:    744,
 		GLWEDimension:   2,
@@ -135,7 +135,7 @@ var (
 		BootstrapOrder: OrderKeySwitchBlindRotate,
 	}
 
-	// ParamsUint4 ensures 4 bits of message precision.
+	// ParamsUint4 is a parameter set with 4  bits of message space.
 	ParamsUint4 = ParametersLiteral[uint64]{
 		LWEDimension:    744,
 		GLWEDimension:   1,
@@ -161,7 +161,7 @@ var (
 		BootstrapOrder: OrderKeySwitchBlindRotate,
 	}
 
-	// ParamsUint5 ensures 5 bits of message precision.
+	// ParamsUint5 is a parameter set with 5 bits of message space.
 	ParamsUint5 = ParametersLiteral[uint64]{
 		LWEDimension:    808,
 		GLWEDimension:   1,
@@ -187,7 +187,7 @@ var (
 		BootstrapOrder: OrderKeySwitchBlindRotate,
 	}
 
-	// ParamsUint6 ensures 6 bits of message precision.
+	// ParamsUint6 is a parameter set with 6 bits of message space.
 	ParamsUint6 = ParametersLiteral[uint64]{
 		LWEDimension:    925,
 		GLWEDimension:   1,
@@ -213,7 +213,7 @@ var (
 		BootstrapOrder: OrderKeySwitchBlindRotate,
 	}
 
-	// ParamsUint7 ensures 7 bits of message precision.
+	// ParamsUint7 is a parameter set with 7 bits of message space.
 	ParamsUint7 = ParametersLiteral[uint64]{
 		LWEDimension:    940,
 		GLWEDimension:   1,
@@ -239,7 +239,7 @@ var (
 		BootstrapOrder: OrderKeySwitchBlindRotate,
 	}
 
-	// ParamsUint8 ensures 8 bits of message precision.
+	// ParamsUint8 is a parameter set with 8 bits of message space.
 	ParamsUint8 = ParametersLiteral[uint64]{
 		LWEDimension:    1044,
 		GLWEDimension:   1,
