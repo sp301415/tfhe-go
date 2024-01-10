@@ -19,8 +19,9 @@ func (sk FourierGLWEKey[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//	            8            8
-//	GLWEDimension | PolyDegree | Value
+//	[8] GLWEDimension
+//	[8] PolyDegree
+//	    Value
 func (sk FourierGLWEKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 
@@ -116,8 +117,9 @@ func (ct FourierGLWECiphertext[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//	            8            8
-//	GLWEDimension | PolyDegree | Value
+//	[8] GLWEDimension
+//	[8] PolyDegree
+//	    Value
 func (ct FourierGLWECiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 
@@ -214,8 +216,11 @@ func (ct FourierGLevCiphertext[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//	   8       8               8            8
-//	Base | Level | GLWEDimension | PolyDegree | Value
+//	[8] Base
+//	[8] Level
+//	[8] GLWEDimension
+//	[8] PolyDegree
+//	    Value
 func (ct FourierGLevCiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 
@@ -321,8 +326,11 @@ func (ct FourierGGSWCiphertext[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//	   8       8               8            8
-//	Base | Level | GLWEDimension | PolyDegree | Value
+//	[8] Base
+//	[8] Level
+//	[8] GLWEDimension
+//	[8] PolyDegree
+//	    Value
 func (ct FourierGGSWCiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 

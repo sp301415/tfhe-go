@@ -117,8 +117,11 @@ func (sk SecretKey[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//	           8               8            8
-//	LWEDimension | GLWEDimension | PolyDegree | LWELargeKey | FourierGLWEKey
+//	[8] LWEDimension
+//	[8] GLWEDimension
+//	[8] PolyDegree
+//	    LWELargeKey
+//	    FourierGLWEKey
 func (sk SecretKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 

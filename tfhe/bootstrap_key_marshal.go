@@ -18,7 +18,8 @@ func (evk EvaluationKey[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//	BootstrapKey | KeySwitchKey
+//	BootstrapKey
+//	KeySwitchKey
 func (evk EvaluationKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int64
 
@@ -87,8 +88,12 @@ func (bsk BootstrapKey[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//	   8       8              8               8            8
-//	Base | Level | LWEDimension | GLWEDimension | PolyDegree | Value
+//	[8] Base
+//	[8] Level
+//	[8] LWEDimension
+//	[8] GLWEDimension
+//	[8] PolyDegree
+//	    Value
 func (bsk BootstrapKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 
@@ -204,8 +209,11 @@ func (ksk KeySwitchKey[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//	   8       8                   8                    8
-//	Base | Level | InputLWEDimension | OutputLWEDimension | Value
+//	[8] Base
+//	[8] Level
+//	[8] InputDimension
+//	[8] OutputDimension
+//	    Value
 func (ksk KeySwitchKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 

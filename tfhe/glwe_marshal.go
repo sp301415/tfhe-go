@@ -20,8 +20,9 @@ func (sk GLWEKey[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//	            8            8
-//	GLWEDimension | PolyDegree | Value
+//	[8] GLWEDimension
+//	[8] PolyDegree
+//	    Value
 func (sk GLWEKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 
@@ -147,8 +148,8 @@ func (pt GLWEPlaintext[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//	         8
-//	PolyDegree | Value
+//	[8] PolyDegree
+//	    Value
 func (pt GLWEPlaintext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 
@@ -269,8 +270,9 @@ func (ct GLWECiphertext[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//	            8            8
-//	GLWEDimension | PolyDegree | Value
+//	[8] GLWEDimension
+//	[8] PolyDegree
+//	    Value
 func (ct GLWECiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 
@@ -398,8 +400,11 @@ func (ct GLevCiphertext[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//	   8       8               8            8
-//	Base | Level | GLWEDimension | PolyDegree | Value
+//	[8] Base
+//	[8] Level
+//	[8] GLWEDimension
+//	[8] PolyDegree
+//	    Value
 func (ct GLevCiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 
@@ -547,8 +552,11 @@ func (ct GGSWCiphertext[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//	   8       8               8            8
-//	Base | Level | GLWEDimension | PolyDegree | Value
+//	[8] Base
+//	[8] Level
+//	[8] GLWEDimension
+//	[8] PolyDegree
+//	    Value
 func (ct GGSWCiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 

@@ -139,8 +139,8 @@ func (p GadgetParameters[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//	   8       8
-//	Base | Level
+//	[8] Base
+//	[8] Level
 func (p GadgetParameters[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var buf [16]byte
 	binary.BigEndian.PutUint64(buf[0:8], uint64(p.base))
@@ -541,8 +541,17 @@ func (p Parameters[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//	           8               8            8                 8           8            8           8                8                    16                    16                1
-//	LWEDimension | GLWEDimension | PolyDegree | PolyLargeDegree | LWEStdDev | GLWEStdDev | BlockSize | MessageModulus | BootstrapParameters | KeySwitchParameters | BootstrapOrder
+//	[ 8] LWEDimension
+//	[ 8] GLWEDimension
+//	[ 8] PolyDegree
+//	[ 8] PolyLargeDegree
+//	[ 8] LWEStdDev
+//	[ 8] GLWEStdDev
+//	[ 8] BlockSize
+//	[ 8] MessageModulus
+//	[16] BootstrapParameters
+//	[16] KeySwitchParameters
+//	[ 1] BootstrapOrder
 func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var buf [8*8 + 2*16 + 1]byte
 

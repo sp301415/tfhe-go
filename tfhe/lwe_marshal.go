@@ -17,8 +17,8 @@ func (sk LWEKey[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//	           8
-//	LWEDimension | Value
+//	[8] LWEDimension
+//	    Value
 func (sk LWEKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 
@@ -221,8 +221,8 @@ func (ct LWECiphertext[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//	           8
-//	LWEDimension | Value
+//	[8] LWEDimension
+//	    Value
 func (ct LWECiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 
@@ -340,8 +340,10 @@ func (ct LevCiphertext[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//	   8       8              8
-//	Base | Level | LWEDimension | Value
+//	[8] Base
+//	[8] Level
+//	[8] LWEDimension
+//	    Value
 func (ct LevCiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 
@@ -476,8 +478,10 @@ func (ct GSWCiphertext[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//	   8       8              8
-//	Base | Level | LWEDimension | Value
+//	[8] Base
+//	[8] Level
+//	[8] LWEDimension
+//	    Value
 func (ct GSWCiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 
