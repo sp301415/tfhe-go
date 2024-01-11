@@ -8,10 +8,14 @@ import (
 // All LWE ciphertexts should be encrypted with tfhe.BinaryEncryptor.
 // This is meant to be public, usually for servers.
 type BinaryEvaluator struct {
+	// BinaryEncoder is an embedded encoder for this BinaryEvaluator.
 	*BinaryEncoder
-	Parameters    Parameters[uint32]
+	// Parameters holds the parameters for this BinaryEvaluator.
+	Parameters Parameters[uint32]
+	// BaseEvaluator is a generic Evalutor for this BinaryEvaluator.
 	BaseEvaluator *Evaluator[uint32]
-	signLUT       LookUpTable[uint32]
+	// signLUT holds a LUT for sign function.
+	signLUT LookUpTable[uint32]
 }
 
 // NewBinaryEvaluator creates a new BinaryEvaluator based on parameters.
@@ -39,7 +43,7 @@ func (e *BinaryEvaluator) ShallowCopy() *BinaryEvaluator {
 	}
 }
 
-// NOT computes NOT ct0.
+// NOT returns NOT ct0.
 // Equivalent to ^ct0.
 func (e *BinaryEvaluator) NOT(ct0 LWECiphertext[uint32]) LWECiphertext[uint32] {
 	ctOut := NewLWECiphertext(e.Parameters)
@@ -47,7 +51,7 @@ func (e *BinaryEvaluator) NOT(ct0 LWECiphertext[uint32]) LWECiphertext[uint32] {
 	return ctOut
 }
 
-// NOTAssign computes NOT ct0 and writes it to ctOut.
+// NOTAssign computes ctOut = NOT ct0.
 // Equivalent to ^ct0.
 func (e *BinaryEvaluator) NOTAssign(ct0, ctOut LWECiphertext[uint32]) {
 	// ctOut = -ct0
@@ -56,7 +60,7 @@ func (e *BinaryEvaluator) NOTAssign(ct0, ctOut LWECiphertext[uint32]) {
 	}
 }
 
-// AND computes ct0 AND ct1.
+// AND returns ct0 AND ct1.
 // Equivalent to ct0 && ct1.
 func (e *BinaryEvaluator) AND(ct0, ct1 LWECiphertext[uint32]) LWECiphertext[uint32] {
 	ctOut := NewLWECiphertext(e.Parameters)
@@ -64,7 +68,7 @@ func (e *BinaryEvaluator) AND(ct0, ct1 LWECiphertext[uint32]) LWECiphertext[uint
 	return ctOut
 }
 
-// ANDAssign computes ct0 AND ct1 and writes it to ctOut.
+// ANDAssign computes ctOut = ct0 AND ct1.
 // Equivalent to ct0 && ct1.
 func (e *BinaryEvaluator) ANDAssign(ct0, ct1, ctOut LWECiphertext[uint32]) {
 	for i := 0; i < e.Parameters.lweDimension+1; i++ {
@@ -75,7 +79,7 @@ func (e *BinaryEvaluator) ANDAssign(ct0, ct1, ctOut LWECiphertext[uint32]) {
 	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
 }
 
-// NAND computes ct0 NAND ct1.
+// NAND returns ct0 NAND ct1.
 // Equivalent to !(ct0 && ct1).
 func (e *BinaryEvaluator) NAND(ct0, ct1 LWECiphertext[uint32]) LWECiphertext[uint32] {
 	ctOut := NewLWECiphertext(e.Parameters)
@@ -83,7 +87,7 @@ func (e *BinaryEvaluator) NAND(ct0, ct1 LWECiphertext[uint32]) LWECiphertext[uin
 	return ctOut
 }
 
-// NANDAssign computes ct0 NAND ct1 and writes it to ctOut.
+// NANDAssign computes ctOut = ct0 NAND ct1.
 // Equivalent to !(ct0 && ct1).
 func (e *BinaryEvaluator) NANDAssign(ct0, ct1, ctOut LWECiphertext[uint32]) {
 	for i := 0; i < e.Parameters.lweDimension+1; i++ {
@@ -94,7 +98,7 @@ func (e *BinaryEvaluator) NANDAssign(ct0, ct1, ctOut LWECiphertext[uint32]) {
 	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
 }
 
-// OR computes ct0 OR ct1.
+// OR returns ct0 OR ct1.
 // Equivalent to ct0 || ct1.
 func (e *BinaryEvaluator) OR(ct0, ct1 LWECiphertext[uint32]) LWECiphertext[uint32] {
 	ctOut := NewLWECiphertext(e.Parameters)
@@ -102,7 +106,7 @@ func (e *BinaryEvaluator) OR(ct0, ct1 LWECiphertext[uint32]) LWECiphertext[uint3
 	return ctOut
 }
 
-// ORAssign computes ct0 OR ct1 and writes it to ctOut.
+// ORAssign computes ctOut = ct0 OR ct1.
 // Equivalent to ct0 || ct1.
 func (e *BinaryEvaluator) ORAssign(ct0, ct1, ctOut LWECiphertext[uint32]) {
 	for i := 0; i < e.Parameters.lweDimension+1; i++ {
@@ -113,7 +117,7 @@ func (e *BinaryEvaluator) ORAssign(ct0, ct1, ctOut LWECiphertext[uint32]) {
 	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
 }
 
-// NOR computes ct0 NOR ct1.
+// NOR returns ct0 NOR ct1.
 // Equivalent to !(ct0 || ct1).
 func (e *BinaryEvaluator) NOR(ct0, ct1 LWECiphertext[uint32]) LWECiphertext[uint32] {
 	ctOut := NewLWECiphertext(e.Parameters)
@@ -121,7 +125,7 @@ func (e *BinaryEvaluator) NOR(ct0, ct1 LWECiphertext[uint32]) LWECiphertext[uint
 	return ctOut
 }
 
-// NORAssign computes ct0 NOR ct1 and writes it to ctOut.
+// NORAssign computes ctOut = ct0 NOR ct1.
 // Equivalent to !(ct0 || ct1).
 func (e *BinaryEvaluator) NORAssign(ct0, ct1, ctOut LWECiphertext[uint32]) {
 	for i := 0; i < e.Parameters.lweDimension+1; i++ {
@@ -132,7 +136,7 @@ func (e *BinaryEvaluator) NORAssign(ct0, ct1, ctOut LWECiphertext[uint32]) {
 	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
 }
 
-// XOR computes ct0 XOR ct1.
+// XOR returns ct0 XOR ct1.
 // Equivalent to ct0 != ct1.
 func (e *BinaryEvaluator) XOR(ct0, ct1 LWECiphertext[uint32]) LWECiphertext[uint32] {
 	ctOut := NewLWECiphertext(e.Parameters)
@@ -140,7 +144,7 @@ func (e *BinaryEvaluator) XOR(ct0, ct1 LWECiphertext[uint32]) LWECiphertext[uint
 	return ctOut
 }
 
-// XORAssign computes ct0 XOR ct1 and writes it to ctOut.
+// XORAssign computes ctOut = ct0 XOR ct1.
 // Equivalent to ct0 != ct1.
 func (e *BinaryEvaluator) XORAssign(ct0, ct1, ctOut LWECiphertext[uint32]) {
 	for i := 0; i < e.Parameters.lweDimension+1; i++ {
@@ -151,7 +155,7 @@ func (e *BinaryEvaluator) XORAssign(ct0, ct1, ctOut LWECiphertext[uint32]) {
 	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
 }
 
-// XNOR computes ct0 XNOR ct1.
+// XNOR returns ct0 XNOR ct1.
 // Equivalent to ct0 == ct1.
 func (e *BinaryEvaluator) XNOR(ct0, ct1 LWECiphertext[uint32]) LWECiphertext[uint32] {
 	ctOut := NewLWECiphertext(e.Parameters)
@@ -159,7 +163,7 @@ func (e *BinaryEvaluator) XNOR(ct0, ct1 LWECiphertext[uint32]) LWECiphertext[uin
 	return ctOut
 }
 
-// XNORAssign computes ct0 XNOR ct1 and writes it to ctOut.
+// XNORAssign computes ctOut = ct0 XNOR ct1.
 // Equivalent to ct0 == ct1.
 func (e *BinaryEvaluator) XNORAssign(ct0, ct1, ctOut LWECiphertext[uint32]) {
 	for i := 0; i < e.Parameters.lweDimension+1; i++ {

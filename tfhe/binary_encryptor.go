@@ -3,8 +3,11 @@ package tfhe
 // BinaryEncryptor encrypts binary TFHE plaintexts and ciphertexts.
 // This is meant to be private, only for clients.
 type BinaryEncryptor struct {
+	// BinaryEncoder is an embedded encoder for this BinaryEncryptor.
 	*BinaryEncoder
-	Parameters    Parameters[uint32]
+	// Parameters holds the parameters for this BinaryEncryptor.
+	Parameters Parameters[uint32]
+	// BaseEncryptor is a generic Encryptor for this BinaryEncryptor.
 	BaseEncryptor *Encryptor[uint32]
 }
 

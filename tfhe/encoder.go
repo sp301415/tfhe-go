@@ -9,6 +9,7 @@ import (
 // Encoder is embedded in Encryptor and Evaluator,
 // so usually manual instantiation isn't needed.
 type Encoder[T Tint] struct {
+	// Parameters holds parameters for this Encoder.
 	Parameters Parameters[T]
 }
 

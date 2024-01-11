@@ -8,7 +8,9 @@ import (
 // Encoder is embedded in Encryptor and Evaluator,
 // so usually manual instantiation isn't needed.
 type BinaryEncoder struct {
-	Parameters  Parameters[uint32]
+	// Parameters holds parameters for this Encoder.
+	Parameters Parameters[uint32]
+	// BaseEncoder is a generic Encoder for this BinaryEncoder.
 	BaseEncoder *Encoder[uint32]
 }
 
