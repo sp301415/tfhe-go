@@ -2,12 +2,6 @@
 
 #include "textflag.h"
 
-DATA fftStride2Mask<>+0(SB)/8, $0x0 // 1
-DATA fftStride2Mask<>+8(SB)/8, $0x0 // 1
-DATA fftStride2Mask<>+16(SB)/8, $0x8000000000000000 // -1
-DATA fftStride2Mask<>+24(SB)/8, $0x8000000000000000 // -1
-GLOBL fftStride2Mask<>+0(SB), (NOPTR+RODATA), $32
-
 TEXT ·fftInPlaceAVX2(SB), $0-48
 	MOVQ coeffs+0(FP), AX
 	MOVQ wNj+24(FP), BX
@@ -133,8 +127,7 @@ m_loop_end:
 	JL   m_loop
 
 	// Last two loops
-	// Last Loop - stride = 2
-	VMOVUPD fftStride2Mask<>+0(SB), Y10 // (1, 1, -1, -1)
+	// Last Loop - stride 2
 
 	XORQ SI, SI          // j
 	JMP  last_loop_2_end
