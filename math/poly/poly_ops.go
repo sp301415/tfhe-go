@@ -73,31 +73,31 @@ func (e *Evaluator[T]) MulSubAssign(p0, p1, pOut Poly[T]) {
 }
 
 // ScalarMul returns c * p0.
-func (e *Evaluator[T]) ScalarMul(c T, p0 Poly[T]) Poly[T] {
+func (e *Evaluator[T]) ScalarMul(p0 Poly[T], c T) Poly[T] {
 	pOut := e.NewPoly()
-	e.ScalarMulAssign(c, p0, pOut)
+	e.ScalarMulAssign(p0, c, pOut)
 	return pOut
 }
 
 // ScalarMulAssign computes pOut = c * p0.
-func (e *Evaluator[T]) ScalarMulAssign(c T, p0, pOut Poly[T]) {
-	vec.ScalarMulAssign(c, p0.Coeffs, pOut.Coeffs)
+func (e *Evaluator[T]) ScalarMulAssign(p0 Poly[T], c T, pOut Poly[T]) {
+	vec.ScalarMulAssign(p0.Coeffs, c, pOut.Coeffs)
 }
 
 // ScalarMulAddAssign computes pOut += c * p0.
-func (e *Evaluator[T]) ScalarMulAddAssign(c T, p0, pOut Poly[T]) {
-	vec.ScalarMulAddAssign(c, p0.Coeffs, pOut.Coeffs)
+func (e *Evaluator[T]) ScalarMulAddAssign(p0 Poly[T], c T, pOut Poly[T]) {
+	vec.ScalarMulAddAssign(p0.Coeffs, c, pOut.Coeffs)
 }
 
 // ScalarMulSubAssign computes pOut -= c * p0.
-func (e *Evaluator[T]) ScalarMulSubAssign(c T, p0, pOut Poly[T]) {
-	vec.ScalarMulSubAssign(c, p0.Coeffs, pOut.Coeffs)
+func (e *Evaluator[T]) ScalarMulSubAssign(p0 Poly[T], c T, pOut Poly[T]) {
+	vec.ScalarMulSubAssign(p0.Coeffs, c, pOut.Coeffs)
 }
 
 // MonomialMul returns X^d * p0.
-func (e *Evaluator[T]) MonomialMul(d int, p0 Poly[T]) Poly[T] {
+func (e *Evaluator[T]) MonomialMul(p0 Poly[T], d int) Poly[T] {
 	pOut := e.NewPoly()
-	e.MonomialMulAssign(d, p0, pOut)
+	e.MonomialMulAssign(p0, d, pOut)
 	return pOut
 }
 
@@ -105,7 +105,7 @@ func (e *Evaluator[T]) MonomialMul(d int, p0 Poly[T]) Poly[T] {
 //
 // p0 and pOut should not overlap. For inplace multiplication,
 // use MonomialMulInPlace.
-func (e *Evaluator[T]) MonomialMulAssign(d int, p0, pOut Poly[T]) {
+func (e *Evaluator[T]) MonomialMulAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	switch k := d & (2*e.degree - 1); {
 	case e.degree <= k:
 		for i, ii := 0, -k+2*e.degree; ii < e.degree; i, ii = i+1, ii+1 {
@@ -139,7 +139,7 @@ func (e *Evaluator[T]) MonomialMulAssign(d int, p0, pOut Poly[T]) {
 }
 
 // MonomialMulInPlace computes p0 = X^d * p0.
-func (e *Evaluator[T]) MonomialMulInPlace(d int, p0 Poly[T]) {
+func (e *Evaluator[T]) MonomialMulInPlace(p0 Poly[T], d int) {
 	kk := d & (e.degree - 1)
 	vec.RotateInPlace(p0.Coeffs, kk)
 
@@ -166,7 +166,7 @@ func (e *Evaluator[T]) MonomialMulInPlace(d int, p0 Poly[T]) {
 // MonomialMulAddAssign computes pOut += X^d * p0.
 //
 // p0 and pOut should not overlap.
-func (e *Evaluator[T]) MonomialMulAddAssign(d int, p0, pOut Poly[T]) {
+func (e *Evaluator[T]) MonomialMulAddAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	switch k := d & (2*e.degree - 1); {
 	case e.degree <= k:
 		for i, ii := 0, -k+2*e.degree; ii < e.degree; i, ii = i+1, ii+1 {
@@ -202,7 +202,7 @@ func (e *Evaluator[T]) MonomialMulAddAssign(d int, p0, pOut Poly[T]) {
 // MonomialMulSubAssign computes pOut -= X^d * p0.
 //
 // p0 and pOut should not overlap.
-func (e *Evaluator[T]) MonomialMulSubAssign(d int, p0, pOut Poly[T]) {
+func (e *Evaluator[T]) MonomialMulSubAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	switch k := d & (2*e.degree - 1); {
 	case e.degree <= k:
 		for i, ii := 0, -k+2*e.degree; ii < e.degree; i, ii = i+1, ii+1 {
@@ -238,13 +238,13 @@ func (e *Evaluator[T]) MonomialMulSubAssign(d int, p0, pOut Poly[T]) {
 // MonomialMulSubOneMulAssign computes pOut = (X^d - 1) * p0.
 //
 // d should be positive, and p0 and pOut should not overlap.
-func (e *Evaluator[T]) MonomialSubOneMulAssign(d int, p0, pOut Poly[T]) {
-	monomialSubOneMulAssign(d&((e.degree<<1)-1), p0, pOut)
+func (e *Evaluator[T]) MonomialSubOneMulAssign(p0 Poly[T], d int, pOut Poly[T]) {
+	monomialSubOneMulAssign(p0, d&((e.degree<<1)-1), pOut)
 }
 
 // MonomialMulSubOneMulAddAssign computes pOut += (X^d - 1) * p0.
 //
 // d should be positive, and p0 and pOut should not overlap.
-func (e *Evaluator[T]) MonomialSubOneMulAddAssign(d int, p0, pOut Poly[T]) {
-	monomialSubOneMulAddAssign(d&((e.degree<<1)-1), p0, pOut)
+func (e *Evaluator[T]) MonomialSubOneMulAddAssign(p0 Poly[T], d int, pOut Poly[T]) {
+	monomialSubOneMulAddAssign(p0, d&((e.degree<<1)-1), pOut)
 }

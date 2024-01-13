@@ -194,28 +194,28 @@ func NegAssign[T num.Number](v0, vOut []T) {
 }
 
 // ScalarMul returns c * v0.
-func ScalarMul[T num.Number](c T, v0 []T) []T {
+func ScalarMul[T num.Number](v0 []T, c T) []T {
 	vOut := make([]T, len(v0))
-	ScalarMulAssign(c, v0, vOut)
+	ScalarMulAssign(v0, c, vOut)
 	return vOut
 }
 
 // ScalarMulAssign computes vOut = c * v0.
-func ScalarMulAssign[T num.Number](c T, v0, vOut []T) {
+func ScalarMulAssign[T num.Number](v0 []T, c T, vOut []T) {
 	for i := range vOut {
 		vOut[i] = c * v0[i]
 	}
 }
 
 // ScalarMulAddAssign computes vOut += c * v0.
-func ScalarMulAddAssign[T num.Number](c T, v0, vOut []T) {
+func ScalarMulAddAssign[T num.Number](v0 []T, c T, vOut []T) {
 	for i := range vOut {
 		vOut[i] += c * v0[i]
 	}
 }
 
 // ScalarMulSubAssign computes vOut -= c * v0.
-func ScalarMulSubAssign[T num.Number](c T, v0, vOut []T) {
+func ScalarMulSubAssign[T num.Number](v0 []T, c T, vOut []T) {
 	for i := range vOut {
 		vOut[i] -= c * v0[i]
 	}

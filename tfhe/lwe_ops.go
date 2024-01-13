@@ -53,23 +53,23 @@ func (e *Evaluator[T]) PlaintextAddLWEAssign(pt LWEPlaintext[T], ct0, ctOut LWEC
 }
 
 // ScalarMulLWE returns c * ct0.
-func (e *Evaluator[T]) ScalarMulLWE(c T, ct0 LWECiphertext[T]) LWECiphertext[T] {
+func (e *Evaluator[T]) ScalarMulLWE(ct0 LWECiphertext[T], c T) LWECiphertext[T] {
 	ctOut := NewLWECiphertext(e.Parameters)
-	e.ScalarMulLWEAssign(c, ct0, ctOut)
+	e.ScalarMulLWEAssign(ct0, c, ctOut)
 	return ctOut
 }
 
 // ScalarMulLWEAssign computes ctOut = c * ct0.
-func (e *Evaluator[T]) ScalarMulLWEAssign(c T, ct0, ctOut LWECiphertext[T]) {
-	vec.ScalarMulAssign(c, ct0.Value, ctOut.Value)
+func (e *Evaluator[T]) ScalarMulLWEAssign(ct0 LWECiphertext[T], c T, ctOut LWECiphertext[T]) {
+	vec.ScalarMulAssign(ct0.Value, c, ctOut.Value)
 }
 
 // ScalarMulAddLWEAssign computes ctOut += c * ct0.
-func (e *Evaluator[T]) ScalarMulAddLWEAssign(c T, ct0, ctOut LWECiphertext[T]) {
-	vec.ScalarMulAddAssign(c, ct0.Value, ctOut.Value)
+func (e *Evaluator[T]) ScalarMulAddLWEAssign(ct0 LWECiphertext[T], c T, ctOut LWECiphertext[T]) {
+	vec.ScalarMulAddAssign(ct0.Value, c, ctOut.Value)
 }
 
 // ScalarMulSubLWEAssign computes ctOut -= c * ct0.
-func (e *Evaluator[T]) ScalarMulSubLWEAssign(c T, ct0, ctOut LWECiphertext[T]) {
-	vec.ScalarMulSubAssign(c, ct0.Value, ctOut.Value)
+func (e *Evaluator[T]) ScalarMulSubLWEAssign(ct0 LWECiphertext[T], c T, ctOut LWECiphertext[T]) {
+	vec.ScalarMulSubAssign(ct0.Value, c, ctOut.Value)
 }

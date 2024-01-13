@@ -40,10 +40,10 @@ func (e *Encryptor[T]) GenBootstrapKey() BootstrapKey[T] {
 				e.buffer.ptGGSW.Clear()
 				e.buffer.ptGGSW.Coeffs[0] = e.SecretKey.LWEKey.Value[i]
 			} else {
-				e.PolyEvaluator.ScalarMulAssign(e.SecretKey.LWEKey.Value[i], e.SecretKey.GLWEKey.Value[j-1], e.buffer.ptGGSW)
+				e.PolyEvaluator.ScalarMulAssign(e.SecretKey.GLWEKey.Value[j-1], e.SecretKey.LWEKey.Value[i], e.buffer.ptGGSW)
 			}
 			for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
-				e.PolyEvaluator.ScalarMulAssign(e.Parameters.bootstrapParameters.ScaledBase(k), e.buffer.ptGGSW, e.buffer.ctGLWE.Value[0])
+				e.PolyEvaluator.ScalarMulAssign(e.buffer.ptGGSW, e.Parameters.bootstrapParameters.ScaledBase(k), e.buffer.ctGLWE.Value[0])
 				e.EncryptGLWEBody(e.buffer.ctGLWE)
 				e.ToFourierGLWECiphertextAssign(e.buffer.ctGLWE, bsk.Value[i].Value[j].Value[k])
 			}
@@ -89,10 +89,10 @@ func (e *Encryptor[T]) GenBootstrapKeyParallel() BootstrapKey[T] {
 					e.buffer.ptGGSW.Clear()
 					e.buffer.ptGGSW.Coeffs[0] = e.SecretKey.LWEKey.Value[i]
 				} else {
-					e.PolyEvaluator.ScalarMulAssign(e.SecretKey.LWEKey.Value[i], e.SecretKey.GLWEKey.Value[j-1], e.buffer.ptGGSW)
+					e.PolyEvaluator.ScalarMulAssign(e.SecretKey.GLWEKey.Value[j-1], e.SecretKey.LWEKey.Value[i], e.buffer.ptGGSW)
 				}
 				for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
-					e.PolyEvaluator.ScalarMulAssign(e.Parameters.bootstrapParameters.ScaledBase(k), e.buffer.ptGGSW, e.buffer.ctGLWE.Value[0])
+					e.PolyEvaluator.ScalarMulAssign(e.buffer.ptGGSW, e.Parameters.bootstrapParameters.ScaledBase(k), e.buffer.ctGLWE.Value[0])
 					e.EncryptGLWEBody(e.buffer.ctGLWE)
 					e.ToFourierGLWECiphertextAssign(e.buffer.ctGLWE, bsk.Value[i].Value[j].Value[k])
 				}

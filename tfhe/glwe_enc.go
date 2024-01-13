@@ -188,7 +188,7 @@ func (e *Encryptor[T]) EncryptGLevPlaintext(pt GLWEPlaintext[T], gadgetParams Ga
 // EncryptGLevPlaintextAssign encrypts GLWE plaintext to GLev ciphertext and writes it to ctOut.
 func (e *Encryptor[T]) EncryptGLevPlaintextAssign(pt GLWEPlaintext[T], ctOut GLevCiphertext[T]) {
 	for i := 0; i < ctOut.GadgetParameters.level; i++ {
-		e.PolyEvaluator.ScalarMulAssign(ctOut.GadgetParameters.ScaledBase(i), pt.Value, ctOut.Value[i].Value[0])
+		e.PolyEvaluator.ScalarMulAssign(pt.Value, ctOut.GadgetParameters.ScaledBase(i), ctOut.Value[i].Value[0])
 		e.EncryptGLWEBody(ctOut.Value[i])
 	}
 }
@@ -238,7 +238,7 @@ func (e *Encryptor[T]) EncryptGGSWPlaintextAssign(pt GLWEPlaintext[T], ctOut GGS
 	for i := 1; i < e.Parameters.glweDimension+1; i++ {
 		e.mulFourierGLWEKeyAssign(pt.Value, e.SecretKey.FourierGLWEKey.Value[i-1], e.buffer.ptGGSW)
 		for j := 0; j < ctOut.GadgetParameters.level; j++ {
-			e.PolyEvaluator.ScalarMulAssign(ctOut.GadgetParameters.ScaledBase(j), e.buffer.ptGGSW, ctOut.Value[i].Value[j].Value[0])
+			e.PolyEvaluator.ScalarMulAssign(e.buffer.ptGGSW, ctOut.GadgetParameters.ScaledBase(j), ctOut.Value[i].Value[j].Value[0])
 			e.EncryptGLWEBody(ctOut.Value[i].Value[j])
 		}
 	}

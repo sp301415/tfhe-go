@@ -64,12 +64,12 @@ func negCmplxAssign(v0, vOut []float64) {
 	}
 }
 
-func floatMulCmplxAssignAVX2(c float64, v0, vOut []float64)
+func floatMulCmplxAssignAVX2(v0 []float64, c float64, vOut []float64)
 
 // floatMulCmplxAssign computes vOut = c * v0.
-func floatMulCmplxAssign(c float64, v0, vOut []float64) {
+func floatMulCmplxAssign(v0 []float64, c float64, vOut []float64) {
 	if cpu.X86.HasAVX2 {
-		floatMulCmplxAssignAVX2(c, v0, vOut)
+		floatMulCmplxAssignAVX2(v0, c, vOut)
 		return
 	}
 

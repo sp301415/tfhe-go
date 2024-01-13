@@ -211,7 +211,7 @@ func (f *FourierEvaluator[T]) ToScaledFourierPolyAssign(p Poly[T], fpOut Fourier
 		}
 	}
 
-	floatMulCmplxAssign(1/f.maxT, fpOut.Coeffs, fpOut.Coeffs)
+	floatMulCmplxAssign(fpOut.Coeffs, 1/f.maxT, fpOut.Coeffs)
 	fftInPlace(fpOut.Coeffs, f.wNj)
 }
 

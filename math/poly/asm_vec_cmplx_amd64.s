@@ -104,12 +104,12 @@ loop_end:
 	RET
 
 TEXT ·floatMulCmplxAssignAVX2(SB), $0-56
-	MOVQ v0+8(FP), AX
+	MOVQ v0+0(FP), AX
 	MOVQ vOut+32(FP), CX
 
 	MOVQ vOut_len+40(FP), DX
 
-	VBROADCASTSD c+0(FP), Y1
+	VBROADCASTSD c+24(FP), Y1
 
 	XORQ SI, SI
 	JMP  loop_end

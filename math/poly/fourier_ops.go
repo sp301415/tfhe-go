@@ -59,28 +59,28 @@ func (f *FourierEvaluator[T]) MulSubAssign(fp0, fp1, fpOut FourierPoly) {
 }
 
 // PolyMul returns p * fp0 as FourierPoly.
-func (f *FourierEvaluator[T]) PolyMul(p Poly[T], fp0 FourierPoly) FourierPoly {
+func (f *FourierEvaluator[T]) PolyMul(fp0 FourierPoly, p Poly[T]) FourierPoly {
 	fpOut := f.NewFourierPoly()
-	f.PolyMulAssign(p, fp0, fpOut)
+	f.PolyMulAssign(fp0, p, fpOut)
 	return fpOut
 }
 
 // PolyMulAssign computes fpOut = p * fp0.
-func (f *FourierEvaluator[T]) PolyMulAssign(p Poly[T], fp0, fpOut FourierPoly) {
+func (f *FourierEvaluator[T]) PolyMulAssign(fp0 FourierPoly, p Poly[T], fpOut FourierPoly) {
 	f.ToFourierPolyAssign(p, f.buffer.fp)
 
 	elementWiseMulCmplxAssign(fp0.Coeffs, f.buffer.fp.Coeffs, fpOut.Coeffs)
 }
 
 // PolyMulAddAssign computes fpOut += p * fp0.
-func (f *FourierEvaluator[T]) PolyMulAddAssign(p Poly[T], fp0, fpOut FourierPoly) {
+func (f *FourierEvaluator[T]) PolyMulAddAssign(fp0 FourierPoly, p Poly[T], fpOut FourierPoly) {
 	f.ToFourierPolyAssign(p, f.buffer.fp)
 
 	elementWiseMulAddCmplxAssign(fp0.Coeffs, f.buffer.fp.Coeffs, fpOut.Coeffs)
 }
 
 // PolyMulSubAssign computes fpOut -= p * fp0.
-func (f *FourierEvaluator[T]) PolyMulSubAssign(p Poly[T], fp0, fpOut FourierPoly) {
+func (f *FourierEvaluator[T]) PolyMulSubAssign(fp0 FourierPoly, p Poly[T], fpOut FourierPoly) {
 	f.ToFourierPolyAssign(p, f.buffer.fp)
 
 	elementWiseMulSubCmplxAssign(fp0.Coeffs, f.buffer.fp.Coeffs, fpOut.Coeffs)

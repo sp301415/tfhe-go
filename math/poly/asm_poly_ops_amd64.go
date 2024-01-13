@@ -9,21 +9,21 @@ import (
 	"golang.org/x/sys/cpu"
 )
 
-func monomialSubOneMulAssignUint32AVX2(d int, p0, pOut []uint32)
-func monomialSubOneMulAssignUint64AVX2(d int, p0, pOut []uint64)
+func monomialSubOneMulAssignUint32AVX2(p0 []uint32, d int, pOut []uint32)
+func monomialSubOneMulAssignUint64AVX2(p0 []uint64, d int, pOut []uint64)
 
 // monomialSubOneMulAssign computes pOut = (X^d - 1) * p0.
 //
 // d is assumed to be in [-N, N]. p0 and pOut should not overlap.
-func monomialSubOneMulAssign[T num.Integer](d int, p0, pOut Poly[T]) {
+func monomialSubOneMulAssign[T num.Integer](p0 Poly[T], d int, pOut Poly[T]) {
 	if cpu.X86.HasAVX2 {
 		var z T
 		switch any(z).(type) {
 		case uint32:
-			monomialSubOneMulAssignUint32AVX2(d, *(*[]uint32)(unsafe.Pointer(&p0)), *(*[]uint32)(unsafe.Pointer(&pOut)))
+			monomialSubOneMulAssignUint32AVX2(*(*[]uint32)(unsafe.Pointer(&p0)), d, *(*[]uint32)(unsafe.Pointer(&pOut)))
 			return
 		case uint64:
-			monomialSubOneMulAssignUint64AVX2(d, *(*[]uint64)(unsafe.Pointer(&p0)), *(*[]uint64)(unsafe.Pointer(&pOut)))
+			monomialSubOneMulAssignUint64AVX2(*(*[]uint64)(unsafe.Pointer(&p0)), d, *(*[]uint64)(unsafe.Pointer(&pOut)))
 			return
 		}
 	}
@@ -46,21 +46,21 @@ func monomialSubOneMulAssign[T num.Integer](d int, p0, pOut Poly[T]) {
 	}
 }
 
-func monomialSubOneMulAddAssignUint32AVX2(d int, p0, pOut []uint32)
-func monomialSubOneMulAddAssignUint64AVX2(d int, p0, pOut []uint64)
+func monomialSubOneMulAddAssignUint32AVX2(p0 []uint32, d int, pOut []uint32)
+func monomialSubOneMulAddAssignUint64AVX2(p0 []uint64, d int, pOut []uint64)
 
 // monomialSubOneMulAddAssign computes pOut += (X^d - 1) * p0.
 //
 // d should to be in [0, 2N), and p0 and pOut should not overlap.
-func monomialSubOneMulAddAssign[T num.Integer](d int, p0, pOut Poly[T]) {
+func monomialSubOneMulAddAssign[T num.Integer](p0 Poly[T], d int, pOut Poly[T]) {
 	if cpu.X86.HasAVX2 {
 		var z T
 		switch any(z).(type) {
 		case uint32:
-			monomialSubOneMulAddAssignUint32AVX2(d, *(*[]uint32)(unsafe.Pointer(&p0)), *(*[]uint32)(unsafe.Pointer(&pOut)))
+			monomialSubOneMulAddAssignUint32AVX2(*(*[]uint32)(unsafe.Pointer(&p0)), d, *(*[]uint32)(unsafe.Pointer(&pOut)))
 			return
 		case uint64:
-			monomialSubOneMulAddAssignUint64AVX2(d, *(*[]uint64)(unsafe.Pointer(&p0)), *(*[]uint64)(unsafe.Pointer(&pOut)))
+			monomialSubOneMulAddAssignUint64AVX2(*(*[]uint64)(unsafe.Pointer(&p0)), d, *(*[]uint64)(unsafe.Pointer(&pOut)))
 			return
 		}
 	}

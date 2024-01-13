@@ -35,7 +35,7 @@ func negCmplxAssign(v0, vOut []float64) {
 }
 
 // floatMulCmplxAssign computes vOut = c * v0.
-func floatMulCmplxAssign(c float64, v0, vOut []float64) {
+func floatMulCmplxAssign(v0 []float64, c float64, vOut []float64) {
 	for i := range vOut {
 		vOut[i] = c * v0[i]
 	}

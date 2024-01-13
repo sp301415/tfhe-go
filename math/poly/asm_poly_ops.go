@@ -9,7 +9,7 @@ import (
 // monomialSubOneMulAssign computes pOut = (X^d - 1) * p0.
 //
 // d should to be in [0, 2N), and p0 and pOut should not overlap.
-func monomialSubOneMulAssign[T num.Integer](d int, p0, pOut Poly[T]) {
+func monomialSubOneMulAssign[T num.Integer](p0 Poly[T], d int, pOut Poly[T]) {
 	polyDegree := pOut.Degree()
 	if d < polyDegree {
 		for i, ii := 0, polyDegree-d; ii < polyDegree; i, ii = i+1, ii+1 {
@@ -31,7 +31,7 @@ func monomialSubOneMulAssign[T num.Integer](d int, p0, pOut Poly[T]) {
 // monomialSubOneMulAddAssign computes pOut += (X^d - 1) * p0.
 //
 // d should to be in [0, 2N), and p0 and pOut should not overlap.
-func monomialSubOneMulAddAssign[T num.Integer](d int, p0, pOut Poly[T]) {
+func monomialSubOneMulAddAssign[T num.Integer](p0 Poly[T], d int, pOut Poly[T]) {
 	polyDegree := pOut.Degree()
 	if d < polyDegree {
 		for i, ii := 0, polyDegree-d; ii < polyDegree; i, ii = i+1, ii+1 {
