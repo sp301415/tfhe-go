@@ -41,6 +41,66 @@ func floatMulCmplxAssign(v0 []float64, c float64, vOut []float64) {
 	}
 }
 
+// floatMulAddCmplxAssign computes vOut += c * v0.
+func floatMulAddCmplxAssign(v0 []float64, c float64, vOut []float64) {
+	for i := range vOut {
+		vOut[i] += c * v0[i]
+	}
+}
+
+// floatMulSubCmplxAssign computes vOut -= c * v0.
+func floatMulSubCmplxAssign(v0 []float64, c float64, vOut []float64) {
+	for i := range vOut {
+		vOut[i] -= c * v0[i]
+	}
+}
+
+// cmplxMulCmplxAssign computes vOut = c * v0.
+func cmplxMulCmplxAssign(v0 []float64, c complex128, vOut []float64) {
+	for i := 0; i < len(vOut); i += 8 {
+		vOut[i+0] = v0[i+0]*real(c) - v0[i+4]*imag(c)
+		vOut[i+1] = v0[i+1]*real(c) - v0[i+5]*imag(c)
+		vOut[i+2] = v0[i+2]*real(c) - v0[i+6]*imag(c)
+		vOut[i+3] = v0[i+3]*real(c) - v0[i+7]*imag(c)
+
+		vOut[i+4] = v0[i+0]*imag(c) + v0[i+4]*real(c)
+		vOut[i+5] = v0[i+1]*imag(c) + v0[i+5]*real(c)
+		vOut[i+6] = v0[i+2]*imag(c) + v0[i+6]*real(c)
+		vOut[i+7] = v0[i+3]*imag(c) + v0[i+7]*real(c)
+	}
+}
+
+// cmplxMulAddCmplxAssign computes vOut += c * v0.
+func cmplxMulAddCmplxAssign(v0 []float64, c complex128, vOut []float64) {
+
+	for i := 0; i < len(vOut); i += 8 {
+		vOut[i+0] += v0[i+0]*real(c) - v0[i+4]*imag(c)
+		vOut[i+1] += v0[i+1]*real(c) - v0[i+5]*imag(c)
+		vOut[i+2] += v0[i+2]*real(c) - v0[i+6]*imag(c)
+		vOut[i+3] += v0[i+3]*real(c) - v0[i+7]*imag(c)
+
+		vOut[i+4] += v0[i+0]*imag(c) + v0[i+4]*real(c)
+		vOut[i+5] += v0[i+1]*imag(c) + v0[i+5]*real(c)
+		vOut[i+6] += v0[i+2]*imag(c) + v0[i+6]*real(c)
+		vOut[i+7] += v0[i+3]*imag(c) + v0[i+7]*real(c)
+	}
+}
+
+// cmplxMulSubCmplxAssign computes vOut -= c * v0.
+func cmplxMulSubCmplxAssign(v0 []float64, c complex128, vOut []float64) {
+	for i := 0; i < len(vOut); i += 8 {
+		vOut[i+0] -= v0[i+0]*real(c) - v0[i+4]*imag(c)
+		vOut[i+1] -= v0[i+1]*real(c) - v0[i+5]*imag(c)
+		vOut[i+2] -= v0[i+2]*real(c) - v0[i+6]*imag(c)
+		vOut[i+3] -= v0[i+3]*real(c) - v0[i+7]*imag(c)
+
+		vOut[i+4] -= v0[i+0]*imag(c) + v0[i+4]*real(c)
+		vOut[i+5] -= v0[i+1]*imag(c) + v0[i+5]*real(c)
+		vOut[i+6] -= v0[i+2]*imag(c) + v0[i+6]*real(c)
+		vOut[i+7] -= v0[i+3]*imag(c) + v0[i+7]*real(c)
+	}
+}
+
 // elementWiseMulCmplxAssign computes vOut = v0 * v1.
 func elementWiseMulCmplxAssign(v0, v1, vOut []float64) {
 	for i := 0; i < len(vOut); i += 8 {

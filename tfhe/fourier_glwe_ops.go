@@ -46,6 +46,62 @@ func (e *Evaluator[T]) NegFourierGLWEAssign(ct0, ctOut FourierGLWECiphertext[T])
 	}
 }
 
+// FloatMulFourierGLWE returns c * ct0.
+func (e *Evaluator[T]) FloatMulFourierGLWE(ct0 FourierGLWECiphertext[T], c float64) FourierGLWECiphertext[T] {
+	ctOut := NewFourierGLWECiphertext(e.Parameters)
+	e.FloatMulFourierGLWEAssign(ct0, c, ctOut)
+	return ctOut
+}
+
+// FloatMulFourierGLWEAssign computes ctOut = c * ct0.
+func (e *Evaluator[T]) FloatMulFourierGLWEAssign(ct0 FourierGLWECiphertext[T], c float64, ctOut FourierGLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.FourierEvaluator.FloatMulAssign(ct0.Value[i], c, ctOut.Value[i])
+	}
+}
+
+// FloatMulAddFourierGLWEAssign computes ctOut += c * ct0.
+func (e *Evaluator[T]) FloatMulAddFourierGLWEAssign(ct0 FourierGLWECiphertext[T], c float64, ctOut FourierGLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.FourierEvaluator.FloatMulAddAssign(ct0.Value[i], c, ctOut.Value[i])
+	}
+}
+
+// FloatMulSubFourierGLWEAssign computes ctOut -= c * ct0.
+func (e *Evaluator[T]) FloatMulSubFourierGLWEAssign(ct0 FourierGLWECiphertext[T], c float64, ctOut FourierGLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.FourierEvaluator.FloatMulSubAssign(ct0.Value[i], c, ctOut.Value[i])
+	}
+}
+
+// CmplxMulFourierGLWE returns c * ct0.
+func (e *Evaluator[T]) CmplxMulFourierGLWE(ct0 FourierGLWECiphertext[T], c complex128) FourierGLWECiphertext[T] {
+	ctOut := NewFourierGLWECiphertext(e.Parameters)
+	e.CmplxMulFourierGLWEAssign(ct0, c, ctOut)
+	return ctOut
+}
+
+// CmplxMulFourierGLWEAssign computes ctOut = c * ct0.
+func (e *Evaluator[T]) CmplxMulFourierGLWEAssign(ct0 FourierGLWECiphertext[T], c complex128, ctOut FourierGLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.FourierEvaluator.CmplxMulAssign(ct0.Value[i], c, ctOut.Value[i])
+	}
+}
+
+// CmplxMulAddFourierGLWEAssign computes ctOut += c * ct0.
+func (e *Evaluator[T]) CmplxMulAddFourierGLWEAssign(ct0 FourierGLWECiphertext[T], c complex128, ctOut FourierGLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.FourierEvaluator.CmplxMulAddAssign(ct0.Value[i], c, ctOut.Value[i])
+	}
+}
+
+// CmplxMulSubFourierGLWEAssign computes ctOut -= c * ct0.
+func (e *Evaluator[T]) CmplxMulSubFourierGLWEAssign(ct0 FourierGLWECiphertext[T], c complex128, ctOut FourierGLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+		e.FourierEvaluator.CmplxMulSubAssign(ct0.Value[i], c, ctOut.Value[i])
+	}
+}
+
 // PolyMulFourierGLWE returns p * ct0.
 func (e *Evaluator[T]) PolyMulFourierGLWE(ct0 FourierGLWECiphertext[T], p poly.Poly[T]) FourierGLWECiphertext[T] {
 	ctOut := NewFourierGLWECiphertext(e.Parameters)

@@ -69,6 +69,90 @@ func TestVecCmplxAssembly(t *testing.T) {
 		}
 	})
 
+	t.Run("FloatMul", func(t *testing.T) {
+		c := rand.Float64()
+		vec.ScalarMulAssign(v0, complex(c, 0), vOut)
+		floatMulCmplxAssign(v0Float4, c, vOutAVX2Float4)
+		vec.Float4ToCmplxAssign(vOutAVX2Float4, vOutAVX2)
+		for i := 0; i < N; i++ {
+			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
+				t.Fatalf("FloatMul: %v != %v", vOut[i], vOutAVX2[i])
+			}
+		}
+	})
+
+	t.Run("FloatMulAdd", func(t *testing.T) {
+		vec.Fill(vOut, 0)
+		vec.Fill(vOutAVX2Float4, 0)
+
+		c := rand.Float64()
+		vec.ScalarMulAddAssign(v0, complex(c, 0), vOut)
+		floatMulAddCmplxAssign(v0Float4, c, vOutAVX2Float4)
+		vec.Float4ToCmplxAssign(vOutAVX2Float4, vOutAVX2)
+		for i := 0; i < N; i++ {
+			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
+				t.Fatalf("FloatMulAdd: %v != %v", vOut[i], vOutAVX2[i])
+			}
+		}
+	})
+
+	t.Run("FloatMulSub", func(t *testing.T) {
+		vec.Fill(vOut, 0)
+		vec.Fill(vOutAVX2Float4, 0)
+
+		c := rand.Float64()
+		vec.ScalarMulSubAssign(v0, complex(c, 0), vOut)
+		floatMulSubCmplxAssign(v0Float4, c, vOutAVX2Float4)
+		vec.Float4ToCmplxAssign(vOutAVX2Float4, vOutAVX2)
+		for i := 0; i < N; i++ {
+			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
+				t.Fatalf("FloatMulSub: %v != %v", vOut[i], vOutAVX2[i])
+			}
+		}
+	})
+
+	t.Run("CmplxMul", func(t *testing.T) {
+		c := complex(rand.Float64(), rand.Float64())
+		vec.ScalarMulAssign(v0, c, vOut)
+		cmplxMulCmplxAssign(v0Float4, c, vOutAVX2Float4)
+		vec.Float4ToCmplxAssign(vOutAVX2Float4, vOutAVX2)
+		for i := 0; i < N; i++ {
+			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
+				t.Fatalf("CmplxMul: %v != %v", vOut[i], vOutAVX2[i])
+			}
+		}
+	})
+
+	t.Run("CmplxMulAdd", func(t *testing.T) {
+		vec.Fill(vOut, 0)
+		vec.Fill(vOutAVX2Float4, 0)
+
+		c := complex(rand.Float64(), rand.Float64())
+		vec.ScalarMulAddAssign(v0, c, vOut)
+		cmplxMulAddCmplxAssign(v0Float4, c, vOutAVX2Float4)
+		vec.Float4ToCmplxAssign(vOutAVX2Float4, vOutAVX2)
+		for i := 0; i < N; i++ {
+			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
+				t.Fatalf("CmplxMulAdd: %v != %v", vOut[i], vOutAVX2[i])
+			}
+		}
+	})
+
+	t.Run("CmplxMulSub", func(t *testing.T) {
+		vec.Fill(vOut, 0)
+		vec.Fill(vOutAVX2Float4, 0)
+
+		c := complex(rand.Float64(), rand.Float64())
+		vec.ScalarMulSubAssign(v0, c, vOut)
+		cmplxMulSubCmplxAssign(v0Float4, c, vOutAVX2Float4)
+		vec.Float4ToCmplxAssign(vOutAVX2Float4, vOutAVX2)
+		for i := 0; i < N; i++ {
+			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
+				t.Fatalf("CmplxMulSub: %v != %v", vOut[i], vOutAVX2[i])
+			}
+		}
+	})
+
 	t.Run("MulAdd", func(t *testing.T) {
 		vec.Fill(vOut, 0)
 		vec.Fill(vOutAVX2Float4, 0)

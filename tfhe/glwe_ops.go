@@ -4,6 +4,19 @@ import (
 	"github.com/sp301415/tfhe-go/math/poly"
 )
 
+// PlaintextAddGLWE returns pt + ct0.
+func (e *Evaluator[T]) PlaintextAddGLWE(pt GLWEPlaintext[T], ct0 GLWECiphertext[T]) GLWECiphertext[T] {
+	ctOut := NewGLWECiphertext(e.Parameters)
+	e.PlaintextAddGLWEAssign(pt, ct0, ctOut)
+	return ctOut
+}
+
+// PlaintextAddGLWEAssign computes ctOut = pt + ct0.
+func (e *Evaluator[T]) PlaintextAddGLWEAssign(pt GLWEPlaintext[T], ct0, ctOut GLWECiphertext[T]) {
+	e.PolyEvaluator.AddAssign(pt.Value, ct0.Value[0], ctOut.Value[0])
+
+}
+
 // AddGLWE returns ct0 + ct1.
 func (e *Evaluator[T]) AddGLWE(ct0, ct1 GLWECiphertext[T]) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
@@ -72,19 +85,6 @@ func (e *Evaluator[T]) ScalarMulSubGLWEAssign(ct0 GLWECiphertext[T], c T, ctOut 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.PolyEvaluator.ScalarMulSubAssign(ct0.Value[i], c, ctOut.Value[i])
 	}
-}
-
-// PlaintextAddGLWE returns pt + ct0.
-func (e *Evaluator[T]) PlaintextAddGLWE(pt GLWEPlaintext[T], ct0 GLWECiphertext[T]) GLWECiphertext[T] {
-	ctOut := NewGLWECiphertext(e.Parameters)
-	e.PlaintextAddGLWEAssign(pt, ct0, ctOut)
-	return ctOut
-}
-
-// PlaintextAddGLWEAssign computes ctOut = pt + ct0.
-func (e *Evaluator[T]) PlaintextAddGLWEAssign(pt GLWEPlaintext[T], ct0, ctOut GLWECiphertext[T]) {
-	e.PolyEvaluator.AddAssign(pt.Value, ct0.Value[0], ctOut.Value[0])
-
 }
 
 // PolyMulGLWE returns p * ct0.

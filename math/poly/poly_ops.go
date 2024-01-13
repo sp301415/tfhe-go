@@ -40,6 +40,28 @@ func (e *Evaluator[T]) NegAssign(p0, pOut Poly[T]) {
 	vec.NegAssign(p0.Coeffs, pOut.Coeffs)
 }
 
+// ScalarMul returns c * p0.
+func (e *Evaluator[T]) ScalarMul(p0 Poly[T], c T) Poly[T] {
+	pOut := e.NewPoly()
+	e.ScalarMulAssign(p0, c, pOut)
+	return pOut
+}
+
+// ScalarMulAssign computes pOut = c * p0.
+func (e *Evaluator[T]) ScalarMulAssign(p0 Poly[T], c T, pOut Poly[T]) {
+	vec.ScalarMulAssign(p0.Coeffs, c, pOut.Coeffs)
+}
+
+// ScalarMulAddAssign computes pOut += c * p0.
+func (e *Evaluator[T]) ScalarMulAddAssign(p0 Poly[T], c T, pOut Poly[T]) {
+	vec.ScalarMulAddAssign(p0.Coeffs, c, pOut.Coeffs)
+}
+
+// ScalarMulSubAssign computes pOut -= c * p0.
+func (e *Evaluator[T]) ScalarMulSubAssign(p0 Poly[T], c T, pOut Poly[T]) {
+	vec.ScalarMulSubAssign(p0.Coeffs, c, pOut.Coeffs)
+}
+
 // Mul returns p0 * p1.
 func (e *Evaluator[T]) Mul(p0, p1 Poly[T]) Poly[T] {
 	if e.degree <= karatsubaRecurseThreshold {
@@ -70,28 +92,6 @@ func (e *Evaluator[T]) MulAddAssign(p0, p1, pOut Poly[T]) {
 func (e *Evaluator[T]) MulSubAssign(p0, p1, pOut Poly[T]) {
 	e.MulAssign(p0, p1, e.buffer.pOut)
 	e.SubAssign(pOut, e.buffer.pOut, pOut)
-}
-
-// ScalarMul returns c * p0.
-func (e *Evaluator[T]) ScalarMul(p0 Poly[T], c T) Poly[T] {
-	pOut := e.NewPoly()
-	e.ScalarMulAssign(p0, c, pOut)
-	return pOut
-}
-
-// ScalarMulAssign computes pOut = c * p0.
-func (e *Evaluator[T]) ScalarMulAssign(p0 Poly[T], c T, pOut Poly[T]) {
-	vec.ScalarMulAssign(p0.Coeffs, c, pOut.Coeffs)
-}
-
-// ScalarMulAddAssign computes pOut += c * p0.
-func (e *Evaluator[T]) ScalarMulAddAssign(p0 Poly[T], c T, pOut Poly[T]) {
-	vec.ScalarMulAddAssign(p0.Coeffs, c, pOut.Coeffs)
-}
-
-// ScalarMulSubAssign computes pOut -= c * p0.
-func (e *Evaluator[T]) ScalarMulSubAssign(p0 Poly[T], c T, pOut Poly[T]) {
-	vec.ScalarMulSubAssign(p0.Coeffs, c, pOut.Coeffs)
 }
 
 // MonomialMul returns X^d * p0.

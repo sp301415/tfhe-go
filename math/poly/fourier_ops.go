@@ -36,6 +36,50 @@ func (f *FourierEvaluator[T]) NegAssign(fp0, fpOut FourierPoly) {
 	negCmplxAssign(fp0.Coeffs, fpOut.Coeffs)
 }
 
+// FloatMul returns c * fp0.
+func (f *FourierEvaluator[T]) FloatMul(fp0 FourierPoly, c float64) FourierPoly {
+	fpOut := f.NewFourierPoly()
+	f.FloatMulAssign(fp0, c, fpOut)
+	return fpOut
+}
+
+// FloatMulAssign computes fpOut = c * fp0.
+func (f *FourierEvaluator[T]) FloatMulAssign(fp0 FourierPoly, c float64, fpOut FourierPoly) {
+	floatMulCmplxAssign(fp0.Coeffs, c, fpOut.Coeffs)
+}
+
+// FloatMulAddAssign computes fpOut += c * fp0.
+func (f *FourierEvaluator[T]) FloatMulAddAssign(fp0 FourierPoly, c float64, fpOut FourierPoly) {
+	floatMulAddCmplxAssign(fp0.Coeffs, c, fpOut.Coeffs)
+}
+
+// FloatMulSubAssign computes fpOut -= c * fp0.
+func (f *FourierEvaluator[T]) FloatMulSubAssign(fp0 FourierPoly, c float64, fpOut FourierPoly) {
+	floatMulSubCmplxAssign(fp0.Coeffs, c, fpOut.Coeffs)
+}
+
+// CmplxMul returns c * fp0.
+func (f *FourierEvaluator[T]) CmplxMul(fp0 FourierPoly, c complex128) FourierPoly {
+	fpOut := f.NewFourierPoly()
+	f.CmplxMulAssign(fp0, c, fpOut)
+	return fpOut
+}
+
+// CmplxMulAssign computes fpOut = c * fp0.
+func (f *FourierEvaluator[T]) CmplxMulAssign(fp0 FourierPoly, c complex128, fpOut FourierPoly) {
+	cmplxMulCmplxAssign(fp0.Coeffs, c, fpOut.Coeffs)
+}
+
+// CmplxMulAddAssign computes fpOut += c * fp0.
+func (f *FourierEvaluator[T]) CmplxMulAddAssign(fp0 FourierPoly, c complex128, fpOut FourierPoly) {
+	cmplxMulAddCmplxAssign(fp0.Coeffs, c, fpOut.Coeffs)
+}
+
+// CmplxMulSubAssign computes fpOut -= c * fp0.
+func (f *FourierEvaluator[T]) CmplxMulSubAssign(fp0 FourierPoly, c complex128, fpOut FourierPoly) {
+	cmplxMulSubCmplxAssign(fp0.Coeffs, c, fpOut.Coeffs)
+}
+
 // Mul returns fp0 * fp1.
 func (f *FourierEvaluator[T]) Mul(fp0, fp1 FourierPoly) FourierPoly {
 	fpOut := f.NewFourierPoly()
