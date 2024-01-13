@@ -151,14 +151,6 @@ func (ct *GLWECiphertext[T]) Clear() {
 	}
 }
 
-// GLevCiphertext is a leveled GLWE ciphertext, decomposed according to GadgetParameters.
-type GLevCiphertext[T Tint] struct {
-	GadgetParameters GadgetParameters[T]
-
-	// Value has length Level.
-	Value []GLWECiphertext[T]
-}
-
 // ToLWECiphertext extracts LWE ciphertext of given index from GLWE ciphertext.
 // The output ciphertext will be of dimension LWELargeDimension + 1,
 // encrypted with LWELargeKey.
@@ -191,6 +183,14 @@ func (ct GLWECiphertext[T]) ToLWECiphertextAssign(idx int, ctOut LWECiphertext[T
 		vec.RotateInPlace(ctOutMask[start:end], idx+1)
 		vec.NegAssign(ctOutMask[start+idx+1:end], ctOutMask[start+idx+1:end])
 	}
+}
+
+// GLevCiphertext is a leveled GLWE ciphertext, decomposed according to GadgetParameters.
+type GLevCiphertext[T Tint] struct {
+	GadgetParameters GadgetParameters[T]
+
+	// Value has length Level.
+	Value []GLWECiphertext[T]
 }
 
 // NewGLevCiphertext allocates an empty GLevCiphertext.
