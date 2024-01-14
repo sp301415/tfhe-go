@@ -26,6 +26,7 @@ type Evaluator[T num.Integer] struct {
 	// degree is the degree of polynomial that this evaluator can handle.
 	degree int
 
+	// buffer holds the buffer values for this Evaluator.
 	buffer evaluationBuffer[T]
 }
 

@@ -41,6 +41,7 @@ type FourierEvaluator[T num.Integer] struct {
 	// Equivalent to BitReverse([-1, 3, 7, ..., 2N-1]).
 	revMonoIdx []int
 
+	// buffer holds the buffer values for this FourierEvaluator.
 	buffer fourierBuffer[T]
 }
 
