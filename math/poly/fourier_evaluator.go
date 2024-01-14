@@ -26,18 +26,18 @@ type FourierEvaluator[T num.Integer] struct {
 	// maxT is a float64 value of MaxT.
 	maxT float64
 
-	// wNj holds the twiddle factors for Fourier Transform.
+	// wNj holds the twiddle factors for fourier transform.
 	// This is stored as "long" form, so that access to the factors are contiguous.
 	// Unlike other complex128 slices, wNj is in natural representation.
 	wNj []complex128
-	// wNjInv holds the twiddle factors for Inverse Fourier Transform.
+	// wNjInv holds the twiddle factors for inverse fourier transform.
 	// This is stored as "long" form, so that access to the factors are contiguous.
 	// Unlike other complex128 slices, wNjInv is in natural representation.
 	wNjInv []complex128
-	// w4NjMono holds the twisting factors for monomials: exp(-pi*j/N) where j = 0 ~ 2N.
+	// w4NjMono holds the twiddle factors for monomial fourier transform.
 	// Unlike other complex128 slices, w4NjMono is in natural representation.
 	w4NjMono []complex128
-	// revMonoIdx holds the precomputed bit-reversed index for MonomialToFourierPoly.
+	// revMonoIdx holds the precomputed bit-reversed index for monomial fourier transform.
 	// Equivalent to BitReverse([-1, 3, 7, ..., 2N-1]).
 	revMonoIdx []int
 
