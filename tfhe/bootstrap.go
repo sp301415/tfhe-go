@@ -10,10 +10,10 @@ import (
 // the lookup table for function evaluations during programmable bootstrapping.
 //
 // The degree of a LUT equals to PolyLargeDegree.
-type LookUpTable[T Tint] poly.Poly[T]
+type LookUpTable[T TorusInt] poly.Poly[T]
 
 // NewLookUpTable allocates an empty lookup table.
-func NewLookUpTable[T Tint](params Parameters[T]) LookUpTable[T] {
+func NewLookUpTable[T TorusInt](params Parameters[T]) LookUpTable[T] {
 	return LookUpTable[T](poly.NewPoly[T](params.polyLargeDegree))
 }
 

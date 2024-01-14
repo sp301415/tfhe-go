@@ -20,15 +20,15 @@ const (
 	MaxPolyDegree = 1 << 20
 )
 
-// Tint represents the modulus of the discretized torus.
+// TorusInt represents the integers living in the discretized torus.
 // Currently, it supports Q = 2^32 and Q = 2^64 (uint32 and uint64).
-type Tint interface {
+type TorusInt interface {
 	uint32 | uint64
 }
 
 // GadgetParametersLiteral is a structure for Gadget Decomposition,
 // which is used in Lev, GSW, GLev and GGSW encryptions.
-type GadgetParametersLiteral[T Tint] struct {
+type GadgetParametersLiteral[T TorusInt] struct {
 	// Base is a base of gadget. It must be power of two.
 	Base T
 	// Level is a length of gadget.
@@ -65,7 +65,7 @@ func (p GadgetParametersLiteral[T]) Compile() GadgetParameters[T] {
 }
 
 // GadgetParameters is a read-only, compiled parameters based on GadgetParametersLiteral.
-type GadgetParameters[T Tint] struct {
+type GadgetParameters[T TorusInt] struct {
 	// Base is a base of gadget. It must be power of two.
 	base T
 	// BaseHalf equals Base / 2.
@@ -219,7 +219,7 @@ const (
 //
 // Unless you are a cryptographic expert, DO NOT set these by yourself;
 // always use the default parameters provided.
-type ParametersLiteral[T Tint] struct {
+type ParametersLiteral[T TorusInt] struct {
 	// LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
 	LWEDimension int
 	// GLWEDimension is the dimension of GLWE lattice used. Usually this is denoted by k.
@@ -353,7 +353,7 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 }
 
 // Parameters are read-only, compiled parameters based on ParametersLiteral.
-type Parameters[T Tint] struct {
+type Parameters[T TorusInt] struct {
 	// LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
 	lweDimension int
 	// LWELargeDimension is the dimension of "large" lattice used.

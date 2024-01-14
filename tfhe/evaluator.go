@@ -6,7 +6,7 @@ import (
 
 // Evaluator evaluates homomorphic operations on ciphertexts.
 // This is meant to be public, usually for servers.
-type Evaluator[T Tint] struct {
+type Evaluator[T TorusInt] struct {
 	// Encoder is an embedded encoder for this Evaluator.
 	*Encoder[T]
 
@@ -26,7 +26,7 @@ type Evaluator[T Tint] struct {
 }
 
 // evaluationBuffer contains buffer values for Evaluator.
-type evaluationBuffer[T Tint] struct {
+type evaluationBuffer[T TorusInt] struct {
 	// polyDecomposed holds the decomposed polynomial.
 	// Initially has length bootstrapParameters.level.
 	// Use getPolyDecomposedBuffer() to get appropriate length of buffer.
@@ -72,7 +72,7 @@ type evaluationBuffer[T Tint] struct {
 
 // NewEvaluator creates a new Evaluator based on parameters.
 // This does not copy evaluation keys, since they are large.
-func NewEvaluator[T Tint](params Parameters[T], evk EvaluationKey[T]) *Evaluator[T] {
+func NewEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *Evaluator[T] {
 	return &Evaluator[T]{
 		Encoder: NewEncoder(params),
 
@@ -89,12 +89,12 @@ func NewEvaluator[T Tint](params Parameters[T], evk EvaluationKey[T]) *Evaluator
 
 // NewEvaluatorWithoutKey creates a new Evaluator based on parameters, but without evaluation keys.
 // This will panic if any operation that requires evaluation key is called.
-func NewEvaluatorWithoutKey[T Tint](params Parameters[T]) *Evaluator[T] {
+func NewEvaluatorWithoutKey[T TorusInt](params Parameters[T]) *Evaluator[T] {
 	return NewEvaluator[T](params, EvaluationKey[T]{})
 }
 
 // newEvaluationBuffer allocates an empty evaluationBuffer.
-func newEvaluationBuffer[T Tint](params Parameters[T]) evaluationBuffer[T] {
+func newEvaluationBuffer[T TorusInt](params Parameters[T]) evaluationBuffer[T] {
 	polyDecomposed := make([]poly.Poly[T], params.bootstrapParameters.level)
 	for i := range polyDecomposed {
 		polyDecomposed[i] = poly.NewPoly[T](params.polyDegree)

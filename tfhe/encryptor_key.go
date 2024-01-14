@@ -15,7 +15,7 @@ import (
 //
 // LWEKey and GLWEKey is sampled together, as explained in https://eprint.iacr.org/2023/958.
 // As a result, LWEKey and GLWEKey share the same backing slice, so modifying one will affect the other.
-type SecretKey[T Tint] struct {
+type SecretKey[T TorusInt] struct {
 	// LWELargeKey is a LWE key with length LWELargeDimension.
 	// Essentially, this is same as GLWEKey but parsed differently.
 	LWELargeKey LWEKey[T]
@@ -32,7 +32,7 @@ type SecretKey[T Tint] struct {
 
 // NewSecretKey allocates an empty SecretKey.
 // Each key shares the same backing slice, held by LWEKey.
-func NewSecretKey[T Tint](params Parameters[T]) SecretKey[T] {
+func NewSecretKey[T TorusInt](params Parameters[T]) SecretKey[T] {
 	lweLargeKey := LWEKey[T]{Value: make([]T, params.lweLargeDimension)}
 
 	glweKey := GLWEKey[T]{Value: make([]poly.Poly[T], params.glweDimension)}
@@ -53,7 +53,7 @@ func NewSecretKey[T Tint](params Parameters[T]) SecretKey[T] {
 
 // NewSecretKeyCustom allocates an empty SecretKey with given dimension and polyDegree.
 // Each key shares the same backing slice, held by LWEKey.
-func NewSecretKeyCustom[T Tint](lweDimension, glweDimension, polyDegree int) SecretKey[T] {
+func NewSecretKeyCustom[T TorusInt](lweDimension, glweDimension, polyDegree int) SecretKey[T] {
 	lweLargeKey := LWEKey[T]{Value: make([]T, glweDimension*polyDegree)}
 
 	glweKey := GLWEKey[T]{Value: make([]poly.Poly[T], glweDimension)}

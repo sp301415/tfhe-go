@@ -2,7 +2,7 @@ package tfhe
 
 // EvaluationKey is a public key for Evaluator,
 // which consists of Bootstrapping Key and KeySwitching Key.
-type EvaluationKey[T Tint] struct {
+type EvaluationKey[T TorusInt] struct {
 	// BootstrapKey is a bootstrap key.
 	BootstrapKey BootstrapKey[T]
 	// KeySwitchKey is a keyswitch key switching LWELargeKey -> LWEKey.
@@ -10,7 +10,7 @@ type EvaluationKey[T Tint] struct {
 }
 
 // NewEvaluationKey allocates an empty EvaluationKey.
-func NewEvaluationKey[T Tint](params Parameters[T]) EvaluationKey[T] {
+func NewEvaluationKey[T TorusInt](params Parameters[T]) EvaluationKey[T] {
 	return EvaluationKey[T]{
 		BootstrapKey: NewBootstrapKey(params),
 		KeySwitchKey: NewKeySwitchKeyForBootstrap(params),
@@ -18,7 +18,7 @@ func NewEvaluationKey[T Tint](params Parameters[T]) EvaluationKey[T] {
 }
 
 // NewEvaluationKeyCustom allocates an empty EvaluationKey with custom parameters.
-func NewEvaluationKeyCustom[T Tint](lweDimension, glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) EvaluationKey[T] {
+func NewEvaluationKeyCustom[T TorusInt](lweDimension, glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) EvaluationKey[T] {
 	return EvaluationKey[T]{
 		BootstrapKey: NewBootstrapKeyCustom(lweDimension, glweDimension, polyDegree, gadgetParams),
 		KeySwitchKey: NewKeySwitchKeyForBootstrapCustom(lweDimension, glweDimension, polyDegree, gadgetParams),
@@ -48,7 +48,7 @@ func (evk *EvaluationKey[T]) Clear() {
 // BootstrapKey is a key for bootstrapping.
 // Essentially, this is a GGSW encryption of LWEKey with GLWEKey.
 // However, FFT is already applied for fast external product.
-type BootstrapKey[T Tint] struct {
+type BootstrapKey[T TorusInt] struct {
 	GadgetParameters GadgetParameters[T]
 
 	// Value has length LWEDimension.
@@ -56,7 +56,7 @@ type BootstrapKey[T Tint] struct {
 }
 
 // NewBootstrapKey allocates an empty BootstrappingKey.
-func NewBootstrapKey[T Tint](params Parameters[T]) BootstrapKey[T] {
+func NewBootstrapKey[T TorusInt](params Parameters[T]) BootstrapKey[T] {
 	bsk := make([]FourierGGSWCiphertext[T], params.lweDimension)
 	for i := 0; i < params.lweDimension; i++ {
 		bsk[i] = NewFourierGGSWCiphertext(params, params.bootstrapParameters)
@@ -65,7 +65,7 @@ func NewBootstrapKey[T Tint](params Parameters[T]) BootstrapKey[T] {
 }
 
 // NewBootstrapKeyCustom allocates an empty BootstrappingKey with custom parameters.
-func NewBootstrapKeyCustom[T Tint](lweDimension, glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) BootstrapKey[T] {
+func NewBootstrapKeyCustom[T TorusInt](lweDimension, glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) BootstrapKey[T] {
 	bsk := make([]FourierGGSWCiphertext[T], lweDimension)
 	for i := 0; i < lweDimension; i++ {
 		bsk[i] = NewFourierGGSWCiphertextCustom[T](glweDimension, polyDegree, gadgetParams)
@@ -98,7 +98,7 @@ func (bsk *BootstrapKey[T]) Clear() {
 }
 
 // KeySwitchKey is a LWE keyswitch key from one LWEKey to another LWEKey.
-type KeySwitchKey[T Tint] struct {
+type KeySwitchKey[T TorusInt] struct {
 	GadgetParameters GadgetParameters[T]
 
 	// Value has length InputLWEDimension.
@@ -106,7 +106,7 @@ type KeySwitchKey[T Tint] struct {
 }
 
 // NewKeySwitchKey allocates an empty KeySwitchingKey.
-func NewKeySwitchKey[T Tint](inputDimension, outputDimension int, gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
+func NewKeySwitchKey[T TorusInt](inputDimension, outputDimension int, gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
 	ksk := make([]LevCiphertext[T], inputDimension)
 	for i := 0; i < inputDimension; i++ {
 		ksk[i] = NewLevCiphertextCustom(outputDimension, gadgetParams)
@@ -115,12 +115,12 @@ func NewKeySwitchKey[T Tint](inputDimension, outputDimension int, gadgetParams G
 }
 
 // NewKeySwitchKeyForBootstrap allocates an empty KeySwitchingKey for bootstrapping.
-func NewKeySwitchKeyForBootstrap[T Tint](params Parameters[T]) KeySwitchKey[T] {
+func NewKeySwitchKeyForBootstrap[T TorusInt](params Parameters[T]) KeySwitchKey[T] {
 	return NewKeySwitchKey[T](params.lweLargeDimension-params.lweDimension, params.lweDimension, params.keyswitchParameters)
 }
 
 // NewKeySwitchKeyForBootstrapCustom allocates an empty KeySwitchingKey with custom parameters.
-func NewKeySwitchKeyForBootstrapCustom[T Tint](lweDimension, glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
+func NewKeySwitchKeyForBootstrapCustom[T TorusInt](lweDimension, glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
 	return NewKeySwitchKey[T](glweDimension*polyDegree-lweDimension, lweDimension, gadgetParams)
 }
 

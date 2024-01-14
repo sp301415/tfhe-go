@@ -8,7 +8,7 @@ import (
 )
 
 // decomposePolyAssign decomposes p with respect to gadgetParams and writes it to decomposedOut.
-func decomposePolyAssign[T Tint](p poly.Poly[T], gadgetParams GadgetParameters[T], decomposedOut []poly.Poly[T]) {
+func decomposePolyAssign[T TorusInt](p poly.Poly[T], gadgetParams GadgetParameters[T], decomposedOut []poly.Poly[T]) {
 	lastScaledBaseLog := gadgetParams.scaledBasesLog[gadgetParams.level-1]
 	for i := 0; i < p.Degree(); i++ {
 		c := num.RoundRatioBits(p.Coeffs[i], lastScaledBaseLog)

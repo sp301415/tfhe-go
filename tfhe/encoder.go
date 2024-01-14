@@ -8,13 +8,13 @@ import (
 // Encoder encodes integer messages to TFHE plaintexts.
 // Encoder is embedded in Encryptor and Evaluator,
 // so usually manual instantiation isn't needed.
-type Encoder[T Tint] struct {
+type Encoder[T TorusInt] struct {
 	// Parameters holds parameters for this Encoder.
 	Parameters Parameters[T]
 }
 
 // NewEncoder returns a initialized Encoder with given parameters.
-func NewEncoder[T Tint](params Parameters[T]) *Encoder[T] {
+func NewEncoder[T TorusInt](params Parameters[T]) *Encoder[T] {
 	return &Encoder[T]{
 		Parameters: params,
 	}

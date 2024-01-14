@@ -7,7 +7,7 @@ import (
 
 // Encryptor encrypts and decrypts TFHE plaintexts and ciphertexts.
 // This is meant to be private, only for clients.
-type Encryptor[T Tint] struct {
+type Encryptor[T TorusInt] struct {
 	// Encoder is an embedded encoder for this Encryptor.
 	*Encoder[T]
 
@@ -46,7 +46,7 @@ type Encryptor[T Tint] struct {
 }
 
 // encryptionBuffer contains buffer values for Encryptor.
-type encryptionBuffer[T Tint] struct {
+type encryptionBuffer[T TorusInt] struct {
 	// ctGLWE holds standard GLWE Ciphertext for Fourier encryption / decryptions.
 	ctGLWE GLWECiphertext[T]
 	// ptGGSW holds GLWEKey * Pt in GGSW encryption.
@@ -60,7 +60,7 @@ type encryptionBuffer[T Tint] struct {
 
 // NewEncryptor returns a initialized Encryptor with given parameters.
 // It also automatically samples LWE and GLWE key.
-func NewEncryptor[T Tint](params Parameters[T]) *Encryptor[T] {
+func NewEncryptor[T TorusInt](params Parameters[T]) *Encryptor[T] {
 	// Fill samplers to call encryptor.GenSecretKey()
 	encryptor := Encryptor[T]{
 		Encoder: NewEncoder(params),
@@ -86,7 +86,7 @@ func NewEncryptor[T Tint](params Parameters[T]) *Encryptor[T] {
 // NewEncryptorWithKey returns a initialized Encryptor with given parameters,
 // with the supplied SecretKey.
 // This does not copy the SecretKey.
-func NewEncryptorWithKey[T Tint](params Parameters[T], sk SecretKey[T]) *Encryptor[T] {
+func NewEncryptorWithKey[T TorusInt](params Parameters[T], sk SecretKey[T]) *Encryptor[T] {
 	return &Encryptor[T]{
 		Encoder: NewEncoder(params),
 
@@ -108,7 +108,7 @@ func NewEncryptorWithKey[T Tint](params Parameters[T], sk SecretKey[T]) *Encrypt
 }
 
 // newEncryptionBuffer allocates an empty encryptionBuffer.
-func newEncryptionBuffer[T Tint](params Parameters[T]) encryptionBuffer[T] {
+func newEncryptionBuffer[T TorusInt](params Parameters[T]) encryptionBuffer[T] {
 	return encryptionBuffer[T]{
 		ctGLWE:  NewGLWECiphertext(params),
 		ptGGSW:  poly.NewPoly[T](params.polyDegree),

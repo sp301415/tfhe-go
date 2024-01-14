@@ -3,13 +3,13 @@ package tfhe
 import "github.com/sp301415/tfhe-go/math/poly"
 
 // FourierGLWEKey is a GLWE key in Fourier domain.
-type FourierGLWEKey[T Tint] struct {
+type FourierGLWEKey[T TorusInt] struct {
 	// Value has length GLWEDimension.
 	Value []poly.FourierPoly
 }
 
 // NewFourierGLWEKey allocates an empty FourierGLWEKey.
-func NewFourierGLWEKey[T Tint](params Parameters[T]) FourierGLWEKey[T] {
+func NewFourierGLWEKey[T TorusInt](params Parameters[T]) FourierGLWEKey[T] {
 	sk := make([]poly.FourierPoly, params.glweDimension)
 	for i := range sk {
 		sk[i] = poly.NewFourierPoly(params.polyDegree)
@@ -18,7 +18,7 @@ func NewFourierGLWEKey[T Tint](params Parameters[T]) FourierGLWEKey[T] {
 }
 
 // NewFourierGLWEKeyCustom allocates an empty FourierGLWEKey with given dimension and polyDegree.
-func NewFourierGLWEKeyCustom[T Tint](glweDimension, polyDegree int) FourierGLWEKey[T] {
+func NewFourierGLWEKeyCustom[T TorusInt](glweDimension, polyDegree int) FourierGLWEKey[T] {
 	sk := make([]poly.FourierPoly, glweDimension)
 	for i := range sk {
 		sk[i] = poly.NewFourierPoly(polyDegree)
@@ -50,7 +50,7 @@ func (sk *FourierGLWEKey[T]) Clear() {
 }
 
 // FourierGLWECiphertext is a GLWE ciphertext in Fourier domain.
-type FourierGLWECiphertext[T Tint] struct {
+type FourierGLWECiphertext[T TorusInt] struct {
 	// Value is ordered as [body, mask],
 	// since Go doesn't provide an easy way to take last element of slice.
 	// Therefore, value has length GLWEDimension + 1.
@@ -58,7 +58,7 @@ type FourierGLWECiphertext[T Tint] struct {
 }
 
 // NewFourierGLWECiphertext allocates an empty FourierGLWECiphertext.
-func NewFourierGLWECiphertext[T Tint](params Parameters[T]) FourierGLWECiphertext[T] {
+func NewFourierGLWECiphertext[T TorusInt](params Parameters[T]) FourierGLWECiphertext[T] {
 	ct := make([]poly.FourierPoly, params.glweDimension+1)
 	for i := range ct {
 		ct[i] = poly.NewFourierPoly(params.polyDegree)
@@ -67,7 +67,7 @@ func NewFourierGLWECiphertext[T Tint](params Parameters[T]) FourierGLWECiphertex
 }
 
 // NewFourierGLWECiphertextCustom allocates an empty FourierGLWECiphertext with given dimension and polyDegree.
-func NewFourierGLWECiphertextCustom[T Tint](glweDimension, polyDegree int) FourierGLWECiphertext[T] {
+func NewFourierGLWECiphertextCustom[T TorusInt](glweDimension, polyDegree int) FourierGLWECiphertext[T] {
 	ct := make([]poly.FourierPoly, glweDimension+1)
 	for i := range ct {
 		ct[i] = poly.NewFourierPoly(polyDegree)
@@ -99,7 +99,7 @@ func (ct *FourierGLWECiphertext[T]) Clear() {
 }
 
 // FourierGLevCiphertext is a leveled GLWE ciphertext in Fourier domain.
-type FourierGLevCiphertext[T Tint] struct {
+type FourierGLevCiphertext[T TorusInt] struct {
 	GadgetParameters GadgetParameters[T]
 
 	// Value has length Level.
@@ -107,7 +107,7 @@ type FourierGLevCiphertext[T Tint] struct {
 }
 
 // NewFourierGLevCiphertext allocates an empty FourierGLevCiphertext.
-func NewFourierGLevCiphertext[T Tint](params Parameters[T], gadgetParams GadgetParameters[T]) FourierGLevCiphertext[T] {
+func NewFourierGLevCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetParameters[T]) FourierGLevCiphertext[T] {
 	ct := make([]FourierGLWECiphertext[T], gadgetParams.level)
 	for i := 0; i < gadgetParams.level; i++ {
 		ct[i] = NewFourierGLWECiphertext(params)
@@ -116,7 +116,7 @@ func NewFourierGLevCiphertext[T Tint](params Parameters[T], gadgetParams GadgetP
 }
 
 // NewFourierGLevCiphertextCustom allocates an empty FourierGLevCiphertext with given dimension and polyDegree.
-func NewFourierGLevCiphertextCustom[T Tint](glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) FourierGLevCiphertext[T] {
+func NewFourierGLevCiphertextCustom[T TorusInt](glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) FourierGLevCiphertext[T] {
 	ct := make([]FourierGLWECiphertext[T], gadgetParams.level)
 	for i := 0; i < gadgetParams.level; i++ {
 		ct[i] = NewFourierGLWECiphertextCustom[T](glweDimension, polyDegree)
@@ -149,7 +149,7 @@ func (ct *FourierGLevCiphertext[T]) Clear() {
 }
 
 // FourierGGSWCiphertext represents an encrypted GGSW ciphertext in Fourier domain.
-type FourierGGSWCiphertext[T Tint] struct {
+type FourierGGSWCiphertext[T TorusInt] struct {
 	GadgetParameters GadgetParameters[T]
 
 	// Value has length GLWEDimension + 1.
@@ -157,7 +157,7 @@ type FourierGGSWCiphertext[T Tint] struct {
 }
 
 // NewFourierGGSWCiphertext allocates an empty GGSW ciphertext.
-func NewFourierGGSWCiphertext[T Tint](params Parameters[T], gadgetParams GadgetParameters[T]) FourierGGSWCiphertext[T] {
+func NewFourierGGSWCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetParameters[T]) FourierGGSWCiphertext[T] {
 	ct := make([]FourierGLevCiphertext[T], params.glweDimension+1)
 	for i := 0; i < params.glweDimension+1; i++ {
 		ct[i] = NewFourierGLevCiphertext(params, gadgetParams)
@@ -166,7 +166,7 @@ func NewFourierGGSWCiphertext[T Tint](params Parameters[T], gadgetParams GadgetP
 }
 
 // NewFourierGGSWCiphertextCustom allocates an empty GGSW ciphertext with given dimension and polyDegree.
-func NewFourierGGSWCiphertextCustom[T Tint](glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) FourierGGSWCiphertext[T] {
+func NewFourierGGSWCiphertextCustom[T TorusInt](glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) FourierGGSWCiphertext[T] {
 	ct := make([]FourierGLevCiphertext[T], glweDimension+1)
 	for i := 0; i < glweDimension+1; i++ {
 		ct[i] = NewFourierGLevCiphertextCustom[T](glweDimension, polyDegree, gadgetParams)
