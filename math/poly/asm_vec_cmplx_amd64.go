@@ -68,7 +68,7 @@ func floatMulCmplxAssignAVX2(v0 []float64, c float64, vOut []float64)
 
 // floatMulCmplxAssign computes vOut = c * v0.
 func floatMulCmplxAssign(v0 []float64, c float64, vOut []float64) {
-	if cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		floatMulCmplxAssignAVX2(v0, c, vOut)
 		return
 	}
@@ -110,7 +110,7 @@ func cmplxMulCmplxAssignAVX2(v0 []float64, c complex128, vOut []float64)
 
 // cmplxMulCmplxAssign computes vOut = c * v0.
 func cmplxMulCmplxAssign(v0 []float64, c complex128, vOut []float64) {
-	if cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		cmplxMulCmplxAssignAVX2(v0, c, vOut)
 		return
 	}
