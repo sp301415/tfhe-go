@@ -81,7 +81,7 @@ func (bsk BootstrapKey[T]) ByteSize() int {
 	level := len(bsk.Value[0].Value[0].Value)
 	polyDegree := bsk.Value[0].Value[0].Value[0].Value[0].Degree()
 
-	return 16 + 24 + lweDimension*(glweDimension+1)*level*(glweDimension+1)*polyDegree*8
+	return 40 + lweDimension*(glweDimension+1)*level*(glweDimension+1)*polyDegree*8
 }
 
 // WriteTo implements the io.WriterTo interface.
@@ -202,7 +202,7 @@ func (ksk KeySwitchKey[T]) ByteSize() int {
 	level := len(ksk.Value[0].Value)
 	outputDimension := len(ksk.Value[0].Value[0].Value) - 1
 
-	return 16 + 16 + inputDimension*level*(outputDimension+1)*(num.SizeT[T]()/8)
+	return 32 + inputDimension*level*(outputDimension+1)*(num.SizeT[T]()/8)
 }
 
 // WriteTo implements the io.WriterTo interface.

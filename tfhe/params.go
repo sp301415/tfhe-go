@@ -534,7 +534,7 @@ func (p Parameters[T]) BootstrapOrder() BootstrapOrder {
 
 // ByteSize returns the byte size of the parameters.
 func (p Parameters[T]) ByteSize() int {
-	return 7*8 + 2*16 + 1
+	return 8*8 + 2*16 + 1
 }
 
 // WriteTo implements the io.WriterTo interface.

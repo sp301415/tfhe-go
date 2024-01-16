@@ -209,7 +209,7 @@ func (ct FourierGLevCiphertext[T]) ByteSize() int {
 	glweDimension := len(ct.Value[0].Value) - 1
 	polyDegree := ct.Value[0].Value[0].Degree()
 
-	return 16 + 16 + level*(glweDimension+1)*polyDegree*8
+	return 32 + level*(glweDimension+1)*polyDegree*8
 }
 
 // WriteTo implements the io.WriterTo interface.
@@ -319,7 +319,7 @@ func (ct FourierGGSWCiphertext[T]) ByteSize() int {
 	level := len(ct.Value[0].Value)
 	polyDegree := ct.Value[0].Value[0].Value[0].Degree()
 
-	return 16 + 16 + (glweDimension+1)*level*(glweDimension+1)*polyDegree*8
+	return 32 + (glweDimension+1)*level*(glweDimension+1)*polyDegree*8
 }
 
 // WriteTo implements the io.WriterTo interface.

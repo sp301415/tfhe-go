@@ -333,7 +333,7 @@ func (ct LevCiphertext[T]) ByteSize() int {
 	level := len(ct.Value)
 	lweDimension := len(ct.Value[0].Value) - 1
 
-	return 16 + 8 + level*(lweDimension+1)*(num.SizeT[T]()/8)
+	return 24 + level*(lweDimension+1)*(num.SizeT[T]()/8)
 }
 
 // WriteTo implements the io.WriterTo interface.
@@ -471,7 +471,7 @@ func (ct GSWCiphertext[T]) ByteSize() int {
 	lweDimension := len(ct.Value) - 1
 	level := len(ct.Value[0].Value)
 
-	return 16 + 8 + (lweDimension+1)*level*(lweDimension+1)*(num.SizeT[T]()/8)
+	return 24 + (lweDimension+1)*level*(lweDimension+1)*(num.SizeT[T]()/8)
 }
 
 // WriteTo implements the io.WriterTo interface.
