@@ -14,7 +14,7 @@ func monomialSubOneMulAssignUint64AVX2(p0 []uint64, d int, pOut []uint64)
 
 // monomialSubOneMulAssign computes pOut = (X^d - 1) * p0.
 //
-// d is assumed to be in [-N, N]. p0 and pOut should not overlap.
+// d should be in [0, 2N), and p0 and pOut should not overlap.
 func monomialSubOneMulAssign[T num.Integer](p0 Poly[T], d int, pOut Poly[T]) {
 	if cpu.X86.HasAVX2 {
 		var z T
@@ -51,7 +51,7 @@ func monomialSubOneMulAddAssignUint64AVX2(p0 []uint64, d int, pOut []uint64)
 
 // monomialSubOneMulAddAssign computes pOut += (X^d - 1) * p0.
 //
-// d should to be in [0, 2N), and p0 and pOut should not overlap.
+// d should be in [0, 2N), and p0 and pOut should not overlap.
 func monomialSubOneMulAddAssign[T num.Integer](p0 Poly[T], d int, pOut Poly[T]) {
 	if cpu.X86.HasAVX2 {
 		var z T

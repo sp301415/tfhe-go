@@ -2,6 +2,8 @@
 package poly
 
 import (
+	"math"
+
 	"github.com/sp301415/tfhe-go/math/num"
 	"github.com/sp301415/tfhe-go/math/vec"
 )
@@ -67,6 +69,7 @@ type FourierPoly struct {
 	// for efficient computation.
 	//
 	// Namely,
+	//
 	//	[(r0, i0), (r1, i1), (r2, i2), (r3, i3), ...]
 	//
 	// is represented as
@@ -116,4 +119,15 @@ func (p FourierPoly) Clear() {
 // this function may return false even if p0 and p are equal.
 func (p FourierPoly) Equals(p0 FourierPoly) bool {
 	return vec.Equals(p.Coeffs, p0.Coeffs)
+}
+
+// Approx checks if p0 is approximately equal with p,
+// with a difference smaller than eps.
+func (p FourierPoly) Approx(p0 FourierPoly, eps float64) bool {
+	for i := range p.Coeffs {
+		if math.Abs(p.Coeffs[i]-p0.Coeffs[i]) > eps {
+			return false
+		}
+	}
+	return true
 }

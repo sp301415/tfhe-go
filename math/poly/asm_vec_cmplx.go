@@ -72,7 +72,6 @@ func cmplxMulCmplxAssign(v0 []float64, c complex128, vOut []float64) {
 
 // cmplxMulAddCmplxAssign computes vOut += c * v0.
 func cmplxMulAddCmplxAssign(v0 []float64, c complex128, vOut []float64) {
-
 	for i := 0; i < len(vOut); i += 8 {
 		vOut[i+0] += v0[i+0]*real(c) - v0[i+4]*imag(c)
 		vOut[i+1] += v0[i+1]*real(c) - v0[i+5]*imag(c)
