@@ -22,7 +22,7 @@ func (e *Evaluator[T]) GadgetProductAssign(ctFourierGLev FourierGLevCiphertext[T
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierEvaluator.ToScaledStandardPolyAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierEvaluator.ToScaledPolyAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
@@ -37,7 +37,7 @@ func (e *Evaluator[T]) GadgetProductAddAssign(ctFourierGLev FourierGLevCiphertex
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierEvaluator.ToScaledStandardPolyAddAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierEvaluator.ToScaledPolyAddAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
@@ -52,7 +52,7 @@ func (e *Evaluator[T]) GadgetProductSubAssign(ctFourierGLev FourierGLevCiphertex
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierEvaluator.ToScaledStandardPolySubAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierEvaluator.ToScaledPolySubAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
@@ -64,7 +64,7 @@ func (e *Evaluator[T]) GadgetProductFourierDecomposedAssign(ctFourierGLev Fourie
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierEvaluator.ToScaledStandardPolyAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierEvaluator.ToScaledPolyAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
@@ -76,7 +76,7 @@ func (e *Evaluator[T]) GadgetProductFourierDecomposedAddAssign(ctFourierGLev Fou
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierEvaluator.ToScaledStandardPolyAddAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierEvaluator.ToScaledPolyAddAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
@@ -88,7 +88,7 @@ func (e *Evaluator[T]) GadgetProductFourierDecomposedSubAssign(ctFourierGLev Fou
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierEvaluator.ToScaledStandardPolySubAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierEvaluator.ToScaledPolySubAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
@@ -117,7 +117,7 @@ func (e *Evaluator[T]) ExternalProductAssign(ctFourierGGSW FourierGGSWCiphertext
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierEvaluator.ToScaledStandardPolyAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierEvaluator.ToScaledPolyAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
@@ -139,7 +139,7 @@ func (e *Evaluator[T]) ExternalProductAddAssign(ctFourierGGSW FourierGGSWCiphert
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierEvaluator.ToScaledStandardPolyAddAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierEvaluator.ToScaledPolyAddAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
@@ -161,7 +161,7 @@ func (e *Evaluator[T]) ExternalProductSubAssign(ctFourierGGSW FourierGGSWCiphert
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierEvaluator.ToScaledStandardPolySubAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierEvaluator.ToScaledPolySubAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
@@ -186,7 +186,7 @@ func (e *Evaluator[T]) ExternalProductFourierDecomposedAssign(ctFourierGGSW Four
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierEvaluator.ToScaledStandardPolyAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierEvaluator.ToScaledPolyAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
@@ -204,7 +204,7 @@ func (e *Evaluator[T]) ExternalProductFourierDecomposedAddAssign(ctFourierGGSW F
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierEvaluator.ToScaledStandardPolyAddAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierEvaluator.ToScaledPolyAddAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 
@@ -222,7 +222,7 @@ func (e *Evaluator[T]) ExternalProductFourierDecomposedSubAssign(ctFourierGGSW F
 	}
 
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierEvaluator.ToScaledStandardPolySubAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+		e.FourierEvaluator.ToScaledPolySubAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
 	}
 }
 

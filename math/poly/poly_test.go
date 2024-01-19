@@ -88,15 +88,15 @@ func BenchmarkFFT(b *testing.B) {
 		}
 	})
 
-	b.Run("ToStandardPoly", func(b *testing.B) {
+	b.Run("ToPoly", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			fft.ToStandardPolyAssign(fp, pOut)
+			fft.ToPolyAssign(fp, pOut)
 		}
 	})
 
-	b.Run("ToScaledStandardPoly", func(b *testing.B) {
+	b.Run("ToScaledPoly", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			fft.ToScaledStandardPolyAssign(fp, pOut)
+			fft.ToScaledPolyAssign(fp, pOut)
 		}
 	})
 }

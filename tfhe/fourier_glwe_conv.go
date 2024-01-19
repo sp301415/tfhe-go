@@ -24,7 +24,7 @@ func (e *Evaluator[T]) ToStandardGLWECiphertext(ct FourierGLWECiphertext[T]) GLW
 // ToStandardGLWECiphertextAssign transforms Fourier GLWE ciphertext to GLWE ciphertext and writes it to ctOut.
 func (e *Evaluator[T]) ToStandardGLWECiphertextAssign(ctIn FourierGLWECiphertext[T], ctOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierEvaluator.ToScaledStandardPolyAssign(ctIn.Value[i], ctOut.Value[i])
+		e.FourierEvaluator.ToScaledPolyAssign(ctIn.Value[i], ctOut.Value[i])
 	}
 }
 
@@ -124,7 +124,7 @@ func (e *Encryptor[T]) ToStandardGLWECiphertext(ct FourierGLWECiphertext[T]) GLW
 // ToStandardGLWECiphertextAssign transforms Fourier GLWE ciphertext to GLWE ciphertext and writes it to ctOut.
 func (e *Encryptor[T]) ToStandardGLWECiphertextAssign(ctIn FourierGLWECiphertext[T], ctOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierEvaluator.ToScaledStandardPolyAssign(ctIn.Value[i], ctOut.Value[i])
+		e.FourierEvaluator.ToScaledPolyAssign(ctIn.Value[i], ctOut.Value[i])
 	}
 }
 

@@ -16,14 +16,14 @@ func (e *Encryptor[T]) mulFourierGLWEKeyAssign(p poly.Poly[T], fsk poly.FourierP
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
 	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fsk, e.buffer.fpSplit)
-	e.FourierEvaluator.ToStandardPolyAssignUnsafe(e.buffer.fpSplit, pOut)
+	e.FourierEvaluator.ToPolyAssignUnsafe(e.buffer.fpSplit, pOut)
 
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		e.buffer.pSplit.Coeffs[i] = (p.Coeffs[i] >> bits) & mask
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
 	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fsk, e.buffer.fpSplit)
-	e.FourierEvaluator.ToStandardPolyAssignUnsafe(e.buffer.fpSplit, e.buffer.pSplit)
+	e.FourierEvaluator.ToPolyAssignUnsafe(e.buffer.fpSplit, e.buffer.pSplit)
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		pOut.Coeffs[i] += e.buffer.pSplit.Coeffs[i] << bits
 	}
@@ -37,7 +37,7 @@ func (e *Encryptor[T]) mulFourierGLWEKeyAssign(p poly.Poly[T], fsk poly.FourierP
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
 	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fsk, e.buffer.fpSplit)
-	e.FourierEvaluator.ToStandardPolyAssignUnsafe(e.buffer.fpSplit, e.buffer.pSplit)
+	e.FourierEvaluator.ToPolyAssignUnsafe(e.buffer.fpSplit, e.buffer.pSplit)
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		pOut.Coeffs[i] += (e.buffer.pSplit.Coeffs[i] << bits) << bits
 	}
@@ -54,14 +54,14 @@ func (e *Encryptor[T]) mulFourierGLWEKeyAddAssign(p poly.Poly[T], fsk poly.Fouri
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
 	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fsk, e.buffer.fpSplit)
-	e.FourierEvaluator.ToStandardPolyAddAssignUnsafe(e.buffer.fpSplit, pOut)
+	e.FourierEvaluator.ToPolyAddAssignUnsafe(e.buffer.fpSplit, pOut)
 
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		e.buffer.pSplit.Coeffs[i] = (p.Coeffs[i] >> bits) & mask
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
 	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fsk, e.buffer.fpSplit)
-	e.FourierEvaluator.ToStandardPolyAssignUnsafe(e.buffer.fpSplit, e.buffer.pSplit)
+	e.FourierEvaluator.ToPolyAssignUnsafe(e.buffer.fpSplit, e.buffer.pSplit)
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		pOut.Coeffs[i] += e.buffer.pSplit.Coeffs[i] << bits
 	}
@@ -75,7 +75,7 @@ func (e *Encryptor[T]) mulFourierGLWEKeyAddAssign(p poly.Poly[T], fsk poly.Fouri
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
 	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fsk, e.buffer.fpSplit)
-	e.FourierEvaluator.ToStandardPolyAssignUnsafe(e.buffer.fpSplit, e.buffer.pSplit)
+	e.FourierEvaluator.ToPolyAssignUnsafe(e.buffer.fpSplit, e.buffer.pSplit)
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		pOut.Coeffs[i] += (e.buffer.pSplit.Coeffs[i] << bits) << bits
 	}
@@ -92,14 +92,14 @@ func (e *Encryptor[T]) mulFourierGLWEKeySubAssign(p poly.Poly[T], fsk poly.Fouri
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
 	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fsk, e.buffer.fpSplit)
-	e.FourierEvaluator.ToStandardPolySubAssignUnsafe(e.buffer.fpSplit, pOut)
+	e.FourierEvaluator.ToPolySubAssignUnsafe(e.buffer.fpSplit, pOut)
 
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		e.buffer.pSplit.Coeffs[i] = (p.Coeffs[i] >> bits) & mask
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
 	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fsk, e.buffer.fpSplit)
-	e.FourierEvaluator.ToStandardPolyAssignUnsafe(e.buffer.fpSplit, e.buffer.pSplit)
+	e.FourierEvaluator.ToPolyAssignUnsafe(e.buffer.fpSplit, e.buffer.pSplit)
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		pOut.Coeffs[i] -= e.buffer.pSplit.Coeffs[i] << bits
 	}
@@ -113,7 +113,7 @@ func (e *Encryptor[T]) mulFourierGLWEKeySubAssign(p poly.Poly[T], fsk poly.Fouri
 	}
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpSplit)
 	e.FourierEvaluator.MulAssign(e.buffer.fpSplit, fsk, e.buffer.fpSplit)
-	e.FourierEvaluator.ToStandardPolyAssignUnsafe(e.buffer.fpSplit, e.buffer.pSplit)
+	e.FourierEvaluator.ToPolyAssignUnsafe(e.buffer.fpSplit, e.buffer.pSplit)
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		pOut.Coeffs[i] -= (e.buffer.pSplit.Coeffs[i] << bits) << bits
 	}
