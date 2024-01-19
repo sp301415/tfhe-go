@@ -116,15 +116,18 @@ func cmplxMulCmplxAssign(v0 []float64, c complex128, vOut []float64) {
 	}
 
 	for i := 0; i < len(vOut); i += 8 {
-		vOut[i+0] = v0[i+0]*real(c) - v0[i+4]*imag(c)
-		vOut[i+1] = v0[i+1]*real(c) - v0[i+5]*imag(c)
-		vOut[i+2] = v0[i+2]*real(c) - v0[i+6]*imag(c)
-		vOut[i+3] = v0[i+3]*real(c) - v0[i+7]*imag(c)
+		v0Tmp := v0[i : i+8 : i+8]
+		vOutTmp := vOut[i : i+8 : i+8]
 
-		vOut[i+4] = v0[i+0]*imag(c) + v0[i+4]*real(c)
-		vOut[i+5] = v0[i+1]*imag(c) + v0[i+5]*real(c)
-		vOut[i+6] = v0[i+2]*imag(c) + v0[i+6]*real(c)
-		vOut[i+7] = v0[i+3]*imag(c) + v0[i+7]*real(c)
+		vOutTmp[0] = v0Tmp[0]*real(c) - v0Tmp[4]*imag(c)
+		vOutTmp[1] = v0Tmp[1]*real(c) - v0Tmp[5]*imag(c)
+		vOutTmp[2] = v0Tmp[2]*real(c) - v0Tmp[6]*imag(c)
+		vOutTmp[3] = v0Tmp[3]*real(c) - v0Tmp[7]*imag(c)
+
+		vOutTmp[4] = v0Tmp[0]*imag(c) + v0Tmp[4]*real(c)
+		vOutTmp[5] = v0Tmp[1]*imag(c) + v0Tmp[5]*real(c)
+		vOutTmp[6] = v0Tmp[2]*imag(c) + v0Tmp[6]*real(c)
+		vOutTmp[7] = v0Tmp[3]*imag(c) + v0Tmp[7]*real(c)
 	}
 }
 
@@ -138,15 +141,18 @@ func cmplxMulAddCmplxAssign(v0 []float64, c complex128, vOut []float64) {
 	}
 
 	for i := 0; i < len(vOut); i += 8 {
-		vOut[i+0] += v0[i+0]*real(c) - v0[i+4]*imag(c)
-		vOut[i+1] += v0[i+1]*real(c) - v0[i+5]*imag(c)
-		vOut[i+2] += v0[i+2]*real(c) - v0[i+6]*imag(c)
-		vOut[i+3] += v0[i+3]*real(c) - v0[i+7]*imag(c)
+		v0Tmp := v0[i : i+8 : i+8]
+		vOutTmp := vOut[i : i+8 : i+8]
 
-		vOut[i+4] += v0[i+0]*imag(c) + v0[i+4]*real(c)
-		vOut[i+5] += v0[i+1]*imag(c) + v0[i+5]*real(c)
-		vOut[i+6] += v0[i+2]*imag(c) + v0[i+6]*real(c)
-		vOut[i+7] += v0[i+3]*imag(c) + v0[i+7]*real(c)
+		vOutTmp[0] += v0Tmp[0]*real(c) - v0Tmp[4]*imag(c)
+		vOutTmp[1] += v0Tmp[1]*real(c) - v0Tmp[5]*imag(c)
+		vOutTmp[2] += v0Tmp[2]*real(c) - v0Tmp[6]*imag(c)
+		vOutTmp[3] += v0Tmp[3]*real(c) - v0Tmp[7]*imag(c)
+
+		vOutTmp[4] += v0Tmp[0]*imag(c) + v0Tmp[4]*real(c)
+		vOutTmp[5] += v0Tmp[1]*imag(c) + v0Tmp[5]*real(c)
+		vOutTmp[6] += v0Tmp[2]*imag(c) + v0Tmp[6]*real(c)
+		vOutTmp[7] += v0Tmp[3]*imag(c) + v0Tmp[7]*real(c)
 	}
 }
 
@@ -160,15 +166,18 @@ func cmplxMulSubCmplxAssign(v0 []float64, c complex128, vOut []float64) {
 	}
 
 	for i := 0; i < len(vOut); i += 8 {
-		vOut[i+0] -= v0[i+0]*real(c) - v0[i+4]*imag(c)
-		vOut[i+1] -= v0[i+1]*real(c) - v0[i+5]*imag(c)
-		vOut[i+2] -= v0[i+2]*real(c) - v0[i+6]*imag(c)
-		vOut[i+3] -= v0[i+3]*real(c) - v0[i+7]*imag(c)
+		v0Tmp := v0[i : i+8 : i+8]
+		vOutTmp := vOut[i : i+8 : i+8]
 
-		vOut[i+4] -= v0[i+0]*imag(c) + v0[i+4]*real(c)
-		vOut[i+5] -= v0[i+1]*imag(c) + v0[i+5]*real(c)
-		vOut[i+6] -= v0[i+2]*imag(c) + v0[i+6]*real(c)
-		vOut[i+7] -= v0[i+3]*imag(c) + v0[i+7]*real(c)
+		vOutTmp[0] -= v0Tmp[0]*real(c) - v0Tmp[4]*imag(c)
+		vOutTmp[1] -= v0Tmp[1]*real(c) - v0Tmp[5]*imag(c)
+		vOutTmp[2] -= v0Tmp[2]*real(c) - v0Tmp[6]*imag(c)
+		vOutTmp[3] -= v0Tmp[3]*real(c) - v0Tmp[7]*imag(c)
+
+		vOutTmp[4] -= v0Tmp[0]*imag(c) + v0Tmp[4]*real(c)
+		vOutTmp[5] -= v0Tmp[1]*imag(c) + v0Tmp[5]*real(c)
+		vOutTmp[6] -= v0Tmp[2]*imag(c) + v0Tmp[6]*real(c)
+		vOutTmp[7] -= v0Tmp[3]*imag(c) + v0Tmp[7]*real(c)
 	}
 }
 
@@ -182,25 +191,19 @@ func elementWiseMulCmplxAssign(v0, v1, vOut []float64) {
 	}
 
 	for i := 0; i < len(vOut); i += 8 {
-		vOut0 := v0[i+0]*v1[i+0] - v0[i+4]*v1[i+4]
-		vOut1 := v0[i+1]*v1[i+1] - v0[i+5]*v1[i+5]
-		vOut2 := v0[i+2]*v1[i+2] - v0[i+6]*v1[i+6]
-		vOut3 := v0[i+3]*v1[i+3] - v0[i+7]*v1[i+7]
+		v0Tmp := v0[i+0 : i+8 : i+8]
+		v1Tmp := v1[i+0 : i+8 : i+8]
+		vOutTmp := vOut[i+0 : i+8 : i+8]
 
-		vOut4 := v0[i+0]*v1[i+4] + v0[i+4]*v1[i+0]
-		vOut5 := v0[i+1]*v1[i+5] + v0[i+5]*v1[i+1]
-		vOut6 := v0[i+2]*v1[i+6] + v0[i+6]*v1[i+2]
-		vOut7 := v0[i+3]*v1[i+7] + v0[i+7]*v1[i+3]
+		vOutTmp[0] = v0Tmp[0]*v1Tmp[0] - v0Tmp[4]*v1Tmp[4]
+		vOutTmp[1] = v0Tmp[1]*v1Tmp[1] - v0Tmp[5]*v1Tmp[5]
+		vOutTmp[2] = v0Tmp[2]*v1Tmp[2] - v0Tmp[6]*v1Tmp[6]
+		vOutTmp[3] = v0Tmp[3]*v1Tmp[3] - v0Tmp[7]*v1Tmp[7]
 
-		vOut[i+0] = vOut0
-		vOut[i+1] = vOut1
-		vOut[i+2] = vOut2
-		vOut[i+3] = vOut3
-
-		vOut[i+4] = vOut4
-		vOut[i+5] = vOut5
-		vOut[i+6] = vOut6
-		vOut[i+7] = vOut7
+		vOutTmp[4] = v0Tmp[0]*v1Tmp[4] + v0Tmp[4]*v1Tmp[0]
+		vOutTmp[5] = v0Tmp[1]*v1Tmp[5] + v0Tmp[5]*v1Tmp[1]
+		vOutTmp[6] = v0Tmp[2]*v1Tmp[6] + v0Tmp[6]*v1Tmp[2]
+		vOutTmp[7] = v0Tmp[3]*v1Tmp[7] + v0Tmp[7]*v1Tmp[3]
 	}
 }
 
@@ -214,25 +217,29 @@ func elementWiseMulAddCmplxAssign(v0, v1, vOut []float64) {
 	}
 
 	for i := 0; i < len(vOut); i += 8 {
-		vOut0 := vOut[i+0] + (v0[i+0]*v1[i+0] - v0[i+4]*v1[i+4])
-		vOut1 := vOut[i+1] + (v0[i+1]*v1[i+1] - v0[i+5]*v1[i+5])
-		vOut2 := vOut[i+2] + (v0[i+2]*v1[i+2] - v0[i+6]*v1[i+6])
-		vOut3 := vOut[i+3] + (v0[i+3]*v1[i+3] - v0[i+7]*v1[i+7])
+		v0Tmp := v0[i+0 : i+8 : i+8]
+		v1Tmp := v1[i+0 : i+8 : i+8]
+		vOutTmp := vOut[i+0 : i+8 : i+8]
 
-		vOut4 := vOut[i+4] + (v0[i+0]*v1[i+4] + v0[i+4]*v1[i+0])
-		vOut5 := vOut[i+5] + (v0[i+1]*v1[i+5] + v0[i+5]*v1[i+1])
-		vOut6 := vOut[i+6] + (v0[i+2]*v1[i+6] + v0[i+6]*v1[i+2])
-		vOut7 := vOut[i+7] + (v0[i+3]*v1[i+7] + v0[i+7]*v1[i+3])
+		vOut0 := vOutTmp[0] + (v0Tmp[0]*v1Tmp[0] - v0Tmp[4]*v1Tmp[4])
+		vOut1 := vOutTmp[1] + (v0Tmp[1]*v1Tmp[1] - v0Tmp[5]*v1Tmp[5])
+		vOut2 := vOutTmp[2] + (v0Tmp[2]*v1Tmp[2] - v0Tmp[6]*v1Tmp[6])
+		vOut3 := vOutTmp[3] + (v0Tmp[3]*v1Tmp[3] - v0Tmp[7]*v1Tmp[7])
 
-		vOut[i+0] = vOut0
-		vOut[i+1] = vOut1
-		vOut[i+2] = vOut2
-		vOut[i+3] = vOut3
+		vOut4 := vOutTmp[4] + (v0Tmp[0]*v1Tmp[4] + v0Tmp[4]*v1Tmp[0])
+		vOut5 := vOutTmp[5] + (v0Tmp[1]*v1Tmp[5] + v0Tmp[5]*v1Tmp[1])
+		vOut6 := vOutTmp[6] + (v0Tmp[2]*v1Tmp[6] + v0Tmp[6]*v1Tmp[2])
+		vOut7 := vOutTmp[7] + (v0Tmp[3]*v1Tmp[7] + v0Tmp[7]*v1Tmp[3])
 
-		vOut[i+4] = vOut4
-		vOut[i+5] = vOut5
-		vOut[i+6] = vOut6
-		vOut[i+7] = vOut7
+		vOutTmp[0] = vOut0
+		vOutTmp[1] = vOut1
+		vOutTmp[2] = vOut2
+		vOutTmp[3] = vOut3
+
+		vOutTmp[4] = vOut4
+		vOutTmp[5] = vOut5
+		vOutTmp[6] = vOut6
+		vOutTmp[7] = vOut7
 	}
 }
 
@@ -246,24 +253,28 @@ func elementWiseMulSubCmplxAssign(v0, v1, vOut []float64) {
 	}
 
 	for i := 0; i < len(vOut); i += 8 {
-		vOut0 := vOut[i+0] - (v0[i+0]*v1[i+0] - v0[i+4]*v1[i+4])
-		vOut1 := vOut[i+1] - (v0[i+1]*v1[i+1] - v0[i+5]*v1[i+5])
-		vOut2 := vOut[i+2] - (v0[i+2]*v1[i+2] - v0[i+6]*v1[i+6])
-		vOut3 := vOut[i+3] - (v0[i+3]*v1[i+3] - v0[i+7]*v1[i+7])
+		v0Tmp := v0[i+0 : i+8 : i+8]
+		v1Tmp := v1[i+0 : i+8 : i+8]
+		vOutTmp := vOut[i+0 : i+8 : i+8]
 
-		vOut4 := vOut[i+4] - (v0[i+0]*v1[i+4] + v0[i+4]*v1[i+0])
-		vOut5 := vOut[i+5] - (v0[i+1]*v1[i+5] + v0[i+5]*v1[i+1])
-		vOut6 := vOut[i+6] - (v0[i+2]*v1[i+6] + v0[i+6]*v1[i+2])
-		vOut7 := vOut[i+7] - (v0[i+3]*v1[i+7] + v0[i+7]*v1[i+3])
+		vOut0 := vOutTmp[0] - (v0Tmp[0]*v1Tmp[0] - v0Tmp[4]*v1Tmp[4])
+		vOut1 := vOutTmp[1] - (v0Tmp[1]*v1Tmp[1] - v0Tmp[5]*v1Tmp[5])
+		vOut2 := vOutTmp[2] - (v0Tmp[2]*v1Tmp[2] - v0Tmp[6]*v1Tmp[6])
+		vOut3 := vOutTmp[3] - (v0Tmp[3]*v1Tmp[3] - v0Tmp[7]*v1Tmp[7])
 
-		vOut[i+0] = vOut0
-		vOut[i+1] = vOut1
-		vOut[i+2] = vOut2
-		vOut[i+3] = vOut3
+		vOut4 := vOutTmp[4] - (v0Tmp[0]*v1Tmp[4] + v0Tmp[4]*v1Tmp[0])
+		vOut5 := vOutTmp[5] - (v0Tmp[1]*v1Tmp[5] + v0Tmp[5]*v1Tmp[1])
+		vOut6 := vOutTmp[6] - (v0Tmp[2]*v1Tmp[6] + v0Tmp[6]*v1Tmp[2])
+		vOut7 := vOutTmp[7] - (v0Tmp[3]*v1Tmp[7] + v0Tmp[7]*v1Tmp[3])
 
-		vOut[i+4] = vOut4
-		vOut[i+5] = vOut5
-		vOut[i+6] = vOut6
-		vOut[i+7] = vOut7
+		vOutTmp[0] = vOut0
+		vOutTmp[1] = vOut1
+		vOutTmp[2] = vOut2
+		vOutTmp[3] = vOut3
+
+		vOutTmp[4] = vOut4
+		vOutTmp[5] = vOut5
+		vOutTmp[6] = vOut6
+		vOutTmp[7] = vOut7
 	}
 }
