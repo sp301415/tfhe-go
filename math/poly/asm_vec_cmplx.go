@@ -116,15 +116,25 @@ func elementWiseMulCmplxAssign(v0, v1, vOut []float64) {
 		v1Tmp := v1[i+0 : i+8 : i+8]
 		vOutTmp := vOut[i+0 : i+8 : i+8]
 
-		vOutTmp[0] = v0Tmp[0]*v1Tmp[0] - v0Tmp[4]*v1Tmp[4]
-		vOutTmp[1] = v0Tmp[1]*v1Tmp[1] - v0Tmp[5]*v1Tmp[5]
-		vOutTmp[2] = v0Tmp[2]*v1Tmp[2] - v0Tmp[6]*v1Tmp[6]
-		vOutTmp[3] = v0Tmp[3]*v1Tmp[3] - v0Tmp[7]*v1Tmp[7]
+		vOut0 := v0Tmp[0]*v1Tmp[0] - v0Tmp[4]*v1Tmp[4]
+		vOut1 := v0Tmp[1]*v1Tmp[1] - v0Tmp[5]*v1Tmp[5]
+		vOut2 := v0Tmp[2]*v1Tmp[2] - v0Tmp[6]*v1Tmp[6]
+		vOut3 := v0Tmp[3]*v1Tmp[3] - v0Tmp[7]*v1Tmp[7]
 
-		vOutTmp[4] = v0Tmp[0]*v1Tmp[4] + v0Tmp[4]*v1Tmp[0]
-		vOutTmp[5] = v0Tmp[1]*v1Tmp[5] + v0Tmp[5]*v1Tmp[1]
-		vOutTmp[6] = v0Tmp[2]*v1Tmp[6] + v0Tmp[6]*v1Tmp[2]
-		vOutTmp[7] = v0Tmp[3]*v1Tmp[7] + v0Tmp[7]*v1Tmp[3]
+		vOut4 := v0Tmp[0]*v1Tmp[4] + v0Tmp[4]*v1Tmp[0]
+		vOut5 := v0Tmp[1]*v1Tmp[5] + v0Tmp[5]*v1Tmp[1]
+		vOut6 := v0Tmp[2]*v1Tmp[6] + v0Tmp[6]*v1Tmp[2]
+		vOut7 := v0Tmp[3]*v1Tmp[7] + v0Tmp[7]*v1Tmp[3]
+
+		vOutTmp[0] = vOut0
+		vOutTmp[1] = vOut1
+		vOutTmp[2] = vOut2
+		vOutTmp[3] = vOut3
+
+		vOutTmp[4] = vOut4
+		vOutTmp[5] = vOut5
+		vOutTmp[6] = vOut6
+		vOutTmp[7] = vOut7
 	}
 }
 
