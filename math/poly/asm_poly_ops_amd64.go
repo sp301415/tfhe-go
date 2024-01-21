@@ -37,7 +37,7 @@ func monomialSubOneMulAssign[T num.Integer](p0 Poly[T], d int, pOut Poly[T]) {
 			pOut.Coeffs[i] = p0.Coeffs[ii] - p0.Coeffs[i]
 		}
 	} else {
-		for i, ii := 0, (polyDegree<<1)-d; ii < polyDegree; i, ii = i+1, ii+1 {
+		for i, ii := 0, 2*polyDegree-d; ii < polyDegree; i, ii = i+1, ii+1 {
 			pOut.Coeffs[i] = p0.Coeffs[ii] - p0.Coeffs[i]
 		}
 		for i, ii := d-polyDegree, 0; i < polyDegree; i, ii = i+1, ii+1 {
@@ -74,7 +74,7 @@ func monomialSubOneMulAddAssign[T num.Integer](p0 Poly[T], d int, pOut Poly[T]) 
 			pOut.Coeffs[i] += p0.Coeffs[ii] - p0.Coeffs[i]
 		}
 	} else {
-		for i, ii := 0, (polyDegree<<1)-d; ii < polyDegree; i, ii = i+1, ii+1 {
+		for i, ii := 0, 2*polyDegree-d; ii < polyDegree; i, ii = i+1, ii+1 {
 			pOut.Coeffs[i] += p0.Coeffs[ii] - p0.Coeffs[i]
 		}
 		for i, ii := d-polyDegree, 0; i < polyDegree; i, ii = i+1, ii+1 {

@@ -104,19 +104,19 @@ func (f *FourierEvaluator[T]) MonomialToFourierPoly(d int) FourierPoly {
 // d should be positive.
 func (f *FourierEvaluator[T]) MonomialToFourierPolyAssign(d int, fpOut FourierPoly) {
 	for j, jj := 0, 0; j < f.degree; j, jj = j+8, jj+4 {
-		c0 := f.w4NjMono[(f.revMonoIdx[jj+0]*d)&((f.degree<<1)-1)]
+		c0 := f.w4NjMono[(f.revMonoIdx[jj+0]*d)&(2*f.degree-1)]
 		fpOut.Coeffs[j+0] = real(c0)
 		fpOut.Coeffs[j+4] = imag(c0)
 
-		c1 := f.w4NjMono[(f.revMonoIdx[jj+1]*d)&((f.degree<<1)-1)]
+		c1 := f.w4NjMono[(f.revMonoIdx[jj+1]*d)&(2*f.degree-1)]
 		fpOut.Coeffs[j+1] = real(c1)
 		fpOut.Coeffs[j+5] = imag(c1)
 
-		c2 := f.w4NjMono[(f.revMonoIdx[jj+2]*d)&((f.degree<<1)-1)]
+		c2 := f.w4NjMono[(f.revMonoIdx[jj+2]*d)&(2*f.degree-1)]
 		fpOut.Coeffs[j+2] = real(c2)
 		fpOut.Coeffs[j+6] = imag(c2)
 
-		c3 := f.w4NjMono[(f.revMonoIdx[jj+3]*d)&((f.degree<<1)-1)]
+		c3 := f.w4NjMono[(f.revMonoIdx[jj+3]*d)&(2*f.degree-1)]
 		fpOut.Coeffs[j+3] = real(c3)
 		fpOut.Coeffs[j+7] = imag(c3)
 	}

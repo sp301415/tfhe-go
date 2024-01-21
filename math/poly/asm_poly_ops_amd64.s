@@ -102,7 +102,7 @@ case_0_loop_1_leftover_end:
 	RET
 
 case_1:
-	// for i, ii := 0, (polyDegree<<1)-d; ii < polyDegree; i, ii = i+1, ii+1
+	// for i, ii := 0, 2*polyDegree-d; ii < polyDegree; i, ii = i+1, ii+1
 	XORQ SI, SI
 	MOVQ CX, DI
 	ADDQ CX, DI
@@ -290,7 +290,7 @@ case_0_loop_1_leftover_end:
 	RET
 
 case_1:
-	// for i, ii := 0, (polyDegree<<1)-d; ii < polyDegree; i, ii = i+1, ii+1
+	// for i, ii := 0, 2*polyDegree-d; ii < polyDegree; i, ii = i+1, ii+1
 	XORQ SI, SI
 	MOVQ CX, DI
 	ADDQ CX, DI
@@ -486,7 +486,7 @@ case_0_loop_1_leftover_end:
 	RET
 
 case_1:
-	// for i, ii := 0, (polyDegree<<1)-d; ii < polyDegree; i, ii = i+1, ii+1
+	// for i, ii := 0, 2*polyDegree-d; ii < polyDegree; i, ii = i+1, ii+1
 	XORQ SI, SI
 	MOVQ CX, DI
 	ADDQ CX, DI
@@ -690,7 +690,7 @@ case_0_loop_1_leftover_end:
 	RET
 
 case_1:
-	// for i, ii := 0, (polyDegree<<1)-d; ii < polyDegree; i, ii = i+1, ii+1
+	// for i, ii := 0, 2*polyDegree-d; ii < polyDegree; i, ii = i+1, ii+1
 	XORQ SI, SI
 	MOVQ CX, DI
 	ADDQ CX, DI
