@@ -130,6 +130,14 @@ func (p GadgetParameters[T]) LastScaledBaseLog() int {
 	return p.ScaledBaseLog(p.level - 1)
 }
 
+// Literal returns a GadgetParametersLiteral from this GadgetParameters.
+func (p GadgetParameters[T]) Literal() GadgetParametersLiteral[T] {
+	return GadgetParametersLiteral[T]{
+		Base:  p.base,
+		Level: p.level,
+	}
+}
+
 // ByteSize returns the byte size of the gadget parameters.
 func (p GadgetParameters[T]) ByteSize() int {
 	return 16
@@ -530,6 +538,28 @@ func (p Parameters[T]) KeySwitchParameters() GadgetParameters[T] {
 // BootstrapOrder is the order of Programmable Bootstrapping.
 func (p Parameters[T]) BootstrapOrder() BootstrapOrder {
 	return p.bootstrapOrder
+}
+
+// Literal returns a ParametersLiteral from this Parameters.
+func (p Parameters[T]) Literal() ParametersLiteral[T] {
+	return ParametersLiteral[T]{
+		LWEDimension:    p.lweDimension,
+		GLWEDimension:   p.glweDimension,
+		PolyDegree:      p.polyDegree,
+		PolyLargeDegree: p.polyLargeDegree,
+
+		LWEStdDev:  p.lweStdDev,
+		GLWEStdDev: p.glweStdDev,
+
+		BlockSize: p.blockSize,
+
+		MessageModulus: p.messageModulus,
+
+		BootstrapParameters: p.bootstrapParameters.Literal(),
+		KeySwitchParameters: p.keyswitchParameters.Literal(),
+
+		BootstrapOrder: p.bootstrapOrder,
+	}
 }
 
 // ByteSize returns the byte size of the parameters.

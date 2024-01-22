@@ -136,6 +136,23 @@ func TestEvaluator(t *testing.T) {
 		}
 	})
 
+	t.Run("BootstrapOriginalFunc", func(t *testing.T) {
+		f := func(x int) int { return 2 * x }
+
+		paramsOriginalBootstrapLiteral := testParams.Literal()
+		paramsOriginalBootstrapLiteral.BlockSize = 1
+		paramsOriginalBootstrap := paramsOriginalBootstrapLiteral.Compile()
+
+		originalEncryptor := tfhe.NewEncryptor(paramsOriginalBootstrap)
+		originalEvaluator := tfhe.NewEvaluator(paramsOriginalBootstrap, originalEncryptor.GenEvaluationKeyParallel())
+
+		for _, m := range messages {
+			ct := originalEncryptor.EncryptLWE(m)
+			ctOut := originalEvaluator.BootstrapFunc(ct, f)
+			assert.Equal(t, f(m), originalEncryptor.DecryptLWE(ctOut))
+		}
+	})
+
 	t.Run("BootstrapBlockFunc", func(t *testing.T) {
 		f := func(x int) int { return 2 * x }
 
