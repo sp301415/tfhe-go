@@ -99,8 +99,8 @@ fmt.Println(enc.DecryptLWEBool(ctOut)) // true
 All results were measured from Intel i5-13400F, with roughly equivalent parameters.
 |Operation|TFHE-go|TFHE-rs (v0.4.1)|
 |---------|-------|-------|
-|Gate Bootstrapping|9.35ms|8.73ms|
-|Programmable Bootstrapping (6 bits)|45.14ms|74.13ms|
+|Gate Bootstrapping|9.45ms|8.73ms|
+|Programmable Bootstrapping (6 bits)|45.42ms|74.13ms|
 
 ## Security
 TFHE-go has not been audited or reviewed by security experts, so using it for any real-world production purposes is not recommended. See [SECURITY](https://github.com/sp301415/tfhe-go/blob/master/SECURITY.md) for more details.
