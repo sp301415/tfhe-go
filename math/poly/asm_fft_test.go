@@ -9,7 +9,7 @@ import (
 	"github.com/sp301415/tfhe-go/math/vec"
 )
 
-func fftInPlaceRef(coeffs, wNj []complex128) {
+func fftInPlaceRef(coeffs, tw []complex128) {
 	N := len(coeffs)
 
 	t := N
@@ -19,14 +19,14 @@ func fftInPlaceRef(coeffs, wNj []complex128) {
 			j1 := i * t << 1
 			j2 := j1 + t
 			for j := j1; j < j2; j++ {
-				U, V := coeffs[j], coeffs[j+t]*wNj[i]
+				U, V := coeffs[j], coeffs[j+t]*tw[i]
 				coeffs[j], coeffs[j+t] = U+V, U-V
 			}
 		}
 	}
 }
 
-func invFFTInPlaceRef(coeffs, wNjInv []complex128) {
+func invFFTInPlaceRef(coeffs, twInv []complex128) {
 	N := len(coeffs)
 
 	t := 1
@@ -37,7 +37,7 @@ func invFFTInPlaceRef(coeffs, wNjInv []complex128) {
 			j2 := j1 + t
 			for j := j1; j < j2; j++ {
 				U, V := coeffs[j], coeffs[j+t]
-				coeffs[j], coeffs[j+t] = U+V, (U-V)*wNjInv[i]
+				coeffs[j], coeffs[j+t] = U+V, (U-V)*twInv[i]
 			}
 			j1 += t << 1
 		}
@@ -56,33 +56,33 @@ func TestFFTAssembly(t *testing.T) {
 	coeffsAVX2 := vec.CmplxToFloat4(coeffs)
 	coeffsAVX2Out := make([]complex128, N)
 
-	wNjRef := make([]complex128, N/2)
-	wNjInvRef := make([]complex128, N/2)
+	twRef := make([]complex128, N/2)
+	twInvRef := make([]complex128, N/2)
 	for j := 0; j < N/2; j++ {
 		e := -2 * math.Pi * float64(j) / float64(N)
-		wNjRef[j] = cmplx.Exp(complex(0, e))
-		wNjInvRef[j] = cmplx.Exp(-complex(0, e))
+		twRef[j] = cmplx.Exp(complex(0, e))
+		twInvRef[j] = cmplx.Exp(-complex(0, e))
 	}
-	vec.BitReverseInPlace(wNjRef)
-	vec.BitReverseInPlace(wNjInvRef)
+	vec.BitReverseInPlace(twRef)
+	vec.BitReverseInPlace(twInvRef)
 
-	w4Nj := make([]complex128, N)
-	w4NjInv := make([]complex128, N)
+	twist := make([]complex128, N)
+	twistInv := make([]complex128, N)
 	for j := 0; j < N; j++ {
 		e := 2 * math.Pi * float64(j) / float64(4*N)
-		w4Nj[j] = cmplx.Exp(complex(0, e))
-		w4NjInv[j] = cmplx.Exp(-complex(0, e)) / complex(float64(N), 0)
+		twist[j] = cmplx.Exp(complex(0, e))
+		twistInv[j] = cmplx.Exp(-complex(0, e)) / complex(float64(N), 0)
 	}
 
-	wNj, wNjInv := genTwiddleFactors(N)
+	tw, twInv := genTwiddleFactors(N)
 
 	t.Run("FFT", func(t *testing.T) {
 		vec.CmplxToFloat4Assign(coeffs, coeffsAVX2)
-		fftInPlace(coeffsAVX2, wNj)
+		fftInPlace(coeffsAVX2, tw)
 		vec.Float4ToCmplxAssign(coeffsAVX2, coeffsAVX2Out)
 
-		vec.ElementWiseMulAssign(coeffs, w4Nj, coeffs)
-		fftInPlaceRef(coeffs, wNjRef)
+		vec.ElementWiseMulAssign(coeffs, twist, coeffs)
+		fftInPlaceRef(coeffs, twRef)
 
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(coeffs[i]-coeffsAVX2Out[i]) > eps {
@@ -93,11 +93,11 @@ func TestFFTAssembly(t *testing.T) {
 
 	t.Run("InvFFT", func(t *testing.T) {
 		vec.CmplxToFloat4Assign(coeffs, coeffsAVX2)
-		invFFTInPlace(coeffsAVX2, wNjInv)
+		invFFTInPlace(coeffsAVX2, twInv)
 		vec.Float4ToCmplxAssign(coeffsAVX2, coeffsAVX2Out)
 
-		invFFTInPlaceRef(coeffs, wNjInvRef)
-		vec.ElementWiseMulAssign(coeffs, w4NjInv, coeffs)
+		invFFTInPlaceRef(coeffs, twInvRef)
+		vec.ElementWiseMulAssign(coeffs, twistInv, coeffs)
 
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(coeffs[i]-coeffsAVX2Out[i]) > eps {
@@ -116,39 +116,39 @@ func BenchmarkFFTAssembly(b *testing.B) {
 	}
 	coeffsAVX2 := vec.CmplxToFloat4(coeffs)
 
-	wNjRef := make([]complex128, N/2)
-	wNjInvRef := make([]complex128, N/2)
+	twRef := make([]complex128, N/2)
+	twInvRef := make([]complex128, N/2)
 	for j := 0; j < N/2; j++ {
 		e := -2 * math.Pi * float64(j) / float64(N)
-		wNjRef[j] = cmplx.Exp(complex(0, e))
-		wNjInvRef[j] = cmplx.Exp(-complex(0, e))
+		twRef[j] = cmplx.Exp(complex(0, e))
+		twInvRef[j] = cmplx.Exp(-complex(0, e))
 	}
-	vec.BitReverseInPlace(wNjRef)
-	vec.BitReverseInPlace(wNjInvRef)
+	vec.BitReverseInPlace(twRef)
+	vec.BitReverseInPlace(twInvRef)
 
-	wNj, wNjInv := genTwiddleFactors(N)
+	tw, twInv := genTwiddleFactors(N)
 
 	b.Run("FFT", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			fftInPlaceRef(coeffs, wNjRef)
+			fftInPlaceRef(coeffs, twRef)
 		}
 	})
 
 	b.Run("FFTAVX2", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			fftInPlace(coeffsAVX2, wNj)
+			fftInPlace(coeffsAVX2, tw)
 		}
 	})
 
 	b.Run("InvFFT", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			invFFTInPlaceRef(coeffs, wNjInvRef)
+			invFFTInPlaceRef(coeffs, twInvRef)
 		}
 	})
 
 	b.Run("InvFFTAVX2", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			invFFTInPlace(coeffsAVX2, wNjInv)
+			invFFTInPlace(coeffsAVX2, twInv)
 		}
 	})
 }

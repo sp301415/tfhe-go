@@ -8,13 +8,13 @@ import (
 	"golang.org/x/sys/cpu"
 )
 
-func fftInPlaceAVX2(coeffs []float64, wNj []complex128)
+func fftInPlaceAVX2(coeffs []float64, tw []complex128)
 
 // fftInPlace is a top-level function for FFT.
 // All internal FFT implementations calls this function for performance.
-func fftInPlace(coeffs []float64, wNj []complex128) {
+func fftInPlace(coeffs []float64, tw []complex128) {
 	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
-		fftInPlaceAVX2(coeffs, wNj)
+		fftInPlaceAVX2(coeffs, tw)
 		return
 	}
 
@@ -22,8 +22,8 @@ func fftInPlace(coeffs []float64, wNj []complex128) {
 	w := 0
 
 	// First Loop
-	Wr := real(wNj[w])
-	Wi := imag(wNj[w])
+	Wr := real(tw[w])
+	Wi := imag(tw[w])
 	w++
 	for j := 0; j < N/2; j += 8 {
 		Ur0 := coeffs[j+0]
@@ -85,8 +85,8 @@ func fftInPlace(coeffs []float64, wNj []complex128) {
 			j1 := i * t << 1
 			j2 := j1 + t
 
-			Wr := real(wNj[w])
-			Wi := imag(wNj[w])
+			Wr := real(tw[w])
+			Wi := imag(tw[w])
 			w++
 
 			for j := j1; j < j2; j += 8 {
@@ -145,8 +145,8 @@ func fftInPlace(coeffs []float64, wNj []complex128) {
 
 	// Stride 2
 	for j := 0; j < N; j += 8 {
-		Wr := real(wNj[w])
-		Wi := imag(wNj[w])
+		Wr := real(tw[w])
+		Wi := imag(tw[w])
 		w++
 
 		Ur0 := coeffs[j+0]
@@ -177,10 +177,10 @@ func fftInPlace(coeffs []float64, wNj []complex128) {
 
 	// Stride 1
 	for j := 0; j < N; j += 8 {
-		Wr0 := real(wNj[w])
-		Wi0 := imag(wNj[w])
-		Wr1 := real(wNj[w+1])
-		Wi1 := imag(wNj[w+1])
+		Wr0 := real(tw[w])
+		Wi0 := imag(tw[w])
+		Wr1 := real(tw[w+1])
+		Wi1 := imag(tw[w+1])
 		w += 2
 
 		Ur0 := coeffs[j+0]
@@ -210,13 +210,13 @@ func fftInPlace(coeffs []float64, wNj []complex128) {
 	}
 }
 
-func invFFTInPlaceAVX2(coeffs []float64, wNjInv []complex128, NInv float64)
+func invFFTInPlaceAVX2(coeffs []float64, twInv []complex128, NInv float64)
 
 // invfftInPlace is a top-level function for inverse FFT.
 // All internal inverse FFT implementations calls this function for performance.
-func invFFTInPlace(coeffs []float64, wNjInv []complex128) {
+func invFFTInPlace(coeffs []float64, twInv []complex128) {
 	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
-		invFFTInPlaceAVX2(coeffs, wNjInv, 2/float64(len(coeffs)))
+		invFFTInPlaceAVX2(coeffs, twInv, 2/float64(len(coeffs)))
 		return
 	}
 
@@ -225,10 +225,10 @@ func invFFTInPlace(coeffs []float64, wNjInv []complex128) {
 
 	// Stride 1
 	for j := 0; j < N; j += 8 {
-		Wr0 := real(wNjInv[w])
-		Wi0 := imag(wNjInv[w])
-		Wr1 := real(wNjInv[w+1])
-		Wi1 := imag(wNjInv[w+1])
+		Wr0 := real(twInv[w])
+		Wi0 := imag(twInv[w])
+		Wr1 := real(twInv[w+1])
+		Wi1 := imag(twInv[w+1])
 		w += 2
 
 		Ur0 := coeffs[j+0]
@@ -266,8 +266,8 @@ func invFFTInPlace(coeffs []float64, wNjInv []complex128) {
 
 	// Stride 2
 	for j := 0; j < N; j += 8 {
-		Wr := real(wNjInv[w])
-		Wi := imag(wNjInv[w])
+		Wr := real(twInv[w])
+		Wi := imag(twInv[w])
 		w++
 
 		Ur0 := coeffs[j+0]
@@ -311,8 +311,8 @@ func invFFTInPlace(coeffs []float64, wNjInv []complex128) {
 		for i := 0; i < h; i++ {
 			j2 := j1 + t
 
-			Wr := real(wNjInv[w])
-			Wi := imag(wNjInv[w])
+			Wr := real(twInv[w])
+			Wi := imag(twInv[w])
 			w++
 
 			for j := j1; j < j2; j += 8 {
@@ -383,8 +383,8 @@ func invFFTInPlace(coeffs []float64, wNjInv []complex128) {
 
 	// Last Loop
 	NInv := 2 / float64(N)
-	Wr := real(wNjInv[w])
-	Wi := imag(wNjInv[w])
+	Wr := real(twInv[w])
+	Wi := imag(twInv[w])
 	for j := 0; j < N/2; j += 8 {
 		Ur0 := coeffs[j+0]
 		Ur1 := coeffs[j+1]

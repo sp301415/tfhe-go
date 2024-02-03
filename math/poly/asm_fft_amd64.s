@@ -4,7 +4,7 @@
 
 TEXT ·fftInPlaceAVX2(SB), $0-48
 	MOVQ coeffs+0(FP), AX
-	MOVQ wNj+24(FP), BX
+	MOVQ tw+24(FP), BX
 
 	MOVQ coeffs_len+8(FP), CX
 
@@ -210,7 +210,7 @@ last_loop_1_end:
 
 TEXT ·invFFTInPlaceAVX2(SB), $0-56
 	MOVQ coeffs+0(FP), AX
-	MOVQ wNjInv+24(FP), BX
+	MOVQ twInv+24(FP), BX
 
 	MOVQ coeffs_len+8(FP), CX
 

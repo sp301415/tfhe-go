@@ -26,20 +26,20 @@ type FourierEvaluator[T num.Integer] struct {
 	// maxT is a float64 value of MaxT.
 	maxT float64
 
-	// wNj holds the twiddle factors for fourier transform.
+	// tw holds the twiddle factors for fourier transform.
 	// This is stored as "long" form, so that access to the factors are contiguous.
-	// Unlike other complex128 slices, wNj is in natural representation.
-	wNj []complex128
-	// wNjInv holds the twiddle factors for inverse fourier transform.
+	// Unlike other complex128 slices, tw is in natural representation.
+	tw []complex128
+	// twInv holds the twiddle factors for inverse fourier transform.
 	// This is stored as "long" form, so that access to the factors are contiguous.
-	// Unlike other complex128 slices, wNjInv is in natural representation.
-	wNjInv []complex128
-	// w4NjMono holds the twiddle factors for monomial fourier transform.
-	// Unlike other complex128 slices, w4NjMono is in natural representation.
-	w4NjMono []complex128
-	// revMonoIdx holds the precomputed bit-reversed index for monomial fourier transform.
+	// Unlike other complex128 slices, twInv is in natural representation.
+	twInv []complex128
+	// twMono holds the twiddle factors for monomial fourier transform.
+	// Unlike other complex128 slices, twMono is in natural representation.
+	twMono []complex128
+	// twMonoIdx holds the precomputed bit-reversed index for monomial fourier transform.
 	// Equivalent to BitReverse([-1, 3, 7, ..., 2N-1]).
-	revMonoIdx []int
+	twMonoIdx []int
 
 	// buffer holds the buffer values for this FourierEvaluator.
 	buffer fourierBuffer[T]
@@ -67,45 +67,45 @@ func NewFourierEvaluator[T num.Integer](N int) *FourierEvaluator[T] {
 
 	maxT := math.Exp2(float64(num.SizeT[T]()))
 
-	wNj, wNjInv := genTwiddleFactors(N / 2)
+	tw, twInv := genTwiddleFactors(N / 2)
 
-	w4NjMono := make([]complex128, 2*N)
+	twMono := make([]complex128, 2*N)
 	for j := 0; j < 2*N; j++ {
 		e := -math.Pi * float64(j) / float64(N)
-		w4NjMono[j] = cmplx.Exp(complex(0, e))
+		twMono[j] = cmplx.Exp(complex(0, e))
 	}
 
-	revMonoIdx := make([]int, N/2)
-	revMonoIdx[0] = 2*N - 1
+	twMonoIdx := make([]int, N/2)
+	twMonoIdx[0] = 2*N - 1
 	for i := 1; i < N/2; i++ {
-		revMonoIdx[i] = 4*i - 1
+		twMonoIdx[i] = 4*i - 1
 	}
-	vec.BitReverseInPlace(revMonoIdx)
+	vec.BitReverseInPlace(twMonoIdx)
 
 	return &FourierEvaluator[T]{
 		degree: N,
 		maxT:   maxT,
 
-		wNj:        wNj,
-		wNjInv:     wNjInv,
-		w4NjMono:   w4NjMono,
-		revMonoIdx: revMonoIdx,
+		tw:        tw,
+		twInv:     twInv,
+		twMono:    twMono,
+		twMonoIdx: twMonoIdx,
 
 		buffer: newFourierBuffer[T](N),
 	}
 }
 
 // genTwiddleFactors generates twiddle factors for FFT.
-func genTwiddleFactors(N int) (wNj, wNjInv []complex128) {
-	wNjRef := make([]complex128, N/2)
-	wNjInvRef := make([]complex128, N/2)
+func genTwiddleFactors(N int) (tw, twInv []complex128) {
+	wNj := make([]complex128, N/2)
+	wNjInv := make([]complex128, N/2)
 	for j := 0; j < N/2; j++ {
 		e := -2 * math.Pi * float64(j) / float64(N)
-		wNjRef[j] = cmplx.Exp(complex(0, e))
-		wNjInvRef[j] = cmplx.Exp(-complex(0, e))
+		wNj[j] = cmplx.Exp(complex(0, e))
+		wNjInv[j] = cmplx.Exp(-complex(0, e))
 	}
-	vec.BitReverseInPlace(wNjRef)
-	vec.BitReverseInPlace(wNjInvRef)
+	vec.BitReverseInPlace(wNj)
+	vec.BitReverseInPlace(wNjInv)
 
 	logN := num.Log2(N)
 	w4Nj := make([]complex128, logN)
@@ -116,31 +116,29 @@ func genTwiddleFactors(N int) (wNj, wNjInv []complex128) {
 		w4NjInv[j] = cmplx.Exp(-complex(0, e))
 	}
 
-	wNj = make([]complex128, N)
-	wNjInv = make([]complex128, N)
+	tw = make([]complex128, N)
+	twInv = make([]complex128, N)
 
-	w := 0
-	t := logN
+	w, t := 0, logN
 	for m := 1; m < N; m <<= 1 {
 		t--
 		for i := 0; i < m; i++ {
-			wNj[w] = wNjRef[i] * w4Nj[t]
+			tw[w] = wNj[i] * w4Nj[t]
 			w++
 		}
 	}
 
-	w = 0
-	t = 0
+	w, t = 0, 0
 	for m := N; m > 1; m >>= 1 {
 		for i := 0; i < m/2; i++ {
-			wNjInv[w] = wNjInvRef[i] * w4NjInv[t]
+			twInv[w] = wNjInv[i] * w4NjInv[t]
 			w++
 		}
 		t++
 	}
-	wNjInv[w-1] /= complex(float64(N), 0)
+	twInv[w-1] /= complex(float64(N), 0)
 
-	return wNj, wNjInv
+	return tw, twInv
 }
 
 // newFourierBuffer allocates an empty fourierBuffer.
@@ -158,10 +156,10 @@ func (f *FourierEvaluator[T]) ShallowCopy() *FourierEvaluator[T] {
 		degree: f.degree,
 		maxT:   f.maxT,
 
-		wNj:        f.wNj,
-		wNjInv:     f.wNjInv,
-		w4NjMono:   f.w4NjMono,
-		revMonoIdx: f.revMonoIdx,
+		tw:        f.tw,
+		twInv:     f.twInv,
+		twMono:    f.twMono,
+		twMonoIdx: f.twMonoIdx,
 
 		buffer: newFourierBuffer[T](f.degree),
 	}
