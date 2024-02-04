@@ -3,7 +3,6 @@ package csprng
 import (
 	"bufio"
 	"crypto/rand"
-	"unsafe"
 
 	"github.com/sp301415/tfhe-go/math/num"
 	"golang.org/x/crypto/blake2b"
@@ -56,7 +55,29 @@ func (s UniformSampler[T]) Sample() T {
 		panic(err)
 	}
 
-	return *(*T)(unsafe.Pointer(&s.buf[0]))
+	var res T
+	switch len(s.buf) {
+	case 1:
+		res = T(uint64(s.buf[0]))
+	case 2:
+		res = T(uint64(s.buf[0]))
+		res |= T(uint64(s.buf[1]) << 8)
+	case 4:
+		res = T(uint64(s.buf[0]))
+		res |= T(uint64(s.buf[1]) << 8)
+		res |= T(uint64(s.buf[2]) << 16)
+		res |= T(uint64(s.buf[3]) << 24)
+	case 8:
+		res = T(uint64(s.buf[0]))
+		res |= T(uint64(s.buf[1]) << 8)
+		res |= T(uint64(s.buf[2]) << 16)
+		res |= T(uint64(s.buf[3]) << 24)
+		res |= T(uint64(s.buf[4]) << 32)
+		res |= T(uint64(s.buf[5]) << 40)
+		res |= T(uint64(s.buf[6]) << 48)
+		res |= T(uint64(s.buf[7]) << 56)
+	}
+	return res
 }
 
 // SampleN uniformly samples a random integer of type T in [0, N).
