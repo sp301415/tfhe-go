@@ -126,9 +126,9 @@ func (e *Evaluator[T]) karatsuba(p, q, pOut []T, depth int, karatsubaBuffer []ka
 			pOut[i] = 0
 		}
 
-		for i, cp := range p {
-			for j, cq := range q {
-				pOut[i+j] += cp * cq
+		for i := range p {
+			for j := range q {
+				pOut[i+j] += p[i] * q[j]
 			}
 		}
 		return

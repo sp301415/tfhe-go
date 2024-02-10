@@ -4,19 +4,6 @@ import (
 	"github.com/sp301415/tfhe-go/math/poly"
 )
 
-// PlaintextAddGLWE returns pt + ct0.
-func (e *Evaluator[T]) PlaintextAddGLWE(pt GLWEPlaintext[T], ct0 GLWECiphertext[T]) GLWECiphertext[T] {
-	ctOut := NewGLWECiphertext(e.Parameters)
-	e.PlaintextAddGLWEAssign(pt, ct0, ctOut)
-	return ctOut
-}
-
-// PlaintextAddGLWEAssign computes ctOut = pt + ct0.
-func (e *Evaluator[T]) PlaintextAddGLWEAssign(pt GLWEPlaintext[T], ct0, ctOut GLWECiphertext[T]) {
-	e.PolyEvaluator.AddAssign(pt.Value, ct0.Value[0], ctOut.Value[0])
-
-}
-
 // AddGLWE returns ct0 + ct1.
 func (e *Evaluator[T]) AddGLWE(ct0, ct1 GLWECiphertext[T]) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
@@ -31,6 +18,18 @@ func (e *Evaluator[T]) AddGLWEAssign(ct0, ct1, ctOut GLWECiphertext[T]) {
 	}
 }
 
+// AddPlainGLWE returns ct0 + pt.
+func (e *Evaluator[T]) AddPlainGLWE(ct0 GLWECiphertext[T], pt GLWEPlaintext[T]) GLWECiphertext[T] {
+	ctOut := NewGLWECiphertext(e.Parameters)
+	e.AddPlainGLWEAssign(ct0, pt, ctOut)
+	return ctOut
+}
+
+// AddPlainGLWEAssign computes ctOut = ct0 + pt.
+func (e *Evaluator[T]) AddPlainGLWEAssign(ct0 GLWECiphertext[T], pt GLWEPlaintext[T], ctOut GLWECiphertext[T]) {
+	e.PolyEvaluator.AddAssign(pt.Value, ct0.Value[0], ctOut.Value[0])
+}
+
 // SubGLWE returns ct0 - ct1.
 func (e *Evaluator[T]) SubGLWE(ct0, ct1 GLWECiphertext[T]) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
@@ -43,6 +42,18 @@ func (e *Evaluator[T]) SubGLWEAssign(ct0, ct1, ctOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
 		e.PolyEvaluator.SubAssign(ct0.Value[i], ct1.Value[i], ctOut.Value[i])
 	}
+}
+
+// SubPlainGLWE returns ct0 - pt.
+func (e *Evaluator[T]) SubPlainGLWE(ct0 GLWECiphertext[T], pt GLWEPlaintext[T]) GLWECiphertext[T] {
+	ctOut := NewGLWECiphertext(e.Parameters)
+	e.SubPlainGLWEAssign(ct0, pt, ctOut)
+	return ctOut
+}
+
+// SubPlainGLWEAssign computes ctOut = ct0 - pt.
+func (e *Evaluator[T]) SubPlainGLWEAssign(ct0 GLWECiphertext[T], pt GLWEPlaintext[T], ctOut GLWECiphertext[T]) {
+	e.PolyEvaluator.SubAssign(ct0.Value[0], pt.Value, ctOut.Value[0])
 }
 
 // NegGLWE returns -ct0.

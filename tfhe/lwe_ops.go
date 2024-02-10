@@ -16,6 +16,18 @@ func (e *Evaluator[T]) AddLWEAssign(ct0, ct1, ctOut LWECiphertext[T]) {
 	vec.AddAssign(ct0.Value, ct1.Value, ctOut.Value)
 }
 
+// AddPlainLWE returns ct0 + pt.
+func (e *Evaluator[T]) AddPlainLWE(ct0 LWECiphertext[T], pt LWEPlaintext[T]) LWECiphertext[T] {
+	ctOut := NewLWECiphertext(e.Parameters)
+	e.AddPlainLWEAssign(ct0, pt, ctOut)
+	return ctOut
+}
+
+// AddPlainLWEAssign computes ctOut = ct0 + pt.
+func (e *Evaluator[T]) AddPlainLWEAssign(ct0 LWECiphertext[T], pt LWEPlaintext[T], ctOut LWECiphertext[T]) {
+	ctOut.Value[0] += pt.Value
+}
+
 // SubLWE returns ct0 - ct1.
 func (e *Evaluator[T]) SubLWE(ct0, ct1 LWECiphertext[T]) LWECiphertext[T] {
 	ctOut := NewLWECiphertext(e.Parameters)
@@ -26,6 +38,18 @@ func (e *Evaluator[T]) SubLWE(ct0, ct1 LWECiphertext[T]) LWECiphertext[T] {
 // SubLWEAssign computes ctOut = ct0 - ct1.
 func (e *Evaluator[T]) SubLWEAssign(ct0, ct1, ctOut LWECiphertext[T]) {
 	vec.SubAssign(ct0.Value, ct1.Value, ctOut.Value)
+}
+
+// SubPlainLWE returns ct0 - pt.
+func (e *Evaluator[T]) SubPlainLWE(ct0 LWECiphertext[T], pt LWEPlaintext[T]) LWECiphertext[T] {
+	ctOut := NewLWECiphertext(e.Parameters)
+	e.SubPlainLWEAssign(ct0, pt, ctOut)
+	return ctOut
+}
+
+// SubPlainLWEAssign computes ctOut = ct0 - pt.
+func (e *Evaluator[T]) SubPlainLWEAssign(ct0 LWECiphertext[T], pt LWEPlaintext[T], ctOut LWECiphertext[T]) {
+	ctOut.Value[0] -= pt.Value
 }
 
 // NegLWE returns -ct0.
