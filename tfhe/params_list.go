@@ -135,7 +135,7 @@ var (
 		BootstrapOrder: OrderKeySwitchBlindRotate,
 	}
 
-	// ParamsUint4 is a parameter set with 4  bits of message space.
+	// ParamsUint4 is a parameter set with 4 bits of message space.
 	ParamsUint4 = ParametersLiteral[uint64]{
 		LWEDimension:    744,
 		GLWEDimension:   1,
