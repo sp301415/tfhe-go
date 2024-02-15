@@ -143,10 +143,12 @@ func (e *Encryptor[T]) EncryptGLWEBody(ct GLWECiphertext[T]) {
 	for i := 1; i < e.Parameters.glweDimension+1; i++ {
 		e.UniformSampler.SampleSliceAssign(ct.Value[i].Coeffs)
 	}
-	e.GLWESampler.SampleSliceAddAssign(ct.Value[0].Coeffs)
+
 	for i := 0; i < e.Parameters.glweDimension; i++ {
 		e.mulFourierGLWEKeySubAssign(ct.Value[i+1], e.SecretKey.FourierGLWEKey.Value[i], ct.Value[0])
 	}
+
+	e.GaussianSampler.SampleSliceAddAssign(e.Parameters.glweStdDev, ct.Value[0].Coeffs)
 }
 
 // DecryptGLWE decrypts and decodes GLWE ciphertext to integer message.

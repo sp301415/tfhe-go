@@ -9,7 +9,7 @@ import (
 )
 
 // ByteSize returns the size of the key in bytes.
-func (sk GLWEKey[T]) ByteSize() int {
+func (sk GLWESecretKey[T]) ByteSize() int {
 	glweDimension := len(sk.Value)
 	polyDegree := sk.Value[0].Degree()
 
@@ -23,7 +23,7 @@ func (sk GLWEKey[T]) ByteSize() int {
 //	[8] GLWEDimension
 //	[8] PolyDegree
 //	    Value
-func (sk GLWEKey[T]) WriteTo(w io.Writer) (n int64, err error) {
+func (sk GLWESecretKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 
 	glweDimension := len(sk.Value)
@@ -79,7 +79,7 @@ func (sk GLWEKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // ReadFrom implements the io.ReaderFrom interface.
-func (sk *GLWEKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
+func (sk *GLWESecretKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	var nn int
 
 	var metadata [16]byte
@@ -92,7 +92,7 @@ func (sk *GLWEKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	glweDimension := int(binary.BigEndian.Uint64(metadata[0:8]))
 	polyDegree := int(binary.BigEndian.Uint64(metadata[8:16]))
 
-	*sk = NewGLWEKeyCustom[T](glweDimension, polyDegree)
+	*sk = NewGLWESecretKeyCustom[T](glweDimension, polyDegree)
 
 	var z T
 	switch any(z).(type) {
@@ -131,10 +131,140 @@ func (sk *GLWEKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 }
 
 // MarshalBinary implements the encoding.BinaryMarshaler interface.
-func (sk GLWEKey[T]) MarshalBinary() (data []byte, err error) {
+func (sk GLWESecretKey[T]) MarshalBinary() (data []byte, err error) {
 	buf := bytes.NewBuffer(make([]byte, 0, sk.ByteSize()))
 	_, err = sk.WriteTo(buf)
 	return buf.Bytes(), err
+}
+
+// ByteSize returns the size of the key in bytes.
+func (pk GLWEPublicKey[T]) ByteSize() int {
+	glweDimension := len(pk.Value)
+	polyDegree := pk.Value[0].Value[0].Degree()
+
+	return 16 + glweDimension*glweDimension*polyDegree*(num.SizeT[T]()/8)
+}
+
+// WriteTo implements the io.WriterTo interface.
+//
+// The encoded form is as follows:
+//
+//	[8] GLWEDimension
+//	[8] PolyDegree
+//	    Value
+func (pk GLWEPublicKey[T]) WriteTo(w io.Writer) (n int64, err error) {
+	var nn int
+
+	glweDimension := len(pk.Value)
+	polyDegree := pk.Value[0].Value[0].Degree()
+
+	var metadata [16]byte
+	binary.BigEndian.PutUint64(metadata[0:8], uint64(glweDimension))
+	binary.BigEndian.PutUint64(metadata[8:16], uint64(polyDegree))
+	nn, err = w.Write(metadata[:])
+	n += int64(nn)
+	if err != nil {
+		return
+	}
+
+	var z T
+	switch any(z).(type) {
+	case uint32:
+		buf := make([]byte, polyDegree*4)
+
+		for _, glwe := range pk.Value {
+			for _, p := range glwe.Value {
+				for i := range p.Coeffs {
+					binary.BigEndian.PutUint32(buf[i*4:(i+1)*4], uint32(p.Coeffs[i]))
+				}
+
+				nn, err = w.Write(buf)
+				n += int64(nn)
+				if err != nil {
+					return
+				}
+			}
+		}
+
+	case uint64:
+		buf := make([]byte, polyDegree*8)
+
+		for _, glwe := range pk.Value {
+			for _, p := range glwe.Value {
+				for i := range p.Coeffs {
+					binary.BigEndian.PutUint64(buf[i*8:(i+1)*8], uint64(p.Coeffs[i]))
+				}
+
+				nn, err = w.Write(buf)
+				n += int64(nn)
+				if err != nil {
+					return
+				}
+			}
+		}
+	}
+
+	if n < int64(pk.ByteSize()) {
+		return n, io.ErrShortWrite
+	}
+
+	return
+}
+
+// ReadFrom implements the io.ReaderFrom interface.
+func (pk *GLWEPublicKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
+	var nn int
+
+	var metadata [16]byte
+	nn, err = io.ReadFull(r, metadata[:])
+	n += int64(nn)
+	if err != nil {
+		return
+	}
+
+	glweDimension := int(binary.BigEndian.Uint64(metadata[0:8]))
+	polyDegree := int(binary.BigEndian.Uint64(metadata[8:16]))
+
+	*pk = NewGLWEPublicKeyCustom[T](glweDimension, polyDegree)
+
+	var z T
+	switch any(z).(type) {
+	case uint32:
+		buf := make([]byte, polyDegree*4)
+
+		for _, glwe := range pk.Value {
+			for _, p := range glwe.Value {
+				nn, err = io.ReadFull(r, buf)
+				n += int64(nn)
+				if err != nil {
+					return
+				}
+
+				for i := range p.Coeffs {
+					p.Coeffs[i] = T(binary.BigEndian.Uint32(buf[i*4 : (i+1)*4]))
+				}
+			}
+		}
+
+	case uint64:
+		buf := make([]byte, polyDegree*8)
+
+		for _, glwe := range pk.Value {
+			for _, p := range glwe.Value {
+				nn, err = io.ReadFull(r, buf)
+				n += int64(nn)
+				if err != nil {
+					return
+				}
+
+				for i := range p.Coeffs {
+					p.Coeffs[i] = T(binary.BigEndian.Uint64(buf[i*8 : (i+1)*8]))
+				}
+			}
+		}
+	}
+
+	return
 }
 
 // ByteSize returns the size of the plaintext in bytes.

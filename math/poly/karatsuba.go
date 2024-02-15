@@ -61,8 +61,8 @@ func (e *Evaluator[T]) mulNaiveAssign(p0, p1, pOut Poly[T]) {
 		pOut.Coeffs[i] = p0.Coeffs[i] * p1.Coeffs[0]
 	}
 
-	for i := 1; i < e.degree; i++ {
-		for j := 0; j < e.degree; j++ {
+	for i := 0; i < e.degree; i++ {
+		for j := 1; j < e.degree; j++ {
 			if i+j < e.degree {
 				pOut.Coeffs[i+j] += p0.Coeffs[i] * p1.Coeffs[j]
 			} else {

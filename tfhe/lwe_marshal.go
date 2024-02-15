@@ -9,7 +9,7 @@ import (
 )
 
 // ByteSize returns the size of the key in bytes.
-func (sk LWEKey[T]) ByteSize() int {
+func (sk LWESecretKey[T]) ByteSize() int {
 	return 8 + len(sk.Value)*(num.SizeT[T]()/8)
 }
 
@@ -19,7 +19,7 @@ func (sk LWEKey[T]) ByteSize() int {
 //
 //	[8] LWEDimension
 //	    Value
-func (sk LWEKey[T]) WriteTo(w io.Writer) (n int64, err error) {
+func (sk LWESecretKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 
 	lweDimension := len(sk.Value)
@@ -67,7 +67,7 @@ func (sk LWEKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // ReadFrom implements the io.ReaderFrom interface.
-func (sk *LWEKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
+func (sk *LWESecretKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	var nn int
 
 	var metadata [8]byte
@@ -89,7 +89,7 @@ func (sk *LWEKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 			return
 		}
 
-		*sk = NewLWEKeyCustom[T](lweDimension)
+		*sk = NewLWESecretKeyCustom[T](lweDimension)
 		for i := range sk.Value {
 			sk.Value[i] = T(binary.BigEndian.Uint32(buf[i*4 : (i+1)*4]))
 		}
@@ -102,7 +102,7 @@ func (sk *LWEKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 			return
 		}
 
-		*sk = NewLWEKeyCustom[T](lweDimension)
+		*sk = NewLWESecretKeyCustom[T](lweDimension)
 		for i := range sk.Value {
 			sk.Value[i] = T(binary.BigEndian.Uint64(buf[i*8 : (i+1)*8]))
 		}
@@ -112,16 +112,128 @@ func (sk *LWEKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 }
 
 // MarshalBinary implements the encoding.BinaryMarshaler interface.
-func (sk LWEKey[T]) MarshalBinary() (data []byte, err error) {
+func (sk LWESecretKey[T]) MarshalBinary() (data []byte, err error) {
 	buf := bytes.NewBuffer(make([]byte, 0, sk.ByteSize()))
 	_, err = sk.WriteTo(buf)
 	return buf.Bytes(), err
 }
 
 // UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
-func (sk *LWEKey[T]) UnmarshalBinary(data []byte) error {
+func (sk *LWESecretKey[T]) UnmarshalBinary(data []byte) error {
 	_, err := sk.ReadFrom(bytes.NewReader(data))
 	return err
+}
+
+// ByteSize returns the size of the key in bytes.
+func (pk LWEPublicKey[T]) ByteSize() int {
+	lweDimension := pk.Value[0].Degree()
+
+	return 8 + 2*lweDimension*(num.SizeT[T]()/8)
+}
+
+// WriteTo implements the io.WriterTo interface.
+//
+// The encoded form is as follows:
+//
+//	[8] LWEDimension
+//	    Value
+func (pk LWEPublicKey[T]) WriteTo(w io.Writer) (n int64, err error) {
+	var nn int
+
+	lweDimension := pk.Value[0].Degree()
+
+	var metadata [8]byte
+	binary.BigEndian.PutUint64(metadata[0:8], uint64(lweDimension))
+	nn, err = w.Write(metadata[:])
+	n += int64(nn)
+	if err != nil {
+		return
+	}
+
+	var z T
+	switch any(z).(type) {
+	case uint32:
+		buf := make([]byte, lweDimension*4)
+		for _, p := range pk.Value {
+			for i := range p.Coeffs {
+				binary.BigEndian.PutUint32(buf[i*4:(i+1)*4], uint32(p.Coeffs[i]))
+			}
+
+			nn, err = w.Write(buf)
+			n += int64(nn)
+			if err != nil {
+				return
+			}
+		}
+
+	case uint64:
+		buf := make([]byte, lweDimension*8)
+		for _, p := range pk.Value {
+			for i := range p.Coeffs {
+				binary.BigEndian.PutUint64(buf[i*8:(i+1)*8], uint64(p.Coeffs[i]))
+			}
+
+			nn, err = w.Write(buf)
+			n += int64(nn)
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	if n < int64(pk.ByteSize()) {
+		return n, io.ErrShortWrite
+	}
+
+	return
+}
+
+// ReadFrom implements the io.ReaderFrom interface.
+func (pk *LWEPublicKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
+	var nn int
+
+	var metadata [8]byte
+	nn, err = io.ReadFull(r, metadata[:])
+	n += int64(nn)
+	if err != nil {
+		return
+	}
+
+	lweDimension := int(binary.BigEndian.Uint64(metadata[0:8]))
+	*pk = NewLWEPublicKeyCustom[T](lweDimension)
+
+	var z T
+	switch any(z).(type) {
+	case uint32:
+		buf := make([]byte, lweDimension*4)
+		for _, p := range pk.Value {
+			nn, err = io.ReadFull(r, buf)
+			n += int64(nn)
+			if err != nil {
+				return
+			}
+
+			for i := range p.Coeffs {
+				p.Coeffs[i] = T(binary.BigEndian.Uint32(buf[i*4 : (i+1)*4]))
+			}
+		}
+
+	case uint64:
+		buf := make([]byte, lweDimension*8)
+		for _, p := range pk.Value {
+			nn, err = io.ReadFull(r, buf)
+			n += int64(nn)
+			if err != nil {
+				return
+			}
+
+			for i := range p.Coeffs {
+				p.Coeffs[i] = T(binary.BigEndian.Uint64(buf[i*8 : (i+1)*8]))
+			}
+		}
+	}
+
+	return
 }
 
 // ByteSize returns the size of the plaintext in bytes.

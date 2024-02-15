@@ -1,38 +1,94 @@
 package tfhe
 
 import (
+	"github.com/sp301415/tfhe-go/math/poly"
 	"github.com/sp301415/tfhe-go/math/vec"
 )
 
-// LWEKey is a LWE secret key, sampled from uniform binary distribution.
-type LWEKey[T TorusInt] struct {
+// LWESecretKey is a LWE secret key, sampled from uniform or block binary distribution.
+type LWESecretKey[T TorusInt] struct {
 	// Value has length DefaultLWEDimension.
 	Value []T
 }
 
-// NewLWEKey allocates an empty LWEKey.
-func NewLWEKey[T TorusInt](params Parameters[T]) LWEKey[T] {
-	return LWEKey[T]{Value: make([]T, params.DefaultLWEDimension())}
+// NewLWESecretKey allocates an empty LWESecretKey.
+func NewLWESecretKey[T TorusInt](params Parameters[T]) LWESecretKey[T] {
+	return LWESecretKey[T]{Value: make([]T, params.DefaultLWEDimension())}
 }
 
-// NewLWEKeyCustom allocates an empty LWEKey with given dimension.
-func NewLWEKeyCustom[T TorusInt](lweDimension int) LWEKey[T] {
-	return LWEKey[T]{Value: make([]T, lweDimension)}
+// NewLWESecretKeyCustom allocates an empty LWESecretKey with given dimension.
+func NewLWESecretKeyCustom[T TorusInt](lweDimension int) LWESecretKey[T] {
+	return LWESecretKey[T]{Value: make([]T, lweDimension)}
 }
 
 // Copy returns a copy of the key.
-func (sk LWEKey[T]) Copy() LWEKey[T] {
-	return LWEKey[T]{Value: vec.Copy(sk.Value)}
+func (sk LWESecretKey[T]) Copy() LWESecretKey[T] {
+	return LWESecretKey[T]{Value: vec.Copy(sk.Value)}
 }
 
 // CopyFrom copies values from a key.
-func (sk *LWEKey[T]) CopyFrom(skIn LWEKey[T]) {
+func (sk *LWESecretKey[T]) CopyFrom(skIn LWESecretKey[T]) {
 	vec.CopyAssign(skIn.Value, sk.Value)
 }
 
 // Clear clears the key.
-func (sk *LWEKey[T]) Clear() {
+func (sk *LWESecretKey[T]) Clear() {
 	vec.Fill(sk.Value, 0)
+}
+
+// LWEPublicKey is a LWE public key, derived from a secret key.
+//
+// We use compact public key, explained in https://eprint.iacr.org/2023/603.
+// This means that not all parameters support public key encryption.
+// Namely, DefaultLWEDimension should be power of two.
+type LWEPublicKey[T TorusInt] struct {
+	// Value has length 2,
+	// and each polynomial has degree DefaultLWEDimension.
+	Value []poly.Poly[T]
+}
+
+// NewLWEPublicKey allocates an empty LWEPublicKey.
+//
+// Panics if DefaultLWEDimension is not power of two.
+func NewLWEPublicKey[T TorusInt](params Parameters[T]) LWEPublicKey[T] {
+	return LWEPublicKey[T]{
+		Value: []poly.Poly[T]{
+			poly.NewPoly[T](params.DefaultLWEDimension()),
+			poly.NewPoly[T](params.DefaultLWEDimension()),
+		},
+	}
+}
+
+// NewLWEPublicKeyCustom allocates an empty LWEPublicKey with given dimension.
+//
+// Panics if lweDimension is not power of two.
+func NewLWEPublicKeyCustom[T TorusInt](lweDimension int) LWEPublicKey[T] {
+	return LWEPublicKey[T]{
+		Value: []poly.Poly[T]{
+			poly.NewPoly[T](lweDimension),
+			poly.NewPoly[T](lweDimension),
+		},
+	}
+}
+
+// Copy returns a copy of the key.
+func (pk LWEPublicKey[T]) Copy() LWEPublicKey[T] {
+	pkCopy := NewLWEPublicKeyCustom[T](pk.Value[0].Degree())
+	pkCopy.Value[0].CopyFrom(pk.Value[0])
+	pkCopy.Value[1].CopyFrom(pk.Value[1])
+	return pkCopy
+}
+
+// CopyFrom copies values from a key.
+func (pk *LWEPublicKey[T]) CopyFrom(pkIn LWEPublicKey[T]) {
+	pk.Value[0].CopyFrom(pkIn.Value[0])
+	pk.Value[1].CopyFrom(pkIn.Value[1])
+}
+
+// Clear clears the key.
+func (pk *LWEPublicKey[T]) Clear() {
+	pk.Value[0].Clear()
+	pk.Value[1].Clear()
 }
 
 // LWEPlaintext represents an encoded LWE plaintext.

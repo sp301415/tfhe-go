@@ -2,9 +2,10 @@ package csprng
 
 import (
 	"github.com/sp301415/tfhe-go/math/num"
+	"github.com/sp301415/tfhe-go/math/vec"
 )
 
-// BinarySampler samples values from uniform binary distribution {0, 1}.
+// BinarySampler samples values from uniform and block binary distribution.
 type BinarySampler[T num.Integer] struct {
 	baseSampler UniformSampler[uint64]
 }
@@ -41,5 +42,21 @@ func (s BinarySampler[T]) SampleSliceAssign(v []T) {
 		}
 		v[i] = T(buf & 1)
 		buf >>= 1
+	}
+}
+
+// SampleBlockSliceAssign samples block binary values to v.
+func (s BinarySampler[T]) SampleBlockSliceAssign(blockSize int, v []T) {
+	if len(v)%blockSize != 0 {
+		panic("length not multiple of blocksize")
+	}
+
+	for i := 0; i < len(v); i += blockSize {
+		vec.Fill(v[i:i+blockSize], 0)
+		offset := int(s.baseSampler.SampleN(uint64(blockSize) + 1))
+		if offset == blockSize {
+			continue
+		}
+		v[i+offset] = 1
 	}
 }

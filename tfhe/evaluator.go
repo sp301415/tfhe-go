@@ -6,6 +6,9 @@ import (
 
 // Evaluator evaluates homomorphic operations on ciphertexts.
 // This is meant to be public, usually for servers.
+//
+// Evaluator is not safe for concurrent use.
+// Use [*Evaluator.ShallowCopy] to get a safe copy.
 type Evaluator[T TorusInt] struct {
 	// Encoder is an embedded encoder for this Evaluator.
 	*Encoder[T]
@@ -29,15 +32,15 @@ type Evaluator[T TorusInt] struct {
 type evaluationBuffer[T TorusInt] struct {
 	// polyDecomposed holds the decomposed polynomial.
 	// Initially has length bootstrapParameters.level.
-	// Use getPolyDecomposedBuffer() to get appropriate length of buffer.
+	// Use [*evaluationBuffer.getPolyDecomposedBuffer] to get appropriate length of buffer.
 	polyDecomposed []poly.Poly[T]
 	// polyFourierDecomposed holds the decomposed polynomial in Fourier domain.
 	// Initially has length bootstrapParameters.level.
-	// Use getPolyFourierDecomposedBuffer() to get appropriate length of buffer.
+	// Use [*evaluationBuffer.getPolyFourierDecomposedBuffer] to get appropriate length of buffer.
 	polyFourierDecomposed []poly.FourierPoly
 	// decomposed holds the decomposed scalar.
 	// Initially has length keyswitchParameters.level.
-	// Use getDecomposedBuffer() to get appropriate length of buffer.
+	// Use [*evaluationBuffer.getDecomposedBuffer] to get appropriate length of buffer.
 	decomposed []T
 
 	// fpOut holds the fourier transformed polynomial for multiplications.

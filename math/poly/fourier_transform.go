@@ -228,7 +228,7 @@ func (f *FourierEvaluator[T]) ToPolyAssign(fp FourierPoly, pOut Poly[T]) {
 
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.twInv)
-	roundCmplxAssign(f.buffer.fpInv.Coeffs, f.buffer.fp.Coeffs)
+	roundCmplxAssign(f.buffer.fpInv.Coeffs, f.buffer.fpInv.Coeffs)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] = T(int64(f.buffer.fpInv.Coeffs[j+0]))
@@ -272,7 +272,7 @@ func (f *FourierEvaluator[T]) ToPolyAddAssign(fp FourierPoly, pOut Poly[T]) {
 
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.twInv)
-	roundCmplxAssign(f.buffer.fpInv.Coeffs, f.buffer.fp.Coeffs)
+	roundCmplxAssign(f.buffer.fpInv.Coeffs, f.buffer.fpInv.Coeffs)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] += T(int64(f.buffer.fpInv.Coeffs[j+0]))
@@ -316,7 +316,7 @@ func (f *FourierEvaluator[T]) ToPolySubAssign(fp FourierPoly, pOut Poly[T]) {
 
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.twInv)
-	roundCmplxAssign(f.buffer.fpInv.Coeffs, f.buffer.fp.Coeffs)
+	roundCmplxAssign(f.buffer.fpInv.Coeffs, f.buffer.fpInv.Coeffs)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] -= T(int64(f.buffer.fpInv.Coeffs[j+0]))

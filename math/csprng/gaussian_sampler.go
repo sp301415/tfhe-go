@@ -12,20 +12,16 @@ import (
 type GaussianSampler[T num.Integer] struct {
 	baseSampler UniformSampler[int32]
 
-	StdDev float64
+	maxT float64
 }
 
 // NewGaussianSampler creates a new GaussianSampler.
 //
 // Panics when read from crypto/rand or blake2b initialization fails, or StdDev <= 0.
-func NewGaussianSampler[T num.Integer](stdDev float64) GaussianSampler[T] {
-	if stdDev <= 0 {
-		panic("StdDev smaller than zero")
-	}
-
+func NewGaussianSampler[T num.Integer]() GaussianSampler[T] {
 	return GaussianSampler[T]{
 		baseSampler: NewUniformSampler[int32](),
-		StdDev:      stdDev,
+		maxT:        float64(num.MaxT[T]()),
 	}
 }
 
@@ -33,26 +29,10 @@ func NewGaussianSampler[T num.Integer](stdDev float64) GaussianSampler[T] {
 //
 // Panics when blake2b initialization fails or StdDev <= 0.
 func NewGaussianSamplerWithSeed[T num.Integer](seed []byte, stdDev float64) GaussianSampler[T] {
-	if stdDev <= 0 {
-		panic("StdDev smaller than zero")
-	}
-
 	return GaussianSampler[T]{
 		baseSampler: NewUniformSamplerWithSeed[int32](seed),
-		StdDev:      stdDev,
+		maxT:        float64(num.MaxT[T]()),
 	}
-}
-
-// NewGaussianSamplerScaled is equivalent to NewGaussianSampler, but stdDev is scaled by MaxT.
-func NewGaussianSamplerScaled[T num.Integer](stdDev float64) GaussianSampler[T] {
-	maxT := math.Exp2(float64(num.SizeT[T]()))
-	return NewGaussianSampler[T](stdDev * maxT)
-}
-
-// NewGaussianSamplerScaledWithSeed is equivalent to NewGaussianSamplerWithSeed, but stdDev is scaled by MaxT.
-func NewGaussianSamplerScaledWithSeed[T num.Integer](seed []byte, stdDev float64) GaussianSampler[T] {
-	maxT := math.Exp2(float64(num.SizeT[T]()))
-	return NewGaussianSamplerWithSeed[T](seed, stdDev*maxT)
 }
 
 // uniformFloat samples float64 from uniform distribution in [-1, +1].
@@ -93,24 +73,26 @@ func (s GaussianSampler[T]) normFloat64() float64 {
 	}
 }
 
-// Sample returns a number sampled from rounded gaussian distribution.
-func (s GaussianSampler[T]) Sample() T {
-	u := s.normFloat64() * s.StdDev
+// Sample returns a number sampled from rounded gaussian distribution
+// with standard deviation |stdDev|.
+func (s GaussianSampler[T]) Sample(stdDev float64) T {
+	u := s.normFloat64() * stdDev
 	return T(int64(math.Round(u)))
 }
 
-// SampleSliceAssign samples rounded gaussian values to v.
-func (s GaussianSampler[T]) SampleSliceAssign(v []T) {
+// SampleSliceAssign samples rounded gaussian values to v,
+// with standard deviation |stdDev|.
+func (s GaussianSampler[T]) SampleSliceAssign(stdDev float64, v []T) {
 	for i := range v {
-		v[i] = T(int64(math.Round(s.normFloat64() * s.StdDev)))
+		v[i] = s.Sample(stdDev)
 	}
 }
 
-// SampleSliceAddAssign samples rounded gaussian values and adds to v.
-// Mostly used in EncryptBody functions, adding error to the message.
-func (s GaussianSampler[T]) SampleSliceAddAssign(v []T) {
+// SampleSliceAddAssign samples rounded gaussian values to v,
+// with standard deviation |stdDev|, and adds to v.
+func (s GaussianSampler[T]) SampleSliceAddAssign(stdDev float64, v []T) {
 	for i := range v {
-		v[i] += T(int64(math.Round(s.normFloat64() * s.StdDev)))
+		v[i] += s.Sample(stdDev)
 	}
 }
 

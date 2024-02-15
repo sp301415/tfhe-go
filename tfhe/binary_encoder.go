@@ -7,6 +7,8 @@ import (
 // BinaryEncoder encodes boolean messages to TFHE plaintexts.
 // Encoder is embedded in Encryptor and Evaluator,
 // so usually manual instantiation isn't needed.
+//
+// BinaryEncoder is safe for concurrent use.
 type BinaryEncoder struct {
 	// Parameters holds parameters for this Encoder.
 	Parameters Parameters[uint32]

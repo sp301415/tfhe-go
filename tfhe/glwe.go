@@ -5,64 +5,111 @@ import (
 	"github.com/sp301415/tfhe-go/math/vec"
 )
 
-// GLWEKey is a GLWE secret key, sampled from uniform binary distribution.
-type GLWEKey[T TorusInt] struct {
+// GLWESecretKey is a GLWE secret key, sampled from uniform binary distribution.
+type GLWESecretKey[T TorusInt] struct {
 	// Value has length GLWEDimension.
 	Value []poly.Poly[T]
 }
 
-// NewGLWEKey allocates an empty GLWESecretKey.
-func NewGLWEKey[T TorusInt](params Parameters[T]) GLWEKey[T] {
+// NewGLWESecretKey allocates an empty GLWESecretKey.
+func NewGLWESecretKey[T TorusInt](params Parameters[T]) GLWESecretKey[T] {
 	sk := make([]poly.Poly[T], params.glweDimension)
 	for i := range sk {
 		sk[i] = poly.NewPoly[T](params.polyDegree)
 	}
-	return GLWEKey[T]{Value: sk}
+	return GLWESecretKey[T]{Value: sk}
 }
 
-// NewGLWEKeyCustom allocates an empty GLWESecretKey with given dimension and polyDegree.
-func NewGLWEKeyCustom[T TorusInt](glweDimension, polyDegree int) GLWEKey[T] {
+// NewGLWESecretKeyCustom allocates an empty GLWESecretKey with given dimension and polyDegree.
+func NewGLWESecretKeyCustom[T TorusInt](glweDimension, polyDegree int) GLWESecretKey[T] {
 	sk := make([]poly.Poly[T], glweDimension)
 	for i := range sk {
 		sk[i] = poly.NewPoly[T](polyDegree)
 	}
-	return GLWEKey[T]{Value: sk}
+	return GLWESecretKey[T]{Value: sk}
 }
 
 // Copy returns a copy of the key.
-func (sk GLWEKey[T]) Copy() GLWEKey[T] {
+func (sk GLWESecretKey[T]) Copy() GLWESecretKey[T] {
 	skCopy := make([]poly.Poly[T], len(sk.Value))
 	for i := range skCopy {
 		skCopy[i] = sk.Value[i].Copy()
 	}
-	return GLWEKey[T]{Value: skCopy}
+	return GLWESecretKey[T]{Value: skCopy}
 }
 
 // CopyFrom copies values from a key.
-func (sk *GLWEKey[T]) CopyFrom(skIn GLWEKey[T]) {
+func (sk *GLWESecretKey[T]) CopyFrom(skIn GLWESecretKey[T]) {
 	for i := range sk.Value {
 		sk.Value[i].CopyFrom(skIn.Value[i])
 	}
 }
 
 // Clear clears the key.
-func (sk *GLWEKey[T]) Clear() {
+func (sk *GLWESecretKey[T]) Clear() {
 	for i := range sk.Value {
 		sk.Value[i].Clear()
 	}
 }
 
+// GLWEPublicKey is a GLWE public key, derived from the GLWE secret key.
+type GLWEPublicKey[T TorusInt] struct {
+	// Value has length GLWEDimension.
+	Value []GLWECiphertext[T]
+}
+
+// NewGLWEPublicKey allocates an empty GLWEPublicKey.
+func NewGLWEPublicKey[T TorusInt](params Parameters[T]) GLWEPublicKey[T] {
+	pk := make([]GLWECiphertext[T], params.glweDimension)
+	for i := range pk {
+		pk[i] = NewGLWECiphertext(params)
+	}
+	return GLWEPublicKey[T]{Value: pk}
+}
+
+// NewGLWEPublicKeyCustom allocates an empty GLWEPublicKey with given dimension and polyDegree.
+func NewGLWEPublicKeyCustom[T TorusInt](glweDimension, polyDegree int) GLWEPublicKey[T] {
+	pk := make([]GLWECiphertext[T], glweDimension)
+	for i := range pk {
+		pk[i] = NewGLWECiphertextCustom[T](glweDimension, polyDegree)
+	}
+	return GLWEPublicKey[T]{Value: pk}
+}
+
+// Copy returns a copy of the key.
+func (pk GLWEPublicKey[T]) Copy() GLWEPublicKey[T] {
+	pkCopy := make([]GLWECiphertext[T], len(pk.Value))
+	for i := range pkCopy {
+		pkCopy[i] = pk.Value[i].Copy()
+	}
+	return GLWEPublicKey[T]{Value: pkCopy}
+}
+
+// CopyFrom copies values from a key.
+func (pk *GLWEPublicKey[T]) CopyFrom(pkIn GLWEPublicKey[T]) {
+	for i := range pk.Value {
+		pk.Value[i].CopyFrom(pkIn.Value[i])
+	}
+}
+
+// Clear clears the key.
+func (pk *GLWEPublicKey[T]) Clear() {
+	for i := range pk.Value {
+		pk.Value[i].Clear()
+	}
+}
+
 // ToLWEKey derives a new LWE secret key from the GLWE secret key.
 // Returned LWEKey will be of dimension LWELargeDimension.
-func (sk GLWEKey[T]) ToLWEKey() LWEKey[T] {
-	lweKey := NewLWEKeyCustom[T](len(sk.Value) * sk.Value[0].Degree())
+func (sk GLWESecretKey[T]) ToLWEKey() LWESecretKey[T] {
+	lweKey := NewLWESecretKeyCustom[T](len(sk.Value) * sk.Value[0].Degree())
 	sk.ToLWEKeyAssign(lweKey)
 	return lweKey
 }
 
 // ToLWEKeyAssign derives a new LWE secret key from the GLWE secret key and writes it to skOut.
 // skOut should have dimension LWELargeDimension.
-func (sk GLWEKey[T]) ToLWEKeyAssign(skOut LWEKey[T]) {
+func (sk GLWESecretKey[T]) ToLWEKeyAssign(skOut LWESecretKey[T]) {
 	glweDimension := len(sk.Value)
 	degree := sk.Value[0].Degree()
 

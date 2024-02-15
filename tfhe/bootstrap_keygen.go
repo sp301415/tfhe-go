@@ -11,7 +11,7 @@ import (
 // GenEvaluationKey samples a new evaluation key for bootstrapping.
 //
 // This can take a long time.
-// Use GenEvaluationKeyParallel for better key generation performance.
+// Use [*Encryptor.GenEvaluationKeyParallel] for better key generation performance.
 func (e *Encryptor[T]) GenEvaluationKey() EvaluationKey[T] {
 	return EvaluationKey[T]{
 		BootstrapKey: e.GenBootstrapKey(),
@@ -30,7 +30,7 @@ func (e *Encryptor[T]) GenEvaluationKeyParallel() EvaluationKey[T] {
 // GenBootstrapKey samples a new bootstrapping key.
 //
 // This can take a long time.
-// Use GenBootstrapKeyParallel for better key generation performance.
+// Use [*Encryptor.GenBootstrapKeyParallel] for better key generation performance.
 func (e *Encryptor[T]) GenBootstrapKey() BootstrapKey[T] {
 	bsk := NewBootstrapKey(e.Parameters)
 
@@ -107,8 +107,8 @@ func (e *Encryptor[T]) GenBootstrapKeyParallel() BootstrapKey[T] {
 // GenKeySwitchKey samples a new keyswitch key skIn -> LWEKey.
 //
 // This can take a long time.
-// Use GenKeySwitchKeyParallel for better key generation performance.
-func (e *Encryptor[T]) GenKeySwitchKey(skIn LWEKey[T], gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
+// Use [*Encryptor.GenKeySwitchKeyParallel] for better key generation performance.
+func (e *Encryptor[T]) GenKeySwitchKey(skIn LWESecretKey[T], gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
 	ksk := NewKeySwitchKey(len(skIn.Value), len(e.SecretKey.LWEKey.Value), gadgetParams)
 
 	for i := 0; i < ksk.InputLWEDimension(); i++ {
@@ -122,7 +122,7 @@ func (e *Encryptor[T]) GenKeySwitchKey(skIn LWEKey[T], gadgetParams GadgetParame
 }
 
 // GenKeySwitchKeyParallel samples a new keyswitch key skIn -> LWEKey in parallel.
-func (e *Encryptor[T]) GenKeySwitchKeyParallel(skIn LWEKey[T], gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
+func (e *Encryptor[T]) GenKeySwitchKeyParallel(skIn LWESecretKey[T], gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
 	ksk := NewKeySwitchKey(len(skIn.Value), len(e.SecretKey.LWEKey.Value), gadgetParams)
 
 	workSize := ksk.InputLWEDimension() * gadgetParams.level
@@ -166,9 +166,9 @@ func (e *Encryptor[T]) GenKeySwitchKeyParallel(skIn LWEKey[T], gadgetParams Gadg
 // used for bootstrapping.
 //
 // This can take a long time.
-// Use GenKeySwitchKeyForBootstrapParallel for better key generation performance.
+// Use [*Encryptor.GenKeySwitchKeyForBootstrapParallel] for better key generation performance.
 func (e *Encryptor[T]) GenKeySwitchKeyForBootstrap() KeySwitchKey[T] {
-	skIn := LWEKey[T]{Value: e.SecretKey.LWELargeKey.Value[e.Parameters.lweDimension:]}
+	skIn := LWESecretKey[T]{Value: e.SecretKey.LWELargeKey.Value[e.Parameters.lweDimension:]}
 	ksk := NewKeySwitchKeyForBootstrap(e.Parameters)
 
 	for i := 0; i < ksk.InputLWEDimension(); i++ {
@@ -176,7 +176,8 @@ func (e *Encryptor[T]) GenKeySwitchKeyForBootstrap() KeySwitchKey[T] {
 			ksk.Value[i].Value[j].Value[0] = skIn.Value[i] << e.Parameters.keyswitchParameters.ScaledBaseLog(j)
 
 			e.UniformSampler.SampleSliceAssign(ksk.Value[i].Value[j].Value[1:])
-			ksk.Value[i].Value[j].Value[0] += -vec.Dot(ksk.Value[i].Value[j].Value[1:], e.SecretKey.LWEKey.Value) + e.LWESampler.Sample()
+			ksk.Value[i].Value[j].Value[0] += -vec.Dot(ksk.Value[i].Value[j].Value[1:], e.SecretKey.LWEKey.Value)
+			ksk.Value[i].Value[j].Value[0] += e.GaussianSampler.Sample(e.Parameters.lweStdDev)
 		}
 	}
 
@@ -186,7 +187,7 @@ func (e *Encryptor[T]) GenKeySwitchKeyForBootstrap() KeySwitchKey[T] {
 // GenKeySwitchKeyForBootstrapParallel samples a new keyswitch key LWELargeKey -> LWEKey in parallel,
 // used for bootstrapping.
 func (e *Encryptor[T]) GenKeySwitchKeyForBootstrapParallel() KeySwitchKey[T] {
-	skIn := LWEKey[T]{Value: e.SecretKey.LWELargeKey.Value[e.Parameters.lweDimension:]}
+	skIn := LWESecretKey[T]{Value: e.SecretKey.LWELargeKey.Value[e.Parameters.lweDimension:]}
 	ksk := NewKeySwitchKeyForBootstrap(e.Parameters)
 
 	workSize := ksk.InputLWEDimension() * e.Parameters.keyswitchParameters.level
@@ -218,7 +219,8 @@ func (e *Encryptor[T]) GenKeySwitchKeyForBootstrapParallel() KeySwitchKey[T] {
 				i, j := jobs[0], jobs[1]
 				ksk.Value[i].Value[j].Value[0] = skIn.Value[i] << e.Parameters.keyswitchParameters.ScaledBaseLog(j)
 				e.UniformSampler.SampleSliceAssign(ksk.Value[i].Value[j].Value[1:])
-				ksk.Value[i].Value[j].Value[0] += -vec.Dot(ksk.Value[i].Value[j].Value[1:], e.SecretKey.LWEKey.Value) + e.LWESampler.Sample()
+				ksk.Value[i].Value[j].Value[0] += -vec.Dot(ksk.Value[i].Value[j].Value[1:], e.SecretKey.LWEKey.Value)
+				ksk.Value[i].Value[j].Value[0] += e.GaussianSampler.Sample(e.Parameters.lweStdDev)
 			}
 		}(i)
 	}

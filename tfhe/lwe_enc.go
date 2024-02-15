@@ -1,34 +1,18 @@
 package tfhe
 
 import (
-	"github.com/sp301415/tfhe-go/math/csprng"
 	"github.com/sp301415/tfhe-go/math/num"
 	"github.com/sp301415/tfhe-go/math/vec"
 )
 
-// DefaultLWEKey returns the LWE key according to the parameters.
-// Returns LWELargeKey if BootstrapOrder is OrderKeySwitchBlindRotate,
-// or LWEKey otherwise.
-func (e *Encryptor[T]) DefaultLWEKey() LWEKey[T] {
-	if e.Parameters.bootstrapOrder == OrderKeySwitchBlindRotate {
-		return e.SecretKey.LWELargeKey
-	}
-	return e.SecretKey.LWEKey
-}
-
-// DefaultLWESampler returns the LWE sampler according to the parameters.
-// Returns GLWESampler if BootstrapOrder is OrderKeySwitchBlindRotate,
-// or LWESampler otherwise.
-func (e *Encryptor[T]) DefaultLWESampler() csprng.GaussianSampler[T] {
-	if e.Parameters.bootstrapOrder == OrderKeySwitchBlindRotate {
-		return e.GLWESampler
-	}
-	return e.LWESampler
-}
-
 // EncryptLWE encodes and encrypts integer message to LWE ciphertext.
 func (e *Encryptor[T]) EncryptLWE(message int) LWECiphertext[T] {
 	return e.EncryptLWEPlaintext(e.EncodeLWE(message))
+}
+
+// EncryptLWEAssign encrypts integer message to LWE ciphertext and writes it to ctOut.
+func (e *Encryptor[T]) EncryptLWEAssign(message int, ctOut LWECiphertext[T]) {
+	e.EncryptLWEPlaintextAssign(e.EncodeLWE(message), ctOut)
 }
 
 // EncryptLWEPlaintext encrypts LWE plaintext to LWE ciphertext.
@@ -48,7 +32,8 @@ func (e *Encryptor[T]) EncryptLWEPlaintextAssign(pt LWEPlaintext[T], ctOut LWECi
 // This avoids the need for most buffers.
 func (e *Encryptor[T]) EncryptLWEBody(ct LWECiphertext[T]) {
 	e.UniformSampler.SampleSliceAssign(ct.Value[1:])
-	ct.Value[0] += -vec.Dot(ct.Value[1:], e.DefaultLWEKey().Value) + e.DefaultLWESampler().Sample()
+	ct.Value[0] += -vec.Dot(ct.Value[1:], e.DefaultLWEKey().Value)
+	ct.Value[0] += e.GaussianSampler.Sample(e.Parameters.DefaultLWEStdDev())
 }
 
 // DecryptLWE decrypts and decodes LWE ciphertext to integer message.
@@ -66,6 +51,12 @@ func (e *Encryptor[T]) DecryptLWEPlaintext(ct LWECiphertext[T]) LWEPlaintext[T] 
 func (e *Encryptor[T]) EncryptLev(message int, gadgetParams GadgetParameters[T]) LevCiphertext[T] {
 	pt := LWEPlaintext[T]{Value: T(message) % e.Parameters.messageModulus}
 	return e.EncryptLevPlaintext(pt, gadgetParams)
+}
+
+// EncryptLevAssign encrypts integer message to Lev ciphertext and writes it to ctOut.
+func (e *Encryptor[T]) EncryptLevAssign(message int, ctOut LevCiphertext[T]) {
+	pt := LWEPlaintext[T]{Value: T(message) % e.Parameters.messageModulus}
+	e.EncryptLevPlaintextAssign(pt, ctOut)
 }
 
 // EncryptLevPlaintext encrypts LWE plaintext to Lev ciphertext.
@@ -99,6 +90,12 @@ func (e *Encryptor[T]) DecryptLevPlaintext(ct LevCiphertext[T]) LWEPlaintext[T] 
 func (e *Encryptor[T]) EncryptGSW(message int, gadgetParams GadgetParameters[T]) GSWCiphertext[T] {
 	pt := LWEPlaintext[T]{Value: T(message) % e.Parameters.messageModulus}
 	return e.EncryptGSWPlaintext(pt, gadgetParams)
+}
+
+// EncryptGSWAssign encrypts integer message to GSW ciphertext and writes it to ctOut.
+func (e *Encryptor[T]) EncryptGSWAssign(message int, ctOut GSWCiphertext[T]) {
+	pt := LWEPlaintext[T]{Value: T(message) % e.Parameters.messageModulus}
+	e.EncryptGSWPlaintextAssign(pt, ctOut)
 }
 
 // EncryptGSWPlaintext encrypts LWE plaintext to GSW ciphertext.

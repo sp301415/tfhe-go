@@ -104,7 +104,7 @@ func (e *Evaluator[T]) MonomialMul(p0 Poly[T], d int) Poly[T] {
 // MonomialMulAssign computes pOut = X^d * p0.
 //
 // p0 and pOut should not overlap. For inplace multiplication,
-// use MonomialMulInPlace.
+// use [*Evaluator.MonomialMulInPlace].
 func (e *Evaluator[T]) MonomialMulAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	switch k := d & (2*e.degree - 1); {
 	case e.degree <= k:

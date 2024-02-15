@@ -474,6 +474,16 @@ func (p Parameters[T]) PolyExtendFactorLog() int {
 	return p.polyExtendFactorLog
 }
 
+// DefaultLWEStdDev returns the default standard deviation for LWE entities.
+// Returns LWEStdDev if BootstrapOrder is OrderBlindRotateKeySwitch,
+// and GLWEStdDev otherwise.
+func (p Parameters[T]) DefaultLWEStdDev() float64 {
+	if p.bootstrapOrder == OrderBlindRotateKeySwitch {
+		return p.lweStdDev
+	}
+	return p.glweStdDev
+}
+
 // LWEStdDev is the standard deviation used for gaussian error sampling in LWE encryption.
 func (p Parameters[T]) LWEStdDev() float64 {
 	return p.lweStdDev
