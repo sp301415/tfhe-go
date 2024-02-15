@@ -32,7 +32,7 @@ func (e *Encryptor[T]) EncryptLWEPlaintextAssign(pt LWEPlaintext[T], ctOut LWECi
 // This avoids the need for most buffers.
 func (e *Encryptor[T]) EncryptLWEBody(ct LWECiphertext[T]) {
 	e.UniformSampler.SampleSliceAssign(ct.Value[1:])
-	ct.Value[0] += -vec.Dot(ct.Value[1:], e.DefaultLWEKey().Value)
+	ct.Value[0] += -vec.Dot(ct.Value[1:], e.DefaultLWESecretKey().Value)
 	ct.Value[0] += e.GaussianSampler.Sample(e.Parameters.DefaultLWEStdDev())
 }
 
@@ -43,7 +43,7 @@ func (e *Encryptor[T]) DecryptLWE(ct LWECiphertext[T]) int {
 
 // DecryptLWEPlaintext decrypts LWE ciphertext to LWE plaintext.
 func (e *Encryptor[T]) DecryptLWEPlaintext(ct LWECiphertext[T]) LWEPlaintext[T] {
-	pt := ct.Value[0] + vec.Dot(ct.Value[1:], e.DefaultLWEKey().Value)
+	pt := ct.Value[0] + vec.Dot(ct.Value[1:], e.DefaultLWESecretKey().Value)
 	return LWEPlaintext[T]{Value: pt}
 }
 
@@ -111,7 +111,7 @@ func (e *Encryptor[T]) EncryptGSWPlaintextAssign(pt LWEPlaintext[T], ctOut GSWCi
 
 	for i := 1; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		for j := 0; j < ctOut.GadgetParameters.level; j++ {
-			ctOut.Value[i].Value[j].Value[0] = e.DefaultLWEKey().Value[i-1] * pt.Value << ctOut.GadgetParameters.ScaledBaseLog(j)
+			ctOut.Value[i].Value[j].Value[0] = e.DefaultLWESecretKey().Value[i-1] * pt.Value << ctOut.GadgetParameters.ScaledBaseLog(j)
 			e.EncryptLWEBody(ctOut.Value[i].Value[j])
 		}
 	}

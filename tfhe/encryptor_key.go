@@ -18,7 +18,7 @@ type SecretKey[T TorusInt] struct {
 	GLWEKey GLWESecretKey[T]
 	// FourierGLWEKey is a fourier transformed GLWEKey.
 	// Used for GLWE encryption.
-	FourierGLWEKey FourierGLWEKey[T]
+	FourierGLWEKey FourierGLWESecretKey[T]
 	// LWEKey is a LWE key with length LWEDimension.
 	// Essentially, this is the first LWEDimension elements of LWEKey.
 	LWEKey LWESecretKey[T]
@@ -33,7 +33,7 @@ func NewSecretKey[T TorusInt](params Parameters[T]) SecretKey[T] {
 	for i := 0; i < params.glweDimension; i++ {
 		glweKey.Value[i].Coeffs = lweLargeKey.Value[i*params.polyDegree : (i+1)*params.polyDegree]
 	}
-	fourierGLWEKey := NewFourierGLWEKey(params)
+	fourierGLWEKey := NewFourierGLWESecretKey(params)
 
 	lweKey := LWESecretKey[T]{Value: lweLargeKey.Value[:params.lweDimension]}
 
@@ -54,7 +54,7 @@ func NewSecretKeyCustom[T TorusInt](lweDimension, glweDimension, polyDegree int)
 	for i := 0; i < glweDimension; i++ {
 		glweKey.Value[i].Coeffs = lweLargeKey.Value[i*polyDegree : (i+1)*polyDegree]
 	}
-	fourierGLWEKey := NewFourierGLWEKeyCustom[T](glweDimension, polyDegree)
+	fourierGLWEKey := NewFourierGLWESecretKeyCustom[T](glweDimension, polyDegree)
 
 	lweKey := LWESecretKey[T]{Value: lweLargeKey.Value[:lweDimension]}
 

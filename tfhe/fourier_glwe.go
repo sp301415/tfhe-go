@@ -2,48 +2,48 @@ package tfhe
 
 import "github.com/sp301415/tfhe-go/math/poly"
 
-// FourierGLWEKey is a GLWE key in Fourier domain.
-type FourierGLWEKey[T TorusInt] struct {
+// FourierGLWESecretKey is a GLWE key in Fourier domain.
+type FourierGLWESecretKey[T TorusInt] struct {
 	// Value has length GLWEDimension.
 	Value []poly.FourierPoly
 }
 
-// NewFourierGLWEKey allocates an empty FourierGLWEKey.
-func NewFourierGLWEKey[T TorusInt](params Parameters[T]) FourierGLWEKey[T] {
+// NewFourierGLWESecretKey allocates an empty FourierGLWESecretKey.
+func NewFourierGLWESecretKey[T TorusInt](params Parameters[T]) FourierGLWESecretKey[T] {
 	sk := make([]poly.FourierPoly, params.glweDimension)
 	for i := range sk {
 		sk[i] = poly.NewFourierPoly(params.polyDegree)
 	}
-	return FourierGLWEKey[T]{Value: sk}
+	return FourierGLWESecretKey[T]{Value: sk}
 }
 
-// NewFourierGLWEKeyCustom allocates an empty FourierGLWEKey with given dimension and polyDegree.
-func NewFourierGLWEKeyCustom[T TorusInt](glweDimension, polyDegree int) FourierGLWEKey[T] {
+// NewFourierGLWESecretKeyCustom allocates an empty FourierGLWESecretKey with given dimension and polyDegree.
+func NewFourierGLWESecretKeyCustom[T TorusInt](glweDimension, polyDegree int) FourierGLWESecretKey[T] {
 	sk := make([]poly.FourierPoly, glweDimension)
 	for i := range sk {
 		sk[i] = poly.NewFourierPoly(polyDegree)
 	}
-	return FourierGLWEKey[T]{Value: sk}
+	return FourierGLWESecretKey[T]{Value: sk}
 }
 
 // Copy returns a copy of the key.
-func (sk FourierGLWEKey[T]) Copy() FourierGLWEKey[T] {
+func (sk FourierGLWESecretKey[T]) Copy() FourierGLWESecretKey[T] {
 	skCopy := make([]poly.FourierPoly, len(sk.Value))
 	for i := range skCopy {
 		skCopy[i] = sk.Value[i].Copy()
 	}
-	return FourierGLWEKey[T]{Value: skCopy}
+	return FourierGLWESecretKey[T]{Value: skCopy}
 }
 
 // CopyFrom copies values from a key.
-func (sk *FourierGLWEKey[T]) CopyFrom(skIn FourierGLWEKey[T]) {
+func (sk *FourierGLWESecretKey[T]) CopyFrom(skIn FourierGLWESecretKey[T]) {
 	for i := range sk.Value {
 		sk.Value[i].CopyFrom(skIn.Value[i])
 	}
 }
 
 // Clear clears the key.
-func (sk *FourierGLWEKey[T]) Clear() {
+func (sk *FourierGLWESecretKey[T]) Clear() {
 	for i := range sk.Value {
 		sk.Value[i].Clear()
 	}

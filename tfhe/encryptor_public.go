@@ -57,7 +57,7 @@ type publicEncryptionBuffer[T TorusInt] struct {
 	// This must be sampled fresh for each encryption.
 	auxGLWEKey GLWESecretKey[T]
 	// auxFourierGLWEKey holds the fourier transform of auxGLWEKey.
-	auxFourierGLWEKey FourierGLWEKey[T]
+	auxFourierGLWEKey FourierGLWESecretKey[T]
 
 	// pLWESplit is a buffer for split polynomial in mulLWEKey.
 	pLWESplit poly.Poly[T]
@@ -103,7 +103,7 @@ func newPublicEncryptionBuffer[T TorusInt](params Parameters[T]) publicEncryptio
 		auxFourierLWEKey: poly.NewFourierPoly(params.DefaultLWEDimension()),
 
 		auxGLWEKey:        NewGLWESecretKey(params),
-		auxFourierGLWEKey: NewFourierGLWEKey(params),
+		auxFourierGLWEKey: NewFourierGLWESecretKey(params),
 
 		pLWESplit:  poly.NewPoly[T](params.DefaultLWEDimension()),
 		fpLWESplit: poly.NewFourierPoly(params.DefaultLWEDimension()),

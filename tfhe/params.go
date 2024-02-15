@@ -390,7 +390,7 @@ type Parameters[T TorusInt] struct {
 
 	// BlockSize is the size of block to be used for LWE key sampling.
 	blockSize int
-	// BlockCount is a number of blocks in LWEkey. Equal to LWEDimension / BlockSize.
+	// BlockCount is a number of blocks in LWESecretkey. Equal to LWEDimension / BlockSize.
 	blockCount int
 
 	// MessageModulus is the modulus of the encoded message.
@@ -499,7 +499,7 @@ func (p Parameters[T]) BlockSize() int {
 	return p.blockSize
 }
 
-// BlockCount is a number of blocks in LWEkey. Equal to LWEDimension / BlockSize.
+// BlockCount is a number of blocks in LWESecretkey. Equal to LWEDimension / BlockSize.
 func (p Parameters[T]) BlockCount() int {
 	return p.blockCount
 }

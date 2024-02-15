@@ -86,15 +86,15 @@ func (e *Evaluator[T]) ToStandardGGSWCiphertextAssign(ctIn FourierGGSWCiphertext
 
 /* Same methods, but for encryptor */
 
-// ToFourierGLWEKey transforms GLWE key to Fourier GLWE key.
-func (e *Encryptor[T]) ToFourierGLWEKey(sk GLWESecretKey[T]) FourierGLWEKey[T] {
-	skOut := NewFourierGLWEKey(e.Parameters)
-	e.ToFourierGLWEKeyAssign(sk, skOut)
+// ToFourierGLWESecretKey transforms GLWE key to Fourier GLWE key.
+func (e *Encryptor[T]) ToFourierGLWESecretKey(sk GLWESecretKey[T]) FourierGLWESecretKey[T] {
+	skOut := NewFourierGLWESecretKey(e.Parameters)
+	e.ToFourierGLWESecretKeyAssign(sk, skOut)
 	return skOut
 }
 
-// ToFourierGLWEKeyAssign transforms GLWE key to Fourier GLWE key and writes it to skOut.
-func (e *Encryptor[T]) ToFourierGLWEKeyAssign(skIn GLWESecretKey[T], skOut FourierGLWEKey[T]) {
+// ToFourierGLWESecretKeyAssign transforms GLWE key to Fourier GLWE key and writes it to skOut.
+func (e *Encryptor[T]) ToFourierGLWESecretKeyAssign(skIn GLWESecretKey[T], skOut FourierGLWESecretKey[T]) {
 	for i := 0; i < e.Parameters.glweDimension; i++ {
 		e.FourierEvaluator.ToFourierPolyAssign(skIn.Value[i], skOut.Value[i])
 	}

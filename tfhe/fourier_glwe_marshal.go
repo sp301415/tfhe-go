@@ -8,7 +8,7 @@ import (
 )
 
 // ByteSize returns the size of the key in bytes.
-func (sk FourierGLWEKey[T]) ByteSize() int {
+func (sk FourierGLWESecretKey[T]) ByteSize() int {
 	glweDimension := len(sk.Value)
 	polyDegree := sk.Value[0].Degree()
 
@@ -22,7 +22,7 @@ func (sk FourierGLWEKey[T]) ByteSize() int {
 //	[8] GLWEDimension
 //	[8] PolyDegree
 //	    Value
-func (sk FourierGLWEKey[T]) WriteTo(w io.Writer) (n int64, err error) {
+func (sk FourierGLWESecretKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 
 	glweDimension := len(sk.Value)
@@ -59,7 +59,7 @@ func (sk FourierGLWEKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // ReadFrom implements the io.ReaderFrom interface.
-func (sk *FourierGLWEKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
+func (sk *FourierGLWESecretKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	var nn int
 
 	var metadata [16]byte
@@ -72,7 +72,7 @@ func (sk *FourierGLWEKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	glweDimension := int(binary.BigEndian.Uint64(metadata[0:8]))
 	polyDegree := int(binary.BigEndian.Uint64(metadata[8:16]))
 
-	*sk = NewFourierGLWEKeyCustom[T](glweDimension, polyDegree)
+	*sk = NewFourierGLWESecretKeyCustom[T](glweDimension, polyDegree)
 
 	buf := make([]byte, polyDegree*8)
 
@@ -92,14 +92,14 @@ func (sk *FourierGLWEKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 }
 
 // MarshalBinary implements the encoding.BinaryMarshaler interface.
-func (sk FourierGLWEKey[T]) MarshalBinary() (data []byte, err error) {
+func (sk FourierGLWESecretKey[T]) MarshalBinary() (data []byte, err error) {
 	buf := bytes.NewBuffer(make([]byte, 0, sk.ByteSize()))
 	_, err = sk.WriteTo(buf)
 	return buf.Bytes(), err
 }
 
 // UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
-func (sk *FourierGLWEKey[T]) UnmarshalBinary(data []byte) error {
+func (sk *FourierGLWESecretKey[T]) UnmarshalBinary(data []byte) error {
 	buf := bytes.NewBuffer(data)
 	_, err := sk.ReadFrom(buf)
 	return err

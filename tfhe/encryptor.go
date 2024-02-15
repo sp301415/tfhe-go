@@ -143,7 +143,7 @@ func (e *Encryptor[T]) GenSecretKey() SecretKey[T] {
 		e.BinarySampler.SampleSliceAssign(sk.LWELargeKey.Value[e.Parameters.lweDimension:])
 	}
 
-	e.ToFourierGLWEKeyAssign(sk.GLWEKey, sk.FourierGLWEKey)
+	e.ToFourierGLWESecretKeyAssign(sk.GLWEKey, sk.FourierGLWEKey)
 
 	return sk
 }
@@ -165,7 +165,7 @@ func (e *Encryptor[T]) GenPublicKey() PublicKey[T] {
 	polyEval := poly.NewEvaluator[T](e.Parameters.DefaultLWEDimension())
 
 	skRev := polyEval.NewPoly()
-	vec.CopyAssign(e.DefaultLWEKey().Value, skRev.Coeffs)
+	vec.CopyAssign(e.DefaultLWESecretKey().Value, skRev.Coeffs)
 	vec.ReverseInPlace(skRev.Coeffs)
 
 	e.GaussianSampler.SampleSliceAssign(e.Parameters.DefaultLWEStdDev(), pk.LWEPublicKey.Value[0].Coeffs)
@@ -180,10 +180,10 @@ func (e *Encryptor[T]) PublicEncryptor() *PublicEncryptor[T] {
 	return NewPublicEncryptor(e.Parameters, e.GenPublicKey())
 }
 
-// DefaultLWEKey returns the LWE key according to the parameters.
+// DefaultLWESecretKey returns the LWE key according to the parameters.
 // Returns LWELargeKey if BootstrapOrder is OrderKeySwitchBlindRotate,
 // or LWEKey otherwise.
-func (e *Encryptor[T]) DefaultLWEKey() LWESecretKey[T] {
+func (e *Encryptor[T]) DefaultLWESecretKey() LWESecretKey[T] {
 	if e.Parameters.bootstrapOrder == OrderKeySwitchBlindRotate {
 		return e.SecretKey.LWELargeKey
 	}
