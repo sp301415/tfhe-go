@@ -49,7 +49,7 @@ func (e *PublicEncryptor[T]) EncryptLWE(message int) LWECiphertext[T] {
 	return e.EncryptLWEPlaintext(e.EncodeLWE(message))
 }
 
-// EncryptLWEAssign encrypts integer message to LWE ciphertext and writes it to ctOut.
+// EncryptLWEAssign encodes and encrypts integer message to LWE ciphertext and writes it to ctOut.
 func (e *PublicEncryptor[T]) EncryptLWEAssign(message int, ctOut LWECiphertext[T]) {
 	e.EncryptLWEPlaintextAssign(e.EncodeLWE(message), ctOut)
 }

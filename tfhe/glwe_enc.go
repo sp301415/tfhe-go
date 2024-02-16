@@ -3,6 +3,7 @@ package tfhe
 import (
 	"github.com/sp301415/tfhe-go/math/num"
 	"github.com/sp301415/tfhe-go/math/poly"
+	"github.com/sp301415/tfhe-go/math/vec"
 )
 
 // mulFourierGLWEKeyAssign computes pOut = p * fsk, where fsk is a Fourier Transform of GLWE key.
@@ -121,7 +122,15 @@ func (e *Encryptor[T]) mulFourierGLWEKeySubAssign(p poly.Poly[T], fsk poly.Fouri
 
 // EncryptGLWE encodes and encrypts integer messages to GLWE ciphertext.
 func (e *Encryptor[T]) EncryptGLWE(messages []int) GLWECiphertext[T] {
-	return e.EncryptGLWEPlaintext(e.EncodeGLWE(messages))
+	ctOut := NewGLWECiphertext(e.Parameters)
+	e.EncryptGLWEAssign(messages, ctOut)
+	return ctOut
+}
+
+// EncryptGLWEAssign encodes and encrypts integer messages to GLWE ciphertext and writes it to ctOut.
+func (e *Encryptor[T]) EncryptGLWEAssign(messages []int, ctOut GLWECiphertext[T]) {
+	e.EncodeGLWEAssign(messages, e.buffer.ptGLWE)
+	e.EncryptGLWEPlaintextAssign(e.buffer.ptGLWE, ctOut)
 }
 
 // EncryptGLWEPlaintext encrypts GLWE plaintext to GLWE ciphertext.
@@ -153,7 +162,14 @@ func (e *Encryptor[T]) EncryptGLWEBody(ct GLWECiphertext[T]) {
 
 // DecryptGLWE decrypts and decodes GLWE ciphertext to integer message.
 func (e *Encryptor[T]) DecryptGLWE(ct GLWECiphertext[T]) []int {
-	return e.DecodeGLWE(e.DecryptGLWEPlaintext(ct))
+	e.DecryptGLWEPlaintextAssign(ct, e.buffer.ptGLWE)
+	return e.DecodeGLWE(e.buffer.ptGLWE)
+}
+
+// DecryptGLWEAssign decrypts and decodes GLWE ciphertext to integer message and writes it to messagesOut.
+func (e *Encryptor[T]) DecryptGLWEAssign(ct GLWECiphertext[T], messagesOut []int) {
+	e.DecryptGLWEPlaintextAssign(ct, e.buffer.ptGLWE)
+	e.DecodeGLWEAssign(e.buffer.ptGLWE, messagesOut)
 }
 
 // DecryptGLWEPlaintext decrypts GLWE ciphertext to GLWE plaintext.
@@ -173,11 +189,20 @@ func (e *Encryptor[T]) DecryptGLWEPlaintextAssign(ct GLWECiphertext[T], ptOut GL
 
 // EncryptGLev encrypts integer message to GLev ciphertext.
 func (e *Encryptor[T]) EncryptGLev(messages []int, gadgetParams GadgetParameters[T]) GLevCiphertext[T] {
-	pt := NewGLWEPlaintext(e.Parameters)
-	for i := 0; i < e.Parameters.polyDegree && i < len(messages); i++ {
-		pt.Value.Coeffs[i] = T(messages[i]) % e.Parameters.messageModulus
+	ct := NewGLevCiphertext(e.Parameters, gadgetParams)
+	e.EncryptGLevAssign(messages, ct)
+	return ct
+}
+
+// EncryptGLevAssign encrypts integer message to GLev ciphertext and writes it to ctOut.
+func (e *Encryptor[T]) EncryptGLevAssign(messages []int, ctOut GLevCiphertext[T]) {
+	length := num.Min(e.Parameters.polyDegree, len(messages))
+	for i := 0; i < length; i++ {
+		e.buffer.ptGLWE.Value.Coeffs[i] = T(messages[i]) % e.Parameters.messageModulus
 	}
-	return e.EncryptGLevPlaintext(pt, gadgetParams)
+	vec.Fill(e.buffer.ptGLWE.Value.Coeffs[length:], 0)
+
+	e.EncryptGLevPlaintextAssign(e.buffer.ptGLWE, ctOut)
 }
 
 // EncryptGLevPlaintext encrypts GLWE plaintext to GLev ciphertext.
@@ -197,12 +222,19 @@ func (e *Encryptor[T]) EncryptGLevPlaintextAssign(pt GLWEPlaintext[T], ctOut GLe
 
 // DecryptGLev decrypts GLev ciphertext to integer message.
 func (e *Encryptor[T]) DecryptGLev(ct GLevCiphertext[T]) []int {
-	pt := e.DecryptGLevPlaintext(ct)
 	messages := make([]int, e.Parameters.polyDegree)
-	for i := 0; i < e.Parameters.polyDegree; i++ {
-		messages[i] = int(num.RoundRatioBits(pt.Value.Coeffs[i], ct.GadgetParameters.LastScaledBaseLog()) % e.Parameters.messageModulus)
-	}
+	e.DecryptGLevAssign(ct, messages)
 	return messages
+}
+
+// DecryptGLevAssign decrypts GLev ciphertext to integer message and writes it to messagesOut.
+func (e *Encryptor[T]) DecryptGLevAssign(ct GLevCiphertext[T], messagesOut []int) {
+	e.DecryptGLevPlaintextAssign(ct, e.buffer.ptGLWE)
+
+	length := num.Min(e.Parameters.polyDegree, len(messagesOut))
+	for i := 0; i < length; i++ {
+		messagesOut[i] = int(num.RoundRatioBits(e.buffer.ptGLWE.Value.Coeffs[i], ct.GadgetParameters.LastScaledBaseLog()) % e.Parameters.messageModulus)
+	}
 }
 
 // DecryptGLevPlaintext decrypts GLev ciphertext to GLWE plaintext.
@@ -227,6 +259,17 @@ func (e *Encryptor[T]) EncryptGGSW(messages []int, gadgetParams GadgetParameters
 	return e.EncryptGGSWPlaintext(pt, gadgetParams)
 }
 
+// EncryptGGSWAssign encrypts integer message to GGSW ciphertext and writes it to ctOut.
+func (e *Encryptor[T]) EncryptGGSWAssign(messages []int, ctOut GGSWCiphertext[T]) {
+	length := num.Min(e.Parameters.polyDegree, len(messages))
+	for i := 0; i < length; i++ {
+		e.buffer.ptGLWE.Value.Coeffs[i] = T(messages[i]) % e.Parameters.messageModulus
+	}
+	vec.Fill(e.buffer.ptGLWE.Value.Coeffs[length:], 0)
+
+	e.EncryptGGSWPlaintextAssign(e.buffer.ptGLWE, ctOut)
+}
+
 // EncryptGGSWPlaintext encrypts GLWE plaintext to GGSW ciphertext.
 func (e *Encryptor[T]) EncryptGGSWPlaintext(pt GLWEPlaintext[T], gadgetParams GadgetParameters[T]) GGSWCiphertext[T] {
 	ct := NewGGSWCiphertext(e.Parameters, gadgetParams)
@@ -249,6 +292,11 @@ func (e *Encryptor[T]) EncryptGGSWPlaintextAssign(pt GLWEPlaintext[T], ctOut GGS
 // DecryptGGSW decrypts GGSW ciphertext to integer message.
 func (e *Encryptor[T]) DecryptGGSW(ct GGSWCiphertext[T]) []int {
 	return e.DecryptGLev(ct.Value[0])
+}
+
+// DecryptGGSWAssign decrypts GGSW ciphertext to integer message and writes it to messagesOut.
+func (e *Encryptor[T]) DecryptGGSWAssign(ct GGSWCiphertext[T], messagesOut []int) {
+	e.DecryptGLevAssign(ct.Value[0], messagesOut)
 }
 
 // DecryptGGSWPlaintext decrypts GGSW ciphertext to GLWE plaintext.

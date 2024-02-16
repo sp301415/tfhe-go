@@ -3,6 +3,7 @@ package tfhe
 import (
 	"github.com/sp301415/tfhe-go/math/num"
 	"github.com/sp301415/tfhe-go/math/poly"
+	"github.com/sp301415/tfhe-go/math/vec"
 )
 
 // mulFourierGLWEKeyAssign computes pOut = p * fsk, where fsk is a Fourier Transform of auxillary GLWE key.
@@ -83,7 +84,15 @@ func (e *PublicEncryptor[T]) mulFourierGLWEKeyAddAssign(p poly.Poly[T], fsk poly
 
 // EncryptGLWE encodes and encrypts integer messages to GLWE ciphertext.
 func (e *PublicEncryptor[T]) EncryptGLWE(messages []int) GLWECiphertext[T] {
-	return e.EncryptGLWEPlaintext(e.EncodeGLWE(messages))
+	ctOut := NewGLWECiphertext(e.Parameters)
+	e.EncryptGLWEAssign(messages, ctOut)
+	return ctOut
+}
+
+// EncryptGLWEAssign encodes and encrypts integer messages to GLWE ciphertext and writes it to ctOut.
+func (e *PublicEncryptor[T]) EncryptGLWEAssign(messages []int, ctOut GLWECiphertext[T]) {
+	e.EncodeGLWEAssign(messages, e.buffer.ptGLWE)
+	e.EncryptGLWEPlaintextAssign(e.buffer.ptGLWE, ctOut)
 }
 
 // EncryptGLWEPlaintext encrypts GLWE plaintext to GLWE ciphertext.
@@ -125,11 +134,20 @@ func (e *PublicEncryptor[T]) EncryptGLWEBody(ct GLWECiphertext[T]) {
 
 // EncryptGLev encrypts integer message to GLev ciphertext.
 func (e *PublicEncryptor[T]) EncryptGLev(messages []int, gadgetParams GadgetParameters[T]) GLevCiphertext[T] {
-	pt := NewGLWEPlaintext(e.Parameters)
-	for i := 0; i < e.Parameters.polyDegree && i < len(messages); i++ {
-		pt.Value.Coeffs[i] = T(messages[i]) % e.Parameters.messageModulus
+	ct := NewGLevCiphertext(e.Parameters, gadgetParams)
+	e.EncryptGLevAssign(messages, ct)
+	return ct
+}
+
+// EncryptGLevAssign encrypts integer message to GLev ciphertext and writes it to ctOut.
+func (e *PublicEncryptor[T]) EncryptGLevAssign(messages []int, ctOut GLevCiphertext[T]) {
+	length := num.Min(e.Parameters.polyDegree, len(messages))
+	for i := 0; i < length; i++ {
+		e.buffer.ptGLWE.Value.Coeffs[i] = T(messages[i]) % e.Parameters.messageModulus
 	}
-	return e.EncryptGLevPlaintext(pt, gadgetParams)
+	vec.Fill(e.buffer.ptGLWE.Value.Coeffs[length:], 0)
+
+	e.EncryptGLevPlaintextAssign(e.buffer.ptGLWE, ctOut)
 }
 
 // EncryptGLevPlaintext encrypts GLWE plaintext to GLev ciphertext.

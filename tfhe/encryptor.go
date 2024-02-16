@@ -46,6 +46,8 @@ type Encryptor[T TorusInt] struct {
 
 // encryptionBuffer contains buffer values for Encryptor.
 type encryptionBuffer[T TorusInt] struct {
+	// ptGLWE holds the GLWE plaintext for GLWE encryption / decryptions.
+	ptGLWE GLWEPlaintext[T]
 	// ctGLWE holds standard GLWE Ciphertext for Fourier encryption / decryptions.
 	ctGLWE GLWECiphertext[T]
 	// ptGGSW holds GLWEKey * Pt in GGSW encryption.
@@ -108,8 +110,10 @@ func NewEncryptorWithKey[T TorusInt](params Parameters[T], sk SecretKey[T]) *Enc
 // newEncryptionBuffer allocates an empty encryptionBuffer.
 func newEncryptionBuffer[T TorusInt](params Parameters[T]) encryptionBuffer[T] {
 	return encryptionBuffer[T]{
-		ctGLWE:  NewGLWECiphertext(params),
-		ptGGSW:  poly.NewPoly[T](params.polyDegree),
+		ptGLWE: NewGLWEPlaintext(params),
+		ctGLWE: NewGLWECiphertext(params),
+		ptGGSW: poly.NewPoly[T](params.polyDegree),
+
 		pSplit:  poly.NewPoly[T](params.polyDegree),
 		fpSplit: poly.NewFourierPoly(params.polyDegree),
 	}

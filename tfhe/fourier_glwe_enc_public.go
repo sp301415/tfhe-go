@@ -1,8 +1,18 @@
 package tfhe
 
+import (
+	"github.com/sp301415/tfhe-go/math/num"
+	"github.com/sp301415/tfhe-go/math/vec"
+)
+
 // EncryptFourierGLWE encodes and encrypts integer messages to FourierGLWE ciphertext.
 func (e *PublicEncryptor[T]) EncryptFourierGLWE(messages []int) FourierGLWECiphertext[T] {
 	return e.EncryptFourierGLWEPlaintext(e.EncodeGLWE(messages))
+}
+
+// EncryptFourierGLWEAssign encrypts and encrypts integer messages to FourierGLWE ciphertext and writes it to ctOut.
+func (e *PublicEncryptor[T]) EncryptFourierGLWEAssign(messages []int, ctOut FourierGLWECiphertext[T]) {
+	e.EncryptFourierGLWEPlaintextAssign(e.EncodeGLWE(messages), ctOut)
 }
 
 // EncryptFourierGLWEPlaintext encrypts GLWE plaintext to FourierGLWE ciphertext.
@@ -20,11 +30,20 @@ func (e *PublicEncryptor[T]) EncryptFourierGLWEPlaintextAssign(pt GLWEPlaintext[
 
 // EncryptFourierGLev encrypts integer message to FourierGLev ciphertext.
 func (e *PublicEncryptor[T]) EncryptFourierGLev(messages []int, gadgetParams GadgetParameters[T]) FourierGLevCiphertext[T] {
-	pt := NewGLWEPlaintext(e.Parameters)
-	for i := 0; i < e.Parameters.polyDegree && i < len(messages); i++ {
-		pt.Value.Coeffs[i] = T(messages[i]) % e.Parameters.messageModulus
+	ctOut := NewFourierGLevCiphertext(e.Parameters, gadgetParams)
+	e.EncryptFourierGLevAssign(messages, ctOut)
+	return ctOut
+}
+
+// EncryptFourierGLevAssign encrypts integer message to FourierGLev ciphertext and writes it to ctOut.
+func (e *PublicEncryptor[T]) EncryptFourierGLevAssign(messages []int, ctOut FourierGLevCiphertext[T]) {
+	length := num.Min(e.Parameters.polyDegree, len(messages))
+	for i := 0; i < length; i++ {
+		e.buffer.ptGLWE.Value.Coeffs[i] = T(messages[i]) % e.Parameters.messageModulus
 	}
-	return e.EncryptFourierGLevPlaintext(pt, gadgetParams)
+	vec.Fill(e.buffer.ptGLWE.Value.Coeffs[length:], 0)
+
+	e.EncryptFourierGLevPlaintextAssign(e.buffer.ptGLWE, ctOut)
 }
 
 // EncryptFourierGLevPlaintext encrypts GLWE plaintext to FourierGLev ciphertext.

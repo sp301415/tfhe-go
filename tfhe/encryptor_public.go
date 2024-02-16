@@ -49,6 +49,8 @@ type PublicEncryptor[T TorusInt] struct {
 
 // publicEncryptionBuffer contains buffer values for PublicEncryptor.
 type publicEncryptionBuffer[T TorusInt] struct {
+	// ptGLWE holds the GLWE plaintext for GLWE encryption / decryptions.
+	ptGLWE GLWEPlaintext[T]
 	// ctGLWE holds standard GLWE Ciphertext for Fourier encryption / decryptions.
 	ctGLWE GLWECiphertext[T]
 

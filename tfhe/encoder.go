@@ -134,10 +134,20 @@ func (e *Encoder[T]) EncodeGLWECustomAssign(messages []int, messageModulus, delt
 // The returned messages are always of length PolyDegree.
 func (e *Encoder[T]) DecodeGLWE(pt GLWEPlaintext[T]) []int {
 	messages := make([]int, e.Parameters.polyDegree)
-	for i := 0; i < e.Parameters.polyDegree; i++ {
-		messages[i] = int((num.RoundRatioBits(pt.Value.Coeffs[i], e.Parameters.deltaLog) % e.Parameters.messageModulus))
-	}
+	e.DecodeGLWEAssign(pt, messages)
 	return messages
+}
+
+// DecodeGLWEAssign decodes GLWE plaintext to integer message.
+// Parameter's MessageModulus and Delta are used.
+//
+//   - If len(messagesOut) < PolyDegree, the leftovers are discarded.
+//   - If len(messagesOut) > PolyDegree, only the first PolyDegree elements are written.
+func (e *Encoder[T]) DecodeGLWEAssign(pt GLWEPlaintext[T], messagesOut []int) {
+	length := num.Min(e.Parameters.polyDegree, len(messagesOut))
+	for i := 0; i < length; i++ {
+		messagesOut[i] = int((num.RoundRatioBits(pt.Value.Coeffs[i], e.Parameters.deltaLog) % e.Parameters.messageModulus))
+	}
 }
 
 // DecodeGLWECustom decodes GLWE plaintext to integer message
@@ -147,14 +157,25 @@ func (e *Encoder[T]) DecodeGLWE(pt GLWEPlaintext[T]) []int {
 // If MessageModulus = 0, then no modulus reduction is performed.
 func (e *Encoder[T]) DecodeGLWECustom(pt GLWEPlaintext[T], messageModulus, delta T) []int {
 	messages := make([]int, e.Parameters.polyDegree)
-	for i := 0; i < e.Parameters.polyDegree; i++ {
+	e.DecodeGLWEAssign(pt, messages)
+	return messages
+}
+
+// DecodeGLWECustomAssign decodes GLWE plaintext to integer message
+// using custom MessageModulus and Delta.
+//
+//   - If MessageModulus = 0, then no modulus reduction is performed.
+//   - If len(messagesOut) < PolyDegree, the leftovers are discarded.
+//   - If len(messagesOut) > PolyDegree, only the first PolyDegree elements are written.
+func (e *Encoder[T]) DecodeGLWECustomAssign(pt GLWEPlaintext[T], messageModulus, delta T, messagesOut []int) {
+	length := num.Min(e.Parameters.polyDegree, len(messagesOut))
+	for i := 0; i < length; i++ {
 		decoded := num.RoundRatioBits(pt.Value.Coeffs[i], e.Parameters.deltaLog)
 		if messageModulus != 0 {
 			decoded %= messageModulus
 		}
-		messages[i] = int(decoded)
+		messagesOut[i] = int(decoded)
 	}
-	return messages
 }
 
 // EncodeGLWECiphertext trivially encodes integer messages to GLWE ciphertext,
