@@ -1,6 +1,7 @@
 package tfhe
 
 import (
+	"github.com/sp301415/tfhe-go/math/num"
 	"github.com/sp301415/tfhe-go/math/poly"
 	"github.com/sp301415/tfhe-go/math/vec"
 )
@@ -119,6 +120,10 @@ type PublicKey[T TorusInt] struct {
 //
 // Panics if DefaultLWEDimension is not power of two.
 func NewPublicKey[T TorusInt](params Parameters[T]) PublicKey[T] {
+	if !num.IsPowerOfTwo(params.DefaultLWEDimension()) {
+		panic("Default LWE dimension not a power of two")
+	}
+
 	return PublicKey[T]{
 		LWEPublicKey:  NewLWEPublicKey(params),
 		GLWEPublicKey: NewGLWEPublicKey(params),
@@ -129,6 +134,10 @@ func NewPublicKey[T TorusInt](params Parameters[T]) PublicKey[T] {
 //
 // Panics if lweDimension is not power of two.
 func NewPublicKeyCustom[T TorusInt](lweDimension, glweDimension, polyDegree int) PublicKey[T] {
+	if !num.IsPowerOfTwo(lweDimension) {
+		panic("LWE dimension not a power of two")
+	}
+
 	return PublicKey[T]{
 		LWEPublicKey:  NewLWEPublicKeyCustom[T](lweDimension),
 		GLWEPublicKey: NewGLWEPublicKeyCustom[T](glweDimension, polyDegree),

@@ -18,6 +18,8 @@ import (
 type PublicEncryptor[T TorusInt] struct {
 	// Encoder is an embedded encoder for this PublicEncryptor.
 	*Encoder[T]
+	// glweTransformer is an embedded glweTransformer for this PublicEncryptor.
+	*glweTransformer[T]
 
 	// Parameters holds the parameters for this PublicEncryptor.
 	Parameters Parameters[T]
@@ -47,6 +49,9 @@ type PublicEncryptor[T TorusInt] struct {
 
 // publicEncryptionBuffer contains buffer values for PublicEncryptor.
 type publicEncryptionBuffer[T TorusInt] struct {
+	// ctGLWE holds standard GLWE Ciphertext for Fourier encryption / decryptions.
+	ctGLWE GLWECiphertext[T]
+
 	// auxLWEKey holds the auxillary key for LWE encryption.
 	// This must be sampled fresh for each encryption.
 	auxLWEKey poly.Poly[T]
@@ -77,7 +82,8 @@ func NewPublicEncryptor[T TorusInt](params Parameters[T], pk PublicKey[T]) *Publ
 	}
 
 	return &PublicEncryptor[T]{
-		Encoder: NewEncoder(params),
+		Encoder:         NewEncoder(params),
+		glweTransformer: newGLWETransformer[T](params),
 
 		Parameters: params,
 
@@ -99,6 +105,8 @@ func NewPublicEncryptor[T TorusInt](params Parameters[T], pk PublicKey[T]) *Publ
 // newPublicEncryptionBuffer returns a new publicEncryptionBuffer.
 func newPublicEncryptionBuffer[T TorusInt](params Parameters[T]) publicEncryptionBuffer[T] {
 	return publicEncryptionBuffer[T]{
+		ctGLWE: NewGLWECiphertext(params),
+
 		auxLWEKey:        poly.NewPoly[T](params.DefaultLWEDimension()),
 		auxFourierLWEKey: poly.NewFourierPoly(params.DefaultLWEDimension()),
 
@@ -116,7 +124,8 @@ func newPublicEncryptionBuffer[T TorusInt](params Parameters[T]) publicEncryptio
 // ShallowCopy returns a shallow copy of this PublicEncryptor.
 func (e *PublicEncryptor[T]) ShallowCopy() *PublicEncryptor[T] {
 	return &PublicEncryptor[T]{
-		Encoder: e.Encoder,
+		Encoder:         e.Encoder,
+		glweTransformer: e.glweTransformer.ShallowCopy(),
 
 		Parameters: e.Parameters,
 

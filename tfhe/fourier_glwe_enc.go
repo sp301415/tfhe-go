@@ -34,7 +34,7 @@ func (e *Encryptor[T]) DecryptFourierGLWEPlaintext(ct FourierGLWECiphertext[T]) 
 
 // DecryptFourierGLWEPlaintextAssign decrypts FourierGLWE ciphertext to GLWE plaintext and writes it to ptOut.
 func (e *Encryptor[T]) DecryptFourierGLWEPlaintextAssign(ct FourierGLWECiphertext[T], ptOut GLWEPlaintext[T]) {
-	e.ToStandardGLWECiphertextAssign(ct, e.buffer.ctGLWE)
+	e.ToGLWECiphertextAssign(ct, e.buffer.ctGLWE)
 	e.DecryptGLWEPlaintextAssign(e.buffer.ctGLWE, ptOut)
 }
 

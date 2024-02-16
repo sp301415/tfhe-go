@@ -15,6 +15,8 @@ import (
 type Encryptor[T TorusInt] struct {
 	// Encoder is an embedded encoder for this Encryptor.
 	*Encoder[T]
+	// glweTransformer is an embedded glweTransformer for this Encryptor.
+	*glweTransformer[T]
 
 	// Parameters holds the parameters for this Encryptor.
 	Parameters Parameters[T]
@@ -60,7 +62,8 @@ type encryptionBuffer[T TorusInt] struct {
 func NewEncryptor[T TorusInt](params Parameters[T]) *Encryptor[T] {
 	// Fill samplers to call encryptor.GenSecretKey()
 	encryptor := Encryptor[T]{
-		Encoder: NewEncoder(params),
+		Encoder:         NewEncoder(params),
+		glweTransformer: newGLWETransformer(params),
 
 		Parameters: params,
 
@@ -84,7 +87,8 @@ func NewEncryptor[T TorusInt](params Parameters[T]) *Encryptor[T] {
 // This does not copy the SecretKey.
 func NewEncryptorWithKey[T TorusInt](params Parameters[T], sk SecretKey[T]) *Encryptor[T] {
 	return &Encryptor[T]{
-		Encoder: NewEncoder(params),
+		Encoder:         NewEncoder(params),
+		glweTransformer: newGLWETransformer(params),
 
 		Parameters: params,
 
@@ -115,7 +119,8 @@ func newEncryptionBuffer[T TorusInt](params Parameters[T]) encryptionBuffer[T] {
 // Returned Encryptor is safe for concurrent use.
 func (e *Encryptor[T]) ShallowCopy() *Encryptor[T] {
 	return &Encryptor[T]{
-		Encoder: e.Encoder,
+		Encoder:         e.Encoder,
+		glweTransformer: e.glweTransformer.ShallowCopy(),
 
 		Parameters: e.Parameters,
 
@@ -162,15 +167,14 @@ func (e *Encryptor[T]) GenPublicKey() PublicKey[T] {
 		e.EncryptGLWEBody(pk.GLWEPublicKey.Value[i])
 	}
 
-	polyEval := poly.NewEvaluator[T](e.Parameters.DefaultLWEDimension())
+	lwePolyEvaluator := poly.NewEvaluator[T](e.Parameters.DefaultLWEDimension())
+	lweSk := poly.Poly[T]{Coeffs: e.DefaultLWESecretKey().Value}
 
-	skRev := polyEval.NewPoly()
-	vec.CopyAssign(e.DefaultLWESecretKey().Value, skRev.Coeffs)
-	vec.ReverseInPlace(skRev.Coeffs)
-
-	e.GaussianSampler.SampleSliceAssign(e.Parameters.DefaultLWEStdDev(), pk.LWEPublicKey.Value[0].Coeffs)
 	e.UniformSampler.SampleSliceAssign(pk.LWEPublicKey.Value[1].Coeffs)
-	polyEval.MulSubAssign(pk.LWEPublicKey.Value[1], skRev, pk.LWEPublicKey.Value[0])
+	vec.ReverseInPlace(lweSk.Coeffs)
+	lwePolyEvaluator.MulSubAssign(pk.LWEPublicKey.Value[1], lweSk, pk.LWEPublicKey.Value[0])
+	vec.ReverseInPlace(lweSk.Coeffs)
+	e.GaussianSampler.SampleSliceAddAssign(e.Parameters.DefaultLWEStdDev(), pk.LWEPublicKey.Value[0].Coeffs)
 
 	return pk
 }
