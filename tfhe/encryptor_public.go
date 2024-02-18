@@ -107,6 +107,7 @@ func NewPublicEncryptor[T TorusInt](params Parameters[T], pk PublicKey[T]) *Publ
 // newPublicEncryptionBuffer returns a new publicEncryptionBuffer.
 func newPublicEncryptionBuffer[T TorusInt](params Parameters[T]) publicEncryptionBuffer[T] {
 	return publicEncryptionBuffer[T]{
+		ptGLWE: NewGLWEPlaintext(params),
 		ctGLWE: NewGLWECiphertext(params),
 
 		auxLWEKey:        poly.NewPoly[T](params.DefaultLWEDimension()),

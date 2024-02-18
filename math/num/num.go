@@ -112,18 +112,18 @@ func IsPowerOfTwo[T Integer](x T) bool {
 	return (x > 0) && (x&(x-1)) == 0
 }
 
-// Log2 returns floor(log2(x)).
+// Log2 returns floor(log2(|x|)).
 // If x == 0, it returns 0.
 func Log2[T Integer](x T) int {
 	if x == 0 {
 		return 0
 	}
-	return int(bits.Len64(uint64(x))) - 1
+	return int(bits.Len64(uint64(Abs(x)))) - 1
 }
 
 // RoundRatio returns round(x/y).
 func RoundRatio[T Integer](x, y T) T {
-	return T(math.Round(float64(x) / float64(y)))
+	return T(math.Round(float64(int64(x)) / float64(int64(y))))
 }
 
 // RoundRatioBits is a bit-optimzed version of RoundRatio: it returns round(x/2^bits).
