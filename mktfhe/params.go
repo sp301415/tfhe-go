@@ -7,19 +7,25 @@ import (
 	"github.com/sp301415/tfhe-go/tfhe"
 )
 
-// ParametersLiteral is a Multi-Key variant of TFHE parameters literal.
+// ParametersLiteral is a Multi-Key variant of [tfhe.ParametersLiteral].
 //
 // # Warning
 //
 // Unless you are a cryptographic expert, DO NOT set these by yourself;
 // always use the default parameters provided.
 type ParametersLiteral[T tfhe.TorusInt] struct {
-	// ParametersLiteral is an embedded TFHE parameters literal.
+	// ParametersLiteral is an embedded [tfhe.ParametersLiteral].
 	tfhe.ParametersLiteral[T]
 
 	// PartyCount is the number of maximum parties
 	// that this parameter supports.
 	PartyCount int
+
+	// AccumulatorParameters is the gadget parameters for the accumulator.
+	AccumulatorParameters tfhe.GadgetParametersLiteral[T]
+
+	// RelinKeyParameters is the gadget parameters for the relinearization key.
+	RelinKeyParameters tfhe.GadgetParametersLiteral[T]
 }
 
 // Compile transforms ParametersLiteral to read-only Parameters.
@@ -32,25 +38,36 @@ type ParametersLiteral[T tfhe.TorusInt] struct {
 // Just because a parameter compiles does not necessarily mean it is safe or correct.
 // Unless you are a cryptographic expert, DO NOT set parameters by yourself;
 // always use the default parameters provided.
-func (p *ParametersLiteral[T]) Compile() *Parameters[T] {
+func (p ParametersLiteral[T]) Compile() Parameters[T] {
 	switch {
 	case p.PartyCount <= 0:
 		panic("PartyCount smaller than zero")
 	}
 
-	return &Parameters[T]{
+	return Parameters[T]{
 		Parameters: p.ParametersLiteral.Compile(),
 
 		partyCount: p.PartyCount,
+
+		accumulatorParameters: p.AccumulatorParameters.Compile(),
+		relinKeyParameters:    p.RelinKeyParameters.Compile(),
 	}
 }
 
-// Parameters is a read-only Multi-Key variant of TFHE parameters.
+// Parameters is a read-only Multi-Key variant of [tfhe.Parameters].
 type Parameters[T tfhe.TorusInt] struct {
-	// Parameter is an embedded TFHE parameters.
+	// Parameter is an embedded [tfhe.Parameters].
 	tfhe.Parameters[T]
 
+	// PartyCount is the number of maximum parties
+	// that this parameter supports.
 	partyCount int
+
+	// AccumulatorParameters is the gadget parameters for the accumulator.
+	accumulatorParameters tfhe.GadgetParameters[T]
+
+	// RelinKeyParameters is the gadget parameters for the relinearization key.
+	relinKeyParameters tfhe.GadgetParameters[T]
 }
 
 // PartyCount returns the number of maximum parties
@@ -79,12 +96,25 @@ func (p Parameters[T]) GLWEDimension() int {
 	return p.partyCount * p.Parameters.GLWEDimension()
 }
 
+// AccumulatorParameters returns the gadget parameters for the accumulator.
+func (p Parameters[T]) AccumulatorParameters() tfhe.GadgetParameters[T] {
+	return p.accumulatorParameters
+}
+
+// RelinKeyParameters returns the gadget parameters for the relinearization key.
+func (p Parameters[T]) RelinKeyParameters() tfhe.GadgetParameters[T] {
+	return p.relinKeyParameters
+}
+
 // Literal returns a literal representation of the parameters.
 func (p Parameters[T]) Literal() ParametersLiteral[T] {
 	return ParametersLiteral[T]{
 		ParametersLiteral: p.Parameters.Literal(),
 
 		PartyCount: p.partyCount,
+
+		AccumulatorParameters: p.accumulatorParameters.Literal(),
+		RelinKeyParameters:    p.relinKeyParameters.Literal(),
 	}
 }
 
