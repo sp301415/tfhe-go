@@ -15,8 +15,8 @@ import (
 type Encryptor[T TorusInt] struct {
 	// Encoder is an embedded encoder for this Encryptor.
 	*Encoder[T]
-	// glweTransformer is an embedded glweTransformer for this Encryptor.
-	*glweTransformer[T]
+	// GLWETransformer is an embedded GLWETransformer for this Encryptor.
+	*GLWETransformer[T]
 
 	// Parameters holds the parameters for this Encryptor.
 	Parameters Parameters[T]
@@ -65,7 +65,7 @@ func NewEncryptor[T TorusInt](params Parameters[T]) *Encryptor[T] {
 	// Fill samplers to call encryptor.GenSecretKey()
 	encryptor := Encryptor[T]{
 		Encoder:         NewEncoder(params),
-		glweTransformer: newGLWETransformer(params),
+		GLWETransformer: newGLWETransformer(params),
 
 		Parameters: params,
 
@@ -90,7 +90,7 @@ func NewEncryptor[T TorusInt](params Parameters[T]) *Encryptor[T] {
 func NewEncryptorWithKey[T TorusInt](params Parameters[T], sk SecretKey[T]) *Encryptor[T] {
 	return &Encryptor[T]{
 		Encoder:         NewEncoder(params),
-		glweTransformer: newGLWETransformer(params),
+		GLWETransformer: newGLWETransformer(params),
 
 		Parameters: params,
 
@@ -124,7 +124,7 @@ func newEncryptionBuffer[T TorusInt](params Parameters[T]) encryptionBuffer[T] {
 func (e *Encryptor[T]) ShallowCopy() *Encryptor[T] {
 	return &Encryptor[T]{
 		Encoder:         e.Encoder,
-		glweTransformer: e.glweTransformer.ShallowCopy(),
+		GLWETransformer: e.GLWETransformer.ShallowCopy(),
 
 		Parameters: e.Parameters,
 

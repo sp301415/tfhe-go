@@ -13,7 +13,7 @@ type Evaluator[T TorusInt] struct {
 	// Encoder is an embedded encoder for this Evaluator.
 	*Encoder[T]
 	// glweTransformer is an embedded glweTransformer for this Evaluator.
-	*glweTransformer[T]
+	*GLWETransformer[T]
 
 	// Parameters holds the parameters for this Evaluator.
 	Parameters Parameters[T]
@@ -80,7 +80,7 @@ type evaluationBuffer[T TorusInt] struct {
 func NewEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *Evaluator[T] {
 	return &Evaluator[T]{
 		Encoder:         NewEncoder(params),
-		glweTransformer: newGLWETransformer(params),
+		GLWETransformer: newGLWETransformer(params),
 
 		Parameters: params,
 
@@ -153,7 +153,7 @@ func newEvaluationBuffer[T TorusInt](params Parameters[T]) evaluationBuffer[T] {
 func (e *Evaluator[T]) ShallowCopy() *Evaluator[T] {
 	return &Evaluator[T]{
 		Encoder:         e.Encoder,
-		glweTransformer: e.glweTransformer.ShallowCopy(),
+		GLWETransformer: e.GLWETransformer.ShallowCopy(),
 
 		Parameters: e.Parameters,
 

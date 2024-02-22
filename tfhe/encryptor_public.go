@@ -18,8 +18,8 @@ import (
 type PublicEncryptor[T TorusInt] struct {
 	// Encoder is an embedded encoder for this PublicEncryptor.
 	*Encoder[T]
-	// glweTransformer is an embedded glweTransformer for this PublicEncryptor.
-	*glweTransformer[T]
+	// GLWETransformer is an embedded GLWETransformer for this Encryptor.
+	*GLWETransformer[T]
 
 	// Parameters holds the parameters for this PublicEncryptor.
 	Parameters Parameters[T]
@@ -85,7 +85,7 @@ func NewPublicEncryptor[T TorusInt](params Parameters[T], pk PublicKey[T]) *Publ
 
 	return &PublicEncryptor[T]{
 		Encoder:         NewEncoder(params),
-		glweTransformer: newGLWETransformer[T](params),
+		GLWETransformer: newGLWETransformer[T](params),
 
 		Parameters: params,
 
@@ -128,7 +128,7 @@ func newPublicEncryptionBuffer[T TorusInt](params Parameters[T]) publicEncryptio
 func (e *PublicEncryptor[T]) ShallowCopy() *PublicEncryptor[T] {
 	return &PublicEncryptor[T]{
 		Encoder:         e.Encoder,
-		glweTransformer: e.glweTransformer.ShallowCopy(),
+		GLWETransformer: e.GLWETransformer.ShallowCopy(),
 
 		Parameters: e.Parameters,
 
