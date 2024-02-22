@@ -42,6 +42,8 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 	switch {
 	case p.PartyCount <= 0:
 		panic("PartyCount smaller than zero")
+	case p.GLWEDimension != 1:
+		panic("Multi-Key TFHE only supports GLWE dimension 1")
 	}
 
 	return Parameters[T]{

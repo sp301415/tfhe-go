@@ -130,13 +130,9 @@ func (d *Decryptor[T]) DecryptGLWEPlaintext(ct GLWECiphertext[T]) tfhe.GLWEPlain
 
 // DecryptGLWEPlaintextAssign decrypts GLWE ciphertext to GLWE plaintext and writes it to ptOut.
 func (d *Decryptor[T]) DecryptGLWEPlaintextAssign(ct GLWECiphertext[T], ptOut tfhe.GLWEPlaintext[T]) {
-	glweDimension := d.Parameters.Parameters.GLWEDimension()
-
 	d.buffer.ctGLWE.Value[0].CopyFrom(ct.Value[0])
 	for i := range d.BaseEncryptors {
-		for j, jj := 0, i*glweDimension; j < glweDimension; j, jj = j+1, jj+1 {
-			d.buffer.ctGLWE.Value[1+j] = ct.Value[1+jj]
-		}
+		d.buffer.ctGLWE.Value[1].CopyFrom(ct.Value[1+i])
 		d.BaseEncryptors[i].DecryptGLWEPlaintextAssign(d.buffer.ctGLWE, tfhe.GLWEPlaintext[T]{Value: d.buffer.ctGLWE.Value[0]})
 	}
 	ptOut.Value.CopyFrom(d.buffer.ctGLWE.Value[0])

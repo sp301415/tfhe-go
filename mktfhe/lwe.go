@@ -37,6 +37,7 @@ func (ct *LWECiphertext[T]) CopyFromSingleKey(ctIn tfhe.LWECiphertext[T], idx in
 		panic("LWE Dimension mismatch")
 	}
 
+	ct.Clear()
 	singleLWEDimension := len(ctIn.Value) - 1
 	vec.CopyAssign(ctIn.Value[1:], ct.Value[1+idx*singleLWEDimension:1+(idx+1)*singleLWEDimension])
 	ct.Value[0] = ctIn.Value[0]

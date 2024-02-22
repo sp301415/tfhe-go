@@ -3,6 +3,7 @@ package mktfhe
 import "github.com/sp301415/tfhe-go/tfhe"
 
 var (
+	// ParamsBinaryParty2 is a parameter set for binary TFHE with 2 parties.
 	ParamsBinaryParty2 = ParametersLiteral[uint64]{
 		ParametersLiteral: tfhe.ParametersLiteral[uint64]{
 			LWEDimension:    560,

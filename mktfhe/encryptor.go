@@ -1,6 +1,8 @@
 package mktfhe
 
 import (
+	"github.com/sp301415/tfhe-go/math/csprng"
+	"github.com/sp301415/tfhe-go/math/poly"
 	"github.com/sp301415/tfhe-go/tfhe"
 )
 
@@ -16,6 +18,9 @@ type Encryptor[T tfhe.TorusInt] struct {
 	// Index is the index of the party.
 	Index int
 
+	// CRS is the common reference string for this Encryptor.
+	CRS poly.Poly[T]
+
 	// buffer is a buffer for this Encryptor.
 	buffer encryptionBuffer[T]
 }
@@ -30,10 +35,14 @@ type encryptionBuffer[T tfhe.TorusInt] struct {
 }
 
 // NewEncryptor creates a new Encryptor.
-func NewEncryptor[T tfhe.TorusInt](params Parameters[T], idx int) *Encryptor[T] {
+func NewEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte) *Encryptor[T] {
 	if idx > params.partyCount {
 		panic("index larger than PartyCount")
 	}
+
+	s := csprng.NewUniformSamplerWithSeed[T](crsSeed)
+	crs := poly.NewPoly[T](params.PolyDegree())
+	s.SampleSliceAssign(crs.Coeffs)
 
 	return &Encryptor[T]{
 		Encoder:       tfhe.NewEncoder(params.Parameters),
@@ -42,15 +51,21 @@ func NewEncryptor[T tfhe.TorusInt](params Parameters[T], idx int) *Encryptor[T] 
 		Parameters: params,
 		Index:      idx,
 
+		CRS: crs,
+
 		buffer: newEncryptionBuffer(params),
 	}
 }
 
 // NewEncryptorWithKey creates a new Encryptor with a given key.
-func NewEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, sk tfhe.SecretKey[T]) *Encryptor[T] {
+func NewEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte, sk tfhe.SecretKey[T]) *Encryptor[T] {
 	if idx > params.partyCount {
 		panic("index larger than PartyCount")
 	}
+
+	s := csprng.NewUniformSamplerWithSeed[T](crsSeed)
+	crs := poly.NewPoly[T](params.PolyDegree())
+	s.SampleSliceAssign(crs.Coeffs)
 
 	return &Encryptor[T]{
 		Encoder:       tfhe.NewEncoder(params.Parameters),
@@ -58,6 +73,8 @@ func NewEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, sk tfhe
 
 		Parameters: params,
 		Index:      idx,
+
+		CRS: crs,
 
 		buffer: newEncryptionBuffer(params),
 	}
@@ -80,6 +97,8 @@ func (e *Encryptor[T]) ShallowCopy() *Encryptor[T] {
 
 		Parameters: e.Parameters,
 		Index:      e.Index,
+
+		CRS: e.CRS,
 
 		buffer: newEncryptionBuffer(e.Parameters),
 	}

@@ -1,7 +1,6 @@
 package tfhe
 
 import (
-	"github.com/sp301415/tfhe-go/math/num"
 	"github.com/sp301415/tfhe-go/math/poly"
 	"github.com/sp301415/tfhe-go/math/vec"
 )
@@ -98,68 +97,4 @@ func (sk *SecretKey[T]) CopyFrom(skIn SecretKey[T]) {
 func (sk *SecretKey[T]) Clear() {
 	vec.Fill(sk.LWELargeKey.Value, 0)
 	sk.FourierGLWEKey.Clear()
-}
-
-// PublicKey is a structure containing LWE and GLWE public key.
-//
-// We use compact public key, explained in https://eprint.iacr.org/2023/603.
-// This means that not all parameters support public key encryption.
-// Namely, DefaultLWEDimension should be power of two.
-type PublicKey[T TorusInt] struct {
-	// LWEPublicKey is a public key used for LWE encryption.
-	// It is essentially a GLWE encryption of zero, but with reversed GLWE key,
-	// as explained in https://eprint.iacr.org/2023/603.
-	LWEPublicKey LWEPublicKey[T]
-
-	// GLWEPublicKey is a public key used for LWE and GLWE encryption.
-	// It is essentially a GLWE encryption of zero.
-	GLWEPublicKey GLWEPublicKey[T]
-}
-
-// NewPublicKey allocates an empty PublicKey.
-//
-// Panics if DefaultLWEDimension is not power of two.
-func NewPublicKey[T TorusInt](params Parameters[T]) PublicKey[T] {
-	if !num.IsPowerOfTwo(params.DefaultLWEDimension()) {
-		panic("Default LWE dimension not a power of two")
-	}
-
-	return PublicKey[T]{
-		LWEPublicKey:  NewLWEPublicKey(params),
-		GLWEPublicKey: NewGLWEPublicKey(params),
-	}
-}
-
-// NewPublicKeyCustom allocates an empty PublicKey with given dimension and polyDegree.
-//
-// Panics if lweDimension is not power of two.
-func NewPublicKeyCustom[T TorusInt](lweDimension, glweDimension, polyDegree int) PublicKey[T] {
-	if !num.IsPowerOfTwo(lweDimension) {
-		panic("LWE dimension not a power of two")
-	}
-
-	return PublicKey[T]{
-		LWEPublicKey:  NewLWEPublicKeyCustom[T](lweDimension),
-		GLWEPublicKey: NewGLWEPublicKeyCustom[T](glweDimension, polyDegree),
-	}
-}
-
-// Copy returns a copy of the key.
-func (pk PublicKey[T]) Copy() PublicKey[T] {
-	return PublicKey[T]{
-		LWEPublicKey:  pk.LWEPublicKey.Copy(),
-		GLWEPublicKey: pk.GLWEPublicKey.Copy(),
-	}
-}
-
-// CopyFrom copies values from a key.
-func (pk *PublicKey[T]) CopyFrom(pkIn PublicKey[T]) {
-	pk.LWEPublicKey.CopyFrom(pkIn.LWEPublicKey)
-	pk.GLWEPublicKey.CopyFrom(pkIn.GLWEPublicKey)
-}
-
-// Clear clears the key.
-func (pk *PublicKey[T]) Clear() {
-	pk.LWEPublicKey.Clear()
-	pk.GLWEPublicKey.Clear()
 }

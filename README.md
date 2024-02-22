@@ -132,4 +132,4 @@ Special thanks to Seonhong Min([@snu-lukemin](https://github.com/snu-lukemin)) f
 - MOSFHET: Optimized Software for FHE over the Torus (https://eprint.iacr.org/2022/515)
 - Faster TFHE Bootstrapping with Block Binary Keys (https://eprint.iacr.org/2023/958)
 - Discretization Error Reduction for Torus Fully Homomorphic Encryption (https://eprint.iacr.org/2023/402)
-- TFHE Public-Key Encryption Revisited (https://eprint.iacr.org/2023/603)
+- Towards Practical Multi-key TFHE: Parallelizable, Key-Compatible, Quasi-linear Complexity (https://eprint.iacr.org/2022/1460)

@@ -2,9 +2,7 @@ package tfhe
 
 import (
 	"github.com/sp301415/tfhe-go/math/csprng"
-	"github.com/sp301415/tfhe-go/math/num"
 	"github.com/sp301415/tfhe-go/math/poly"
-	"github.com/sp301415/tfhe-go/math/vec"
 )
 
 // Encryptor encrypts and decrypts TFHE plaintexts and ciphertexts.
@@ -155,37 +153,6 @@ func (e *Encryptor[T]) GenSecretKey() SecretKey[T] {
 	e.ToFourierGLWESecretKeyAssign(sk.GLWEKey, sk.FourierGLWEKey)
 
 	return sk
-}
-
-// GenPublicKey samples a new PublicKey.
-//
-// Panics when DefaultLWEDimension is not a power of two.
-func (e *Encryptor[T]) GenPublicKey() PublicKey[T] {
-	if !num.IsPowerOfTwo(e.Parameters.DefaultLWEDimension()) {
-		panic("Default LWE dimension not a power of two")
-	}
-
-	pk := NewPublicKey(e.Parameters)
-
-	for i := 0; i < e.Parameters.glweDimension; i++ {
-		e.EncryptGLWEBody(pk.GLWEPublicKey.Value[i])
-	}
-
-	lwePolyEvaluator := poly.NewEvaluator[T](e.Parameters.DefaultLWEDimension())
-	lweSk := poly.Poly[T]{Coeffs: e.DefaultLWESecretKey().Value}
-
-	e.UniformSampler.SampleSliceAssign(pk.LWEPublicKey.Value[1].Coeffs)
-	vec.ReverseInPlace(lweSk.Coeffs)
-	lwePolyEvaluator.MulSubAssign(pk.LWEPublicKey.Value[1], lweSk, pk.LWEPublicKey.Value[0])
-	vec.ReverseInPlace(lweSk.Coeffs)
-	e.GaussianSampler.SampleSliceAddAssign(e.Parameters.DefaultLWEStdDev(), pk.LWEPublicKey.Value[0].Coeffs)
-
-	return pk
-}
-
-// PublicEncryptor returns a PublicEncryptor with the same parameters.
-func (e *Encryptor[T]) PublicEncryptor() *PublicEncryptor[T] {
-	return NewPublicEncryptor(e.Parameters, e.GenPublicKey())
 }
 
 // DefaultLWESecretKey returns the LWE key according to the parameters.

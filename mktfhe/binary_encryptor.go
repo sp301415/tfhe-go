@@ -13,20 +13,20 @@ type BinaryEncryptor[T tfhe.TorusInt] struct {
 }
 
 // NewBinaryEncryptor creates a new BinaryEncryptor.
-func NewBinaryEncryptor[T tfhe.TorusInt](params Parameters[T], idx int) BinaryEncryptor[T] {
+func NewBinaryEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte) BinaryEncryptor[T] {
 	return BinaryEncryptor[T]{
 		BinaryEncoder: tfhe.NewBinaryEncoder(params.Parameters),
 		Parameters:    params,
-		BaseEncryptor: NewEncryptor(params, idx),
+		BaseEncryptor: NewEncryptor(params, idx, crsSeed),
 	}
 }
 
 // NewBinaryEncryptorWithKey creates a new BinaryEncryptor with a given key.
-func NewBinaryEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, sk tfhe.SecretKey[T]) *BinaryEncryptor[T] {
+func NewBinaryEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte, sk tfhe.SecretKey[T]) *BinaryEncryptor[T] {
 	return &BinaryEncryptor[T]{
 		BinaryEncoder: tfhe.NewBinaryEncoder(params.Parameters),
 		Parameters:    params,
-		BaseEncryptor: NewEncryptorWithKey(params, idx, sk),
+		BaseEncryptor: NewEncryptorWithKey(params, idx, crsSeed, sk),
 	}
 }
 
