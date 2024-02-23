@@ -26,12 +26,12 @@ func (ct LWECiphertext[T]) Copy() LWECiphertext[T] {
 	return LWECiphertext[T]{Value: vec.Copy(ct.Value)}
 }
 
-// CopyFrom copies values from a ciphertext.
+// CopyFrom copies values from the ciphertext.
 func (ct *LWECiphertext[T]) CopyFrom(ctIn LWECiphertext[T]) {
 	vec.CopyAssign(ctIn.Value, ct.Value)
 }
 
-// CopyFromSingleKey copies values from a single-key ciphertext.
+// CopyFromSingleKey copies values from the single-key ciphertext.
 func (ct *LWECiphertext[T]) CopyFromSingleKey(ctIn tfhe.LWECiphertext[T], idx int) {
 	if (len(ct.Value)-1)%(len(ctIn.Value)-1) != 0 {
 		panic("LWE Dimension mismatch")

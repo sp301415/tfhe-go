@@ -19,7 +19,7 @@ type Encryptor[T tfhe.TorusInt] struct {
 	Index int
 
 	// CRS is the common reference string for this Encryptor.
-	CRS poly.Poly[T]
+	CRS []poly.Poly[T]
 
 	// buffer is a buffer for this Encryptor.
 	buffer encryptionBuffer[T]
@@ -41,8 +41,11 @@ func NewEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte
 	}
 
 	s := csprng.NewUniformSamplerWithSeed[T](crsSeed)
-	crs := poly.NewPoly[T](params.PolyDegree())
-	s.SampleSliceAssign(crs.Coeffs)
+	crs := make([]poly.Poly[T], params.relinKeyParameters.Level())
+	for i := 0; i < params.relinKeyParameters.Level(); i++ {
+		crs[i] = poly.NewPoly[T](params.PolyDegree())
+		s.SampleSliceAssign(crs[i].Coeffs)
+	}
 
 	return &Encryptor[T]{
 		Encoder:       tfhe.NewEncoder(params.Parameters),
@@ -64,8 +67,11 @@ func NewEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed
 	}
 
 	s := csprng.NewUniformSamplerWithSeed[T](crsSeed)
-	crs := poly.NewPoly[T](params.PolyDegree())
-	s.SampleSliceAssign(crs.Coeffs)
+	crs := make([]poly.Poly[T], params.relinKeyParameters.Level())
+	for i := 0; i < params.relinKeyParameters.Level(); i++ {
+		crs[i] = poly.NewPoly[T](params.PolyDegree())
+		s.SampleSliceAssign(crs[i].Coeffs)
+	}
 
 	return &Encryptor[T]{
 		Encoder:       tfhe.NewEncoder(params.Parameters),

@@ -1,5 +1,7 @@
 package poly
 
+import "github.com/sp301415/tfhe-go/math/num"
+
 // Add returns fp0 + fp1.
 func (f *FourierEvaluator[T]) Add(fp0, fp1 FourierPoly) FourierPoly {
 	fpOut := f.NewFourierPoly()
@@ -128,4 +130,254 @@ func (f *FourierEvaluator[T]) PolyMulSubAssign(fp0 FourierPoly, p Poly[T], fpOut
 	f.ToFourierPolyAssign(p, f.buffer.fp)
 
 	elementWiseMulSubCmplxAssign(fp0.Coeffs, f.buffer.fp.Coeffs, fpOut.Coeffs)
+}
+
+// PolyMulBinary returns p * fp0 as Poly, assuming fp0 is a binary polynomial.
+func (f *FourierEvaluator[T]) PolyMulBinary(fp0 FourierPoly, p Poly[T]) Poly[T] {
+	pOut := NewPoly[T](f.degree)
+	f.PolyMulBinaryAssign(fp0, p, pOut)
+	return pOut
+}
+
+// PolyMulBinaryAssign computes pOut = p * fp0, assuming fp0 is a binary polynomial.
+//
+// p and pOut should not overlap.
+func (f *FourierEvaluator[T]) PolyMulBinaryAssign(fp0 FourierPoly, p Poly[T], pOut Poly[T]) {
+	var splitBits T = 22
+
+	var z T
+	switch any(z).(type) {
+	case int8, uint8, int16, uint16:
+		f.ToFourierPolyAssign(p, f.buffer.fpSplit)
+		f.MulAssign(f.buffer.fpSplit, fp0, f.buffer.fpSplit)
+		f.ToPolyAssignUnsafe(f.buffer.fpSplit, pOut)
+
+	case int32, int64, int:
+		for i := 0; i < f.degree; i++ {
+			f.buffer.pSplit.Coeffs[i] = p.Coeffs[i] % (1 << splitBits)
+		}
+		f.ToFourierPolyAssign(f.buffer.pSplit, f.buffer.fpSplit)
+		f.MulAssign(f.buffer.fpSplit, fp0, f.buffer.fpSplit)
+		f.ToPolyAssignUnsafe(f.buffer.fpSplit, pOut)
+
+		for i := 0; i < f.degree; i++ {
+			f.buffer.pSplit.Coeffs[i] = (p.Coeffs[i] / (1 << splitBits)) % (1 << splitBits)
+		}
+		f.ToFourierPolyAssign(f.buffer.pSplit, f.buffer.fpSplit)
+		f.MulAssign(f.buffer.fpSplit, fp0, f.buffer.fpSplit)
+		f.ToPolyAssignUnsafe(f.buffer.fpSplit, f.buffer.pSplit)
+		for i := 0; i < f.degree; i++ {
+			pOut.Coeffs[i] += f.buffer.pSplit.Coeffs[i] << splitBits
+		}
+
+		if num.SizeT[T]() < 64 {
+			return
+		}
+
+		for i := 0; i < f.degree; i++ {
+			f.buffer.pSplit.Coeffs[i] = p.Coeffs[i] / (1 << (2 * splitBits))
+		}
+		f.ToFourierPolyAssign(f.buffer.pSplit, f.buffer.fpSplit)
+		f.MulAssign(f.buffer.fpSplit, fp0, f.buffer.fpSplit)
+		f.ToPolyAssignUnsafe(f.buffer.fpSplit, f.buffer.pSplit)
+		for i := 0; i < f.degree; i++ {
+			pOut.Coeffs[i] += f.buffer.pSplit.Coeffs[i] << (2 * splitBits)
+		}
+
+	case uint32, uint64, uint:
+		var splitMask T = 1<<splitBits - 1
+
+		for i := 0; i < f.degree; i++ {
+			f.buffer.pSplit.Coeffs[i] = p.Coeffs[i] & splitMask
+		}
+		f.ToFourierPolyAssign(f.buffer.pSplit, f.buffer.fpSplit)
+		f.MulAssign(f.buffer.fpSplit, fp0, f.buffer.fpSplit)
+		f.ToPolyAssignUnsafe(f.buffer.fpSplit, pOut)
+
+		for i := 0; i < f.degree; i++ {
+			f.buffer.pSplit.Coeffs[i] = (p.Coeffs[i] >> splitBits) & splitMask
+		}
+		f.ToFourierPolyAssign(f.buffer.pSplit, f.buffer.fpSplit)
+		f.MulAssign(f.buffer.fpSplit, fp0, f.buffer.fpSplit)
+		f.ToPolyAssignUnsafe(f.buffer.fpSplit, f.buffer.pSplit)
+		for i := 0; i < f.degree; i++ {
+			pOut.Coeffs[i] += f.buffer.pSplit.Coeffs[i] << splitBits
+		}
+
+		if num.SizeT[T]() < 64 {
+			return
+		}
+
+		for i := 0; i < f.degree; i++ {
+			f.buffer.pSplit.Coeffs[i] = p.Coeffs[i] >> (2 * splitBits)
+		}
+		f.ToFourierPolyAssign(f.buffer.pSplit, f.buffer.fpSplit)
+		f.MulAssign(f.buffer.fpSplit, fp0, f.buffer.fpSplit)
+		f.ToPolyAssignUnsafe(f.buffer.fpSplit, f.buffer.pSplit)
+		for i := 0; i < f.degree; i++ {
+			pOut.Coeffs[i] += f.buffer.pSplit.Coeffs[i] << (2 * splitBits)
+		}
+	}
+}
+
+// PolyMulBinaryAddAssign computes pOut += p * fp0, assuming fp0 is a binary polynomial.
+//
+// p and pOut should not overlap.
+func (f *FourierEvaluator[T]) PolyMulBinaryAddAssign(fp0 FourierPoly, p Poly[T], pOut Poly[T]) {
+	var splitBits T = 22
+
+	var z T
+	switch any(z).(type) {
+	case int8, uint8, int16, uint16:
+		f.ToFourierPolyAssign(p, f.buffer.fpSplit)
+		f.MulAssign(f.buffer.fpSplit, fp0, f.buffer.fpSplit)
+		f.ToPolyAddAssignUnsafe(f.buffer.fpSplit, pOut)
+
+	case int32, int64, int:
+		for i := 0; i < f.degree; i++ {
+			f.buffer.pSplit.Coeffs[i] = p.Coeffs[i] % (1 << splitBits)
+		}
+		f.ToFourierPolyAssign(f.buffer.pSplit, f.buffer.fpSplit)
+		f.MulAssign(f.buffer.fpSplit, fp0, f.buffer.fpSplit)
+		f.ToPolyAddAssignUnsafe(f.buffer.fpSplit, pOut)
+
+		for i := 0; i < f.degree; i++ {
+			f.buffer.pSplit.Coeffs[i] = (p.Coeffs[i] / (1 << splitBits)) % (1 << splitBits)
+		}
+		f.ToFourierPolyAssign(f.buffer.pSplit, f.buffer.fpSplit)
+		f.MulAssign(f.buffer.fpSplit, fp0, f.buffer.fpSplit)
+		f.ToPolyAssignUnsafe(f.buffer.fpSplit, f.buffer.pSplit)
+		for i := 0; i < f.degree; i++ {
+			pOut.Coeffs[i] += f.buffer.pSplit.Coeffs[i] << splitBits
+		}
+
+		if num.SizeT[T]() < 64 {
+			return
+		}
+
+		for i := 0; i < f.degree; i++ {
+			f.buffer.pSplit.Coeffs[i] = p.Coeffs[i] / (1 << (2 * splitBits))
+		}
+		f.ToFourierPolyAssign(f.buffer.pSplit, f.buffer.fpSplit)
+		f.MulAssign(f.buffer.fpSplit, fp0, f.buffer.fpSplit)
+		f.ToPolyAssignUnsafe(f.buffer.fpSplit, f.buffer.pSplit)
+		for i := 0; i < f.degree; i++ {
+			pOut.Coeffs[i] += f.buffer.pSplit.Coeffs[i] << (2 * splitBits)
+		}
+
+	case uint32, uint64, uint:
+		var splitMask T = 1<<splitBits - 1
+
+		for i := 0; i < f.degree; i++ {
+			f.buffer.pSplit.Coeffs[i] = p.Coeffs[i] & splitMask
+		}
+		f.ToFourierPolyAssign(f.buffer.pSplit, f.buffer.fpSplit)
+		f.MulAssign(f.buffer.fpSplit, fp0, f.buffer.fpSplit)
+		f.ToPolyAddAssignUnsafe(f.buffer.fpSplit, pOut)
+
+		for i := 0; i < f.degree; i++ {
+			f.buffer.pSplit.Coeffs[i] = (p.Coeffs[i] >> splitBits) & splitMask
+		}
+		f.ToFourierPolyAssign(f.buffer.pSplit, f.buffer.fpSplit)
+		f.MulAssign(f.buffer.fpSplit, fp0, f.buffer.fpSplit)
+		f.ToPolyAssignUnsafe(f.buffer.fpSplit, f.buffer.pSplit)
+		for i := 0; i < f.degree; i++ {
+			pOut.Coeffs[i] += f.buffer.pSplit.Coeffs[i] << splitBits
+		}
+
+		if num.SizeT[T]() < 64 {
+			return
+		}
+
+		for i := 0; i < f.degree; i++ {
+			f.buffer.pSplit.Coeffs[i] = p.Coeffs[i] >> (2 * splitBits)
+		}
+		f.ToFourierPolyAssign(f.buffer.pSplit, f.buffer.fpSplit)
+		f.MulAssign(f.buffer.fpSplit, fp0, f.buffer.fpSplit)
+		f.ToPolyAssignUnsafe(f.buffer.fpSplit, f.buffer.pSplit)
+		for i := 0; i < f.degree; i++ {
+			pOut.Coeffs[i] += f.buffer.pSplit.Coeffs[i] << (2 * splitBits)
+		}
+	}
+}
+
+// PolyMulBinarySubAssign computes pOut -= p * fp0, assuming fp0 is a binary polynomial.
+//
+// p and pOut should not overlap.
+func (f *FourierEvaluator[T]) PolyMulBinarySubAssign(fp0 FourierPoly, p Poly[T], pOut Poly[T]) {
+	var splitBits T = 22
+
+	var z T
+	switch any(z).(type) {
+	case int8, uint8, int16, uint16:
+		f.ToFourierPolyAssign(p, f.buffer.fpSplit)
+		f.MulAssign(f.buffer.fpSplit, fp0, f.buffer.fpSplit)
+		f.ToPolySubAssignUnsafe(f.buffer.fpSplit, pOut)
+
+	case int32, int64, int:
+		for i := 0; i < f.degree; i++ {
+			f.buffer.pSplit.Coeffs[i] = p.Coeffs[i] % (1 << splitBits)
+		}
+		f.ToFourierPolyAssign(f.buffer.pSplit, f.buffer.fpSplit)
+		f.MulAssign(f.buffer.fpSplit, fp0, f.buffer.fpSplit)
+		f.ToPolySubAssignUnsafe(f.buffer.fpSplit, pOut)
+
+		for i := 0; i < f.degree; i++ {
+			f.buffer.pSplit.Coeffs[i] = (p.Coeffs[i] / (1 << splitBits)) % (1 << splitBits)
+		}
+		f.ToFourierPolyAssign(f.buffer.pSplit, f.buffer.fpSplit)
+		f.MulAssign(f.buffer.fpSplit, fp0, f.buffer.fpSplit)
+		f.ToPolyAssignUnsafe(f.buffer.fpSplit, f.buffer.pSplit)
+		for i := 0; i < f.degree; i++ {
+			pOut.Coeffs[i] -= f.buffer.pSplit.Coeffs[i] << splitBits
+		}
+
+		if num.SizeT[T]() < 64 {
+			return
+		}
+
+		for i := 0; i < f.degree; i++ {
+			f.buffer.pSplit.Coeffs[i] = p.Coeffs[i] / (1 << (2 * splitBits))
+		}
+		f.ToFourierPolyAssign(f.buffer.pSplit, f.buffer.fpSplit)
+		f.MulAssign(f.buffer.fpSplit, fp0, f.buffer.fpSplit)
+		f.ToPolyAssignUnsafe(f.buffer.fpSplit, f.buffer.pSplit)
+		for i := 0; i < f.degree; i++ {
+			pOut.Coeffs[i] -= f.buffer.pSplit.Coeffs[i] << (2 * splitBits)
+		}
+
+	case uint32, uint64, uint:
+		var splitMask T = 1<<splitBits - 1
+
+		for i := 0; i < f.degree; i++ {
+			f.buffer.pSplit.Coeffs[i] = p.Coeffs[i] & splitMask
+		}
+		f.ToFourierPolyAssign(f.buffer.pSplit, f.buffer.fpSplit)
+		f.MulAssign(f.buffer.fpSplit, fp0, f.buffer.fpSplit)
+		f.ToPolySubAssignUnsafe(f.buffer.fpSplit, pOut)
+
+		for i := 0; i < f.degree; i++ {
+			f.buffer.pSplit.Coeffs[i] = (p.Coeffs[i] >> splitBits) & splitMask
+		}
+		f.ToFourierPolyAssign(f.buffer.pSplit, f.buffer.fpSplit)
+		f.MulAssign(f.buffer.fpSplit, fp0, f.buffer.fpSplit)
+		f.ToPolyAssignUnsafe(f.buffer.fpSplit, f.buffer.pSplit)
+		for i := 0; i < f.degree; i++ {
+			pOut.Coeffs[i] -= f.buffer.pSplit.Coeffs[i] << splitBits
+		}
+
+		if num.SizeT[T]() < 64 {
+			return
+		}
+
+		for i := 0; i < f.degree; i++ {
+			f.buffer.pSplit.Coeffs[i] = p.Coeffs[i] >> (2 * splitBits)
+		}
+		f.ToFourierPolyAssign(f.buffer.pSplit, f.buffer.fpSplit)
+		f.MulAssign(f.buffer.fpSplit, fp0, f.buffer.fpSplit)
+		f.ToPolyAssignUnsafe(f.buffer.fpSplit, f.buffer.pSplit)
+		for i := 0; i < f.degree; i++ {
+			pOut.Coeffs[i] -= f.buffer.pSplit.Coeffs[i] << (2 * splitBits)
+		}
+	}
 }

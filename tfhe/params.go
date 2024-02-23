@@ -9,17 +9,6 @@ import (
 	"github.com/sp301415/tfhe-go/math/num"
 )
 
-const (
-	// MinPolyDegree is the minimum degree of polynomials allowed in parameters.
-	// Currently polynomial decomposition is implemented using AVX2,
-	// which requires degree at least 256/32 = 8.
-	MinPolyDegree = 1 << 3
-
-	// MaxPolyDegree is the maximum degree of polynomials allowed in parameters.
-	// We use FFT for GLWE encryption, which limits the maximum degree due to precision loss.
-	MaxPolyDegree = 1 << 20
-)
-
 // TorusInt represents the integers living in the discretized torus.
 // Currently, it supports Q = 2^32 and Q = 2^64 (uint32 and uint64).
 type TorusInt interface {
@@ -297,14 +286,6 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("LWEDimension larger than GLWEDimension * PolyDegree")
 	case p.GLWEDimension <= 0:
 		panic("GLWEDimension smaller than zero")
-	case p.PolyDegree < MinPolyDegree:
-		panic("PolyDegree smaller than MinPolyDegree")
-	case p.PolyDegree > MaxPolyDegree:
-		panic("PolyDegree larger than MaxPolyDegree")
-	case p.PolyLargeDegree < MinPolyDegree:
-		panic("PolyLargeDegree smaller than MinPolyDegree")
-	case p.PolyLargeDegree > MaxPolyDegree:
-		panic("PolyLargeDegree larger than MaxPolyDegree")
 	case p.PolyLargeDegree < p.PolyDegree:
 		panic("PolyLargeDegree smaller than PolyDegree")
 	case p.LWEStdDev <= 0:

@@ -38,7 +38,7 @@ func (sk GLWESecretKey[T]) Copy() GLWESecretKey[T] {
 	return GLWESecretKey[T]{Value: skCopy}
 }
 
-// CopyFrom copies values from a key.
+// CopyFrom copies values from the key.
 func (sk *GLWESecretKey[T]) CopyFrom(skIn GLWESecretKey[T]) {
 	for i := range sk.Value {
 		sk.Value[i].CopyFrom(skIn.Value[i])
@@ -92,7 +92,7 @@ func (pt GLWEPlaintext[T]) Copy() GLWEPlaintext[T] {
 	return GLWEPlaintext[T]{Value: pt.Value.Copy()}
 }
 
-// CopyFrom copies values from a plaintext.
+// CopyFrom copies values from the plaintext.
 func (pt *GLWEPlaintext[T]) CopyFrom(ptIn GLWEPlaintext[T]) {
 	pt.Value.CopyFrom(ptIn.Value)
 }
@@ -137,7 +137,7 @@ func (ct GLWECiphertext[T]) Copy() GLWECiphertext[T] {
 	return GLWECiphertext[T]{Value: ctCopy}
 }
 
-// CopyFrom copies values from a ciphertext.
+// CopyFrom copies values from the ciphertext.
 func (ct *GLWECiphertext[T]) CopyFrom(ctIn GLWECiphertext[T]) {
 	for i := range ct.Value {
 		ct.Value[i].CopyFrom(ctIn.Value[i])
@@ -271,7 +271,7 @@ func (ct GGSWCiphertext[T]) Copy() GGSWCiphertext[T] {
 	return GGSWCiphertext[T]{Value: ctCopy, GadgetParameters: ct.GadgetParameters}
 }
 
-// CopyFrom copies values from a ciphertext.
+// CopyFrom copies values from the ciphertext.
 func (ct *GGSWCiphertext[T]) CopyFrom(ctIn GGSWCiphertext[T]) {
 	for i := range ct.Value {
 		ct.Value[i].CopyFrom(ctIn.Value[i])

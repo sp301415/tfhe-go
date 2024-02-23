@@ -35,7 +35,7 @@ func (sk FourierGLWESecretKey[T]) Copy() FourierGLWESecretKey[T] {
 	return FourierGLWESecretKey[T]{Value: skCopy}
 }
 
-// CopyFrom copies values from a key.
+// CopyFrom copies values from the key.
 func (sk *FourierGLWESecretKey[T]) CopyFrom(skIn FourierGLWESecretKey[T]) {
 	for i := range sk.Value {
 		sk.Value[i].CopyFrom(skIn.Value[i])
@@ -84,7 +84,7 @@ func (ct FourierGLWECiphertext[T]) Copy() FourierGLWECiphertext[T] {
 	return FourierGLWECiphertext[T]{Value: ctCopy}
 }
 
-// CopyFrom copies values from a ciphertext.
+// CopyFrom copies values from the ciphertext.
 func (ct *FourierGLWECiphertext[T]) CopyFrom(ctIn FourierGLWECiphertext[T]) {
 	for i := range ct.Value {
 		ct.Value[i].CopyFrom(ctIn.Value[i])
@@ -133,7 +133,7 @@ func (ct FourierGLevCiphertext[T]) Copy() FourierGLevCiphertext[T] {
 	return FourierGLevCiphertext[T]{Value: ctCopy, GadgetParameters: ct.GadgetParameters}
 }
 
-// CopyFrom copies values from a ciphertext.
+// CopyFrom copies values from the ciphertext.
 func (ct *FourierGLevCiphertext[T]) CopyFrom(ctIn FourierGLevCiphertext[T]) {
 	for i := range ct.Value {
 		ct.Value[i].CopyFrom(ctIn.Value[i])
@@ -183,7 +183,7 @@ func (ct FourierGGSWCiphertext[T]) Copy() FourierGGSWCiphertext[T] {
 	return FourierGGSWCiphertext[T]{Value: ctCopy, GadgetParameters: ct.GadgetParameters}
 }
 
-// CopyFrom copies values from a ciphertext.
+// CopyFrom copies values from the ciphertext.
 func (ct *FourierGGSWCiphertext[T]) CopyFrom(ctIn FourierGGSWCiphertext[T]) {
 	for i := range ct.Value {
 		ct.Value[i].CopyFrom(ctIn.Value[i])

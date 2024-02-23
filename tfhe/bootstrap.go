@@ -22,7 +22,7 @@ func (lut LookUpTable[T]) Copy() LookUpTable[T] {
 	return LookUpTable[T](poly.Poly[T](lut).Copy())
 }
 
-// CopyFrom copies values from a LUT.
+// CopyFrom copies values from the LUT.
 func (lut *LookUpTable[T]) CopyFrom(lutIn LookUpTable[T]) {
 	vec.CopyAssign(lutIn.Coeffs, lut.Coeffs)
 }

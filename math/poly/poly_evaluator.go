@@ -9,6 +9,11 @@ const (
 	// Currently, this is set to 16, because AVX2 implementation of FFT and inverse FFT
 	// handles first/last two loops separately.
 	MinDegree = 1 << 4
+
+	// MaxDegree is the maximum degree of polynomial that Evaluator can handle.
+	// Currently, this is set to 2^20, because [*FourierEvaluator.PolyMulBinary] trick
+	// supports up to 2^20 degree.
+	MaxDegree = 1 << 20
 )
 
 // Evaluator calculates polynomial algorithms.
@@ -40,12 +45,13 @@ type evaluationBuffer[T num.Integer] struct {
 // N should be power of two, and at least MinDegree.
 // Otherwise, it panics.
 func NewEvaluator[T num.Integer](N int) *Evaluator[T] {
-	if !num.IsPowerOfTwo(N) {
+	switch {
+	case !num.IsPowerOfTwo(N):
 		panic("degree not power of two")
-	}
-
-	if N < MinDegree {
+	case N < MinDegree:
 		panic("degree smaller than MinDegree")
+	case N > MaxDegree:
+		panic("degree larger than MaxDegree")
 	}
 
 	return &Evaluator[T]{

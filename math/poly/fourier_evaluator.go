@@ -51,18 +51,24 @@ type fourierBuffer[T num.Integer] struct {
 	fp FourierPoly
 	// fpInv holds the InvFFT value of fp.
 	fpInv FourierPoly
+
+	// pSplit holds the split value of p in [*FourierEvaluator.PolyMulBinary].
+	pSplit Poly[T]
+	// fpSplit holds the fourier transformed pSplit.
+	fpSplit FourierPoly
 }
 
 // NewFourierEvaluator creates a new FourierEvaluator with degree N.
 // N should be power of two, and at least MinDegree.
 // Otherwise, it panics.
 func NewFourierEvaluator[T num.Integer](N int) *FourierEvaluator[T] {
-	if !num.IsPowerOfTwo(N) {
+	switch {
+	case !num.IsPowerOfTwo(N):
 		panic("degree not power of two")
-	}
-
-	if N < MinDegree {
+	case N < MinDegree:
 		panic("degree smaller than MinDegree")
+	case N > MaxDegree:
+		panic("degree larger than MaxDegree")
 	}
 
 	maxT := math.Exp2(float64(num.SizeT[T]()))
@@ -144,8 +150,10 @@ func genTwiddleFactors(N int) (tw, twInv []complex128) {
 // newFourierBuffer allocates an empty fourierBuffer.
 func newFourierBuffer[T num.Integer](N int) fourierBuffer[T] {
 	return fourierBuffer[T]{
-		fp:    NewFourierPoly(N),
-		fpInv: NewFourierPoly(N),
+		fp:      NewFourierPoly(N),
+		fpInv:   NewFourierPoly(N),
+		pSplit:  NewPoly[T](N),
+		fpSplit: NewFourierPoly(N),
 	}
 }
 
