@@ -38,7 +38,7 @@ func (sk *LWESecretKey[T]) Clear() {
 // LWEPublicKey is a LWE public key, derived from the LWE secret key.
 // It is essentially a GLWE encryption of zero, but with reversed GLWE key,
 // as explained in https://eprint.iacr.org/2023/603.
-// This means that only the parameters with OrderKeySwitchBlindRotate support public key encryption.
+// This means that not all parameters support public key encryption.
 type LWEPublicKey[T TorusInt] struct {
 	// Value has length GLWEDimension.
 	Value []GLWECiphertext[T]

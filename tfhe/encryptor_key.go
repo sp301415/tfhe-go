@@ -103,7 +103,6 @@ func (sk *SecretKey[T]) Clear() {
 //
 // We use compact public key, explained in https://eprint.iacr.org/2023/603.
 // This means that not all parameters support public key encryption.
-// Namely, DefaultLWEDimension should be power of two.
 type PublicKey[T TorusInt] struct {
 	// LWEKey is a public key used for LWE encryption.
 	// It is essentially a GLWE encryption of zero, but with reversed GLWE key,
