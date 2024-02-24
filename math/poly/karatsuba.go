@@ -40,7 +40,6 @@ func newKaratsubaBuffer[T num.Integer](N int) []karatsubaBuffer[T] {
 			d1: make([]T, N>>i),
 			d2: make([]T, N>>i),
 		}
-
 	}
 
 	return buff

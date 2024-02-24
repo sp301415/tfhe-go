@@ -27,9 +27,15 @@ type Encryptor[T tfhe.TorusInt] struct {
 
 // encryptionBuffer is a buffer for encryption.
 type encryptionBuffer[T tfhe.TorusInt] struct {
+	// ptGLWE holds the GLWE plaintext.
+	ptGLWE tfhe.GLWEPlaintext[T]
+	// auxKey holds the auxiliary key for uniencryption.
+	auxKey tfhe.GLWESecretKey[T]
+	// auxFourierKey holds the fourier transform of auxKey.
+	auxFourierKey tfhe.FourierGLWESecretKey[T]
+
 	// ctLWESingle holds the single-key LWE ciphertext.
 	ctLWESingle tfhe.LWECiphertext[T]
-
 	// ctGLWESingle holds the single-key GLWE ciphertext.
 	ctGLWESingle tfhe.GLWECiphertext[T]
 }
@@ -89,6 +95,10 @@ func NewEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed
 // newEncryptionBuffer creates a new encryptionBuffer.
 func newEncryptionBuffer[T tfhe.TorusInt](params Parameters[T]) encryptionBuffer[T] {
 	return encryptionBuffer[T]{
+		ptGLWE:        tfhe.NewGLWEPlaintext(params.Parameters),
+		auxKey:        tfhe.NewGLWESecretKey(params.Parameters),
+		auxFourierKey: tfhe.NewFourierGLWESecretKey(params.Parameters),
+
 		ctLWESingle:  tfhe.NewLWECiphertext(params.Parameters),
 		ctGLWESingle: tfhe.NewGLWECiphertext(params.Parameters),
 	}

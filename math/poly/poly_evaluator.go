@@ -11,9 +11,9 @@ const (
 	MinDegree = 1 << 4
 
 	// MaxDegree is the maximum degree of polynomial that Evaluator can handle.
-	// Currently, this is set to 2^20, because [*FourierEvaluator.PolyMulBinary] trick
-	// supports up to 2^20 degree.
-	MaxDegree = 1 << 20
+	// Currently, this is set to 2^30, because [*FourierEvaluator.PolyMulBinary] trick
+	// supports up to 2^30 degree.
+	MaxDegree = 1 << 30
 )
 
 // Evaluator calculates polynomial algorithms.
