@@ -48,8 +48,8 @@ type LWEPublicKey[T TorusInt] struct {
 //
 // Panics when the parameters do not support public key encryption.
 func NewLWEPublicKey[T TorusInt](params Parameters[T]) LWEPublicKey[T] {
-	if params.bootstrapOrder != OrderKeySwitchBlindRotate {
-		panic("Invalid BootstrapOrder for PublicKey")
+	if !params.IsPublicKeyEncryptable() {
+		panic("Parameters do not support public key encryption")
 	}
 
 	pk := make([]GLWECiphertext[T], params.glweDimension)

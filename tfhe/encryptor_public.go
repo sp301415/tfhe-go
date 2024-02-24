@@ -60,8 +60,8 @@ type publicEncryptionBuffer[T TorusInt] struct {
 //
 // Panics when the parameters do not support public key encryption.
 func NewPublicEncryptor[T TorusInt](params Parameters[T], pk PublicKey[T]) *PublicEncryptor[T] {
-	if params.bootstrapOrder != OrderKeySwitchBlindRotate {
-		panic("Invalid BootstrapOrder for PublicEncryptor")
+	if !params.IsPublicKeyEncryptable() {
+		panic("Parameters do not support public key encryption")
 	}
 
 	return &PublicEncryptor[T]{

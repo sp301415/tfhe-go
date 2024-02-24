@@ -171,8 +171,8 @@ func (e *Encryptor[T]) GenSecretKey() SecretKey[T] {
 //
 // Panics when the parameters do not support public key encryption.
 func (e *Encryptor[T]) GenPublicKey() PublicKey[T] {
-	if e.Parameters.bootstrapOrder != OrderKeySwitchBlindRotate {
-		panic("Invalid BootstrapOrder for PublicKey")
+	if !e.Parameters.IsPublicKeyEncryptable() {
+		panic("Parameters do not support public key encryption")
 	}
 
 	pk := NewPublicKey(e.Parameters)

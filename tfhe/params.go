@@ -536,6 +536,13 @@ func (p Parameters[T]) BootstrapOrder() BootstrapOrder {
 	return p.bootstrapOrder
 }
 
+// IsPublicKeyEncryptable returns true if public key encryption is supported.
+//
+// Currently, public key encryption is supported only with BootstrapOrder OrderKeySwitchBlindRotate.
+func (p Parameters[T]) IsPublicKeyEncryptable() bool {
+	return p.bootstrapOrder == OrderKeySwitchBlindRotate
+}
+
 // Literal returns a ParametersLiteral from this Parameters.
 func (p Parameters[T]) Literal() ParametersLiteral[T] {
 	return ParametersLiteral[T]{
