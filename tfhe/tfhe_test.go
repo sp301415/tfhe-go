@@ -11,9 +11,10 @@ import (
 )
 
 var (
-	testParams    = tfhe.ParamsUint3.Compile()
-	testEncryptor = tfhe.NewEncryptor(testParams)
-	testEvaluator = tfhe.NewEvaluator(testParams, testEncryptor.GenEvaluationKeyParallel())
+	testParams          = tfhe.ParamsUint3.Compile()
+	testEncryptor       = tfhe.NewEncryptor(testParams)
+	testPublicEncryptor = testEncryptor.PublicEncryptor()
+	testEvaluator       = tfhe.NewEvaluator(testParams, testEncryptor.GenEvaluationKeyParallel())
 
 	benchParams    = tfhe.ParamsUint6.Compile()
 	benchEncryptor = tfhe.NewEncryptor(benchParams)
@@ -61,6 +62,13 @@ func TestEncryptor(t *testing.T) {
 		}
 	})
 
+	t.Run("PublicLWE", func(t *testing.T) {
+		for _, m := range messages {
+			ct := testPublicEncryptor.EncryptLWE(m)
+			assert.Equal(t, m, testEncryptor.DecryptLWE(ct))
+		}
+	})
+
 	t.Run("Lev", func(t *testing.T) {
 		for _, m := range messages {
 			ct := testEncryptor.EncryptLev(m, gadgetParams)
@@ -80,6 +88,11 @@ func TestEncryptor(t *testing.T) {
 		assert.Equal(t, messages, testEncryptor.DecryptGLWE(ct)[:len(messages)])
 	})
 
+	t.Run("PublicGLWE", func(t *testing.T) {
+		ct := testPublicEncryptor.EncryptGLWE(messages)
+		assert.Equal(t, messages, testEncryptor.DecryptGLWE(ct)[:len(messages)])
+	})
+
 	t.Run("GLev", func(t *testing.T) {
 		ct := testEncryptor.EncryptGLev(messages, gadgetParams)
 		assert.Equal(t, messages, testEncryptor.DecryptGLev(ct)[:len(messages)])
@@ -92,6 +105,11 @@ func TestEncryptor(t *testing.T) {
 
 	t.Run("FourierGLWE", func(t *testing.T) {
 		ct := testEncryptor.EncryptFourierGLWE(messages)
+		assert.Equal(t, messages, testEncryptor.DecryptFourierGLWE(ct)[:len(messages)])
+	})
+
+	t.Run("PublicFourierGLWE", func(t *testing.T) {
+		ct := testPublicEncryptor.EncryptFourierGLWE(messages)
 		assert.Equal(t, messages, testEncryptor.DecryptFourierGLWE(ct)[:len(messages)])
 	})
 
@@ -362,6 +380,23 @@ func TestMarshal(t *testing.T) {
 		}
 
 		assert.Equal(t, skIn, skOut)
+	})
+
+	t.Run("PublicKey", func(t *testing.T) {
+		var pkIn, pkOut tfhe.PublicKey[uint64]
+
+		pkIn = testEncryptor.GenPublicKey()
+		if n, err := pkIn.WriteTo(&buf); err != nil {
+			assert.Equal(t, int(n), pkIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		if n, err := pkOut.ReadFrom(&buf); err != nil {
+			assert.Equal(t, int(n), pkIn.ByteSize())
+			assert.Error(t, err)
+		}
+
+		assert.Equal(t, pkIn, pkOut)
 	})
 
 	t.Run("EvaluationKey", func(t *testing.T) {

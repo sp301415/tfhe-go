@@ -71,6 +71,53 @@ func (sk GLWESecretKey[T]) ToLWEKeyAssign(skOut LWESecretKey[T]) {
 	}
 }
 
+// GLWEPublicKey is a GLWE public key, derived from the GLWE secret key.
+type GLWEPublicKey[T TorusInt] struct {
+	// Value has length GLWEDimension.
+	Value []GLWECiphertext[T]
+}
+
+// NewGLWEPublicKey allocates an empty GLWEPublicKey.
+func NewGLWEPublicKey[T TorusInt](params Parameters[T]) GLWEPublicKey[T] {
+	pk := make([]GLWECiphertext[T], params.glweDimension)
+	for i := 0; i < params.glweDimension; i++ {
+		pk[i] = NewGLWECiphertext(params)
+	}
+	return GLWEPublicKey[T]{Value: pk}
+}
+
+// NewGLWEPublicKeyCustom allocates an empty GLWEPublicKey with given dimension and polyDegree.
+func NewGLWEPublicKeyCustom[T TorusInt](glweDimension, polyDegree int) GLWEPublicKey[T] {
+	pk := make([]GLWECiphertext[T], glweDimension)
+	for i := 0; i < glweDimension; i++ {
+		pk[i] = NewGLWECiphertextCustom[T](glweDimension, polyDegree)
+	}
+	return GLWEPublicKey[T]{Value: pk}
+}
+
+// Copy returns a copy of the key.
+func (pk GLWEPublicKey[T]) Copy() GLWEPublicKey[T] {
+	pkCopy := make([]GLWECiphertext[T], len(pk.Value))
+	for i := range pk.Value {
+		pkCopy[i] = pk.Value[i].Copy()
+	}
+	return GLWEPublicKey[T]{Value: pkCopy}
+}
+
+// CopyFrom copies values from the key.
+func (pk *GLWEPublicKey[T]) CopyFrom(pkIn GLWEPublicKey[T]) {
+	for i := range pk.Value {
+		pk.Value[i].CopyFrom(pkIn.Value[i])
+	}
+}
+
+// Clear clears the key.
+func (pk *GLWEPublicKey[T]) Clear() {
+	for i := range pk.Value {
+		pk.Value[i].Clear()
+	}
+}
+
 // GLWEPlaintext represents an encoded GLWE plaintext.
 type GLWEPlaintext[T TorusInt] struct {
 	// Value is a single polynomial.

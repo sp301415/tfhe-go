@@ -98,3 +98,61 @@ func (sk *SecretKey[T]) Clear() {
 	vec.Fill(sk.LWELargeKey.Value, 0)
 	sk.FourierGLWEKey.Clear()
 }
+
+// PublicKey is a structure containing LWE and GLWE public key.
+//
+// We use compact public key, explained in https://eprint.iacr.org/2023/603.
+// This means that not all parameters support public key encryption.
+// Namely, DefaultLWEDimension should be power of two.
+type PublicKey[T TorusInt] struct {
+	// LWEKey is a public key used for LWE encryption.
+	// It is essentially a GLWE encryption of zero, but with reversed GLWE key,
+	// as explained in https://eprint.iacr.org/2023/603.
+	LWEKey LWEPublicKey[T]
+
+	// GLWEKey is a public key used for LWE and GLWE encryption.
+	// It is essentially a GLWE encryption of zero.
+	GLWEKey GLWEPublicKey[T]
+}
+
+// NewPublicKey allocates an empty PublicKey.
+//
+// Panics when the parameters do not support public key encryption.
+func NewPublicKey[T TorusInt](params Parameters[T]) PublicKey[T] {
+	if params.bootstrapOrder != OrderKeySwitchBlindRotate {
+		panic("Invalid BootstrapOrder for PublicKey")
+	}
+
+	return PublicKey[T]{
+		LWEKey:  NewLWEPublicKey[T](params),
+		GLWEKey: NewGLWEPublicKey[T](params),
+	}
+}
+
+// NewPublicKeyCustom allocates an empty PublicKey with given dimension and polyDegree.
+func NewPublicKeyCustom[T TorusInt](glweDimension, polyDegree int) PublicKey[T] {
+	return PublicKey[T]{
+		LWEKey:  NewLWEPublicKeyCustom[T](glweDimension, polyDegree),
+		GLWEKey: NewGLWEPublicKeyCustom[T](glweDimension, polyDegree),
+	}
+}
+
+// Copy returns a copy of the key.
+func (pk PublicKey[T]) Copy() PublicKey[T] {
+	return PublicKey[T]{
+		LWEKey:  pk.LWEKey.Copy(),
+		GLWEKey: pk.GLWEKey.Copy(),
+	}
+}
+
+// CopyFrom copies values from the key.
+func (pk *PublicKey[T]) CopyFrom(pkIn PublicKey[T]) {
+	pk.LWEKey.CopyFrom(pkIn.LWEKey)
+	pk.GLWEKey.CopyFrom(pkIn.GLWEKey)
+}
+
+// Clear clears the key.
+func (pk *PublicKey[T]) Clear() {
+	pk.LWEKey.Clear()
+	pk.GLWEKey.Clear()
+}

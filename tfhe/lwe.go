@@ -35,6 +35,62 @@ func (sk *LWESecretKey[T]) Clear() {
 	vec.Fill(sk.Value, 0)
 }
 
+// LWEPublicKey is a LWE public key, derived from the LWE secret key.
+// It is essentially a GLWE encryption of zero, but with reversed GLWE key,
+// as explained in https://eprint.iacr.org/2023/603.
+// This means that only the parameters with OrderKeySwitchBlindRotate support public key encryption.
+type LWEPublicKey[T TorusInt] struct {
+	// Value has length GLWEDimension.
+	Value []GLWECiphertext[T]
+}
+
+// NewLWEPublicKey allocates an empty LWEPublicKey.
+//
+// Panics when the parameters do not support public key encryption.
+func NewLWEPublicKey[T TorusInt](params Parameters[T]) LWEPublicKey[T] {
+	if params.bootstrapOrder != OrderKeySwitchBlindRotate {
+		panic("Invalid BootstrapOrder for PublicKey")
+	}
+
+	pk := make([]GLWECiphertext[T], params.glweDimension)
+	for i := 0; i < params.glweDimension; i++ {
+		pk[i] = NewGLWECiphertext[T](params)
+	}
+	return LWEPublicKey[T]{Value: pk}
+}
+
+// NewLWEPublicKeyCustom allocates an empty LWEPublicKey with given dimension and polyDegree.
+func NewLWEPublicKeyCustom[T TorusInt](glweDimension, polyDegree int) LWEPublicKey[T] {
+	pk := make([]GLWECiphertext[T], glweDimension)
+	for i := 0; i < glweDimension; i++ {
+		pk[i] = NewGLWECiphertextCustom[T](glweDimension, polyDegree)
+	}
+	return LWEPublicKey[T]{Value: pk}
+}
+
+// Copy returns a copy of the key.
+func (pk LWEPublicKey[T]) Copy() LWEPublicKey[T] {
+	pkCopy := make([]GLWECiphertext[T], len(pk.Value))
+	for i := range pk.Value {
+		pkCopy[i] = pk.Value[i].Copy()
+	}
+	return LWEPublicKey[T]{Value: pkCopy}
+}
+
+// CopyFrom copies values from the key.
+func (pk *LWEPublicKey[T]) CopyFrom(pkIn LWEPublicKey[T]) {
+	for i := range pk.Value {
+		pk.Value[i].CopyFrom(pkIn.Value[i])
+	}
+}
+
+// Clear clears the key.
+func (pk *LWEPublicKey[T]) Clear() {
+	for i := range pk.Value {
+		pk.Value[i].Clear()
+	}
+}
+
 // LWEPlaintext represents an encoded LWE plaintext.
 type LWEPlaintext[T TorusInt] struct {
 	// Value is a scalar.

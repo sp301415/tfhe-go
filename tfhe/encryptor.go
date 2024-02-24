@@ -3,6 +3,7 @@ package tfhe
 import (
 	"github.com/sp301415/tfhe-go/math/csprng"
 	"github.com/sp301415/tfhe-go/math/poly"
+	"github.com/sp301415/tfhe-go/math/vec"
 )
 
 // Encryptor encrypts and decrypts TFHE plaintexts and ciphertexts.
@@ -63,7 +64,7 @@ func NewEncryptor[T TorusInt](params Parameters[T]) *Encryptor[T] {
 	// Fill samplers to call encryptor.GenSecretKey()
 	encryptor := Encryptor[T]{
 		Encoder:         NewEncoder(params),
-		GLWETransformer: newGLWETransformer(params),
+		GLWETransformer: NewGLWETransformer(params),
 
 		Parameters: params,
 
@@ -88,7 +89,7 @@ func NewEncryptor[T TorusInt](params Parameters[T]) *Encryptor[T] {
 func NewEncryptorWithKey[T TorusInt](params Parameters[T], sk SecretKey[T]) *Encryptor[T] {
 	return &Encryptor[T]{
 		Encoder:         NewEncoder(params),
-		GLWETransformer: newGLWETransformer(params),
+		GLWETransformer: NewGLWETransformer(params),
 
 		Parameters: params,
 
@@ -139,6 +140,16 @@ func (e *Encryptor[T]) ShallowCopy() *Encryptor[T] {
 	}
 }
 
+// DefaultLWESecretKey returns the LWE key according to the parameters.
+// Returns LWELargeKey if BootstrapOrder is OrderKeySwitchBlindRotate,
+// or LWEKey otherwise.
+func (e *Encryptor[T]) DefaultLWESecretKey() LWESecretKey[T] {
+	if e.Parameters.bootstrapOrder == OrderKeySwitchBlindRotate {
+		return e.SecretKey.LWELargeKey
+	}
+	return e.SecretKey.LWEKey
+}
+
 // GenSecretKey samples a new SecretKey.
 // The SecretKey of the Encryptor is not changed.
 func (e *Encryptor[T]) GenSecretKey() SecretKey[T] {
@@ -156,12 +167,39 @@ func (e *Encryptor[T]) GenSecretKey() SecretKey[T] {
 	return sk
 }
 
-// DefaultLWESecretKey returns the LWE key according to the parameters.
-// Returns LWELargeKey if BootstrapOrder is OrderKeySwitchBlindRotate,
-// or LWEKey otherwise.
-func (e *Encryptor[T]) DefaultLWESecretKey() LWESecretKey[T] {
-	if e.Parameters.bootstrapOrder == OrderKeySwitchBlindRotate {
-		return e.SecretKey.LWELargeKey
+// GenPublicKey samples a new PublicKey.
+//
+// Panics when the parameters do not support public key encryption.
+func (e *Encryptor[T]) GenPublicKey() PublicKey[T] {
+	if e.Parameters.bootstrapOrder != OrderKeySwitchBlindRotate {
+		panic("Invalid BootstrapOrder for PublicKey")
 	}
-	return e.SecretKey.LWEKey
+
+	pk := NewPublicKey(e.Parameters)
+
+	for i := 0; i < e.Parameters.glweDimension; i++ {
+		e.EncryptGLWEBody(pk.GLWEKey.Value[i])
+	}
+
+	skRev := NewGLWESecretKey(e.Parameters)
+	fskRev := NewFourierGLWESecretKey(e.Parameters)
+	for i := 0; i < e.Parameters.glweDimension; i++ {
+		vec.ReverseAssign(e.SecretKey.GLWEKey.Value[i].Coeffs, skRev.Value[i].Coeffs)
+	}
+	e.ToFourierGLWESecretKeyAssign(skRev, fskRev)
+
+	for i := 0; i < e.Parameters.glweDimension; i++ {
+		e.GaussianSampler.SampleSliceAssign(e.Parameters.glweStdDev, pk.LWEKey.Value[i].Value[0].Coeffs)
+		for j := 1; j < e.Parameters.glweDimension+1; j++ {
+			e.UniformSampler.SampleSliceAssign(pk.LWEKey.Value[i].Value[j].Coeffs)
+			e.FourierEvaluator.PolyMulBinarySubAssign(fskRev.Value[j-1], pk.LWEKey.Value[i].Value[j], pk.LWEKey.Value[i].Value[0])
+		}
+	}
+
+	return pk
+}
+
+// PublicEncryptor returns a PublicEncryptor with the same parameters.
+func (e *Encryptor[T]) PublicEncryptor() *PublicEncryptor[T] {
+	return NewPublicEncryptor(e.Parameters, e.GenPublicKey())
 }

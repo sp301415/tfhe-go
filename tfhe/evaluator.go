@@ -80,7 +80,7 @@ type evaluationBuffer[T TorusInt] struct {
 func NewEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *Evaluator[T] {
 	return &Evaluator[T]{
 		Encoder:         NewEncoder(params),
-		GLWETransformer: newGLWETransformer(params),
+		GLWETransformer: NewGLWETransformer(params),
 
 		Parameters: params,
 

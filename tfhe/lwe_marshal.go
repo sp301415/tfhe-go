@@ -120,7 +120,151 @@ func (sk LWESecretKey[T]) MarshalBinary() (data []byte, err error) {
 
 // UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
 func (sk *LWESecretKey[T]) UnmarshalBinary(data []byte) error {
-	_, err := sk.ReadFrom(bytes.NewReader(data))
+	buf := bytes.NewBuffer(data)
+	_, err := sk.ReadFrom(buf)
+	return err
+}
+
+// ByteSize returns the size of the key in bytes.
+func (pk LWEPublicKey[T]) ByteSize() int {
+	glweDimension := len(pk.Value)
+	polyDegree := pk.Value[0].Value[0].Degree()
+	return 16 + glweDimension*polyDegree*(num.SizeT[T]()/8)
+}
+
+// WriteTo implements the io.WriterTo interface.
+//
+// The encoded form is as follows:
+//
+//	[8] GLWEDimension
+//	[8] PolyDegree
+//	    Value
+func (pk LWEPublicKey[T]) WriteTo(w io.Writer) (n int64, err error) {
+	var nn int
+
+	glweDimension := len(pk.Value)
+	polyDegree := pk.Value[0].Value[0].Degree()
+
+	var metadata [16]byte
+	binary.BigEndian.PutUint64(metadata[0:8], uint64(glweDimension))
+	binary.BigEndian.PutUint64(metadata[8:16], uint64(polyDegree))
+	nn, err = w.Write(metadata[:])
+	n += int64(nn)
+	if err != nil {
+		return
+	}
+
+	var z T
+	switch any(z).(type) {
+	case uint32:
+		buf := make([]byte, polyDegree*4)
+
+		for _, glwe := range pk.Value {
+			for _, p := range glwe.Value {
+				for i := range p.Coeffs {
+					binary.BigEndian.PutUint32(buf[i*4:(i+1)*4], uint32(p.Coeffs[i]))
+				}
+
+				nn, err = w.Write(buf)
+				n += int64(nn)
+				if err != nil {
+					return
+				}
+			}
+		}
+
+	case uint64:
+		buf := make([]byte, polyDegree*8)
+
+		for _, glwe := range pk.Value {
+			for _, p := range glwe.Value {
+				for i := range p.Coeffs {
+					binary.BigEndian.PutUint64(buf[i*8:(i+1)*8], uint64(p.Coeffs[i]))
+				}
+
+				nn, err = w.Write(buf)
+				n += int64(nn)
+				if err != nil {
+					return
+				}
+			}
+		}
+	}
+
+	if n < int64(pk.ByteSize()) {
+		return n, io.ErrShortWrite
+	}
+
+	return
+}
+
+// ReadFrom implements the io.ReaderFrom interface.
+func (pk *LWEPublicKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
+	var nn int
+
+	var metadata [16]byte
+	nn, err = io.ReadFull(r, metadata[:])
+	n += int64(nn)
+	if err != nil {
+		return
+	}
+
+	glweDimension := int(binary.BigEndian.Uint64(metadata[0:8]))
+	polyDegree := int(binary.BigEndian.Uint64(metadata[8:16]))
+
+	*pk = NewLWEPublicKeyCustom[T](glweDimension, polyDegree)
+
+	var z T
+	switch any(z).(type) {
+	case uint32:
+		buf := make([]byte, polyDegree*4)
+
+		for _, glwe := range pk.Value {
+			for _, p := range glwe.Value {
+				nn, err = io.ReadFull(r, buf)
+				n += int64(nn)
+				if err != nil {
+					return
+				}
+
+				for i := range p.Coeffs {
+					p.Coeffs[i] = T(binary.BigEndian.Uint32(buf[i*4 : (i+1)*4]))
+				}
+			}
+		}
+
+	case uint64:
+		buf := make([]byte, polyDegree*8)
+
+		for _, glwe := range pk.Value {
+			for _, p := range glwe.Value {
+				nn, err = io.ReadFull(r, buf)
+				n += int64(nn)
+				if err != nil {
+					return
+				}
+
+				for i := range p.Coeffs {
+					p.Coeffs[i] = T(binary.BigEndian.Uint64(buf[i*8 : (i+1)*8]))
+				}
+			}
+		}
+	}
+
+	return
+}
+
+// MarshalBinary implements the encoding.BinaryMarshaler interface.
+func (pk LWEPublicKey[T]) MarshalBinary() (data []byte, err error) {
+	buf := bytes.NewBuffer(make([]byte, 0, pk.ByteSize()))
+	_, err = pk.WriteTo(buf)
+	return buf.Bytes(), err
+}
+
+// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
+func (pk *LWEPublicKey[T]) UnmarshalBinary(data []byte) error {
+	buf := bytes.NewReader(data)
+	_, err := pk.ReadFrom(buf)
 	return err
 }
 
@@ -208,7 +352,8 @@ func (pt LWEPlaintext[T]) MarshalBinary() (data []byte, err error) {
 
 // UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
 func (pt *LWEPlaintext[T]) UnmarshalBinary(data []byte) error {
-	_, err := pt.ReadFrom(bytes.NewReader(data))
+	buf := bytes.NewBuffer(data)
+	_, err := pt.ReadFrom(buf)
 	return err
 }
 
@@ -324,7 +469,8 @@ func (ct LWECiphertext[T]) MarshalBinary() (data []byte, err error) {
 
 // UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
 func (ct *LWECiphertext[T]) UnmarshalBinary(data []byte) error {
-	_, err := ct.ReadFrom(bytes.NewReader(data))
+	buf := bytes.NewBuffer(data)
+	_, err := ct.ReadFrom(buf)
 	return err
 }
 
@@ -462,7 +608,8 @@ func (ct LevCiphertext[T]) MarshalBinary() (data []byte, err error) {
 
 // UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
 func (ct *LevCiphertext[T]) UnmarshalBinary(data []byte) error {
-	_, err := ct.ReadFrom(bytes.NewReader(data))
+	buf := bytes.NewBuffer(data)
+	_, err := ct.ReadFrom(buf)
 	return err
 }
 
@@ -608,6 +755,7 @@ func (ct GSWCiphertext[T]) MarshalBinary() (data []byte, err error) {
 
 // UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
 func (ct *GSWCiphertext[T]) UnmarshalBinary(data []byte) error {
-	_, err := ct.ReadFrom(bytes.NewReader(data))
+	buf := bytes.NewBuffer(data)
+	_, err := ct.ReadFrom(buf)
 	return err
 }

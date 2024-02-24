@@ -185,7 +185,8 @@ func (p GadgetParameters[T]) MarshalBinary() (data []byte, err error) {
 
 // UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
 func (p *GadgetParameters[T]) UnmarshalBinary(data []byte) error {
-	_, err := p.ReadFrom(bytes.NewReader(data))
+	buf := bytes.NewBuffer(data)
+	_, err := p.ReadFrom(buf)
 	return err
 }
 
@@ -199,6 +200,7 @@ const (
 	//
 	// This means that LWE keys and ciphertexts will have size
 	// according to LWELargeDimension.
+	// Public key encryption is supported only with this order.
 	OrderKeySwitchBlindRotate BootstrapOrder = iota
 
 	// OrderBlindRotateKeySwitch sets the order of Programmable Bootstrapping as
@@ -207,6 +209,7 @@ const (
 	//
 	// This means that LWE keys and ciphertexts will have size
 	// according to LWEDimension.
+	// Public key encryption is not supported with this order.
 	OrderBlindRotateKeySwitch
 )
 
@@ -265,6 +268,8 @@ type ParametersLiteral[T TorusInt] struct {
 	// Essentially, there is a time-memory tradeoff:
 	// performing keyswitching first means that it will consume more memory,
 	// but it allows to use smaller parameters which will result in faster computation.
+	//
+	// Moreover, public key encryption is supported only with OrderKeySwitchBlindRotate.
 	BootstrapOrder BootstrapOrder
 }
 
@@ -658,6 +663,7 @@ func (p Parameters[T]) MarshalBinary() (data []byte, err error) {
 
 // UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
 func (p *Parameters[T]) UnmarshalBinary(data []byte) error {
-	_, err := p.ReadFrom(bytes.NewReader(data))
+	buf := bytes.NewBuffer(data)
+	_, err := p.ReadFrom(buf)
 	return err
 }

@@ -17,8 +17,8 @@ type GLWETransformer[T TorusInt] struct {
 	FourierEvaluator *poly.FourierEvaluator[T]
 }
 
-// newGLWETransformer returns a new glweTransformer with given parameters.
-func newGLWETransformer[T TorusInt](params Parameters[T]) *GLWETransformer[T] {
+// NewGLWETransformer returns a new glweTransformer with given parameters.
+func NewGLWETransformer[T TorusInt](params Parameters[T]) *GLWETransformer[T] {
 	return &GLWETransformer[T]{
 		Parameters:       params,
 		FourierEvaluator: poly.NewFourierEvaluator[T](params.polyDegree),

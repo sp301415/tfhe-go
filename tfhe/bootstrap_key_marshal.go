@@ -70,7 +70,8 @@ func (evk EvaluationKey[T]) MarshalBinary() (data []byte, err error) {
 
 // UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
 func (evk *EvaluationKey[T]) UnmarshalBinary(data []byte) error {
-	_, err := evk.ReadFrom(bytes.NewReader(data))
+	buf := bytes.NewBuffer(data)
+	_, err := evk.ReadFrom(buf)
 	return err
 }
 
@@ -192,7 +193,8 @@ func (bsk BootstrapKey[T]) MarshalBinary() (data []byte, err error) {
 
 // UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
 func (bsk *BootstrapKey[T]) UnmarshalBinary(data []byte) error {
-	_, err := bsk.ReadFrom(bytes.NewReader(data))
+	buf := bytes.NewBuffer(data)
+	_, err := bsk.ReadFrom(buf)
 	return err
 }
 
@@ -343,6 +345,7 @@ func (ksk KeySwitchKey[T]) MarshalBinary() (data []byte, err error) {
 
 // UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
 func (ksk *KeySwitchKey[T]) UnmarshalBinary(data []byte) error {
-	_, err := ksk.ReadFrom(bytes.NewReader(data))
+	buf := bytes.NewBuffer(data)
+	_, err := ksk.ReadFrom(buf)
 	return err
 }

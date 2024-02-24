@@ -169,3 +169,69 @@ func (sk *SecretKey[T]) UnmarshalBinary(data []byte) error {
 	_, err := sk.ReadFrom(buf)
 	return err
 }
+
+// ByteSize returns the size of the key in bytes.
+func (pk PublicKey[T]) ByteSize() int {
+	return pk.LWEKey.ByteSize() + pk.GLWEKey.ByteSize()
+}
+
+// WriteTo implements the io.WriterTo interface.
+//
+// The encoded form is as follows:
+//
+//	LWEKey
+//	GLWEKey
+func (pk PublicKey[T]) WriteTo(w io.Writer) (n int64, err error) {
+	var nn int64
+
+	nn, err = pk.LWEKey.WriteTo(w)
+	n += int64(nn)
+	if err != nil {
+		return
+	}
+
+	nn, err = pk.GLWEKey.WriteTo(w)
+	n += int64(nn)
+	if err != nil {
+		return
+	}
+
+	if n < int64(pk.ByteSize()) {
+		return n, io.ErrShortWrite
+	}
+
+	return
+}
+
+// ReadFrom implements the io.ReaderFrom interface.
+func (pk *PublicKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
+	var nn int64
+
+	nn, err = pk.LWEKey.ReadFrom(r)
+	n += int64(nn)
+	if err != nil {
+		return
+	}
+
+	nn, err = pk.GLWEKey.ReadFrom(r)
+	n += int64(nn)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+// MarshalBinary implements the encoding.BinaryMarshaler interface.
+func (pk PublicKey[T]) MarshalBinary() (data []byte, err error) {
+	buf := bytes.NewBuffer(make([]byte, 0, pk.ByteSize()))
+	_, err = pk.WriteTo(buf)
+	return buf.Bytes(), err
+}
+
+// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
+func (pk *PublicKey[T]) UnmarshalBinary(data []byte) error {
+	buf := bytes.NewBuffer(data)
+	_, err := pk.ReadFrom(buf)
+	return err
+}
