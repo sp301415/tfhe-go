@@ -3,7 +3,7 @@ package tfhe
 var (
 	// ParamsBinary is a default parameter set for binary TFHE.
 	ParamsBinary = ParametersLiteral[uint32]{
-		LWEDimension:    720,
+		LWEDimension:    723,
 		GLWEDimension:   2,
 		PolyDegree:      512,
 		PolyLargeDegree: 512,
@@ -189,7 +189,7 @@ var (
 
 	// ParamsUint6 is a parameter set with 6 bits of message space.
 	ParamsUint6 = ParametersLiteral[uint64]{
-		LWEDimension:    925,
+		LWEDimension:    915,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
 		PolyLargeDegree: 8192,
@@ -215,7 +215,7 @@ var (
 
 	// ParamsUint7 is a parameter set with 7 bits of message space.
 	ParamsUint7 = ParametersLiteral[uint64]{
-		LWEDimension:    940,
+		LWEDimension:    930,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
 		PolyLargeDegree: 16384,
@@ -241,7 +241,7 @@ var (
 
 	// ParamsUint8 is a parameter set with 8 bits of message space.
 	ParamsUint8 = ParametersLiteral[uint64]{
-		LWEDimension:    1044,
+		LWEDimension:    1020,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
 		PolyLargeDegree: 32768,
