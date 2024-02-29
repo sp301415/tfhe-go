@@ -58,9 +58,9 @@ type fourierBuffer[T num.Integer] struct {
 	fpSplit FourierPoly
 }
 
-// NewFourierEvaluator creates a new FourierEvaluator with degree N.
-// N should be power of two, and at least MinDegree.
-// Otherwise, it panics.
+// NewFourierEvaluator allocates an empty FourierEvaluator with degree N.
+//
+// Panics when N is not a power of two, or when N is smaller than MinDegree or larger than MaxDegree.
 func NewFourierEvaluator[T num.Integer](N int) *FourierEvaluator[T] {
 	switch {
 	case !num.IsPowerOfTwo(N):
@@ -178,7 +178,7 @@ func (f *FourierEvaluator[T]) Degree() int {
 	return f.degree
 }
 
-// NewFourierPoly creates a new fourier polynomial with the same degree as the evaluator.
+// NewFourierPoly allocates an empty fourier polynomial with the same degree as the evaluator.
 func (f *FourierEvaluator[T]) NewFourierPoly() FourierPoly {
 	return FourierPoly{Coeffs: make([]float64, f.degree)}
 }

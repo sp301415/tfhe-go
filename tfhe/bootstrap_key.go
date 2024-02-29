@@ -18,10 +18,10 @@ func NewEvaluationKey[T TorusInt](params Parameters[T]) EvaluationKey[T] {
 }
 
 // NewEvaluationKeyCustom allocates an empty EvaluationKey with custom parameters.
-func NewEvaluationKeyCustom[T TorusInt](lweDimension, glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) EvaluationKey[T] {
+func NewEvaluationKeyCustom[T TorusInt](lweDimension, glweDimension, polyDegree int, bootstrapParams, keyswitchParams GadgetParameters[T]) EvaluationKey[T] {
 	return EvaluationKey[T]{
-		BootstrapKey: NewBootstrapKeyCustom(lweDimension, glweDimension, polyDegree, gadgetParams),
-		KeySwitchKey: NewKeySwitchKeyForBootstrapCustom(lweDimension, glweDimension, polyDegree, gadgetParams),
+		BootstrapKey: NewBootstrapKeyCustom(lweDimension, glweDimension, polyDegree, bootstrapParams),
+		KeySwitchKey: NewKeySwitchKeyForBootstrapCustom(lweDimension, glweDimension, polyDegree, keyswitchParams),
 	}
 }
 

@@ -78,8 +78,8 @@ type evaluationBuffer[T TorusInt] struct {
 	lut LookUpTable[T]
 }
 
-// NewEvaluator creates a new Evaluator based on parameters.
-// This does not copy evaluation keys, since they are large.
+// NewEvaluator allocates an empty Evaluator based on parameters.
+// This does not copy evaluation keys, since they may be large.
 func NewEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *Evaluator[T] {
 	return &Evaluator[T]{
 		Encoder:         NewEncoder(params),
@@ -96,7 +96,7 @@ func NewEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *Evalu
 	}
 }
 
-// NewEvaluatorWithoutKey creates a new Evaluator based on parameters, but without evaluation keys.
+// NewEvaluatorWithoutKey allocates an empty Evaluator based on parameters, but without evaluation keys.
 // This will panic if any operation that requires evaluation key is called.
 func NewEvaluatorWithoutKey[T TorusInt](params Parameters[T]) *Evaluator[T] {
 	return NewEvaluator[T](params, EvaluationKey[T]{})

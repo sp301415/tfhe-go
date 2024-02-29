@@ -5,18 +5,18 @@ import (
 	"github.com/sp301415/tfhe-go/tfhe"
 )
 
-// LWECiphertext is a Multi-Key LWE ciphertext.
+// LWECiphertext is a multi-key LWE ciphertext.
 type LWECiphertext[T tfhe.TorusInt] struct {
 	// Value has length DefaultDimension + 1.
 	Value []T
 }
 
-// NewLWECiphertext creates a new LWE ciphertext.
+// NewLWECiphertext allocates an empty LWE ciphertext.
 func NewLWECiphertext[T tfhe.TorusInt](params Parameters[T]) LWECiphertext[T] {
 	return LWECiphertext[T]{Value: make([]T, params.DefaultLWEDimension()+1)}
 }
 
-// NewLWECiphertextCustom creates a new LWE ciphertext with given (single-key) dimension and partyCount.
+// NewLWECiphertextCustom allocates an empty LWE ciphertext with given (single-key) dimension and partyCount.
 func NewLWECiphertextCustom[T tfhe.TorusInt](partyCount, lweDimension int) LWECiphertext[T] {
 	return LWECiphertext[T]{Value: make([]T, partyCount*lweDimension+1)}
 }

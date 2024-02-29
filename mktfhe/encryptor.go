@@ -6,12 +6,12 @@ import (
 	"github.com/sp301415/tfhe-go/tfhe"
 )
 
-// Encryptor is a Multi-Key variant of [tfhe.Encryptor].
+// Encryptor is a multi-key variant of [tfhe.Encryptor].
 type Encryptor[T tfhe.TorusInt] struct {
 	// Encoder is an embedded Encoder for this Encryptor.
 	*tfhe.Encoder[T]
-	// BaseEncryptor is a single-key Encryptor for this Encryptor.
-	BaseEncryptor *tfhe.Encryptor[T]
+	// SingleKeyEncryptor is a single-key Encryptor for this Encryptor.
+	SingleKeyEncryptor *tfhe.Encryptor[T]
 
 	// Parameters is the parameters for the encryptor.
 	Parameters Parameters[T]
@@ -29,6 +29,7 @@ type Encryptor[T tfhe.TorusInt] struct {
 type encryptionBuffer[T tfhe.TorusInt] struct {
 	// ptGLWE holds the GLWE plaintext.
 	ptGLWE tfhe.GLWEPlaintext[T]
+
 	// auxKey holds the auxiliary key for uniencryption.
 	auxKey tfhe.GLWESecretKey[T]
 	// auxFourierKey holds the fourier transform of auxKey.
@@ -40,7 +41,7 @@ type encryptionBuffer[T tfhe.TorusInt] struct {
 	ctGLWESingle tfhe.GLWECiphertext[T]
 }
 
-// NewEncryptor creates a new Encryptor.
+// NewEncryptor allocates an empty Encryptor.
 func NewEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte) *Encryptor[T] {
 	if idx > params.partyCount {
 		panic("index larger than PartyCount")
@@ -54,8 +55,8 @@ func NewEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte
 	}
 
 	return &Encryptor[T]{
-		Encoder:       tfhe.NewEncoder(params.Parameters),
-		BaseEncryptor: tfhe.NewEncryptor(params.Parameters),
+		Encoder:            tfhe.NewEncoder(params.Parameters),
+		SingleKeyEncryptor: tfhe.NewEncryptor(params.Parameters),
 
 		Parameters: params,
 		Index:      idx,
@@ -66,7 +67,7 @@ func NewEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte
 	}
 }
 
-// NewEncryptorWithKey creates a new Encryptor with a given key.
+// NewEncryptorWithKey allocates an empty Encryptor with a given key.
 func NewEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte, sk tfhe.SecretKey[T]) *Encryptor[T] {
 	if idx > params.partyCount {
 		panic("index larger than PartyCount")
@@ -80,8 +81,8 @@ func NewEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed
 	}
 
 	return &Encryptor[T]{
-		Encoder:       tfhe.NewEncoder(params.Parameters),
-		BaseEncryptor: tfhe.NewEncryptorWithKey(params.Parameters, sk),
+		Encoder:            tfhe.NewEncoder(params.Parameters),
+		SingleKeyEncryptor: tfhe.NewEncryptorWithKey(params.Parameters, sk),
 
 		Parameters: params,
 		Index:      idx,
@@ -92,10 +93,11 @@ func NewEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed
 	}
 }
 
-// newEncryptionBuffer creates a new encryptionBuffer.
+// newEncryptionBuffer allocates an empty encryptionBuffer.
 func newEncryptionBuffer[T tfhe.TorusInt](params Parameters[T]) encryptionBuffer[T] {
 	return encryptionBuffer[T]{
-		ptGLWE:        tfhe.NewGLWEPlaintext(params.Parameters),
+		ptGLWE: tfhe.NewGLWEPlaintext(params.Parameters),
+
 		auxKey:        tfhe.NewGLWESecretKey(params.Parameters),
 		auxFourierKey: tfhe.NewFourierGLWESecretKey(params.Parameters),
 
@@ -108,8 +110,8 @@ func newEncryptionBuffer[T tfhe.TorusInt](params Parameters[T]) encryptionBuffer
 // Returned Encryptor is safe for concurrent use.
 func (e *Encryptor[T]) ShallowCopy() *Encryptor[T] {
 	return &Encryptor[T]{
-		Encoder:       e.Encoder,
-		BaseEncryptor: e.BaseEncryptor.ShallowCopy(),
+		Encoder:            e.Encoder,
+		SingleKeyEncryptor: e.SingleKeyEncryptor.ShallowCopy(),
 
 		Parameters: e.Parameters,
 		Index:      e.Index,
@@ -146,7 +148,7 @@ func (e *Encryptor[T]) EncryptLWEPlaintextAssign(pt tfhe.LWEPlaintext[T], ctOut 
 // EncryptLWEBody encrypts the value in the body of LWE ciphertext and overrides it.
 func (e *Encryptor[T]) EncryptLWEBody(ct LWECiphertext[T]) {
 	e.buffer.ctLWESingle.Value[0] = ct.Value[0]
-	e.BaseEncryptor.EncryptLWEBody(e.buffer.ctLWESingle)
+	e.SingleKeyEncryptor.EncryptLWEBody(e.buffer.ctLWESingle)
 
 	ct.Clear()
 	ct.CopyFromSingleKey(e.buffer.ctLWESingle, e.Index)
@@ -181,13 +183,8 @@ func (e *Encryptor[T]) EncryptGLWEPlaintextAssign(pt tfhe.GLWEPlaintext[T], ctOu
 // This avoids the need for most buffers.
 func (e *Encryptor[T]) EncryptGLWEBody(ct GLWECiphertext[T]) {
 	e.buffer.ctGLWESingle.Value[0].CopyFrom(ct.Value[0])
-	e.BaseEncryptor.EncryptGLWEBody(e.buffer.ctGLWESingle)
+	e.SingleKeyEncryptor.EncryptGLWEBody(e.buffer.ctGLWESingle)
 
 	ct.Clear()
 	ct.CopyFromSingleKey(e.buffer.ctGLWESingle, e.Index)
-}
-
-// SecretKey returns the secret key of this Encryptor.
-func (e *Encryptor[T]) SecretKey() tfhe.SecretKey[T] {
-	return e.BaseEncryptor.SecretKey
 }

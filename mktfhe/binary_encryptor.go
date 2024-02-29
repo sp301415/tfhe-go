@@ -2,7 +2,7 @@ package mktfhe
 
 import "github.com/sp301415/tfhe-go/tfhe"
 
-// BinaryEncryptor is a Multi-Key variant of [tfhe.BinaryEncryptor].
+// BinaryEncryptor is a multi-key variant of [tfhe.BinaryEncryptor].
 type BinaryEncryptor[T tfhe.TorusInt] struct {
 	// BinaryEncoder is an embedded encoder for this BinaryEncryptor.
 	*tfhe.BinaryEncoder[T]
@@ -12,7 +12,7 @@ type BinaryEncryptor[T tfhe.TorusInt] struct {
 	BaseEncryptor *Encryptor[T]
 }
 
-// NewBinaryEncryptor creates a new BinaryEncryptor.
+// NewBinaryEncryptor allocates an empty BinaryEncryptor.
 func NewBinaryEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte) BinaryEncryptor[T] {
 	return BinaryEncryptor[T]{
 		BinaryEncoder: tfhe.NewBinaryEncoder(params.Parameters),
@@ -21,7 +21,7 @@ func NewBinaryEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed 
 	}
 }
 
-// NewBinaryEncryptorWithKey creates a new BinaryEncryptor with a given key.
+// NewBinaryEncryptorWithKey allocates an empty BinaryEncryptor with a given key.
 func NewBinaryEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte, sk tfhe.SecretKey[T]) *BinaryEncryptor[T] {
 	return &BinaryEncryptor[T]{
 		BinaryEncoder: tfhe.NewBinaryEncoder(params.Parameters),

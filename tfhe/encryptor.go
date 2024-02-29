@@ -83,9 +83,8 @@ func NewEncryptor[T TorusInt](params Parameters[T]) *Encryptor[T] {
 	return &encryptor
 }
 
-// NewEncryptorWithKey returns a initialized Encryptor with given parameters,
-// with the supplied SecretKey.
-// This does not copy the SecretKey.
+// NewEncryptorWithKey returns a initialized Encryptor with given parameters and key.
+// This does not copy secret keys.
 func NewEncryptorWithKey[T TorusInt](params Parameters[T], sk SecretKey[T]) *Encryptor[T] {
 	return &Encryptor[T]{
 		Encoder:         NewEncoder(params),

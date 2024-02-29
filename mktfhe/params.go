@@ -7,7 +7,7 @@ import (
 	"github.com/sp301415/tfhe-go/tfhe"
 )
 
-// ParametersLiteral is a Multi-Key variant of [tfhe.ParametersLiteral].
+// ParametersLiteral is a multi-key variant of [tfhe.ParametersLiteral].
 //
 // # Warning
 //
@@ -56,7 +56,7 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 	}
 }
 
-// Parameters is a read-only Multi-Key variant of [tfhe.Parameters].
+// Parameters is a read-only multi-key variant of [tfhe.Parameters].
 type Parameters[T tfhe.TorusInt] struct {
 	// Parameter is an embedded [tfhe.Parameters].
 	tfhe.Parameters[T]
@@ -78,22 +78,22 @@ func (p Parameters[T]) PartyCount() int {
 	return p.partyCount
 }
 
-// DefaultLWEDimension returns the default dimension of Multi-Key LWE entities.
+// DefaultLWEDimension returns the default dimension of multi-key LWE entities.
 func (p Parameters[T]) DefaultLWEDimension() int {
 	return p.partyCount * p.Parameters.DefaultLWEDimension()
 }
 
-// LWEDimension returns the dimension of Multi-Key LWE entities.
+// LWEDimension returns the dimension of multi-key LWE entities.
 func (p Parameters[T]) LWEDimension() int {
 	return p.partyCount * p.Parameters.LWEDimension()
 }
 
-// LWELargeDimension returns the large dimension of Multi-Key LWE entities.
+// LWELargeDimension returns the large dimension of multi-key LWE entities.
 func (p Parameters[T]) LWELargeDimension() int {
 	return p.partyCount * p.Parameters.LWELargeDimension()
 }
 
-// GLWEDimension returns the dimension of Multi-Key GLWE entities.
+// GLWEDimension returns the dimension of multi-key GLWE entities.
 func (p Parameters[T]) GLWEDimension() int {
 	return p.partyCount * p.Parameters.GLWEDimension()
 }

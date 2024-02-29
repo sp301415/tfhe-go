@@ -41,9 +41,9 @@ type evaluationBuffer[T num.Integer] struct {
 	pOut Poly[T]
 }
 
-// NewEvaluator creates a new Evaluator with degree N.
-// N should be power of two, and at least MinDegree.
-// Otherwise, it panics.
+// NewEvaluator allocates an empty Evaluator with degree N.
+//
+// Panics when N is not a power of two, or when N is smaller than MinDegree or larger than MaxDegree.
 func NewEvaluator[T num.Integer](N int) *Evaluator[T] {
 	switch {
 	case !num.IsPowerOfTwo(N):
@@ -83,7 +83,7 @@ func (e *Evaluator[T]) Degree() int {
 	return e.degree
 }
 
-// NewPoly creates a new polynomial with the same degree as the evaluator.
+// NewPoly allocates an empty polynomial with the same degree as the evaluator.
 func (e *Evaluator[T]) NewPoly() Poly[T] {
 	return Poly[T]{Coeffs: make([]T, e.degree)}
 }

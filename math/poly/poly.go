@@ -14,22 +14,22 @@ type Poly[T num.Integer] struct {
 }
 
 // NewPoly creates a polynomial with degree N with empty coefficients.
-// N should be power of two, and at least MinDegree.
-// Otherwise, it panics.
+//
+// Panics when N is not a power of two, or when N is smaller than MinDegree or larger than MaxDegree.
 func NewPoly[T num.Integer](N int) Poly[T] {
-	if !num.IsPowerOfTwo(N) {
+	switch {
+	case !num.IsPowerOfTwo(N):
 		panic("degree not power of two")
-
-	}
-
-	if N < MinDegree {
+	case N < MinDegree:
 		panic("degree smaller than MinDegree")
+	case N > MaxDegree:
+		panic("degree larger than MaxDegree")
 	}
 
 	return Poly[T]{Coeffs: make([]T, N)}
 }
 
-// From creates a new polynomial from given coefficient slice.
+// From allocates an empty polynomial from given coefficient slice.
 // The given slice is copied, and extended to degree N.
 func From[T num.Integer](coeffs []T, N int) Poly[T] {
 	p := NewPoly[T](N)
@@ -80,15 +80,16 @@ type FourierPoly struct {
 }
 
 // NewFourierPoly creates a fourier polynomial with degree N with empty coefficients.
-// N should be power of two, and at least MinDegree.
-// Otherwise, it panics.
+//
+// Panics when N is not a power of two, or when N is smaller than MinDegree or larger than MaxDegree.
 func NewFourierPoly(N int) FourierPoly {
-	if !num.IsPowerOfTwo(N) {
+	switch {
+	case !num.IsPowerOfTwo(N):
 		panic("degree not power of two")
-	}
-
-	if N < MinDegree {
+	case N < MinDegree:
 		panic("degree smaller than MinDegree")
+	case N > MaxDegree:
+		panic("degree larger than MaxDegree")
 	}
 
 	return FourierPoly{Coeffs: make([]float64, N)}

@@ -5,7 +5,7 @@ import (
 	"github.com/sp301415/tfhe-go/tfhe"
 )
 
-// Decryptor is a Multi-Key TFHE decryptor.
+// Decryptor is a multi-key TFHE decryptor.
 //
 // Ideally, a multi-key ciphertext should be decrypted
 // by a distributed decryption protocol.
@@ -17,8 +17,8 @@ import (
 type Decryptor[T tfhe.TorusInt] struct {
 	// Encoder is an embedded Encoder for this Decryptor.
 	*tfhe.Encoder[T]
-	// BaseEncryptors are a single-key Encryptors for this Decryptor.
-	BaseEncryptors []*tfhe.Encryptor[T]
+	// SingleKeyDecryptors are a single-key Encryptors for this Decryptor.
+	SingleKeyDecryptors []*tfhe.Encryptor[T]
 
 	// Parameters is the parameters for the decryptor.
 	Parameters Parameters[T]
@@ -37,7 +37,7 @@ type decryptionBuffer[T tfhe.TorusInt] struct {
 	ptGLWE tfhe.GLWEPlaintext[T]
 }
 
-// NewDecryptor creates a new Decryptor.
+// NewDecryptor allocates an empty Decryptor.
 // Any number of secret keys less than or equal to PartyCount can be used.
 func NewDecryptor[T tfhe.TorusInt](params Parameters[T], sk []tfhe.SecretKey[T]) *Decryptor[T] {
 	if len(sk) > params.partyCount {
@@ -50,8 +50,8 @@ func NewDecryptor[T tfhe.TorusInt](params Parameters[T], sk []tfhe.SecretKey[T])
 	}
 
 	return &Decryptor[T]{
-		Encoder:        tfhe.NewEncoder(params.Parameters),
-		BaseEncryptors: encs,
+		Encoder:             tfhe.NewEncoder(params.Parameters),
+		SingleKeyDecryptors: encs,
 
 		Parameters: params,
 
@@ -59,7 +59,7 @@ func NewDecryptor[T tfhe.TorusInt](params Parameters[T], sk []tfhe.SecretKey[T])
 	}
 }
 
-// newDecryptionBuffer creates a new decryptionBuffer.
+// newDecryptionBuffer allocates an empty decryptionBuffer.
 func newDecryptionBuffer[T tfhe.TorusInt](params Parameters[T]) decryptionBuffer[T] {
 	return decryptionBuffer[T]{
 		ctLWE:  tfhe.NewLWECiphertext(params.Parameters),
@@ -71,14 +71,14 @@ func newDecryptionBuffer[T tfhe.TorusInt](params Parameters[T]) decryptionBuffer
 // ShallowCopy returns a shallow copy of this Decryptor.
 // Returned Decryptor is safe for concurrent use.
 func (d *Decryptor[T]) ShallowCopy() *Decryptor[T] {
-	encs := make([]*tfhe.Encryptor[T], len(d.BaseEncryptors))
-	for i, enc := range d.BaseEncryptors {
+	encs := make([]*tfhe.Encryptor[T], len(d.SingleKeyDecryptors))
+	for i, enc := range d.SingleKeyDecryptors {
 		encs[i] = enc.ShallowCopy()
 	}
 
 	return &Decryptor[T]{
-		Encoder:        d.Encoder,
-		BaseEncryptors: encs,
+		Encoder:             d.Encoder,
+		SingleKeyDecryptors: encs,
 
 		Parameters: d.Parameters,
 
@@ -89,7 +89,7 @@ func (d *Decryptor[T]) ShallowCopy() *Decryptor[T] {
 // PartyCount returns the number of parties in this Decryptor.
 // This may be less than PartyCount in the Parameters.
 func (d *Decryptor[T]) PartyCount() int {
-	return len(d.BaseEncryptors)
+	return len(d.SingleKeyDecryptors)
 }
 
 // DecryptLWE decrypts and decodes LWE ciphertext to integer message.
@@ -102,9 +102,9 @@ func (d *Decryptor[T]) DecryptLWEPlaintext(ct LWECiphertext[T]) tfhe.LWEPlaintex
 	lweDimension := d.Parameters.Parameters.DefaultLWEDimension()
 
 	d.buffer.ctLWE.Value[0] = ct.Value[0]
-	for i := range d.BaseEncryptors {
+	for i := range d.SingleKeyDecryptors {
 		vec.CopyAssign(ct.Value[1+i*lweDimension:1+(i+1)*lweDimension], d.buffer.ctLWE.Value[1:])
-		d.buffer.ctLWE.Value[0] = d.BaseEncryptors[i].DecryptLWEPlaintext(d.buffer.ctLWE).Value
+		d.buffer.ctLWE.Value[0] = d.SingleKeyDecryptors[i].DecryptLWEPlaintext(d.buffer.ctLWE).Value
 	}
 	return tfhe.LWEPlaintext[T]{Value: d.buffer.ctLWE.Value[0]}
 }
@@ -131,9 +131,9 @@ func (d *Decryptor[T]) DecryptGLWEPlaintext(ct GLWECiphertext[T]) tfhe.GLWEPlain
 // DecryptGLWEPlaintextAssign decrypts GLWE ciphertext to GLWE plaintext and writes it to ptOut.
 func (d *Decryptor[T]) DecryptGLWEPlaintextAssign(ct GLWECiphertext[T], ptOut tfhe.GLWEPlaintext[T]) {
 	d.buffer.ctGLWE.Value[0].CopyFrom(ct.Value[0])
-	for i := range d.BaseEncryptors {
+	for i := range d.SingleKeyDecryptors {
 		d.buffer.ctGLWE.Value[1].CopyFrom(ct.Value[1+i])
-		d.BaseEncryptors[i].DecryptGLWEPlaintextAssign(d.buffer.ctGLWE, tfhe.GLWEPlaintext[T]{Value: d.buffer.ctGLWE.Value[0]})
+		d.SingleKeyDecryptors[i].DecryptGLWEPlaintextAssign(d.buffer.ctGLWE, tfhe.GLWEPlaintext[T]{Value: d.buffer.ctGLWE.Value[0]})
 	}
 	ptOut.Value.CopyFrom(d.buffer.ctGLWE.Value[0])
 }
