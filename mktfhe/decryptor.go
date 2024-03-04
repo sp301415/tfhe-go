@@ -17,7 +17,7 @@ import (
 type Decryptor[T tfhe.TorusInt] struct {
 	// Encoder is an embedded Encoder for this Decryptor.
 	*tfhe.Encoder[T]
-	// SingleKeyDecryptors are a single-key Encryptors for this Decryptor.
+	// SingleKeyDecryptors are single-key Encryptors for this Decryptor.
 	SingleKeyDecryptors []*tfhe.Encryptor[T]
 
 	// Parameters is the parameters for the decryptor.
@@ -40,8 +40,8 @@ type decryptionBuffer[T tfhe.TorusInt] struct {
 // NewDecryptor allocates an empty Decryptor.
 // Any number of secret keys less than or equal to PartyCount can be used.
 func NewDecryptor[T tfhe.TorusInt](params Parameters[T], sk []tfhe.SecretKey[T]) *Decryptor[T] {
-	if len(sk) > params.partyCount {
-		panic("secret key length larger than PartyCount")
+	if len(sk) != params.partyCount {
+		panic("SecretKey length not equal to PartyCount")
 	}
 
 	encs := make([]*tfhe.Encryptor[T], len(sk))

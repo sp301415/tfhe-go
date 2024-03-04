@@ -39,8 +39,10 @@ func (e *Encryptor[T]) FourierUniEncryptPlaintextAssign(pt tfhe.GLWEPlaintext[T]
 	for i := 0; i < ctOut.GadgetParameters.Level(); i++ {
 		e.buffer.ctGLWESingle.Value[1].CopyFrom(e.CRS[i])
 		e.SingleKeyEncryptor.PolyEvaluator.ScalarMulAssign(pt.Value, ctOut.GadgetParameters.ScaledBase(i), e.buffer.ctGLWESingle.Value[0])
+
 		e.SingleKeyEncryptor.FourierEvaluator.PolyMulBinaryAddAssign(e.buffer.auxFourierKey.Value[0], e.buffer.ctGLWESingle.Value[1], e.buffer.ctGLWESingle.Value[0])
 		e.SingleKeyEncryptor.GaussianSampler.SampleSliceAddAssign(e.Parameters.GLWEStdDev(), e.buffer.ctGLWESingle.Value[0].Coeffs)
+
 		e.SingleKeyEncryptor.ToFourierGLWECiphertextAssign(e.buffer.ctGLWESingle, ctOut.Value[0].Value[i])
 	}
 

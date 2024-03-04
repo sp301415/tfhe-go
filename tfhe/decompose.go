@@ -55,7 +55,7 @@ func (e *Evaluator[T]) FourierDecomposePoly(p poly.Poly[T], gadgetParams GadgetP
 // transforms it to the Fourier domain,
 // and writes it to decomposedOut.
 func (e *Evaluator[T]) FourierDecomposePolyAssign(p poly.Poly[T], gadgetParams GadgetParameters[T], decomposedOut []poly.FourierPoly) {
-	polyDecomposed := e.getPolyDecomposedBuffer(gadgetParams)
+	polyDecomposed := e.PolyDecomposedBuffer(gadgetParams)
 	decomposePolyAssign(p, gadgetParams, polyDecomposed)
 
 	for i := 0; i < gadgetParams.level; i++ {
@@ -63,10 +63,10 @@ func (e *Evaluator[T]) FourierDecomposePolyAssign(p poly.Poly[T], gadgetParams G
 	}
 }
 
-// getPolyDecomposedBuffer returns the polyDecomposed buffer of Evaluator.
+// PolyDecomposedBuffer returns the polyDecomposed buffer of Evaluator.
 // if len(polyDecomposed) >= Level, it returns the subslice of the buffer.
 // otherwise, it extends the buffer of the Evaluator and returns it.
-func (e *Evaluator[T]) getPolyDecomposedBuffer(gadgetParams GadgetParameters[T]) []poly.Poly[T] {
+func (e *Evaluator[T]) PolyDecomposedBuffer(gadgetParams GadgetParameters[T]) []poly.Poly[T] {
 	if len(e.buffer.polyDecomposed) >= gadgetParams.level {
 		return e.buffer.polyDecomposed[:gadgetParams.level]
 	}
@@ -79,10 +79,10 @@ func (e *Evaluator[T]) getPolyDecomposedBuffer(gadgetParams GadgetParameters[T])
 	return e.buffer.polyDecomposed
 }
 
-// getPolyFourierDecomposedBuffer returns the fourierPolyDecomposed buffer of Evaluator.
+// PolyFourierDecomposedBuffer returns the fourierPolyDecomposed buffer of Evaluator.
 // if len(fourierPolyDecomposed) >= Level, it returns the subslice of the buffer.
 // otherwise, it extends the buffer of the Evaluator and returns it.
-func (e *Evaluator[T]) getPolyFourierDecomposedBuffer(gadgetParams GadgetParameters[T]) []poly.FourierPoly {
+func (e *Evaluator[T]) PolyFourierDecomposedBuffer(gadgetParams GadgetParameters[T]) []poly.FourierPoly {
 	if len(e.buffer.polyFourierDecomposed) >= gadgetParams.level {
 		return e.buffer.polyFourierDecomposed[:gadgetParams.level]
 	}
@@ -95,10 +95,10 @@ func (e *Evaluator[T]) getPolyFourierDecomposedBuffer(gadgetParams GadgetParamet
 	return e.buffer.polyFourierDecomposed
 }
 
-// getDecomposedBuffer returns the decomposed buffer of Evaluator.
+// DecomposedBuffer returns the decomposed buffer of Evaluator.
 // if len(decomposed) >= Level, it returns the subslice of the buffer.
 // otherwise, it extends the buffer of the Evaluator and returns it.
-func (e *Evaluator[T]) getDecomposedBuffer(gadgetParams GadgetParameters[T]) []T {
+func (e *Evaluator[T]) DecomposedBuffer(gadgetParams GadgetParameters[T]) []T {
 	if len(e.buffer.decomposed) >= gadgetParams.level {
 		return e.buffer.decomposed[:gadgetParams.level]
 	}

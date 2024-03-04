@@ -25,6 +25,7 @@ func (e *Evaluator[T]) AddPlainLWE(ct0 LWECiphertext[T], pt LWEPlaintext[T]) LWE
 
 // AddPlainLWEAssign computes ctOut = ct0 + pt.
 func (e *Evaluator[T]) AddPlainLWEAssign(ct0 LWECiphertext[T], pt LWEPlaintext[T], ctOut LWECiphertext[T]) {
+	ctOut.CopyFrom(ct0)
 	ctOut.Value[0] += pt.Value
 }
 

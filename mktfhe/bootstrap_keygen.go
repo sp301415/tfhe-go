@@ -55,8 +55,16 @@ func (e *Encryptor[T]) GenKeySwitchKeyForBootstrapParallel() tfhe.KeySwitchKey[T
 
 // GenCRSPublicKey samples a new public key from the common reference string.
 func (e *Encryptor[T]) GenCRSPublicKey() tfhe.FourierGLevCiphertext[T] {
-	e.buffer.ptGLWE.Clear()
-	return e.SingleKeyEncryptor.EncryptFourierGLevPlaintext(e.buffer.ptGLWE, e.Parameters.relinKeyParameters)
+	pk := tfhe.NewFourierGLevCiphertext(e.Parameters.Parameters, e.Parameters.relinKeyParameters)
+	for i := 0; i < e.Parameters.relinKeyParameters.Level(); i++ {
+		e.buffer.ctGLWESingle.Value[1].CopyFrom(e.CRS[i])
+
+		e.SingleKeyEncryptor.GaussianSampler.SampleSliceAssign(e.Parameters.GLWEStdDev(), e.buffer.ctGLWESingle.Value[0].Coeffs)
+		e.SingleKeyEncryptor.FourierEvaluator.PolyMulBinarySubAssign(e.SecretKey.FourierGLWEKey.Value[0], e.buffer.ctGLWESingle.Value[1], e.buffer.ctGLWESingle.Value[0])
+
+		e.ToFourierGLWECiphertextAssign(e.buffer.ctGLWESingle, pk.Value[i])
+	}
+	return pk
 }
 
 // GenRelinKey samples a new relinearization key.

@@ -10,6 +10,8 @@ import (
 type Encryptor[T tfhe.TorusInt] struct {
 	// Encoder is an embedded Encoder for this Encryptor.
 	*tfhe.Encoder[T]
+	// GLWETansformer is an embedded GLWETransformer for this Encryptor.
+	*tfhe.GLWETransformer[T]
 	// SingleKeyEncryptor is a single-key Encryptor for this Encryptor.
 	SingleKeyEncryptor *tfhe.Encryptor[T]
 
@@ -20,6 +22,10 @@ type Encryptor[T tfhe.TorusInt] struct {
 
 	// CRS is the common reference string for this Encryptor.
 	CRS []poly.Poly[T]
+
+	// SecretKey is the secret key for this Encryptor.
+	// This is shared with SingleKeyEncryptor.
+	SecretKey tfhe.SecretKey[T]
 
 	// buffer is a buffer for this Encryptor.
 	buffer encryptionBuffer[T]
@@ -54,14 +60,19 @@ func NewEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte
 		s.SampleSliceAssign(crs[i].Coeffs)
 	}
 
+	enc := tfhe.NewEncryptor(params.Parameters)
+
 	return &Encryptor[T]{
 		Encoder:            tfhe.NewEncoder(params.Parameters),
-		SingleKeyEncryptor: tfhe.NewEncryptor(params.Parameters),
+		GLWETransformer:    tfhe.NewGLWETransformer(params.Parameters),
+		SingleKeyEncryptor: enc,
 
 		Parameters: params,
 		Index:      idx,
 
 		CRS: crs,
+
+		SecretKey: enc.SecretKey,
 
 		buffer: newEncryptionBuffer(params),
 	}
@@ -82,12 +93,15 @@ func NewEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed
 
 	return &Encryptor[T]{
 		Encoder:            tfhe.NewEncoder(params.Parameters),
+		GLWETransformer:    tfhe.NewGLWETransformer(params.Parameters),
 		SingleKeyEncryptor: tfhe.NewEncryptorWithKey(params.Parameters, sk),
 
 		Parameters: params,
 		Index:      idx,
 
 		CRS: crs,
+
+		SecretKey: sk,
 
 		buffer: newEncryptionBuffer(params),
 	}
@@ -111,12 +125,15 @@ func newEncryptionBuffer[T tfhe.TorusInt](params Parameters[T]) encryptionBuffer
 func (e *Encryptor[T]) ShallowCopy() *Encryptor[T] {
 	return &Encryptor[T]{
 		Encoder:            e.Encoder,
+		GLWETransformer:    e.GLWETransformer.ShallowCopy(),
 		SingleKeyEncryptor: e.SingleKeyEncryptor.ShallowCopy(),
 
 		Parameters: e.Parameters,
 		Index:      e.Index,
 
 		CRS: e.CRS,
+
+		SecretKey: e.SecretKey,
 
 		buffer: newEncryptionBuffer(e.Parameters),
 	}
