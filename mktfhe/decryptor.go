@@ -18,10 +18,19 @@ type Decryptor[T tfhe.TorusInt] struct {
 	// Encoder is an embedded Encoder for this Decryptor.
 	*tfhe.Encoder[T]
 	// SingleKeyDecryptors are single-key Encryptors for this Decryptor.
+	// If a secret key of a given index does not exist, it is nil.
 	SingleKeyDecryptors []*tfhe.Encryptor[T]
 
 	// Parameters is the parameters for the decryptor.
 	Parameters Parameters[T]
+	// PartyBitMap is a bitmap for parties.
+	// If a party of a given index exists, it is true.
+	PartyBitMap []bool
+
+	// SecretKeys are the secret keys for this Decryptor.
+	// This is shared with SingleKeyDecryptors.
+	// If a secret key of a given index does not exist, it is empty.
+	SecretKeys []tfhe.SecretKey[T]
 
 	// buffer is a buffer for this Decryptor.
 	buffer decryptionBuffer[T]
@@ -38,22 +47,25 @@ type decryptionBuffer[T tfhe.TorusInt] struct {
 }
 
 // NewDecryptor allocates an empty Decryptor.
-// Any number of secret keys less than or equal to PartyCount can be used.
-func NewDecryptor[T tfhe.TorusInt](params Parameters[T], sk []tfhe.SecretKey[T]) *Decryptor[T] {
-	if len(sk) != params.partyCount {
-		panic("SecretKey length not equal to PartyCount")
-	}
-
+// Only indices between 0 and params.PartyCount is valid for sk.
+func NewDecryptor[T tfhe.TorusInt](params Parameters[T], sk map[int]tfhe.SecretKey[T]) *Decryptor[T] {
 	encs := make([]*tfhe.Encryptor[T], len(sk))
+	sks := make([]tfhe.SecretKey[T], len(sk))
+	partyBitMap := make([]bool, params.PartyCount())
 	for i := range sk {
 		encs[i] = tfhe.NewEncryptorWithKey(params.Parameters, sk[i])
+		sks[i] = sk[i]
+		partyBitMap[i] = true
 	}
 
 	return &Decryptor[T]{
 		Encoder:             tfhe.NewEncoder(params.Parameters),
 		SingleKeyDecryptors: encs,
 
-		Parameters: params,
+		Parameters:  params,
+		PartyBitMap: partyBitMap,
+
+		SecretKeys: sks,
 
 		buffer: newDecryptionBuffer(params),
 	}
@@ -68,28 +80,33 @@ func newDecryptionBuffer[T tfhe.TorusInt](params Parameters[T]) decryptionBuffer
 	}
 }
 
+// AddSecretKey adds a secret key to this Decryptor.
+// If a secret key of a given index already exists, it is overwritten.
+func (d *Decryptor[T]) AddSecretKey(idx int, sk tfhe.SecretKey[T]) {
+	d.SingleKeyDecryptors[idx] = tfhe.NewEncryptorWithKey(d.Parameters.Parameters, sk)
+	d.SecretKeys[idx] = sk
+	d.PartyBitMap[idx] = true
+}
+
 // ShallowCopy returns a shallow copy of this Decryptor.
 // Returned Decryptor is safe for concurrent use.
 func (d *Decryptor[T]) ShallowCopy() *Decryptor[T] {
-	encs := make([]*tfhe.Encryptor[T], len(d.SingleKeyDecryptors))
-	for i, enc := range d.SingleKeyDecryptors {
-		encs[i] = enc.ShallowCopy()
+	decs := make([]*tfhe.Encryptor[T], len(d.SingleKeyDecryptors))
+	for i, dec := range d.SingleKeyDecryptors {
+		decs[i] = dec.ShallowCopy()
 	}
 
 	return &Decryptor[T]{
 		Encoder:             d.Encoder,
-		SingleKeyDecryptors: encs,
+		SingleKeyDecryptors: decs,
 
-		Parameters: d.Parameters,
+		Parameters:  d.Parameters,
+		PartyBitMap: vec.Copy(d.PartyBitMap),
+
+		SecretKeys: vec.Copy(d.SecretKeys),
 
 		buffer: d.buffer,
 	}
-}
-
-// PartyCount returns the number of parties in this Decryptor.
-// This may be less than PartyCount in the Parameters.
-func (d *Decryptor[T]) PartyCount() int {
-	return len(d.SingleKeyDecryptors)
 }
 
 // DecryptLWE decrypts and decodes LWE ciphertext to integer message.
@@ -99,10 +116,13 @@ func (d *Decryptor[T]) DecryptLWE(ct LWECiphertext[T]) int {
 
 // DecryptLWEPlaintext decrypts LWE ciphertext to LWE plaintext.
 func (d *Decryptor[T]) DecryptLWEPlaintext(ct LWECiphertext[T]) tfhe.LWEPlaintext[T] {
-	lweDimension := d.Parameters.Parameters.DefaultLWEDimension()
+	lweDimension := d.Parameters.SingleKeyDefaultLWEDimension()
 
 	d.buffer.ctLWE.Value[0] = ct.Value[0]
-	for i := range d.SingleKeyDecryptors {
+	for i, ok := range d.PartyBitMap {
+		if !ok {
+			continue
+		}
 		vec.CopyAssign(ct.Value[1+i*lweDimension:1+(i+1)*lweDimension], d.buffer.ctLWE.Value[1:])
 		d.buffer.ctLWE.Value[0] = d.SingleKeyDecryptors[i].DecryptLWEPlaintext(d.buffer.ctLWE).Value
 	}
@@ -131,7 +151,10 @@ func (d *Decryptor[T]) DecryptGLWEPlaintext(ct GLWECiphertext[T]) tfhe.GLWEPlain
 // DecryptGLWEPlaintextAssign decrypts GLWE ciphertext to GLWE plaintext and writes it to ptOut.
 func (d *Decryptor[T]) DecryptGLWEPlaintextAssign(ct GLWECiphertext[T], ptOut tfhe.GLWEPlaintext[T]) {
 	d.buffer.ctGLWE.Value[0].CopyFrom(ct.Value[0])
-	for i := range d.SingleKeyDecryptors {
+	for i, ok := range d.PartyBitMap {
+		if !ok {
+			continue
+		}
 		d.buffer.ctGLWE.Value[1].CopyFrom(ct.Value[1+i])
 		d.SingleKeyDecryptors[i].DecryptGLWEPlaintextAssign(d.buffer.ctGLWE, tfhe.GLWEPlaintext[T]{Value: d.buffer.ctGLWE.Value[0]})
 	}

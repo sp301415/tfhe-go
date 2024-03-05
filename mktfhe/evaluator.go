@@ -2,6 +2,7 @@ package mktfhe
 
 import (
 	"github.com/sp301415/tfhe-go/math/poly"
+	"github.com/sp301415/tfhe-go/math/vec"
 	"github.com/sp301415/tfhe-go/tfhe"
 )
 
@@ -11,14 +12,23 @@ type Evaluator[T tfhe.TorusInt] struct {
 	*tfhe.Encoder[T]
 	// GLWETansformer is an embedded GLWETransformer for this Evaluator.
 	*tfhe.GLWETransformer[T]
+	// BaseEvaluator is a single-key Evaluator for this Evaluator.
+	// This is always guaranteed to be a working, non-nil evaluator without a key.
+	BaseEvaluator *tfhe.Evaluator[T]
 	// SingleKeyEvaluators are single-key Evaluators for this Evaluator.
+	// If an evaluation key does not exist for given index, it is nil.
 	SingleKeyEvaluators []*tfhe.Evaluator[T]
 
 	// Parameters is the parameters for the evaluator.
 	Parameters Parameters[T]
 
+	// PartyBitMap is a bitmap for parties.
+	// If a party of a given index exists, it is true.
+	PartyBitMap []bool
+
 	// EvaluationKeys are the evaluation key for this Evaluator.
 	// This is shared with SingleKeyEvaluators.
+	// If an evaluation key does not exist for given index, it is empty.
 	EvaluationKeys []EvaluationKey[T]
 
 	// buffer is a buffer for this Evaluator.
@@ -41,25 +51,47 @@ type evaluationBuffer[T tfhe.TorusInt] struct {
 	ctRelin GLWECiphertext[T]
 	// ctRelinTransposed is a transposed version of ctRelin.
 	ctRelinTransposed []tfhe.GLWECiphertext[T]
+
+	// ctRotateInputs holds the input of the Blind Rotation to each single evaluator.
+	ctRotateInputs []tfhe.LWECiphertext[T]
+	// gadgetLUTs holds the gadget LUT for the Blind Rotation.
+	gadgetLUTs []tfhe.LookUpTable[T]
+	// ctAccs holds the output of the accumulator of a single-key Blind Rotation.
+	ctAccs []tfhe.GLWECiphertext[T]
+	// ctFourierAccs holds the fourier transformed ctAccs.
+	ctFourierAccs []tfhe.FourierGLevCiphertext[T]
+
+	// ctRotate holds the blind rotated GLWE ciphertext for bootstrapping.
+	ctRotate GLWECiphertext[T]
+	// ctExtract holds the extracted LWE ciphertext after Blind Rotation.
+	ctExtract LWECiphertext[T]
+	// ctKeySwitch holds LWEDimension sized ciphertext from keyswitching.
+	ctKeySwitch LWECiphertext[T]
+
+	// lut is an empty lut, used for BlindRotateFunc.
+	lut tfhe.LookUpTable[T]
 }
 
 // NewEvaluator allocates an empty Evaluator.
-func NewEvaluator[T tfhe.TorusInt](params Parameters[T], evks []EvaluationKey[T]) *Evaluator[T] {
-	if len(evks) != params.partyCount {
-		panic("EvaluationKey length not equal to PartyCount")
-	}
-
-	evals := make([]*tfhe.Evaluator[T], len(evks))
+// Only indices between 0 and params.PartyCount is valid for evk.
+func NewEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationKey[T]) *Evaluator[T] {
+	evals := make([]*tfhe.Evaluator[T], len(evk))
+	evks := make([]EvaluationKey[T], len(evk))
+	partyBitMap := make([]bool, params.PartyCount())
 	for i := range evks {
-		evals[i] = tfhe.NewEvaluator(params.Parameters, evks[i].EvaluationKey)
+		evals[i] = tfhe.NewEvaluator(params.Parameters, evk[i].EvaluationKey)
+		evks[i] = evk[i]
+		partyBitMap[i] = true
 	}
 
 	return &Evaluator[T]{
 		Encoder:             tfhe.NewEncoder(params.Parameters),
 		GLWETransformer:     tfhe.NewGLWETransformer(params.Parameters),
+		BaseEvaluator:       tfhe.NewEvaluatorWithoutKey(params.Parameters),
 		SingleKeyEvaluators: evals,
 
-		Parameters: params,
+		Parameters:  params,
+		PartyBitMap: partyBitMap,
 
 		EvaluationKeys: evks,
 
@@ -75,6 +107,24 @@ func newEvaluationBuffer[T tfhe.TorusInt](params Parameters[T]) evaluationBuffer
 		ctRelinTransposed[i] = tfhe.NewGLWECiphertext(params.Parameters)
 	}
 
+	ctRotateInputs := make([]tfhe.LWECiphertext[T], params.partyCount)
+	for i := 0; i < params.partyCount; i++ {
+		ctRotateInputs[i] = tfhe.NewLWECiphertext(params.Parameters)
+	}
+
+	gadgetLUTs := make([]tfhe.LookUpTable[T], params.accumulatorParameters.Level())
+	for i := 0; i < params.accumulatorParameters.Level(); i++ {
+		gadgetLUTs[i] = tfhe.NewLookUpTable(params.Parameters)
+		gadgetLUTs[i].Coeffs[0] = params.accumulatorParameters.ScaledBase(i)
+	}
+
+	ctAccs := make([]tfhe.GLWECiphertext[T], params.partyCount)
+	ctFourierAccs := make([]tfhe.FourierGLevCiphertext[T], params.partyCount)
+	for i := 0; i < params.partyCount; i++ {
+		ctAccs[i] = tfhe.NewGLWECiphertext(params.Parameters)
+		ctFourierAccs[i] = tfhe.NewFourierGLevCiphertext(params.Parameters, params.accumulatorParameters)
+	}
+
 	return evaluationBuffer[T]{
 		ctProd:        NewGLWECiphertext(params),
 		ctFourierProd: NewFourierGLWECiphertext(params),
@@ -84,7 +134,26 @@ func newEvaluationBuffer[T tfhe.TorusInt](params Parameters[T]) evaluationBuffer
 
 		ctRelin:           ctRelin,
 		ctRelinTransposed: ctRelinTransposed,
+
+		ctRotateInputs: ctRotateInputs,
+		gadgetLUTs:     gadgetLUTs,
+		ctAccs:         ctAccs,
+		ctFourierAccs:  ctFourierAccs,
+
+		ctRotate:    NewGLWECiphertext(params),
+		ctExtract:   NewLWECiphertextCustom[T](params.partyCount, params.LWELargeDimension()),
+		ctKeySwitch: NewLWECiphertextCustom[T](params.partyCount, params.LWEDimension()),
+
+		lut: tfhe.NewLookUpTable(params.Parameters),
 	}
+}
+
+// AddEvaluationKey adds an evaluation key for given index.
+// If an evaluation key already exists for given index, it is overwritten.
+func (e *Evaluator[T]) AddEvaluationKey(idx int, evk EvaluationKey[T]) {
+	e.SingleKeyEvaluators[idx] = tfhe.NewEvaluator(e.Parameters.Parameters, evk.EvaluationKey)
+	e.EvaluationKeys[idx] = evk
+	e.PartyBitMap[idx] = true
 }
 
 // ShallowCopy returns a shallow copy of this Evaluator.
@@ -98,11 +167,13 @@ func (e *Evaluator[T]) ShallowCopy() *Evaluator[T] {
 	return &Evaluator[T]{
 		Encoder:             e.Encoder,
 		GLWETransformer:     e.GLWETransformer.ShallowCopy(),
+		BaseEvaluator:       e.BaseEvaluator.ShallowCopy(),
 		SingleKeyEvaluators: evals,
 
-		Parameters: e.Parameters,
+		Parameters:  e.Parameters,
+		PartyBitMap: vec.Copy(e.PartyBitMap),
 
-		EvaluationKeys: e.EvaluationKeys,
+		EvaluationKeys: vec.Copy(e.EvaluationKeys),
 
 		buffer: newEvaluationBuffer(e.Parameters),
 	}

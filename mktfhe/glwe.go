@@ -2,6 +2,7 @@ package mktfhe
 
 import (
 	"github.com/sp301415/tfhe-go/math/poly"
+	"github.com/sp301415/tfhe-go/math/vec"
 	"github.com/sp301415/tfhe-go/tfhe"
 )
 
@@ -58,6 +59,40 @@ func (ct *GLWECiphertext[T]) CopyFromSingleKey(ctIn tfhe.GLWECiphertext[T], idx 
 	ct.Clear()
 	ct.Value[0].CopyFrom(ctIn.Value[0])
 	ct.Value[1+idx].CopyFrom(ctIn.Value[1])
+}
+
+// ToLWECiphertext extracts LWE ciphertext of given index from GLWE ciphertext.
+// The output ciphertext will be of dimension LWELargeDimension + 1,
+// encrypted with LWELargeKey.
+//
+// Equivalent to [*Evaluator.SampleExtract].
+func (ct GLWECiphertext[T]) ToLWECiphertext(idx int) LWECiphertext[T] {
+	ctOut := NewLWECiphertextCustom[T]((len(ct.Value) - 1), ct.Value[0].Degree())
+	ct.ToLWECiphertextAssign(idx, ctOut)
+	return ctOut
+}
+
+// ToLWECiphertextAssign extracts LWE ciphertext of given index from GLWE ciphertext and writes it to ctOut.
+// The output ciphertext should be of dimension LWELargeDimension + 1,
+// and it will be a ciphertext encrypted with LWELargeKey.
+//
+// Equivalent to [*Evaluator.SampleExtractAssign].
+func (ct GLWECiphertext[T]) ToLWECiphertextAssign(idx int, ctOut LWECiphertext[T]) {
+	partyCount := len(ct.Value) - 1
+	degree := ct.Value[0].Degree()
+
+	ctOut.Value[0] = ct.Value[0].Coeffs[idx]
+
+	ctMask, ctOutMask := ct.Value[1:], ctOut.Value[1:]
+	for i := 0; i < partyCount; i++ {
+		start := i * degree
+		end := (i + 1) * degree
+
+		vec.ReverseAssign(ctMask[i].Coeffs, ctOutMask[start:end])
+
+		vec.RotateInPlace(ctOutMask[start:end], idx+1)
+		vec.NegAssign(ctOutMask[start+idx+1:end], ctOutMask[start+idx+1:end])
+	}
 }
 
 // Clear clears the ciphertext.

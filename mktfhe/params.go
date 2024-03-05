@@ -9,6 +9,11 @@ import (
 
 // ParametersLiteral is a multi-key variant of [tfhe.ParametersLiteral].
 //
+// Multi-Key parameters have more restrictions than single-key parameters:
+//
+//   - GLWEDimension must be 1.
+//   - PolyLargeDegree should be equal to PolyDegree.
+//
 // # Warning
 //
 // Unless you are a cryptographic expert, DO NOT set these by yourself;
@@ -44,6 +49,8 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("PartyCount smaller than zero")
 	case p.GLWEDimension != 1:
 		panic("Multi-Key TFHE only supports GLWE dimension 1")
+	case p.PolyLargeDegree != p.PolyDegree:
+		panic("Multi-Key TFHE only supports PolyLargeDegree equal to PolyDegree")
 	}
 
 	return Parameters[T]{
@@ -93,9 +100,29 @@ func (p Parameters[T]) LWELargeDimension() int {
 	return p.partyCount * p.Parameters.LWELargeDimension()
 }
 
+// SingleKeyDefaultLWEDimension returns the default dimension of single-key LWE entities.
+func (p Parameters[T]) SingleKeyDefaultLWEDimension() int {
+	return p.Parameters.DefaultLWEDimension()
+}
+
+// SingleKeyLWEDimension returns the dimension of single-key LWE entities.
+func (p Parameters[T]) SingleKeyLWEDimension() int {
+	return p.Parameters.LWEDimension()
+}
+
+// SingleKeyLWELargeDimension returns the large dimension of single-key LWE entities.
+func (p Parameters[T]) SingleKeyLWELargeDimension() int {
+	return p.Parameters.LWELargeDimension()
+}
+
 // GLWEDimension returns the dimension of multi-key GLWE entities.
 func (p Parameters[T]) GLWEDimension() int {
 	return p.partyCount * p.Parameters.GLWEDimension()
+}
+
+// SingleKeyGLWEDimension returns the dimension of single-key GLWE entities.
+func (p Parameters[T]) SingleKeyGLWEDimension() int {
+	return p.Parameters.GLWEDimension()
 }
 
 // AccumulatorParameters returns the gadget parameters for the accumulator.

@@ -38,8 +38,8 @@ func (ct *LWECiphertext[T]) CopyFromSingleKey(ctIn tfhe.LWECiphertext[T], idx in
 	}
 
 	ct.Clear()
-	singleLWEDimension := len(ctIn.Value) - 1
-	vec.CopyAssign(ctIn.Value[1:], ct.Value[1+idx*singleLWEDimension:1+(idx+1)*singleLWEDimension])
+	singleKeyLWEDimension := len(ctIn.Value) - 1
+	vec.CopyAssign(ctIn.Value[1:], ct.Value[1+idx*singleKeyLWEDimension:1+(idx+1)*singleKeyLWEDimension])
 	ct.Value[0] = ctIn.Value[0]
 }
 

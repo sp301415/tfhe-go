@@ -91,7 +91,8 @@ func (e *Evaluator[T]) ClearPaddingBit(ct LWECiphertext[T]) LWECiphertext[T] {
 
 // ClearPaddingBitAssign clears the padding bit of the LWE ciphertext and writes it to ctOut.
 func (e *Evaluator[T]) ClearPaddingBitAssign(ct LWECiphertext[T], ctOut LWECiphertext[T]) {
-	e.BootstrapFuncFullAssign(ct, func(x int) T { return 1 << (e.Parameters.sizeT - 2) }, e.buffer.ctPadding)
+	e.GenLookUpTableFullAssign(func(x int) T { return 1 << (e.Parameters.sizeT - 2) }, e.buffer.lut)
+	e.BootstrapLUTAssign(ct, e.buffer.lut, e.buffer.ctPadding)
 	e.SubLWEAssign(ct, e.buffer.ctPadding, ctOut)
 	ctOut.Value[0] += 1 << (e.Parameters.sizeT - 2)
 }
@@ -105,18 +106,6 @@ func (e *Evaluator[T]) ClearPaddingBitInPlace(ct LWECiphertext[T]) {
 func (e *Evaluator[T]) BootstrapFunc(ct LWECiphertext[T], f func(int) int) LWECiphertext[T] {
 	e.GenLookUpTableAssign(f, e.buffer.lut)
 	return e.BootstrapLUT(ct, e.buffer.lut)
-}
-
-// BootstrapFuncFull returns a bootstrapped LWE ciphertext with resepect to given function.
-func (e *Evaluator[T]) BootstrapFuncFull(ct LWECiphertext[T], f func(int) T) LWECiphertext[T] {
-	e.GenLookUpTableFullAssign(f, e.buffer.lut)
-	return e.BootstrapLUT(ct, e.buffer.lut)
-}
-
-// BootstrapFuncFullAssign bootstraps LWE ciphertext with resepect to given function and writes it to ctOut.
-func (e *Evaluator[T]) BootstrapFuncFullAssign(ct LWECiphertext[T], f func(int) T, ctOut LWECiphertext[T]) {
-	e.GenLookUpTableFullAssign(f, e.buffer.lut)
-	e.BootstrapLUTAssign(ct, e.buffer.lut, ctOut)
 }
 
 // BootstrapFuncAssign bootstraps LWE ciphertext with resepect to given function and writes it to ctOut.
@@ -388,8 +377,6 @@ func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUp
 // SampleExtract extracts LWE ciphertext of given index from GLWE ciphertext.
 // The output ciphertext will be of dimension LWELargeDimension + 1,
 // encrypted with LWELargeKey.
-//
-// Equivalent to GLWECiphertext.ToLWECiphertext.
 func (e *Evaluator[T]) SampleExtract(ct GLWECiphertext[T], idx int) LWECiphertext[T] {
 	ctOut := NewLWECiphertextCustom[T](e.Parameters.lweLargeDimension)
 	e.SampleExtractAssign(ct, idx, ctOut)
@@ -399,8 +386,6 @@ func (e *Evaluator[T]) SampleExtract(ct GLWECiphertext[T], idx int) LWECiphertex
 // SampleExtractAssign extracts LWE ciphertext of given index from GLWE ciphertext and writes it to ctOut.
 // The output ciphertext should be of dimension LWELargeDimension + 1,
 // and it will be a ciphertext encrypted with LWELargeKey.
-//
-// Equivalent to Evaluator.SampleExtract.
 func (e *Evaluator[T]) SampleExtractAssign(ct GLWECiphertext[T], idx int, ctOut LWECiphertext[T]) {
 	ctOut.Value[0] = ct.Value[0].Coeffs[idx]
 
@@ -447,7 +432,7 @@ func (e *Evaluator[T]) KeySwitchAssign(ct LWECiphertext[T], ksk KeySwitchKey[T],
 	ctOut.Value[0] += ct.Value[0]
 }
 
-// KeySwitchForBootstrap performs the keyswitching using evaulater's bootstrap key.
+// KeySwitchForBootstrap performs the keyswitching using evaulater's evaluation key.
 // Input ciphertext should be of dimension LWELargeDimension + 1.
 // Output ciphertext will be of dimension LWEDimension + 1.
 func (e *Evaluator[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[T] {
@@ -456,7 +441,7 @@ func (e *Evaluator[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[
 	return ctOut
 }
 
-// KeySwitchForBootstrapAssign performs the keyswitching using evaulater's bootstrap key.
+// KeySwitchForBootstrapAssign performs the keyswitching using evaulater's evaluation key.
 // Input ciphertext should be of dimension LWELargeDimension + 1.
 // Output ciphertext should be of dimension LWEDimension + 1.
 func (e *Evaluator[T]) KeySwitchForBootstrapAssign(ct, ctOut LWECiphertext[T]) {

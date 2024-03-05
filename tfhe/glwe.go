@@ -202,7 +202,7 @@ func (ct *GLWECiphertext[T]) Clear() {
 // The output ciphertext will be of dimension LWELargeDimension + 1,
 // encrypted with LWELargeKey.
 //
-// Equivalent to Evaluator.SampleExtract.
+// Equivalent to [*Evaluator.SampleExtract].
 func (ct GLWECiphertext[T]) ToLWECiphertext(idx int) LWECiphertext[T] {
 	ctOut := NewLWECiphertextCustom[T]((len(ct.Value) - 1) * ct.Value[0].Degree())
 	ct.ToLWECiphertextAssign(idx, ctOut)
@@ -213,7 +213,7 @@ func (ct GLWECiphertext[T]) ToLWECiphertext(idx int) LWECiphertext[T] {
 // The output ciphertext should be of dimension LWELargeDimension + 1,
 // and it will be a ciphertext encrypted with LWELargeKey.
 //
-// Equivalent to Evaluator.SampleExtractAssign.
+// Equivalent to [*Evaluator.SampleExtractAssign].
 func (ct GLWECiphertext[T]) ToLWECiphertextAssign(idx int, ctOut LWECiphertext[T]) {
 	glweDimension := len(ct.Value) - 1
 	degree := ct.Value[0].Degree()

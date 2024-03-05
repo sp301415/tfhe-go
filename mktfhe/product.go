@@ -31,16 +31,18 @@ func (e *Evaluator[T]) HybridProductAssign(idx int, ctFourierUniEnc FourierUniEn
 	}
 	eIdx.FourierEvaluator.NegAssign(e.buffer.ctFourierProdSingle, e.buffer.ctFourierProdSingle)
 
-	for i := 1; i < e.Parameters.GLWEDimension()+1; i++ {
-		eIdx.FourierDecomposePolyAssign(ctGLWE.Value[i], ctFourierUniEnc.GadgetParameters, polyFourierDecomposed)
+	for i, ok := range e.PartyBitMap {
+		if ok {
+			eIdx.FourierDecomposePolyAssign(ctGLWE.Value[i+1], ctFourierUniEnc.GadgetParameters, polyFourierDecomposed)
 
-		eIdx.FourierEvaluator.MulAssign(ctFourierUniEnc.Value[0].Value[0].Value[0], polyFourierDecomposed[0], e.buffer.ctFourierProd.Value[i])
-		for j := 1; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-			eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[i])
-		}
+			eIdx.FourierEvaluator.MulAssign(ctFourierUniEnc.Value[0].Value[0].Value[0], polyFourierDecomposed[0], e.buffer.ctFourierProd.Value[i+1])
+			for j := 1; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
+				eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[i+1])
+			}
 
-		for j := 0; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-			eIdx.FourierEvaluator.MulAddAssign(e.EvaluationKeys[i-1].CRSPublicKey.Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProdSingle)
+			for j := 0; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
+				eIdx.FourierEvaluator.MulAddAssign(e.EvaluationKeys[i].CRSPublicKey.Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProdSingle)
+			}
 		}
 	}
 
@@ -51,8 +53,12 @@ func (e *Evaluator[T]) HybridProductAssign(idx int, ctFourierUniEnc FourierUniEn
 		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[1].Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[1+idx])
 	}
 
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
-		eIdx.FourierEvaluator.ToScaledPolyAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+	for i, ok := range e.PartyBitMap {
+		if ok {
+			eIdx.FourierEvaluator.ToScaledPolyAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+		} else {
+			ctGLWEOut.Value[i].Clear()
+		}
 	}
 }
 
@@ -75,16 +81,18 @@ func (e *Evaluator[T]) HybridProductAddAssign(idx int, ctFourierUniEnc FourierUn
 	}
 	eIdx.FourierEvaluator.NegAssign(e.buffer.ctFourierProdSingle, e.buffer.ctFourierProdSingle)
 
-	for i := 1; i < e.Parameters.GLWEDimension()+1; i++ {
-		eIdx.FourierDecomposePolyAssign(ctGLWE.Value[i], ctFourierUniEnc.GadgetParameters, polyFourierDecomposed)
+	for i, ok := range e.PartyBitMap {
+		if ok {
+			eIdx.FourierDecomposePolyAssign(ctGLWE.Value[i+1], ctFourierUniEnc.GadgetParameters, polyFourierDecomposed)
 
-		eIdx.FourierEvaluator.MulAssign(ctFourierUniEnc.Value[0].Value[0].Value[0], polyFourierDecomposed[0], e.buffer.ctFourierProd.Value[i])
-		for j := 1; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-			eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[i])
-		}
+			eIdx.FourierEvaluator.MulAssign(ctFourierUniEnc.Value[0].Value[0].Value[0], polyFourierDecomposed[0], e.buffer.ctFourierProd.Value[i+1])
+			for j := 1; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
+				eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[i+1])
+			}
 
-		for j := 0; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-			eIdx.FourierEvaluator.MulAddAssign(e.EvaluationKeys[i-1].CRSPublicKey.Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProdSingle)
+			for j := 0; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
+				eIdx.FourierEvaluator.MulAddAssign(e.EvaluationKeys[i].CRSPublicKey.Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProdSingle)
+			}
 		}
 	}
 
@@ -95,8 +103,10 @@ func (e *Evaluator[T]) HybridProductAddAssign(idx int, ctFourierUniEnc FourierUn
 		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[1].Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[1+idx])
 	}
 
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
-		eIdx.FourierEvaluator.ToScaledPolyAddAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+	for i, ok := range e.PartyBitMap {
+		if ok {
+			eIdx.FourierEvaluator.ToScaledPolyAddAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+		}
 	}
 }
 
@@ -119,16 +129,18 @@ func (e *Evaluator[T]) HybridProductSubAssign(idx int, ctFourierUniEnc FourierUn
 	}
 	eIdx.FourierEvaluator.NegAssign(e.buffer.ctFourierProdSingle, e.buffer.ctFourierProdSingle)
 
-	for i := 1; i < e.Parameters.GLWEDimension()+1; i++ {
-		eIdx.FourierDecomposePolyAssign(ctGLWE.Value[i], ctFourierUniEnc.GadgetParameters, polyFourierDecomposed)
+	for i, ok := range e.PartyBitMap {
+		if ok {
+			eIdx.FourierDecomposePolyAssign(ctGLWE.Value[i+1], ctFourierUniEnc.GadgetParameters, polyFourierDecomposed)
 
-		eIdx.FourierEvaluator.MulAssign(ctFourierUniEnc.Value[0].Value[0].Value[0], polyFourierDecomposed[0], e.buffer.ctFourierProd.Value[i])
-		for j := 1; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-			eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[i])
-		}
+			eIdx.FourierEvaluator.MulAssign(ctFourierUniEnc.Value[0].Value[0].Value[0], polyFourierDecomposed[0], e.buffer.ctFourierProd.Value[i+1])
+			for j := 1; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
+				eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[i+1])
+			}
 
-		for j := 0; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-			eIdx.FourierEvaluator.MulAddAssign(e.EvaluationKeys[i-1].CRSPublicKey.Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProdSingle)
+			for j := 0; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
+				eIdx.FourierEvaluator.MulAddAssign(e.EvaluationKeys[i].CRSPublicKey.Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProdSingle)
+			}
 		}
 	}
 
@@ -139,8 +151,10 @@ func (e *Evaluator[T]) HybridProductSubAssign(idx int, ctFourierUniEnc FourierUn
 		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[1].Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[1+idx])
 	}
 
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
-		eIdx.FourierEvaluator.ToScaledPolySubAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+	for i, ok := range e.PartyBitMap {
+		if ok {
+			eIdx.FourierEvaluator.ToScaledPolySubAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+		}
 	}
 }
 
@@ -166,14 +180,16 @@ func (e *Evaluator[T]) HybridProductFourierDecomposedAssign(idx int, ctFourierUn
 	}
 	eIdx.FourierEvaluator.NegAssign(e.buffer.ctFourierProdSingle, e.buffer.ctFourierProdSingle)
 
-	for i := 1; i < e.Parameters.GLWEDimension()+1; i++ {
-		eIdx.FourierEvaluator.MulAssign(ctFourierUniEnc.Value[0].Value[0].Value[0], ctGLWEDecomposed[i][0], e.buffer.ctFourierProd.Value[i])
-		for j := 1; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-			eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], ctGLWEDecomposed[i][j], e.buffer.ctFourierProd.Value[i])
-		}
+	for i, ok := range e.PartyBitMap {
+		if ok {
+			eIdx.FourierEvaluator.MulAssign(ctFourierUniEnc.Value[0].Value[0].Value[0], ctGLWEDecomposed[i+1][0], e.buffer.ctFourierProd.Value[i+1])
+			for j := 1; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
+				eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], ctGLWEDecomposed[i+1][j], e.buffer.ctFourierProd.Value[i+1])
+			}
 
-		for j := 0; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-			eIdx.FourierEvaluator.MulAddAssign(e.EvaluationKeys[i-1].CRSPublicKey.Value[j].Value[0], ctGLWEDecomposed[i][j], e.buffer.ctFourierProdSingle)
+			for j := 0; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
+				eIdx.FourierEvaluator.MulAddAssign(e.EvaluationKeys[i].CRSPublicKey.Value[j].Value[0], ctGLWEDecomposed[i+1][j], e.buffer.ctFourierProdSingle)
+			}
 		}
 	}
 
@@ -185,8 +201,12 @@ func (e *Evaluator[T]) HybridProductFourierDecomposedAssign(idx int, ctFourierUn
 		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[1].Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[1+idx])
 	}
 
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
-		eIdx.FourierEvaluator.ToScaledPolyAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+	for i, ok := range e.PartyBitMap {
+		if ok {
+			eIdx.FourierEvaluator.ToScaledPolyAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+		} else {
+			ctGLWEOut.Value[i].Clear()
+		}
 	}
 }
 
@@ -205,14 +225,16 @@ func (e *Evaluator[T]) HybridProductFourierDecomposedAddAssign(idx int, ctFourie
 	}
 	eIdx.FourierEvaluator.NegAssign(e.buffer.ctFourierProdSingle, e.buffer.ctFourierProdSingle)
 
-	for i := 1; i < e.Parameters.GLWEDimension()+1; i++ {
-		eIdx.FourierEvaluator.MulAssign(ctFourierUniEnc.Value[0].Value[0].Value[0], ctGLWEDecomposed[i][0], e.buffer.ctFourierProd.Value[i])
-		for j := 1; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-			eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], ctGLWEDecomposed[i][j], e.buffer.ctFourierProd.Value[i])
-		}
+	for i, ok := range e.PartyBitMap {
+		if ok {
+			eIdx.FourierEvaluator.MulAssign(ctFourierUniEnc.Value[0].Value[0].Value[0], ctGLWEDecomposed[i+1][0], e.buffer.ctFourierProd.Value[i+1])
+			for j := 1; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
+				eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], ctGLWEDecomposed[i+1][j], e.buffer.ctFourierProd.Value[i+1])
+			}
 
-		for j := 0; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-			eIdx.FourierEvaluator.MulAddAssign(e.EvaluationKeys[i-1].CRSPublicKey.Value[j].Value[0], ctGLWEDecomposed[i][j], e.buffer.ctFourierProdSingle)
+			for j := 0; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
+				eIdx.FourierEvaluator.MulAddAssign(e.EvaluationKeys[i].CRSPublicKey.Value[j].Value[0], ctGLWEDecomposed[i+1][j], e.buffer.ctFourierProdSingle)
+			}
 		}
 	}
 
@@ -224,8 +246,10 @@ func (e *Evaluator[T]) HybridProductFourierDecomposedAddAssign(idx int, ctFourie
 		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[1].Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[1+idx])
 	}
 
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
-		eIdx.FourierEvaluator.ToScaledPolyAddAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+	for i, ok := range e.PartyBitMap {
+		if ok {
+			eIdx.FourierEvaluator.ToScaledPolyAddAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+		}
 	}
 }
 
@@ -244,14 +268,16 @@ func (e *Evaluator[T]) HybridProductFourierDecomposedSubAssign(idx int, ctFourie
 	}
 	eIdx.FourierEvaluator.NegAssign(e.buffer.ctFourierProdSingle, e.buffer.ctFourierProdSingle)
 
-	for i := 1; i < e.Parameters.GLWEDimension()+1; i++ {
-		eIdx.FourierEvaluator.MulAssign(ctFourierUniEnc.Value[0].Value[0].Value[0], ctGLWEDecomposed[i][0], e.buffer.ctFourierProd.Value[i])
-		for j := 1; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-			eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], ctGLWEDecomposed[i][j], e.buffer.ctFourierProd.Value[i])
-		}
+	for i, ok := range e.PartyBitMap {
+		if ok {
+			eIdx.FourierEvaluator.MulAssign(ctFourierUniEnc.Value[0].Value[0].Value[0], ctGLWEDecomposed[i+1][0], e.buffer.ctFourierProd.Value[i+1])
+			for j := 1; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
+				eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], ctGLWEDecomposed[i+1][j], e.buffer.ctFourierProd.Value[i+1])
+			}
 
-		for j := 0; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-			eIdx.FourierEvaluator.MulAddAssign(e.EvaluationKeys[i-1].CRSPublicKey.Value[j].Value[0], ctGLWEDecomposed[i][j], e.buffer.ctFourierProdSingle)
+			for j := 0; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
+				eIdx.FourierEvaluator.MulAddAssign(e.EvaluationKeys[i].CRSPublicKey.Value[j].Value[0], ctGLWEDecomposed[i+1][j], e.buffer.ctFourierProdSingle)
+			}
 		}
 	}
 
@@ -263,8 +289,10 @@ func (e *Evaluator[T]) HybridProductFourierDecomposedSubAssign(idx int, ctFourie
 		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[1].Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[1+idx])
 	}
 
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
-		eIdx.FourierEvaluator.ToScaledPolySubAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+	for i, ok := range e.PartyBitMap {
+		if ok {
+			eIdx.FourierEvaluator.ToScaledPolySubAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+		}
 	}
 }
 
@@ -279,14 +307,18 @@ func (e *Evaluator[T]) ExternalProduct(idx int, ctFourierGLev tfhe.FourierGLevCi
 func (e *Evaluator[T]) ExternalProductAssign(idx int, ctFourierGLev tfhe.FourierGLevCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
-		eIdx.GadgetProductAssign(ctFourierGLev, ctGLWE.Value[i], e.buffer.ctRelinTransposed[i])
-		e.buffer.ctRelin.Value[i].CopyFrom(e.buffer.ctRelinTransposed[i].Value[1])
+	for i, ok := range e.PartyBitMap {
+		if ok {
+			eIdx.GadgetProductAssign(ctFourierGLev, ctGLWE.Value[i], e.buffer.ctRelinTransposed[i])
+			e.buffer.ctRelin.Value[i].CopyFrom(e.buffer.ctRelinTransposed[i].Value[1])
+		}
 	}
 
 	e.HybridProductAssign(idx, e.EvaluationKeys[idx].RelinKey, e.buffer.ctRelin, ctGLWEOut)
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
-		eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[i], e.buffer.ctRelinTransposed[i].Value[0], ctGLWEOut.Value[i])
+	for i, ok := range e.PartyBitMap {
+		if ok {
+			eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[i], e.buffer.ctRelinTransposed[i].Value[0], ctGLWEOut.Value[i])
+		}
 	}
 }
 
@@ -294,14 +326,18 @@ func (e *Evaluator[T]) ExternalProductAssign(idx int, ctFourierGLev tfhe.Fourier
 func (e *Evaluator[T]) ExternalProductAddAssign(idx int, ctFourierGLev tfhe.FourierGLevCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
-		eIdx.GadgetProductAssign(ctFourierGLev, ctGLWE.Value[i], e.buffer.ctRelinTransposed[i])
-		e.buffer.ctRelin.Value[i].CopyFrom(e.buffer.ctRelinTransposed[i].Value[1])
+	for i, ok := range e.PartyBitMap {
+		if ok {
+			eIdx.GadgetProductAssign(ctFourierGLev, ctGLWE.Value[i], e.buffer.ctRelinTransposed[i])
+			e.buffer.ctRelin.Value[i].CopyFrom(e.buffer.ctRelinTransposed[i].Value[1])
+		}
 	}
 
 	e.HybridProductAddAssign(idx, e.EvaluationKeys[idx].RelinKey, e.buffer.ctRelin, ctGLWEOut)
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
-		eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[i], e.buffer.ctRelinTransposed[i].Value[0], ctGLWEOut.Value[i])
+	for i, ok := range e.PartyBitMap {
+		if ok {
+			eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[i], e.buffer.ctRelinTransposed[i].Value[0], ctGLWEOut.Value[i])
+		}
 	}
 }
 
@@ -309,14 +345,18 @@ func (e *Evaluator[T]) ExternalProductAddAssign(idx int, ctFourierGLev tfhe.Four
 func (e *Evaluator[T]) ExternalProductSubAssign(idx int, ctFourierGLev tfhe.FourierGLevCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
-		eIdx.GadgetProductAssign(ctFourierGLev, ctGLWE.Value[i], e.buffer.ctRelinTransposed[i])
-		e.buffer.ctRelin.Value[i].CopyFrom(e.buffer.ctRelinTransposed[i].Value[1])
+	for i, ok := range e.PartyBitMap {
+		if ok {
+			eIdx.GadgetProductAssign(ctFourierGLev, ctGLWE.Value[i], e.buffer.ctRelinTransposed[i])
+			e.buffer.ctRelin.Value[i].CopyFrom(e.buffer.ctRelinTransposed[i].Value[1])
+		}
 	}
 
 	e.HybridProductSubAssign(idx, e.EvaluationKeys[idx].RelinKey, e.buffer.ctRelin, ctGLWEOut)
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
-		eIdx.PolyEvaluator.SubAssign(ctGLWEOut.Value[i], e.buffer.ctRelinTransposed[i].Value[0], ctGLWEOut.Value[i])
+	for i, ok := range e.PartyBitMap {
+		if ok {
+			eIdx.PolyEvaluator.SubAssign(ctGLWEOut.Value[i], e.buffer.ctRelinTransposed[i].Value[0], ctGLWEOut.Value[i])
+		}
 	}
 }
 
@@ -331,14 +371,18 @@ func (e *Evaluator[T]) ExternalProductFourierDecomposed(idx int, ctFourierGLev t
 func (e *Evaluator[T]) ExternalProductFourierDecomposedAssign(idx int, ctFourierGLev tfhe.FourierGLevCiphertext[T], ctGLWEDecomposed [][]poly.FourierPoly, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
-		eIdx.GadgetProductFourierDecomposedAssign(ctFourierGLev, ctGLWEDecomposed[i], e.buffer.ctRelinTransposed[i])
-		e.buffer.ctRelin.Value[i].CopyFrom(e.buffer.ctRelinTransposed[i].Value[1])
+	for i, ok := range e.PartyBitMap {
+		if ok {
+			eIdx.GadgetProductFourierDecomposedAssign(ctFourierGLev, ctGLWEDecomposed[i], e.buffer.ctRelinTransposed[i])
+			e.buffer.ctRelin.Value[i].CopyFrom(e.buffer.ctRelinTransposed[i].Value[1])
+		}
 	}
 
 	e.HybridProductAssign(idx, e.EvaluationKeys[idx].RelinKey, e.buffer.ctRelin, ctGLWEOut)
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
-		eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[i], e.buffer.ctRelinTransposed[i].Value[0], ctGLWEOut.Value[i])
+	for i, ok := range e.PartyBitMap {
+		if ok {
+			eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[i], e.buffer.ctRelinTransposed[i].Value[0], ctGLWEOut.Value[i])
+		}
 	}
 }
 
@@ -346,14 +390,18 @@ func (e *Evaluator[T]) ExternalProductFourierDecomposedAssign(idx int, ctFourier
 func (e *Evaluator[T]) ExternalProductFourierDecomposedAddAssign(idx int, ctFourierGLev tfhe.FourierGLevCiphertext[T], ctGLWEDecomposed [][]poly.FourierPoly, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
-		eIdx.GadgetProductFourierDecomposedAssign(ctFourierGLev, ctGLWEDecomposed[i], e.buffer.ctRelinTransposed[i])
-		e.buffer.ctRelin.Value[i].CopyFrom(e.buffer.ctRelinTransposed[i].Value[1])
+	for i, ok := range e.PartyBitMap {
+		if ok {
+			eIdx.GadgetProductFourierDecomposedAssign(ctFourierGLev, ctGLWEDecomposed[i], e.buffer.ctRelinTransposed[i])
+			e.buffer.ctRelin.Value[i].CopyFrom(e.buffer.ctRelinTransposed[i].Value[1])
+		}
 	}
 
 	e.HybridProductAddAssign(idx, e.EvaluationKeys[idx].RelinKey, e.buffer.ctRelin, ctGLWEOut)
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
-		eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[i], e.buffer.ctRelinTransposed[i].Value[0], ctGLWEOut.Value[i])
+	for i, ok := range e.PartyBitMap {
+		if ok {
+			eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[i], e.buffer.ctRelinTransposed[i].Value[0], ctGLWEOut.Value[i])
+		}
 	}
 }
 
@@ -361,13 +409,17 @@ func (e *Evaluator[T]) ExternalProductFourierDecomposedAddAssign(idx int, ctFour
 func (e *Evaluator[T]) ExternalProductFourierDecomposedSubAssign(idx int, ctFourierGLev tfhe.FourierGLevCiphertext[T], ctGLWEDecomposed [][]poly.FourierPoly, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
-		eIdx.GadgetProductFourierDecomposedAssign(ctFourierGLev, ctGLWEDecomposed[i], e.buffer.ctRelinTransposed[i])
-		e.buffer.ctRelin.Value[i].CopyFrom(e.buffer.ctRelinTransposed[i].Value[1])
+	for i, ok := range e.PartyBitMap {
+		if ok {
+			eIdx.GadgetProductFourierDecomposedAssign(ctFourierGLev, ctGLWEDecomposed[i], e.buffer.ctRelinTransposed[i])
+			e.buffer.ctRelin.Value[i].CopyFrom(e.buffer.ctRelinTransposed[i].Value[1])
+		}
 	}
 
 	e.HybridProductSubAssign(idx, e.EvaluationKeys[idx].RelinKey, e.buffer.ctRelin, ctGLWEOut)
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
-		eIdx.PolyEvaluator.SubAssign(ctGLWEOut.Value[i], e.buffer.ctRelinTransposed[i].Value[0], ctGLWEOut.Value[i])
+	for i, ok := range e.PartyBitMap {
+		if ok {
+			eIdx.PolyEvaluator.SubAssign(ctGLWEOut.Value[i], e.buffer.ctRelinTransposed[i].Value[0], ctGLWEOut.Value[i])
+		}
 	}
 }
