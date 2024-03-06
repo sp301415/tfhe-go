@@ -60,7 +60,7 @@ func (ct FourierGLWECiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	return
 }
 
-// ReadFrom implements the io.ReaderFrom interface.
+// ReadFrom implements the [io.ReaderFrom] interface.
 func (ct *FourierGLWECiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	var nn int
 
@@ -93,14 +93,14 @@ func (ct *FourierGLWECiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	return
 }
 
-// MarshalBinary implements the encoding.BinaryMarshaler interface.
+// MarshalBinary implements the [encoding.BinaryMarshaler] interface.
 func (ct FourierGLWECiphertext[T]) MarshalBinary() (data []byte, err error) {
 	buf := bytes.NewBuffer(make([]byte, 0, ct.ByteSize()))
 	_, err = ct.WriteTo(buf)
 	return buf.Bytes(), err
 }
 
-// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
+// UnmarshalBinary implements the [encoding.BinaryUnmarshaler] interface.
 func (ct *FourierGLWECiphertext[T]) UnmarshalBinary(data []byte) error {
 	buf := bytes.NewBuffer(data)
 	_, err := ct.ReadFrom(buf)
@@ -164,7 +164,7 @@ func (ct FourierUniEncryption[T]) WriteTo(w io.Writer) (n int64, err error) {
 	return
 }
 
-// ReadFrom implements the io.ReaderFrom interface.
+// ReadFrom implements the [io.ReaderFrom] interface.
 func (ct *FourierUniEncryption[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	var nn int
 
@@ -202,14 +202,14 @@ func (ct *FourierUniEncryption[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	return
 }
 
-// MarshalBinary implements the encoding.BinaryMarshaler interface.
+// MarshalBinary implements the [encoding.BinaryMarshaler] interface.
 func (ct FourierUniEncryption[T]) MarshalBinary() (data []byte, err error) {
 	buf := bytes.NewBuffer(make([]byte, 0, ct.ByteSize()))
 	_, err = ct.WriteTo(buf)
 	return buf.Bytes(), err
 }
 
-// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
+// UnmarshalBinary implements the [encoding.BinaryUnmarshaler] interface.
 func (ct *FourierUniEncryption[T]) UnmarshalBinary(data []byte) error {
 	buf := bytes.NewBuffer(data)
 	_, err := ct.ReadFrom(buf)

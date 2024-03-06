@@ -192,7 +192,7 @@ func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
 	return
 }
 
-// ReadFrom implements the io.ReaderFrom interface.
+// ReadFrom implements the [io.ReaderFrom] interface.
 func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	var nn64 int64
 	var nn int
@@ -234,14 +234,14 @@ func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	return
 }
 
-// MarshalBinary implements the encoding.BinaryMarshaler interface.
+// MarshalBinary implements the [encoding.BinaryMarshaler] interface.
 func (p Parameters[T]) MarshalBinary() (data []byte, err error) {
 	buf := bytes.NewBuffer(make([]byte, 0, p.ByteSize()))
 	_, err = p.WriteTo(buf)
 	return buf.Bytes(), err
 }
 
-// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
+// UnmarshalBinary implements the [encoding.BinaryUnmarshaler] interface.
 func (p *Parameters[T]) UnmarshalBinary(data []byte) error {
 	buf := bytes.NewBuffer(data)
 	_, err := p.ReadFrom(buf)

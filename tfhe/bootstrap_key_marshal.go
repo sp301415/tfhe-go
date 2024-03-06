@@ -42,7 +42,7 @@ func (evk EvaluationKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	return
 }
 
-// ReadFrom implements the io.ReaderFrom interface.
+// ReadFrom implements the [io.ReaderFrom] interface.
 func (evk *EvaluationKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	var nn int64
 
@@ -61,14 +61,14 @@ func (evk *EvaluationKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	return
 }
 
-// MarshalBinary implements the encoding.BinaryMarshaler interface.
+// MarshalBinary implements the [encoding.BinaryMarshaler] interface.
 func (evk EvaluationKey[T]) MarshalBinary() (data []byte, err error) {
 	buf := bytes.NewBuffer(make([]byte, 0, evk.ByteSize()))
 	_, err = evk.WriteTo(buf)
 	return buf.Bytes(), err
 }
 
-// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
+// UnmarshalBinary implements the [encoding.BinaryUnmarshaler] interface.
 func (evk *EvaluationKey[T]) UnmarshalBinary(data []byte) error {
 	buf := bytes.NewBuffer(data)
 	_, err := evk.ReadFrom(buf)
@@ -142,7 +142,7 @@ func (bsk BootstrapKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	return
 }
 
-// ReadFrom implements the io.ReaderFrom interface.
+// ReadFrom implements the [io.ReaderFrom] interface.
 func (bsk *BootstrapKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	var nn int
 
@@ -184,14 +184,14 @@ func (bsk *BootstrapKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	return
 }
 
-// MarshalBinary implements the encoding.BinaryMarshaler interface.
+// MarshalBinary implements the [encoding.BinaryMarshaler] interface.
 func (bsk BootstrapKey[T]) MarshalBinary() (data []byte, err error) {
 	buf := bytes.NewBuffer(make([]byte, 0, bsk.ByteSize()))
 	_, err = bsk.WriteTo(buf)
 	return buf.Bytes(), err
 }
 
-// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
+// UnmarshalBinary implements the [encoding.BinaryUnmarshaler] interface.
 func (bsk *BootstrapKey[T]) UnmarshalBinary(data []byte) error {
 	buf := bytes.NewBuffer(data)
 	_, err := bsk.ReadFrom(buf)
@@ -278,7 +278,7 @@ func (ksk KeySwitchKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	return
 }
 
-// ReadFrom implements the io.ReaderFrom interface.
+// ReadFrom implements the [io.ReaderFrom] interface.
 func (ksk *KeySwitchKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	var nn int
 
@@ -336,14 +336,14 @@ func (ksk *KeySwitchKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	return
 }
 
-// MarshalBinary implements the encoding.BinaryMarshaler interface.
+// MarshalBinary implements the [encoding.BinaryMarshaler] interface.
 func (ksk KeySwitchKey[T]) MarshalBinary() (data []byte, err error) {
 	buf := bytes.NewBuffer(make([]byte, 0, ksk.ByteSize()))
 	_, err = ksk.WriteTo(buf)
 	return buf.Bytes(), err
 }
 
-// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
+// UnmarshalBinary implements the [encoding.BinaryUnmarshaler] interface.
 func (ksk *KeySwitchKey[T]) UnmarshalBinary(data []byte) error {
 	buf := bytes.NewBuffer(data)
 	_, err := ksk.ReadFrom(buf)

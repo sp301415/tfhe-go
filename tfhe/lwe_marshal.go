@@ -66,7 +66,7 @@ func (sk LWESecretKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	return
 }
 
-// ReadFrom implements the io.ReaderFrom interface.
+// ReadFrom implements the [io.ReaderFrom] interface.
 func (sk *LWESecretKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	var nn int
 
@@ -111,14 +111,14 @@ func (sk *LWESecretKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	return
 }
 
-// MarshalBinary implements the encoding.BinaryMarshaler interface.
+// MarshalBinary implements the [encoding.BinaryMarshaler] interface.
 func (sk LWESecretKey[T]) MarshalBinary() (data []byte, err error) {
 	buf := bytes.NewBuffer(make([]byte, 0, sk.ByteSize()))
 	_, err = sk.WriteTo(buf)
 	return buf.Bytes(), err
 }
 
-// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
+// UnmarshalBinary implements the [encoding.BinaryUnmarshaler] interface.
 func (sk *LWESecretKey[T]) UnmarshalBinary(data []byte) error {
 	buf := bytes.NewBuffer(data)
 	_, err := sk.ReadFrom(buf)
@@ -198,7 +198,7 @@ func (pk LWEPublicKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	return
 }
 
-// ReadFrom implements the io.ReaderFrom interface.
+// ReadFrom implements the [io.ReaderFrom] interface.
 func (pk *LWEPublicKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	var nn int
 
@@ -254,14 +254,14 @@ func (pk *LWEPublicKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	return
 }
 
-// MarshalBinary implements the encoding.BinaryMarshaler interface.
+// MarshalBinary implements the [encoding.BinaryMarshaler] interface.
 func (pk LWEPublicKey[T]) MarshalBinary() (data []byte, err error) {
 	buf := bytes.NewBuffer(make([]byte, 0, pk.ByteSize()))
 	_, err = pk.WriteTo(buf)
 	return buf.Bytes(), err
 }
 
-// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
+// UnmarshalBinary implements the [encoding.BinaryUnmarshaler] interface.
 func (pk *LWEPublicKey[T]) UnmarshalBinary(data []byte) error {
 	buf := bytes.NewReader(data)
 	_, err := pk.ReadFrom(buf)
@@ -309,7 +309,7 @@ func (pt LWEPlaintext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	return
 }
 
-// ReadFrom implements the io.ReaderFrom interface.
+// ReadFrom implements the [io.ReaderFrom] interface.
 func (pt *LWEPlaintext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	var nn int
 
@@ -343,14 +343,14 @@ func (pt *LWEPlaintext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	return
 }
 
-// MarshalBinary implements the encoding.BinaryMarshaler interface.
+// MarshalBinary implements the [encoding.BinaryMarshaler] interface.
 func (pt LWEPlaintext[T]) MarshalBinary() (data []byte, err error) {
 	buf := bytes.NewBuffer(make([]byte, 0, pt.ByteSize()))
 	_, err = pt.WriteTo(buf)
 	return buf.Bytes(), err
 }
 
-// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
+// UnmarshalBinary implements the [encoding.BinaryUnmarshaler] interface.
 func (pt *LWEPlaintext[T]) UnmarshalBinary(data []byte) error {
 	buf := bytes.NewBuffer(data)
 	_, err := pt.ReadFrom(buf)
@@ -415,7 +415,7 @@ func (ct LWECiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	return
 }
 
-// ReadFrom implements the io.ReaderFrom interface.
+// ReadFrom implements the [io.ReaderFrom] interface.
 func (ct *LWECiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	var nn int
 
@@ -460,14 +460,14 @@ func (ct *LWECiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	return
 }
 
-// MarshalBinary implements the encoding.BinaryMarshaler interface.
+// MarshalBinary implements the [encoding.BinaryMarshaler] interface.
 func (ct LWECiphertext[T]) MarshalBinary() (data []byte, err error) {
 	buf := bytes.NewBuffer(make([]byte, 0, ct.ByteSize()))
 	_, err = ct.WriteTo(buf)
 	return buf.Bytes(), err
 }
 
-// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
+// UnmarshalBinary implements the [encoding.BinaryUnmarshaler] interface.
 func (ct *LWECiphertext[T]) UnmarshalBinary(data []byte) error {
 	buf := bytes.NewBuffer(data)
 	_, err := ct.ReadFrom(buf)
@@ -546,7 +546,7 @@ func (ct LevCiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	return
 }
 
-// ReadFrom implements the io.ReaderFrom interface.
+// ReadFrom implements the [io.ReaderFrom] interface.
 func (ct *LevCiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	var nn int
 
@@ -599,14 +599,14 @@ func (ct *LevCiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	return
 }
 
-// MarshalBinary implements the encoding.BinaryMarshaler interface.
+// MarshalBinary implements the [encoding.BinaryMarshaler] interface.
 func (ct LevCiphertext[T]) MarshalBinary() (data []byte, err error) {
 	buf := bytes.NewBuffer(make([]byte, 0, ct.ByteSize()))
 	_, err = ct.WriteTo(buf)
 	return buf.Bytes(), err
 }
 
-// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
+// UnmarshalBinary implements the [encoding.BinaryUnmarshaler] interface.
 func (ct *LevCiphertext[T]) UnmarshalBinary(data []byte) error {
 	buf := bytes.NewBuffer(data)
 	_, err := ct.ReadFrom(buf)
@@ -689,7 +689,7 @@ func (ct GSWCiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	return
 }
 
-// ReadFrom implements the io.ReaderFrom interface.
+// ReadFrom implements the [io.ReaderFrom] interface.
 func (ct *GSWCiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	var nn int
 
@@ -746,14 +746,14 @@ func (ct *GSWCiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	return
 }
 
-// MarshalBinary implements the encoding.BinaryMarshaler interface.
+// MarshalBinary implements the [encoding.BinaryMarshaler] interface.
 func (ct GSWCiphertext[T]) MarshalBinary() (data []byte, err error) {
 	buf := bytes.NewBuffer(make([]byte, 0, ct.ByteSize()))
 	_, err = ct.WriteTo(buf)
 	return buf.Bytes(), err
 }
 
-// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
+// UnmarshalBinary implements the [encoding.BinaryUnmarshaler] interface.
 func (ct *GSWCiphertext[T]) UnmarshalBinary(data []byte) error {
 	buf := bytes.NewBuffer(data)
 	_, err := ct.ReadFrom(buf)

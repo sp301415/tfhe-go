@@ -5,12 +5,7 @@ import (
 	"github.com/sp301415/tfhe-go/tfhe"
 )
 
-// BinaryEvaluator evaluates homomorphic binary gates on ciphertexts.
-// All LWE ciphertexts should be encrypted with [mktfhe.BinaryEncryptor].
-// This is meant to be public, usually for servers.
-//
-// BinaryEvaluator is not safe for concurrent use.
-// Use [*BinaryEvaluator.ShallowCopy] to get a safe copy.
+// BinaryEvaluator is a multi-key variant of [tfhe.BinaryEvaluator].
 type BinaryEvaluator[T tfhe.TorusInt] struct {
 	// BinaryEncoder is an embedded encoder for this BinaryEvaluator.
 	*tfhe.BinaryEncoder[T]

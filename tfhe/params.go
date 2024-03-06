@@ -156,7 +156,7 @@ func (p GadgetParameters[T]) WriteTo(w io.Writer) (n int64, err error) {
 	return
 }
 
-// ReadFrom implements the io.ReaderFrom interface.
+// ReadFrom implements the [io.ReaderFrom] interface.
 func (p *GadgetParameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	var buf [16]byte
 	nn, err := io.ReadFull(r, buf[:])
@@ -176,14 +176,14 @@ func (p *GadgetParameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	return
 }
 
-// MarshalBinary implements the encoding.BinaryMarshaler interface.
+// MarshalBinary implements the [encoding.BinaryMarshaler] interface.
 func (p GadgetParameters[T]) MarshalBinary() (data []byte, err error) {
 	buf := bytes.NewBuffer(make([]byte, 0, p.ByteSize()))
 	_, err = p.WriteTo(buf)
 	return buf.Bytes(), err
 }
 
-// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
+// UnmarshalBinary implements the [encoding.BinaryUnmarshaler] interface.
 func (p *GadgetParameters[T]) UnmarshalBinary(data []byte) error {
 	buf := bytes.NewBuffer(data)
 	_, err := p.ReadFrom(buf)
@@ -615,7 +615,7 @@ func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
 	return
 }
 
-// ReadFrom implements the io.ReaderFrom interface.
+// ReadFrom implements the [io.ReaderFrom] interface.
 func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	var buf [8*8 + 2*16 + 1]byte
 	nn, err := io.ReadFull(r, buf[:])
@@ -661,14 +661,14 @@ func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	return
 }
 
-// MarshalBinary implements the encoding.BinaryMarshaler interface.
+// MarshalBinary implements the [encoding.BinaryMarshaler] interface.
 func (p Parameters[T]) MarshalBinary() (data []byte, err error) {
 	buf := bytes.NewBuffer(make([]byte, 0, p.ByteSize()))
 	_, err = p.WriteTo(buf)
 	return buf.Bytes(), err
 }
 
-// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
+// UnmarshalBinary implements the [encoding.BinaryUnmarshaler] interface.
 func (p *Parameters[T]) UnmarshalBinary(data []byte) error {
 	buf := bytes.NewBuffer(data)
 	_, err := p.ReadFrom(buf)
