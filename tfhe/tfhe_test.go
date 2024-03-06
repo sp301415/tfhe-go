@@ -193,21 +193,21 @@ func TestEvaluator(t *testing.T) {
 }
 
 func TestMarshal(t *testing.T) {
+	var n int64
+	var err error
 	var buf bytes.Buffer
 
 	t.Run("Parameters", func(t *testing.T) {
 		var paramsIn, paramsOut tfhe.Parameters[uint64]
 
 		paramsIn = testParams
-		if n, err := paramsIn.WriteTo(&buf); err != nil {
-			assert.Equal(t, int(n), paramsIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err := paramsIn.WriteTo(&buf)
+		assert.Equal(t, int(n), paramsIn.ByteSize())
+		assert.NoError(t, err)
 
-		if n, err := paramsOut.ReadFrom(&buf); err != nil {
-			assert.Equal(t, int(n), paramsIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err = paramsOut.ReadFrom(&buf)
+		assert.Equal(t, int(n), paramsIn.ByteSize())
+		assert.NoError(t, err)
 
 		assert.Equal(t, paramsIn, paramsOut)
 	})
@@ -216,15 +216,13 @@ func TestMarshal(t *testing.T) {
 		var ctIn, ctOut tfhe.LWECiphertext[uint64]
 
 		ctIn = testEncryptor.EncryptLWE(0)
-		if n, err := ctIn.WriteTo(&buf); err != nil {
-			assert.Equal(t, int(n), ctIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err = ctIn.WriteTo(&buf)
+		assert.Equal(t, int(n), ctIn.ByteSize())
+		assert.NoError(t, err)
 
-		if n, err := ctOut.ReadFrom(&buf); err != nil {
-			assert.Equal(t, int(n), ctIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err = ctOut.ReadFrom(&buf)
+		assert.Equal(t, int(n), ctIn.ByteSize())
+		assert.NoError(t, err)
 
 		assert.Equal(t, ctIn, ctOut)
 	})
@@ -233,15 +231,13 @@ func TestMarshal(t *testing.T) {
 		var ctIn, ctOut tfhe.LevCiphertext[uint64]
 
 		ctIn = testEncryptor.EncryptLev(0, testParams.KeySwitchParameters())
-		if n, err := ctIn.WriteTo(&buf); err != nil {
-			assert.Equal(t, int(n), ctIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err = ctIn.WriteTo(&buf)
+		assert.Equal(t, int(n), ctIn.ByteSize())
+		assert.NoError(t, err)
 
-		if n, err := ctOut.ReadFrom(&buf); err != nil {
-			assert.Equal(t, int(n), ctIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err = ctOut.ReadFrom(&buf)
+		assert.Equal(t, int(n), ctIn.ByteSize())
+		assert.NoError(t, err)
 
 		assert.Equal(t, ctIn, ctOut)
 	})
@@ -250,15 +246,13 @@ func TestMarshal(t *testing.T) {
 		var ctIn, ctOut tfhe.GSWCiphertext[uint64]
 
 		ctIn = testEncryptor.EncryptGSW(0, testParams.KeySwitchParameters())
-		if n, err := ctIn.WriteTo(&buf); err != nil {
-			assert.Equal(t, int(n), ctIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err = ctIn.WriteTo(&buf)
+		assert.Equal(t, int(n), ctIn.ByteSize())
+		assert.NoError(t, err)
 
-		if n, err := ctOut.ReadFrom(&buf); err != nil {
-			assert.Equal(t, int(n), ctIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err = ctOut.ReadFrom(&buf)
+		assert.Equal(t, int(n), ctIn.ByteSize())
+		assert.NoError(t, err)
 
 		assert.Equal(t, ctIn, ctOut)
 	})
@@ -267,15 +261,13 @@ func TestMarshal(t *testing.T) {
 		var ctIn, ctOut tfhe.GLWECiphertext[uint64]
 
 		ctIn = testEncryptor.EncryptGLWE([]int{0})
-		if n, err := ctIn.WriteTo(&buf); err != nil {
-			assert.Equal(t, int(n), ctIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err = ctIn.WriteTo(&buf)
+		assert.Equal(t, int(n), ctIn.ByteSize())
+		assert.NoError(t, err)
 
-		if n, err := ctOut.ReadFrom(&buf); err != nil {
-			assert.Equal(t, int(n), ctIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err = ctOut.ReadFrom(&buf)
+		assert.Equal(t, int(n), ctIn.ByteSize())
+		assert.NoError(t, err)
 
 		assert.Equal(t, ctIn, ctOut)
 	})
@@ -284,15 +276,13 @@ func TestMarshal(t *testing.T) {
 		var ctIn, ctOut tfhe.GLevCiphertext[uint64]
 
 		ctIn = testEncryptor.EncryptGLev([]int{0}, testParams.KeySwitchParameters())
-		if n, err := ctIn.WriteTo(&buf); err != nil {
-			assert.Equal(t, int(n), ctIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err = ctIn.WriteTo(&buf)
+		assert.Equal(t, int(n), ctIn.ByteSize())
+		assert.NoError(t, err)
 
-		if n, err := ctOut.ReadFrom(&buf); err != nil {
-			assert.Equal(t, int(n), ctIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err = ctOut.ReadFrom(&buf)
+		assert.Equal(t, int(n), ctIn.ByteSize())
+		assert.NoError(t, err)
 
 		assert.Equal(t, ctIn, ctOut)
 	})
@@ -301,15 +291,13 @@ func TestMarshal(t *testing.T) {
 		var ctIn, ctOut tfhe.GGSWCiphertext[uint64]
 
 		ctIn = testEncryptor.EncryptGGSW([]int{0}, testParams.KeySwitchParameters())
-		if n, err := ctIn.WriteTo(&buf); err != nil {
-			assert.Equal(t, int(n), ctIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err = ctIn.WriteTo(&buf)
+		assert.Equal(t, int(n), ctIn.ByteSize())
+		assert.NoError(t, err)
 
-		if n, err := ctOut.ReadFrom(&buf); err != nil {
-			assert.Equal(t, int(n), ctIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err = ctOut.ReadFrom(&buf)
+		assert.Equal(t, int(n), ctIn.ByteSize())
+		assert.NoError(t, err)
 
 		assert.Equal(t, ctIn, ctOut)
 	})
@@ -318,15 +306,13 @@ func TestMarshal(t *testing.T) {
 		var ctIn, ctOut tfhe.FourierGLWECiphertext[uint64]
 
 		ctIn = testEncryptor.EncryptFourierGLWE([]int{0})
-		if n, err := ctIn.WriteTo(&buf); err != nil {
-			assert.Equal(t, int(n), ctIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err = ctIn.WriteTo(&buf)
+		assert.Equal(t, int(n), ctIn.ByteSize())
+		assert.NoError(t, err)
 
-		if n, err := ctOut.ReadFrom(&buf); err != nil {
-			assert.Equal(t, int(n), ctIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err = ctOut.ReadFrom(&buf)
+		assert.Equal(t, int(n), ctIn.ByteSize())
+		assert.NoError(t, err)
 
 		assert.Equal(t, ctIn, ctOut)
 	})
@@ -335,15 +321,13 @@ func TestMarshal(t *testing.T) {
 		var ctIn, ctOut tfhe.FourierGLevCiphertext[uint64]
 
 		ctIn = testEncryptor.EncryptFourierGLev([]int{0}, testParams.KeySwitchParameters())
-		if n, err := ctIn.WriteTo(&buf); err != nil {
-			assert.Equal(t, int(n), ctIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err = ctIn.WriteTo(&buf)
+		assert.Equal(t, int(n), ctIn.ByteSize())
+		assert.NoError(t, err)
 
-		if n, err := ctOut.ReadFrom(&buf); err != nil {
-			assert.Equal(t, int(n), ctIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err = ctOut.ReadFrom(&buf)
+		assert.Equal(t, int(n), ctIn.ByteSize())
+		assert.NoError(t, err)
 
 		assert.Equal(t, ctIn, ctOut)
 	})
@@ -352,15 +336,13 @@ func TestMarshal(t *testing.T) {
 		var ctIn, ctOut tfhe.FourierGGSWCiphertext[uint64]
 
 		ctIn = testEncryptor.EncryptFourierGGSW([]int{0}, testParams.KeySwitchParameters())
-		if n, err := ctIn.WriteTo(&buf); err != nil {
-			assert.Equal(t, int(n), ctIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err = ctIn.WriteTo(&buf)
+		assert.Equal(t, int(n), ctIn.ByteSize())
+		assert.NoError(t, err)
 
-		if n, err := ctOut.ReadFrom(&buf); err != nil {
-			assert.Equal(t, int(n), ctIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err = ctOut.ReadFrom(&buf)
+		assert.Equal(t, int(n), ctIn.ByteSize())
+		assert.NoError(t, err)
 
 		assert.Equal(t, ctIn, ctOut)
 	})
@@ -368,16 +350,14 @@ func TestMarshal(t *testing.T) {
 	t.Run("SecretKey", func(t *testing.T) {
 		var skIn, skOut tfhe.SecretKey[uint64]
 
-		skIn = testEncryptor.SecretKey
-		if n, err := skIn.WriteTo(&buf); err != nil {
-			assert.Equal(t, int(n), skIn.ByteSize())
-			assert.Error(t, err)
-		}
+		skIn = testEncryptor.GenSecretKey()
+		n, err = skIn.WriteTo(&buf)
+		assert.Equal(t, int(n), skIn.ByteSize())
+		assert.NoError(t, err)
 
-		if n, err := skOut.ReadFrom(&buf); err != nil {
-			assert.Equal(t, int(n), skIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err = skOut.ReadFrom(&buf)
+		assert.Equal(t, int(n), skIn.ByteSize())
+		assert.NoError(t, err)
 
 		assert.Equal(t, skIn, skOut)
 	})
@@ -386,15 +366,13 @@ func TestMarshal(t *testing.T) {
 		var pkIn, pkOut tfhe.PublicKey[uint64]
 
 		pkIn = testEncryptor.GenPublicKey()
-		if n, err := pkIn.WriteTo(&buf); err != nil {
-			assert.Equal(t, int(n), pkIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err = pkIn.WriteTo(&buf)
+		assert.Equal(t, int(n), pkIn.ByteSize())
+		assert.NoError(t, err)
 
-		if n, err := pkOut.ReadFrom(&buf); err != nil {
-			assert.Equal(t, int(n), pkIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err = pkOut.ReadFrom(&buf)
+		assert.Equal(t, int(n), pkIn.ByteSize())
+		assert.NoError(t, err)
 
 		assert.Equal(t, pkIn, pkOut)
 	})
@@ -403,15 +381,13 @@ func TestMarshal(t *testing.T) {
 		var evkIn, evkOut tfhe.EvaluationKey[uint64]
 
 		evkIn = testEvaluator.EvaluationKey
-		if n, err := evkIn.WriteTo(&buf); err != nil {
-			assert.Equal(t, int(n), evkIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err = evkIn.WriteTo(&buf)
+		assert.Equal(t, int(n), evkIn.ByteSize())
+		assert.NoError(t, err)
 
-		if n, err := evkOut.ReadFrom(&buf); err != nil {
-			assert.Equal(t, int(n), evkIn.ByteSize())
-			assert.Error(t, err)
-		}
+		n, err = evkOut.ReadFrom(&buf)
+		assert.Equal(t, int(n), evkIn.ByteSize())
+		assert.NoError(t, err)
 
 		assert.Equal(t, evkIn, evkOut)
 	})

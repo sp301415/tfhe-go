@@ -141,7 +141,7 @@ func (e *Evaluator[T]) BlindRotateParallelAssign(ct LWECiphertext[T], lut tfhe.L
 //
 // Equivalent to GLWECiphertext.ToLWECiphertext.
 func (e *Evaluator[T]) SampleExtract(ct GLWECiphertext[T], idx int) LWECiphertext[T] {
-	ctOut := NewLWECiphertextCustom[T](e.Parameters.partyCount, e.Parameters.LWELargeDimension())
+	ctOut := NewLWECiphertextCustom[T](e.Parameters.LWELargeDimension())
 	e.SampleExtractAssign(ct, idx, ctOut)
 	return ctOut
 }
@@ -168,7 +168,7 @@ func (e *Evaluator[T]) SampleExtractAssign(ct GLWECiphertext[T], idx int, ctOut 
 // Input ciphertext should be of dimension LWELargeDimension + 1.
 // Output ciphertext will be of dimension LWEDimension + 1.
 func (e *Evaluator[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[T] {
-	ctOut := NewLWECiphertextCustom[T](e.Parameters.partyCount, e.Parameters.SingleKeyLWEDimension())
+	ctOut := NewLWECiphertextCustom[T](e.Parameters.SingleKeyLWEDimension())
 	e.KeySwitchForBootstrapAssign(ct, ctOut)
 	return ctOut
 }

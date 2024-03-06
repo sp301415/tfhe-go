@@ -23,10 +23,10 @@ func NewGLWECiphertext[T tfhe.TorusInt](params Parameters[T]) GLWECiphertext[T] 
 	return GLWECiphertext[T]{Value: ct}
 }
 
-// NewGLWECiphertextCustom allocates an empty GLWE ciphertext with given polyDegree and partyCount.
-func NewGLWECiphertextCustom[T tfhe.TorusInt](partyCount, polyDegree int) GLWECiphertext[T] {
-	ct := make([]poly.Poly[T], partyCount+1)
-	for i := 0; i < partyCount+1; i++ {
+// NewGLWECiphertextCustom allocates an empty GLWE ciphertext with given dimension and partyCount.
+func NewGLWECiphertextCustom[T tfhe.TorusInt](glweDimension, polyDegree int) GLWECiphertext[T] {
+	ct := make([]poly.Poly[T], glweDimension+1)
+	for i := 0; i < glweDimension+1; i++ {
 		ct[i] = poly.NewPoly[T](polyDegree)
 	}
 	return GLWECiphertext[T]{Value: ct}
@@ -67,7 +67,7 @@ func (ct *GLWECiphertext[T]) CopyFromSingleKey(ctIn tfhe.GLWECiphertext[T], idx 
 //
 // Equivalent to [*Evaluator.SampleExtract].
 func (ct GLWECiphertext[T]) ToLWECiphertext(idx int) LWECiphertext[T] {
-	ctOut := NewLWECiphertextCustom[T]((len(ct.Value) - 1), ct.Value[0].Degree())
+	ctOut := NewLWECiphertextCustom[T]((len(ct.Value) - 1) * ct.Value[0].Degree())
 	ct.ToLWECiphertextAssign(idx, ctOut)
 	return ctOut
 }

@@ -16,9 +16,9 @@ func NewLWECiphertext[T tfhe.TorusInt](params Parameters[T]) LWECiphertext[T] {
 	return LWECiphertext[T]{Value: make([]T, params.DefaultLWEDimension()+1)}
 }
 
-// NewLWECiphertextCustom allocates an empty LWE ciphertext with given (single-key) dimension and partyCount.
-func NewLWECiphertextCustom[T tfhe.TorusInt](partyCount, lweDimension int) LWECiphertext[T] {
-	return LWECiphertext[T]{Value: make([]T, partyCount*lweDimension+1)}
+// NewLWECiphertextCustom allocates an empty LWE ciphertext with given dimension.
+func NewLWECiphertextCustom[T tfhe.TorusInt](lweDimension int) LWECiphertext[T] {
+	return LWECiphertext[T]{Value: make([]T, lweDimension+1)}
 }
 
 // Copy returns a copy of the ciphertext.

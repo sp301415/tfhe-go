@@ -11,7 +11,7 @@ type Encryptor[T tfhe.TorusInt] struct {
 	// Encoder is an embedded Encoder for this Encryptor.
 	*tfhe.Encoder[T]
 	// GLWETansformer is an embedded GLWETransformer for this Encryptor.
-	*tfhe.GLWETransformer[T]
+	*GLWETransformer[T]
 	// SingleKeyEncryptor is a single-key Encryptor for this Encryptor.
 	SingleKeyEncryptor *tfhe.Encryptor[T]
 
@@ -35,6 +35,8 @@ type Encryptor[T tfhe.TorusInt] struct {
 type encryptionBuffer[T tfhe.TorusInt] struct {
 	// ptGLWE holds the GLWE plaintext.
 	ptGLWE tfhe.GLWEPlaintext[T]
+	// ctGLWE holds the GLWE ciphertext.
+	ctGLWE GLWECiphertext[T]
 
 	// auxKey holds the auxiliary key for uniencryption.
 	auxKey tfhe.GLWESecretKey[T]
@@ -64,7 +66,7 @@ func NewEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte
 
 	return &Encryptor[T]{
 		Encoder:            tfhe.NewEncoder(params.Parameters),
-		GLWETransformer:    tfhe.NewGLWETransformer(params.Parameters),
+		GLWETransformer:    NewGLWETransformer(params),
 		SingleKeyEncryptor: enc,
 
 		Parameters: params,
@@ -93,7 +95,7 @@ func NewEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed
 
 	return &Encryptor[T]{
 		Encoder:            tfhe.NewEncoder(params.Parameters),
-		GLWETransformer:    tfhe.NewGLWETransformer(params.Parameters),
+		GLWETransformer:    NewGLWETransformer(params),
 		SingleKeyEncryptor: tfhe.NewEncryptorWithKey(params.Parameters, sk),
 
 		Parameters: params,
@@ -111,6 +113,7 @@ func NewEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed
 func newEncryptionBuffer[T tfhe.TorusInt](params Parameters[T]) encryptionBuffer[T] {
 	return encryptionBuffer[T]{
 		ptGLWE: tfhe.NewGLWEPlaintext(params.Parameters),
+		ctGLWE: NewGLWECiphertext(params),
 
 		auxKey:        tfhe.NewGLWESecretKey(params.Parameters),
 		auxFourierKey: tfhe.NewFourierGLWESecretKey(params.Parameters),
@@ -204,4 +207,27 @@ func (e *Encryptor[T]) EncryptGLWEBody(ct GLWECiphertext[T]) {
 
 	ct.Clear()
 	ct.CopyFromSingleKey(e.buffer.ctGLWESingle, e.Index)
+}
+
+// EncryptFourierGLWE encodes and encrypts integer messages to FourierGLWE ciphertext.
+func (e *Encryptor[T]) EncryptFourierGLWE(messages []int) FourierGLWECiphertext[T] {
+	return e.EncryptFourierGLWEPlaintext(e.EncodeGLWE(messages))
+}
+
+// EncryptFourierGLWEAssign encrypts and encrypts integer messages to FourierGLWE ciphertext and writes it to ctOut.
+func (e *Encryptor[T]) EncryptFourierGLWEAssign(messages []int, ctOut FourierGLWECiphertext[T]) {
+	e.EncryptFourierGLWEPlaintextAssign(e.EncodeGLWE(messages), ctOut)
+}
+
+// EncryptFourierGLWEPlaintext encrypts GLWE plaintext to FourierGLWE ciphertext.
+func (e *Encryptor[T]) EncryptFourierGLWEPlaintext(pt tfhe.GLWEPlaintext[T]) FourierGLWECiphertext[T] {
+	ct := NewFourierGLWECiphertext(e.Parameters)
+	e.EncryptFourierGLWEPlaintextAssign(pt, ct)
+	return ct
+}
+
+// EncryptFourierGLWEPlaintextAssign encrypts GLWE plaintext to FourierGLWE ciphertext and writes it to ctOut.
+func (e *Encryptor[T]) EncryptFourierGLWEPlaintextAssign(pt tfhe.GLWEPlaintext[T], ctOut FourierGLWECiphertext[T]) {
+	e.EncryptGLWEPlaintextAssign(pt, e.buffer.ctGLWE)
+	e.ToFourierGLWECiphertextAssign(e.buffer.ctGLWE, ctOut)
 }

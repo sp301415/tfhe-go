@@ -7,8 +7,8 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/sp301415/tfhe-go)](https://goreportcard.com/report/github.com/sp301415/tfhe-go)
 ![CI Test Status](https://github.com/sp301415/tfhe-go/actions/workflows/ci.yml/badge.svg)
 
-**TFHE-go** is a Go implementation of TFHE[[CGGI16](https://eprint.iacr.org/2016/870)] scheme. It provides:
-- Support for binary and integer TFHE
+**TFHE-go** is a Go implementation of TFHE[[CGGI16](https://eprint.iacr.org/2016/870)] and Multi-Key TFHE[[LMS22](https://eprint.iacr.org/2022/1460)] scheme. It provides:
+- Support for binary and integer TFHE and its multi-key variant
 - Pure Go implementation, along with SIMD-accelerated Go Assembly on amd64 platforms
 - Comparable performance to state-of-the-art C++/Rust libraries
 - Readable code and user-friendly API using modern Go features like generics
@@ -25,9 +25,11 @@ TFHE-go uses Go Assembly for SIMD operations on amd64 platforms. To disable this
 ## Examples
 ### Encryption
 ```go
-params := tfhe.ParamsUint4.Compile() // Parameters must be compiled before use.
+// Parameters must be compiled before use.
+params := tfhe.ParamsUint4.Compile()
 
-enc := tfhe.NewEncryptor(params) // Set up Encryptor.
+// Set up Encryptor.
+enc := tfhe.NewEncryptor(params)
 
 ctLWE := enc.EncryptLWE(4)
 ctGLWE := enc.EncryptGLWE([]int{1, 2, 3, 4})
@@ -95,6 +97,41 @@ for i := 1; i < bits; i++ {
 fmt.Println(enc.DecryptLWEBool(ctOut)) // true
 ```
 
+### Multi-Key TFHE
+```go
+// This parameters can take up to two parties.
+params := mktfhe.ParamsBinaryParty2.Compile()
+
+// Sample a seed for CRS
+seed := make([]byte, 512)
+rand.Read(seed)
+
+enc0 := mktfhe.NewBinaryEncryptor(params, 0, seed)
+enc1 := mktfhe.NewBinaryEncryptor(params, 1, seed)
+
+// In practice, one should use a distributed decryption protocol
+// to decrypt multi-key ciphertexts.
+// However, in multi-key TFHE, this procedure is very difficult and slow.
+// Therefore, we use a trusted third party for decryption.
+dec := mktfhe.NewBinaryDecryptor(params, map[int]tfhe.SecretKey[uint64]{
+  0: enc0.BaseEncryptor.SecretKey,
+  1: enc1.BaseEncryptor.SecretKey,
+})
+
+ct0 := enc0.EncryptLWEBool(true)
+ct1 := enc1.EncryptLWEBool(false)
+
+eval := mktfhe.NewBinaryEvaluator(params, map[int]mktfhe.EvaluationKey[uint64]{
+  0: enc0.GenEvaluationKeyParallel(),
+  1: enc1.GenEvaluationKeyParallel(),
+})
+
+// Execute AND operation in parallel.
+ctOut := eval.ANDParallel(ct0, ct1)
+
+fmt.Println(dec.DecryptLWEBool(ctOut)) // false
+```
+
 ## Benchmarks
 All results were measured from Intel i5-13400F, with roughly equivalent parameters.
 |Operation|TFHE-go|TFHE-rs (v0.5.0)|
@@ -132,4 +169,5 @@ Special thanks to Seonhong Min([@snu-lukemin](https://github.com/snu-lukemin)) f
 - MOSFHET: Optimized Software for FHE over the Torus (https://eprint.iacr.org/2022/515)
 - Faster TFHE Bootstrapping with Block Binary Keys (https://eprint.iacr.org/2023/958)
 - Discretization Error Reduction for Torus Fully Homomorphic Encryption (https://eprint.iacr.org/2023/402)
+- TFHE Public-Key Encryption Revisited (https://eprint.iacr.org/2023/603)
 - Towards Practical Multi-key TFHE: Parallelizable, Key-Compatible, Quasi-linear Complexity (https://eprint.iacr.org/2022/1460)

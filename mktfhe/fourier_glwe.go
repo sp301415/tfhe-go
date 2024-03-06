@@ -20,10 +20,10 @@ func NewFourierGLWECiphertext[T tfhe.TorusInt](params Parameters[T]) FourierGLWE
 	return FourierGLWECiphertext[T]{Value: ct}
 }
 
-// NewFourierGLWECiphertextCustom allocates an empty Fourier GLWE ciphertext with given polyDegree and partyCount.
-func NewFourierGLWECiphertextCustom[T tfhe.TorusInt](partyCount, polyDegree int) FourierGLWECiphertext[T] {
-	ct := make([]poly.FourierPoly, partyCount+1)
-	for i := 0; i < partyCount+1; i++ {
+// NewFourierGLWECiphertextCustom allocates an empty Fourier GLWE ciphertext with given dimension and polyDegree
+func NewFourierGLWECiphertextCustom[T tfhe.TorusInt](glweDimension, polyDegree int) FourierGLWECiphertext[T] {
+	ct := make([]poly.FourierPoly, glweDimension+1)
+	for i := 0; i < glweDimension+1; i++ {
 		ct[i] = poly.NewFourierPoly(polyDegree)
 	}
 	return FourierGLWECiphertext[T]{Value: ct}

@@ -149,7 +149,7 @@ func (pk GLWEPublicKey[T]) ByteSize() int {
 	glweDimension := len(pk.Value)
 	polyDegree := pk.Value[0].Value[0].Degree()
 
-	return 16 + glweDimension*polyDegree*(num.SizeT[T]()/8)
+	return 16 + glweDimension*(glweDimension+1)*polyDegree*(num.SizeT[T]()/8)
 }
 
 // WriteTo implements the io.WriterTo interface.

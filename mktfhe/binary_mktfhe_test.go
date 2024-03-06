@@ -24,6 +24,28 @@ var (
 	})
 )
 
+func TestBinaryParams(t *testing.T) {
+	t.Run("ParamsBinaryParty2", func(t *testing.T) {
+		assert.NotPanics(t, func() { mktfhe.ParamsBinaryParty2.Compile() })
+	})
+
+	t.Run("ParamsBinaryParty4", func(t *testing.T) {
+		assert.NotPanics(t, func() { mktfhe.ParamsBinaryParty4.Compile() })
+	})
+
+	t.Run("ParamsBinaryParty8", func(t *testing.T) {
+		assert.NotPanics(t, func() { mktfhe.ParamsBinaryParty8.Compile() })
+	})
+
+	t.Run("ParamsBinaryParty16", func(t *testing.T) {
+		assert.NotPanics(t, func() { mktfhe.ParamsBinaryParty16.Compile() })
+	})
+
+	t.Run("ParamsBinaryParty32", func(t *testing.T) {
+		assert.NotPanics(t, func() { mktfhe.ParamsBinaryParty32.Compile() })
+	})
+}
+
 func TestBinaryEvaluator(t *testing.T) {
 	tests := []struct {
 		pt0 bool
@@ -121,4 +143,26 @@ func TestBinaryEvaluator(t *testing.T) {
 
 		assert.Equal(t, testBinaryDecryptor.DecryptLWEBits(ctOut), msg0^msg1)
 	})
+}
+
+func BenchmarkGateBootstrap(b *testing.B) {
+	ct0 := testBinaryEncryptors[0].EncryptLWEBool(true)
+	ct1 := testBinaryEncryptors[1].EncryptLWEBool(false)
+	ctOut := mktfhe.NewLWECiphertext(testBinaryParams)
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		testBinaryEvaluator.ANDAssign(ct0, ct1, ctOut)
+	}
+}
+
+func BenchmarkGateBootstrapParallel(b *testing.B) {
+	ct0 := testBinaryEncryptors[0].EncryptLWEBool(true)
+	ct1 := testBinaryEncryptors[1].EncryptLWEBool(false)
+	ctOut := mktfhe.NewLWECiphertext(testBinaryParams)
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		testBinaryEvaluator.ANDParallelAssign(ct0, ct1, ctOut)
+	}
 }

@@ -4,7 +4,7 @@ package tfhe
 // This is meant to be private, only for clients.
 //
 // BinaryEncryptor is not safe for concurrent use.
-// Use [*BinaryEncryptor[T].ShallowCopy] to get a safe copy.
+// Use [*BinaryEncryptor.ShallowCopy] to get a safe copy.
 type BinaryEncryptor[T TorusInt] struct {
 	// BinaryEncoder is an embedded encoder for this BinaryEncryptor.
 	*BinaryEncoder[T]
@@ -44,7 +44,6 @@ func (e *BinaryEncryptor[T]) ShallowCopy() *BinaryEncryptor[T] {
 }
 
 // EncryptLWEBool encrypts boolean message to LWE ciphertexts.
-// Like most languages, false == 0, and true == 1.
 //
 // Note that this is different from calling EncryptLWE with 0 or 1.
 func (e *BinaryEncryptor[T]) EncryptLWEBool(message bool) LWECiphertext[T] {
@@ -52,7 +51,6 @@ func (e *BinaryEncryptor[T]) EncryptLWEBool(message bool) LWECiphertext[T] {
 }
 
 // EncryptLWEBoolAssign encrypts boolean message to LWE ciphertexts.
-// Like most languages, false == 0, and true == 1.
 //
 // Note that this is different from calling EncryptLWE with 0 or 1.
 func (e *BinaryEncryptor[T]) EncryptLWEBoolAssign(message bool, ct LWECiphertext[T]) {
