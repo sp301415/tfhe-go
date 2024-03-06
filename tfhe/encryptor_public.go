@@ -24,7 +24,7 @@ type PublicEncryptor[T TorusInt] struct {
 
 	// UniformSampler is used for sampling the mask of encryptions.
 	UniformSampler csprng.UniformSampler[T]
-	// BinarySampler is used for sampling the auxillary "key" in encryptions.
+	// BinarySampler is used for sampling the auxiliary "key" in encryptions.
 	BinarySampler csprng.BinarySampler[T]
 	// GaussianSampler is used for sampling noise in LWE and GLWE encryption.
 	GaussianSampler csprng.GaussianSampler[T]
@@ -48,7 +48,7 @@ type publicEncryptionBuffer[T TorusInt] struct {
 	// ctGLWE holds standard GLWE Ciphertext for Fourier encryption / decryptions.
 	ctGLWE GLWECiphertext[T]
 
-	// auxKey holds the auxillary key for encryption.
+	// auxKey holds the auxiliary key for encryption.
 	// This must be sampled fresh for each encryption.
 	auxKey GLWESecretKey[T]
 	// auxFourierKey holds the fourier transform of auxKey.
