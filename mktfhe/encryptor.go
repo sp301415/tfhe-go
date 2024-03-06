@@ -81,6 +81,8 @@ func NewEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte
 }
 
 // NewEncryptorWithKey allocates an empty Encryptor with a given key.
+//
+// Panics if the index is larger than PartyCount.
 func NewEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte, sk tfhe.SecretKey[T]) *Encryptor[T] {
 	if idx > params.partyCount {
 		panic("index larger than PartyCount")

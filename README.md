@@ -53,7 +53,8 @@ ct0 := enc.EncryptGLWE([]int{2})
 ct1 := enc.EncryptGLWE([]int{5})
 ctFlag := enc.EncryptFourierGGSW([]int{1}, gadgetParams)
 
-// We don't need evaluation key for CMUX.
+// Set up Evaluator.
+// Note that we don't need evaluation key for CMUX.
 eval := tfhe.NewEvaluatorWithoutKey(params)
 
 ctOut := eval.CMux(ctFlag, ct0, ct1)
@@ -68,6 +69,7 @@ enc := tfhe.NewEncryptor(params)
 
 ct := enc.EncryptLWE(3)
 
+// Set up Evaluator with EvaluationKey.
 eval := tfhe.NewEvaluator(params, enc.GenEvaluationKeyParallel())
 
 ctOut := eval.BootstrapFunc(ct, func(x int) int { return 2*x + 1 })
@@ -102,13 +104,15 @@ fmt.Println(enc.DecryptLWEBool(ctOut)) // true
 // This parameters can take up to two parties.
 params := mktfhe.ParamsBinaryParty2.Compile()
 
-// Sample a seed for CRS
+// Sample a seed for CRS.
 seed := make([]byte, 512)
 rand.Read(seed)
 
+// Each Encryptor should be marked with index.
 enc0 := mktfhe.NewBinaryEncryptor(params, 0, seed)
 enc1 := mktfhe.NewBinaryEncryptor(params, 1, seed)
 
+// Set up Decryptor.
 // In practice, one should use a distributed decryption protocol
 // to decrypt multi-key ciphertexts.
 // However, in multi-key TFHE, this procedure is very difficult and slow.
@@ -121,6 +125,7 @@ dec := mktfhe.NewBinaryDecryptor(params, map[int]tfhe.SecretKey[uint64]{
 ct0 := enc0.EncryptLWEBool(true)
 ct1 := enc1.EncryptLWEBool(false)
 
+// Set up Evaluator.
 eval := mktfhe.NewBinaryEvaluator(params, map[int]mktfhe.EvaluationKey[uint64]{
   0: enc0.GenEvaluationKeyParallel(),
   1: enc1.GenEvaluationKeyParallel(),

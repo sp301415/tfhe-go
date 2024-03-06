@@ -10,7 +10,7 @@ All single-key parameters of TFHE-go is based on [TFHE-rs](https://github.com/za
 TFHE-go implements Block Binary Distribution[[LMSS23](https://eprint.iacr.org/2023/958)] for sampling secret key, which may lower the security level. Impacted parameters were carefully adjusted following the authors' security estimation to support 128 bit security. To use uniform binary secret keys like the original TFHE scheme, you can set `BlockSize` to 1.
 
 ## IND-CPA<sup>D</sup> Security
-In [[CCP+24](https://eprint.iacr.org/2024/127)], the authors propose KR<sup>D</sup> attack on TFHE scheme, which exploits bootstrapping failure caused by rounding noise exceeding the noise budget. This may be effective, often resulting in full key recovery, if bootstrapping failure proabability is high enough. To accommodate this, all parameters in TFHE-go is set to have failure probability lower than 2^-100, which can be considered negligible.
+In [[CCP+24](https://eprint.iacr.org/2024/127)], the authors propose KR<sup>D</sup> attack on TFHE scheme, which exploits bootstrapping failure caused by rounding noise exceeding the noise budget. This may be effective, often resulting in full key recovery, if bootstrapping failure proabability is high enough. To accommodate this, all parameters in TFHE-go is set to have failure probability less than 2<sup>-100</sup>, which can be considered negligible.
 
 ## Distributed Decryption
 In multi-key FHE schemes, to decrypt a ciphertext all parties should execute distributed decryption protocol, which allows parties to obtain decryption results without any information leak. However, in multi-key TFHE, this protocol is somewhat costly. Therefore TFHE-go uses a trusted third party, which knows the secret key of all parties, to decrypt ciphertexts.
