@@ -53,11 +53,12 @@ func (e *Evaluator[T]) HybridProductAssign(idx int, ctFourierUniEnc FourierUniEn
 		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[1].Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[1+idx])
 	}
 
+	eIdx.FourierEvaluator.ToScaledPolyAssignUnsafe(e.buffer.ctFourierProd.Value[0], ctGLWEOut.Value[0])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.FourierEvaluator.ToScaledPolyAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+			eIdx.FourierEvaluator.ToScaledPolyAssignUnsafe(e.buffer.ctFourierProd.Value[i+1], ctGLWEOut.Value[i+1])
 		} else {
-			ctGLWEOut.Value[i].Clear()
+			ctGLWEOut.Value[i+1].Clear()
 		}
 	}
 }
@@ -103,9 +104,10 @@ func (e *Evaluator[T]) HybridProductAddAssign(idx int, ctFourierUniEnc FourierUn
 		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[1].Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[1+idx])
 	}
 
+	eIdx.FourierEvaluator.ToScaledPolyAddAssignUnsafe(e.buffer.ctFourierProd.Value[0], ctGLWEOut.Value[0])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.FourierEvaluator.ToScaledPolyAddAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+			eIdx.FourierEvaluator.ToScaledPolyAddAssignUnsafe(e.buffer.ctFourierProd.Value[i+1], ctGLWEOut.Value[i+1])
 		}
 	}
 }
@@ -151,9 +153,10 @@ func (e *Evaluator[T]) HybridProductSubAssign(idx int, ctFourierUniEnc FourierUn
 		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[1].Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[1+idx])
 	}
 
+	eIdx.FourierEvaluator.ToScaledPolySubAssignUnsafe(e.buffer.ctFourierProd.Value[0], ctGLWEOut.Value[0])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.FourierEvaluator.ToScaledPolySubAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+			eIdx.FourierEvaluator.ToScaledPolySubAssignUnsafe(e.buffer.ctFourierProd.Value[i+1], ctGLWEOut.Value[i+1])
 		}
 	}
 }
@@ -201,11 +204,12 @@ func (e *Evaluator[T]) HybridProductFourierDecomposedAssign(idx int, ctFourierUn
 		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[1].Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[1+idx])
 	}
 
+	eIdx.FourierEvaluator.ToScaledPolyAssignUnsafe(e.buffer.ctFourierProd.Value[0], ctGLWEOut.Value[0])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.FourierEvaluator.ToScaledPolyAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+			eIdx.FourierEvaluator.ToScaledPolyAssignUnsafe(e.buffer.ctFourierProd.Value[i+1], ctGLWEOut.Value[i+1])
 		} else {
-			ctGLWEOut.Value[i].Clear()
+			ctGLWEOut.Value[i+1].Clear()
 		}
 	}
 }
@@ -246,9 +250,10 @@ func (e *Evaluator[T]) HybridProductFourierDecomposedAddAssign(idx int, ctFourie
 		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[1].Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[1+idx])
 	}
 
+	eIdx.FourierEvaluator.ToScaledPolyAddAssignUnsafe(e.buffer.ctFourierProd.Value[0], ctGLWEOut.Value[0])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.FourierEvaluator.ToScaledPolyAddAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+			eIdx.FourierEvaluator.ToScaledPolyAddAssignUnsafe(e.buffer.ctFourierProd.Value[i+1], ctGLWEOut.Value[i+1])
 		}
 	}
 }
@@ -289,9 +294,10 @@ func (e *Evaluator[T]) HybridProductFourierDecomposedSubAssign(idx int, ctFourie
 		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[1].Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[1+idx])
 	}
 
+	eIdx.FourierEvaluator.ToScaledPolySubAssignUnsafe(e.buffer.ctFourierProd.Value[0], ctGLWEOut.Value[0])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.FourierEvaluator.ToScaledPolySubAssignUnsafe(e.buffer.ctFourierProd.Value[i], ctGLWEOut.Value[i])
+			eIdx.FourierEvaluator.ToScaledPolySubAssignUnsafe(e.buffer.ctFourierProd.Value[i+1], ctGLWEOut.Value[i+1])
 		}
 	}
 }
@@ -307,17 +313,21 @@ func (e *Evaluator[T]) ExternalProduct(idx int, ctFourierGLev tfhe.FourierGLevCi
 func (e *Evaluator[T]) ExternalProductAssign(idx int, ctFourierGLev tfhe.FourierGLevCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
+	eIdx.GadgetProductAssign(ctFourierGLev, ctGLWE.Value[0], e.buffer.ctRelinTransposed[0])
+	e.buffer.ctRelin.Value[0].CopyFrom(e.buffer.ctRelinTransposed[0].Value[1])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.GadgetProductAssign(ctFourierGLev, ctGLWE.Value[i], e.buffer.ctRelinTransposed[i])
-			e.buffer.ctRelin.Value[i].CopyFrom(e.buffer.ctRelinTransposed[i].Value[1])
+			eIdx.GadgetProductAssign(ctFourierGLev, ctGLWE.Value[i+1], e.buffer.ctRelinTransposed[i+1])
+			e.buffer.ctRelin.Value[i+1].CopyFrom(e.buffer.ctRelinTransposed[i+1].Value[1])
 		}
 	}
 
 	e.HybridProductAssign(idx, e.EvaluationKeys[idx].RelinKey, e.buffer.ctRelin, ctGLWEOut)
+
+	eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[0], e.buffer.ctRelinTransposed[0].Value[0], ctGLWEOut.Value[0])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[i], e.buffer.ctRelinTransposed[i].Value[0], ctGLWEOut.Value[i])
+			eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[i+1], e.buffer.ctRelinTransposed[i+1].Value[0], ctGLWEOut.Value[i+1])
 		}
 	}
 }
@@ -326,17 +336,21 @@ func (e *Evaluator[T]) ExternalProductAssign(idx int, ctFourierGLev tfhe.Fourier
 func (e *Evaluator[T]) ExternalProductAddAssign(idx int, ctFourierGLev tfhe.FourierGLevCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
+	eIdx.GadgetProductAssign(ctFourierGLev, ctGLWE.Value[0], e.buffer.ctRelinTransposed[0])
+	e.buffer.ctRelin.Value[0].CopyFrom(e.buffer.ctRelinTransposed[0].Value[1])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.GadgetProductAssign(ctFourierGLev, ctGLWE.Value[i], e.buffer.ctRelinTransposed[i])
-			e.buffer.ctRelin.Value[i].CopyFrom(e.buffer.ctRelinTransposed[i].Value[1])
+			eIdx.GadgetProductAssign(ctFourierGLev, ctGLWE.Value[i+1], e.buffer.ctRelinTransposed[i+1])
+			e.buffer.ctRelin.Value[i+1].CopyFrom(e.buffer.ctRelinTransposed[i+1].Value[1])
 		}
 	}
 
 	e.HybridProductAddAssign(idx, e.EvaluationKeys[idx].RelinKey, e.buffer.ctRelin, ctGLWEOut)
+
+	eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[0], e.buffer.ctRelinTransposed[0].Value[0], ctGLWEOut.Value[0])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[i], e.buffer.ctRelinTransposed[i].Value[0], ctGLWEOut.Value[i])
+			eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[i+1], e.buffer.ctRelinTransposed[i+1].Value[0], ctGLWEOut.Value[i+1])
 		}
 	}
 }
@@ -345,17 +359,21 @@ func (e *Evaluator[T]) ExternalProductAddAssign(idx int, ctFourierGLev tfhe.Four
 func (e *Evaluator[T]) ExternalProductSubAssign(idx int, ctFourierGLev tfhe.FourierGLevCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
+	eIdx.GadgetProductAssign(ctFourierGLev, ctGLWE.Value[0], e.buffer.ctRelinTransposed[0])
+	e.buffer.ctRelin.Value[0].CopyFrom(e.buffer.ctRelinTransposed[0].Value[1])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.GadgetProductAssign(ctFourierGLev, ctGLWE.Value[i], e.buffer.ctRelinTransposed[i])
-			e.buffer.ctRelin.Value[i].CopyFrom(e.buffer.ctRelinTransposed[i].Value[1])
+			eIdx.GadgetProductAssign(ctFourierGLev, ctGLWE.Value[i+1], e.buffer.ctRelinTransposed[i+1])
+			e.buffer.ctRelin.Value[i+1].CopyFrom(e.buffer.ctRelinTransposed[i+1].Value[1])
 		}
 	}
 
 	e.HybridProductSubAssign(idx, e.EvaluationKeys[idx].RelinKey, e.buffer.ctRelin, ctGLWEOut)
+
+	eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[0], e.buffer.ctRelinTransposed[0].Value[0], ctGLWEOut.Value[0])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.PolyEvaluator.SubAssign(ctGLWEOut.Value[i], e.buffer.ctRelinTransposed[i].Value[0], ctGLWEOut.Value[i])
+			eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[i+1], e.buffer.ctRelinTransposed[i+1].Value[0], ctGLWEOut.Value[i+1])
 		}
 	}
 }
@@ -371,17 +389,21 @@ func (e *Evaluator[T]) ExternalProductFourierDecomposed(idx int, ctFourierGLev t
 func (e *Evaluator[T]) ExternalProductFourierDecomposedAssign(idx int, ctFourierGLev tfhe.FourierGLevCiphertext[T], ctGLWEDecomposed [][]poly.FourierPoly, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
+	eIdx.GadgetProductFourierDecomposedAssign(ctFourierGLev, ctGLWEDecomposed[0], e.buffer.ctRelinTransposed[0])
+	e.buffer.ctRelin.Value[0].CopyFrom(e.buffer.ctRelinTransposed[0].Value[1])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.GadgetProductFourierDecomposedAssign(ctFourierGLev, ctGLWEDecomposed[i], e.buffer.ctRelinTransposed[i])
-			e.buffer.ctRelin.Value[i].CopyFrom(e.buffer.ctRelinTransposed[i].Value[1])
+			eIdx.GadgetProductFourierDecomposedAssign(ctFourierGLev, ctGLWEDecomposed[i+1], e.buffer.ctRelinTransposed[i])
+			e.buffer.ctRelin.Value[i+1].CopyFrom(e.buffer.ctRelinTransposed[i+1].Value[1])
 		}
 	}
 
 	e.HybridProductAssign(idx, e.EvaluationKeys[idx].RelinKey, e.buffer.ctRelin, ctGLWEOut)
+
+	eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[0], e.buffer.ctRelinTransposed[0].Value[0], ctGLWEOut.Value[0])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[i], e.buffer.ctRelinTransposed[i].Value[0], ctGLWEOut.Value[i])
+			eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[i+1], e.buffer.ctRelinTransposed[i+1].Value[0], ctGLWEOut.Value[i+1])
 		}
 	}
 }
@@ -390,17 +412,21 @@ func (e *Evaluator[T]) ExternalProductFourierDecomposedAssign(idx int, ctFourier
 func (e *Evaluator[T]) ExternalProductFourierDecomposedAddAssign(idx int, ctFourierGLev tfhe.FourierGLevCiphertext[T], ctGLWEDecomposed [][]poly.FourierPoly, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
+	eIdx.GadgetProductFourierDecomposedAssign(ctFourierGLev, ctGLWEDecomposed[0], e.buffer.ctRelinTransposed[0])
+	e.buffer.ctRelin.Value[0].CopyFrom(e.buffer.ctRelinTransposed[0].Value[1])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.GadgetProductFourierDecomposedAssign(ctFourierGLev, ctGLWEDecomposed[i], e.buffer.ctRelinTransposed[i])
-			e.buffer.ctRelin.Value[i].CopyFrom(e.buffer.ctRelinTransposed[i].Value[1])
+			eIdx.GadgetProductFourierDecomposedAssign(ctFourierGLev, ctGLWEDecomposed[i+1], e.buffer.ctRelinTransposed[i])
+			e.buffer.ctRelin.Value[i+1].CopyFrom(e.buffer.ctRelinTransposed[i+1].Value[1])
 		}
 	}
 
 	e.HybridProductAddAssign(idx, e.EvaluationKeys[idx].RelinKey, e.buffer.ctRelin, ctGLWEOut)
+
+	eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[0], e.buffer.ctRelinTransposed[0].Value[0], ctGLWEOut.Value[0])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[i], e.buffer.ctRelinTransposed[i].Value[0], ctGLWEOut.Value[i])
+			eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[i+1], e.buffer.ctRelinTransposed[i+1].Value[0], ctGLWEOut.Value[i+1])
 		}
 	}
 }
@@ -409,17 +435,21 @@ func (e *Evaluator[T]) ExternalProductFourierDecomposedAddAssign(idx int, ctFour
 func (e *Evaluator[T]) ExternalProductFourierDecomposedSubAssign(idx int, ctFourierGLev tfhe.FourierGLevCiphertext[T], ctGLWEDecomposed [][]poly.FourierPoly, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
+	eIdx.GadgetProductFourierDecomposedAssign(ctFourierGLev, ctGLWEDecomposed[0], e.buffer.ctRelinTransposed[0])
+	e.buffer.ctRelin.Value[0].CopyFrom(e.buffer.ctRelinTransposed[0].Value[1])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.GadgetProductFourierDecomposedAssign(ctFourierGLev, ctGLWEDecomposed[i], e.buffer.ctRelinTransposed[i])
-			e.buffer.ctRelin.Value[i].CopyFrom(e.buffer.ctRelinTransposed[i].Value[1])
+			eIdx.GadgetProductFourierDecomposedAssign(ctFourierGLev, ctGLWEDecomposed[i+1], e.buffer.ctRelinTransposed[i])
+			e.buffer.ctRelin.Value[i+1].CopyFrom(e.buffer.ctRelinTransposed[i+1].Value[1])
 		}
 	}
 
 	e.HybridProductSubAssign(idx, e.EvaluationKeys[idx].RelinKey, e.buffer.ctRelin, ctGLWEOut)
+
+	eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[0], e.buffer.ctRelinTransposed[0].Value[0], ctGLWEOut.Value[0])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.PolyEvaluator.SubAssign(ctGLWEOut.Value[i], e.buffer.ctRelinTransposed[i].Value[0], ctGLWEOut.Value[i])
+			eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[i+1], e.buffer.ctRelinTransposed[i+1].Value[0], ctGLWEOut.Value[i+1])
 		}
 	}
 }

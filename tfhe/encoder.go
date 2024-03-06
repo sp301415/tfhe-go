@@ -140,7 +140,7 @@ func (e *Encoder[T]) DecodeGLWEAssign(pt GLWEPlaintext[T], messagesOut []int) {
 // If MessageModulus = 0, then no modulus reduction is performed.
 func (e *Encoder[T]) DecodeGLWECustom(pt GLWEPlaintext[T], messageModulus, delta T) []int {
 	messages := make([]int, e.Parameters.polyDegree)
-	e.DecodeGLWEAssign(pt, messages)
+	e.DecodeGLWECustomAssign(pt, messageModulus, delta, messages)
 	return messages
 }
 
@@ -153,7 +153,7 @@ func (e *Encoder[T]) DecodeGLWECustom(pt GLWEPlaintext[T], messageModulus, delta
 func (e *Encoder[T]) DecodeGLWECustomAssign(pt GLWEPlaintext[T], messageModulus, delta T, messagesOut []int) {
 	length := num.Min(e.Parameters.polyDegree, len(messagesOut))
 	for i := 0; i < length; i++ {
-		decoded := num.RoundRatioBits(pt.Value.Coeffs[i], e.Parameters.deltaLog)
+		decoded := num.RoundRatio(pt.Value.Coeffs[i], delta)
 		if messageModulus != 0 {
 			decoded %= messageModulus
 		}

@@ -2,6 +2,7 @@ package mktfhe
 
 import (
 	"bytes"
+	"encoding/binary"
 	"io"
 
 	"github.com/sp301415/tfhe-go/tfhe"
@@ -149,24 +150,88 @@ func (p Parameters[T]) Literal() ParametersLiteral[T] {
 
 // ByteSize returns the size of the parameters in bytes.
 func (p Parameters[T]) ByteSize() int {
-	return p.Parameters.ByteSize() + 4
+	return p.Parameters.ByteSize() + 8 + 2*16
 }
 
 // WriteTo implements the io.WriterTo interface.
 //
 // The encoded form is as follows:
 //
-//	    Parameters
-//	[8] PartyCount
+//		  Parameters
+//	 [ 8] PartyCount
+//	 [16] AccumulatorParameters
+//	 [16] RelinKeyParameters
 func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
-	// TODO: NOT IMPLEMENTED
-	panic("not implemented")
+	var nn64 int64
+	var nn int
+
+	nn64, err = p.Parameters.WriteTo(w)
+	n += nn64
+	if err != nil {
+		return
+	}
+
+	var buf [8 + 2*16]byte
+
+	binary.BigEndian.PutUint64(buf[0:8], uint64(p.partyCount))
+	binary.BigEndian.PutUint64(buf[8:16], uint64(p.accumulatorParameters.Base()))
+	binary.BigEndian.PutUint64(buf[16:24], uint64(p.accumulatorParameters.Level()))
+	binary.BigEndian.PutUint64(buf[24:32], uint64(p.relinKeyParameters.Base()))
+	binary.BigEndian.PutUint64(buf[32:40], uint64(p.relinKeyParameters.Level()))
+
+	nn, err = w.Write(buf[:])
+	n += int64(nn)
+	if err != nil {
+		return
+	}
+
+	if n < int64(p.ByteSize()) {
+		return n, io.ErrShortWrite
+	}
+
+	return
 }
 
 // ReadFrom implements the io.ReaderFrom interface.
 func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
-	// TODO: NOT IMPLEMENTED
-	panic("not implemented")
+	var nn64 int64
+	var nn int
+
+	nn64, err = p.Parameters.ReadFrom(r)
+	n += nn64
+	if err != nil {
+		return
+	}
+
+	var buf [8 + 2*16]byte
+
+	nn, err = io.ReadFull(r, buf[:])
+	n += int64(nn)
+	if err != nil {
+		return
+	}
+
+	partyCount := binary.BigEndian.Uint64(buf[0:8])
+
+	accumulatorParameters := tfhe.GadgetParametersLiteral[T]{
+		Base:  T(binary.BigEndian.Uint64(buf[8:16])),
+		Level: int(binary.BigEndian.Uint64(buf[16:24])),
+	}
+	relinKeyParameters := tfhe.GadgetParametersLiteral[T]{
+		Base:  T(binary.BigEndian.Uint64(buf[24:32])),
+		Level: int(binary.BigEndian.Uint64(buf[32:40])),
+	}
+
+	*p = ParametersLiteral[T]{
+		ParametersLiteral: p.Parameters.Literal(),
+
+		PartyCount: int(partyCount),
+
+		AccumulatorParameters: accumulatorParameters,
+		RelinKeyParameters:    relinKeyParameters,
+	}.Compile()
+
+	return
 }
 
 // MarshalBinary implements the encoding.BinaryMarshaler interface.

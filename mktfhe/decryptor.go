@@ -116,17 +116,14 @@ func (d *Decryptor[T]) DecryptLWE(ct LWECiphertext[T]) int {
 
 // DecryptLWEPlaintext decrypts LWE ciphertext to LWE plaintext.
 func (d *Decryptor[T]) DecryptLWEPlaintext(ct LWECiphertext[T]) tfhe.LWEPlaintext[T] {
-	lweDimension := d.Parameters.SingleKeyDefaultLWEDimension()
-
-	d.buffer.ctLWE.Value[0] = ct.Value[0]
+	pt := ct.Value[0]
 	for i, ok := range d.PartyBitMap {
-		if !ok {
-			continue
+		if ok {
+			ctMask := ct.Value[1+i*d.Parameters.SingleKeyDefaultLWEDimension() : 1+(i+1)*d.Parameters.SingleKeyDefaultLWEDimension()]
+			pt += vec.Dot(ctMask, d.SingleKeyDecryptors[i].DefaultLWESecretKey().Value)
 		}
-		vec.CopyAssign(ct.Value[1+i*lweDimension:1+(i+1)*lweDimension], d.buffer.ctLWE.Value[1:])
-		d.buffer.ctLWE.Value[0] = d.SingleKeyDecryptors[i].DecryptLWEPlaintext(d.buffer.ctLWE).Value
 	}
-	return tfhe.LWEPlaintext[T]{Value: d.buffer.ctLWE.Value[0]}
+	return tfhe.LWEPlaintext[T]{Value: pt}
 }
 
 // DecryptGLWE decrypts and decodes GLWE ciphertext to integer message.
@@ -152,11 +149,10 @@ func (d *Decryptor[T]) DecryptGLWEPlaintext(ct GLWECiphertext[T]) tfhe.GLWEPlain
 func (d *Decryptor[T]) DecryptGLWEPlaintextAssign(ct GLWECiphertext[T], ptOut tfhe.GLWEPlaintext[T]) {
 	d.buffer.ctGLWE.Value[0].CopyFrom(ct.Value[0])
 	for i, ok := range d.PartyBitMap {
-		if !ok {
-			continue
+		if ok {
+			d.buffer.ctGLWE.Value[1].CopyFrom(ct.Value[1+i])
+			d.SingleKeyDecryptors[i].DecryptGLWEPlaintextAssign(d.buffer.ctGLWE, tfhe.GLWEPlaintext[T]{Value: d.buffer.ctGLWE.Value[0]})
 		}
-		d.buffer.ctGLWE.Value[1].CopyFrom(ct.Value[1+i])
-		d.SingleKeyDecryptors[i].DecryptGLWEPlaintextAssign(d.buffer.ctGLWE, tfhe.GLWEPlaintext[T]{Value: d.buffer.ctGLWE.Value[0]})
 	}
 	ptOut.Value.CopyFrom(d.buffer.ctGLWE.Value[0])
 }

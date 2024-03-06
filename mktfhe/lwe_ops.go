@@ -1,7 +1,8 @@
-package tfhe
+package mktfhe
 
 import (
 	"github.com/sp301415/tfhe-go/math/vec"
+	"github.com/sp301415/tfhe-go/tfhe"
 )
 
 // AddLWE returns ct0 + ct1.
@@ -17,14 +18,14 @@ func (e *Evaluator[T]) AddLWEAssign(ct0, ct1, ctOut LWECiphertext[T]) {
 }
 
 // AddPlainLWE returns ct0 + pt.
-func (e *Evaluator[T]) AddPlainLWE(ct0 LWECiphertext[T], pt LWEPlaintext[T]) LWECiphertext[T] {
+func (e *Evaluator[T]) AddPlainLWE(ct0 LWECiphertext[T], pt tfhe.LWEPlaintext[T]) LWECiphertext[T] {
 	ctOut := NewLWECiphertext(e.Parameters)
 	e.AddPlainLWEAssign(ct0, pt, ctOut)
 	return ctOut
 }
 
 // AddPlainLWEAssign computes ctOut = ct0 + pt.
-func (e *Evaluator[T]) AddPlainLWEAssign(ct0 LWECiphertext[T], pt LWEPlaintext[T], ctOut LWECiphertext[T]) {
+func (e *Evaluator[T]) AddPlainLWEAssign(ct0 LWECiphertext[T], pt tfhe.LWEPlaintext[T], ctOut LWECiphertext[T]) {
 	ctOut.CopyFrom(ct0)
 	ctOut.Value[0] += pt.Value
 }
@@ -42,14 +43,14 @@ func (e *Evaluator[T]) SubLWEAssign(ct0, ct1, ctOut LWECiphertext[T]) {
 }
 
 // SubPlainLWE returns ct0 - pt.
-func (e *Evaluator[T]) SubPlainLWE(ct0 LWECiphertext[T], pt LWEPlaintext[T]) LWECiphertext[T] {
+func (e *Evaluator[T]) SubPlainLWE(ct0 LWECiphertext[T], pt tfhe.LWEPlaintext[T]) LWECiphertext[T] {
 	ctOut := NewLWECiphertext(e.Parameters)
 	e.SubPlainLWEAssign(ct0, pt, ctOut)
 	return ctOut
 }
 
 // SubPlainLWEAssign computes ctOut = ct0 - pt.
-func (e *Evaluator[T]) SubPlainLWEAssign(ct0 LWECiphertext[T], pt LWEPlaintext[T], ctOut LWECiphertext[T]) {
+func (e *Evaluator[T]) SubPlainLWEAssign(ct0 LWECiphertext[T], pt tfhe.LWEPlaintext[T], ctOut LWECiphertext[T]) {
 	ctOut.CopyFrom(ct0)
 	ctOut.Value[0] -= pt.Value
 }

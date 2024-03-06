@@ -1,34 +1,35 @@
-package tfhe
+package mktfhe
 
 import (
 	"github.com/sp301415/tfhe-go/math/vec"
+	"github.com/sp301415/tfhe-go/tfhe"
 )
 
 // BinaryEvaluator evaluates homomorphic binary gates on ciphertexts.
-// All LWE ciphertexts should be encrypted with [tfhe.BinaryEncryptor].
+// All LWE ciphertexts should be encrypted with [mktfhe.BinaryEncryptor].
 // This is meant to be public, usually for servers.
 //
 // BinaryEvaluator is not safe for concurrent use.
 // Use [*BinaryEvaluator.ShallowCopy] to get a safe copy.
-type BinaryEvaluator[T TorusInt] struct {
+type BinaryEvaluator[T tfhe.TorusInt] struct {
 	// BinaryEncoder is an embedded encoder for this BinaryEvaluator.
-	*BinaryEncoder[T]
+	*tfhe.BinaryEncoder[T]
 	// Parameters holds the parameters for this BinaryEvaluator.
 	Parameters Parameters[T]
 	// BaseEvaluator is a generic Evalutor for this BinaryEvaluator.
 	BaseEvaluator *Evaluator[T]
 	// signLUT holds a LUT for sign function.
-	signLUT LookUpTable[T]
+	signLUT tfhe.LookUpTable[T]
 }
 
 // NewBinaryEvaluator allocates an empty BinaryEvaluator based on parameters.
 // This does not copy evaluation keys, since they are large.
-func NewBinaryEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *BinaryEvaluator[T] {
-	signLUT := NewLookUpTable(params)
-	vec.Fill(signLUT.Coeffs, 1<<(params.sizeT-3))
+func NewBinaryEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationKey[T]) *BinaryEvaluator[T] {
+	signLUT := tfhe.NewLookUpTable(params.Parameters)
+	vec.Fill(signLUT.Coeffs, 1<<(params.SizeT()-3))
 
 	return &BinaryEvaluator[T]{
-		BinaryEncoder: NewBinaryEncoder(params),
+		BinaryEncoder: tfhe.NewBinaryEncoder(params.Parameters),
 		Parameters:    params,
 		BaseEvaluator: NewEvaluator(params, evk),
 		signLUT:       signLUT,
@@ -77,9 +78,28 @@ func (e *BinaryEvaluator[T]) ANDAssign(ct0, ct1, ctOut LWECiphertext[T]) {
 	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		ctOut.Value[i] = ct0.Value[i] + ct1.Value[i]
 	}
-	ctOut.Value[0] -= 1 << (e.Parameters.sizeT - 3)
+	ctOut.Value[0] -= 1 << (e.Parameters.SizeT() - 3)
 
 	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
+}
+
+// ANDParallel returns ct0 AND ct1 in parallel.
+// Equivalent to ct0 && ct1.
+func (e *BinaryEvaluator[T]) ANDParallel(ct0, ct1 LWECiphertext[T]) LWECiphertext[T] {
+	ctOut := NewLWECiphertext(e.Parameters)
+	e.ANDParallelAssign(ct0, ct1, ctOut)
+	return ctOut
+}
+
+// ANDParallelAssign computes ctOut = ct0 AND ct1 in parallel.
+// Equivalent to ct0 && ct1.
+func (e *BinaryEvaluator[T]) ANDParallelAssign(ct0, ct1, ctOut LWECiphertext[T]) {
+	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
+		ctOut.Value[i] = ct0.Value[i] + ct1.Value[i]
+	}
+	ctOut.Value[0] -= 1 << (e.Parameters.SizeT() - 3)
+
+	e.BaseEvaluator.BootstrapLUTParallelAssign(ctOut, e.signLUT, ctOut)
 }
 
 // NAND returns ct0 NAND ct1.
@@ -96,9 +116,28 @@ func (e *BinaryEvaluator[T]) NANDAssign(ct0, ct1, ctOut LWECiphertext[T]) {
 	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		ctOut.Value[i] = -ct0.Value[i] - ct1.Value[i]
 	}
-	ctOut.Value[0] += 1 << (e.Parameters.sizeT - 3)
+	ctOut.Value[0] += 1 << (e.Parameters.SizeT() - 3)
 
 	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
+}
+
+// NANDParallel returns ct0 NAND ct1 in parallel.
+// Equivalent to !(ct0 && ct1).
+func (e *BinaryEvaluator[T]) NANDParallel(ct0, ct1 LWECiphertext[T]) LWECiphertext[T] {
+	ctOut := NewLWECiphertext(e.Parameters)
+	e.NANDParallelAssign(ct0, ct1, ctOut)
+	return ctOut
+}
+
+// NANDParallelAssign computes ctOut = ct0 NAND ct1 in parallel.
+// Equivalent to !(ct0 && ct1).
+func (e *BinaryEvaluator[T]) NANDParallelAssign(ct0, ct1, ctOut LWECiphertext[T]) {
+	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
+		ctOut.Value[i] = -ct0.Value[i] - ct1.Value[i]
+	}
+	ctOut.Value[0] += 1 << (e.Parameters.SizeT() - 3)
+
+	e.BaseEvaluator.BootstrapLUTParallelAssign(ctOut, e.signLUT, ctOut)
 }
 
 // OR returns ct0 OR ct1.
@@ -115,9 +154,28 @@ func (e *BinaryEvaluator[T]) ORAssign(ct0, ct1, ctOut LWECiphertext[T]) {
 	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		ctOut.Value[i] = ct0.Value[i] + ct1.Value[i]
 	}
-	ctOut.Value[0] += 1 << (e.Parameters.sizeT - 3)
+	ctOut.Value[0] += 1 << (e.Parameters.SizeT() - 3)
 
 	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
+}
+
+// ORParallel returns ct0 OR ct1 in parallel.
+// Equivalent to ct0 || ct1.
+func (e *BinaryEvaluator[T]) ORParallel(ct0, ct1 LWECiphertext[T]) LWECiphertext[T] {
+	ctOut := NewLWECiphertext(e.Parameters)
+	e.ORParallelAssign(ct0, ct1, ctOut)
+	return ctOut
+}
+
+// ORParallelAssign computes ctOut = ct0 OR ct1 in parallel.
+// Equivalent to ct0 || ct1.
+func (e *BinaryEvaluator[T]) ORParallelAssign(ct0, ct1, ctOut LWECiphertext[T]) {
+	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
+		ctOut.Value[i] = ct0.Value[i] + ct1.Value[i]
+	}
+	ctOut.Value[0] += 1 << (e.Parameters.SizeT() - 3)
+
+	e.BaseEvaluator.BootstrapLUTParallelAssign(ctOut, e.signLUT, ctOut)
 }
 
 // NOR returns ct0 NOR ct1.
@@ -134,9 +192,28 @@ func (e *BinaryEvaluator[T]) NORAssign(ct0, ct1, ctOut LWECiphertext[T]) {
 	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		ctOut.Value[i] = -ct0.Value[i] - ct1.Value[i]
 	}
-	ctOut.Value[0] -= 1 << (e.Parameters.sizeT - 3)
+	ctOut.Value[0] -= 1 << (e.Parameters.SizeT() - 3)
 
 	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
+}
+
+// NORParallel returns ct0 NOR ct1 in parallel.
+// Equivalent to !(ct0 || ct1).
+func (e *BinaryEvaluator[T]) NORParallel(ct0, ct1 LWECiphertext[T]) LWECiphertext[T] {
+	ctOut := NewLWECiphertext(e.Parameters)
+	e.NORParallelAssign(ct0, ct1, ctOut)
+	return ctOut
+}
+
+// NORParallelAssign computes ctOut = ct0 NOR ct1 in parallel.
+// Equivalent to !(ct0 || ct1).
+func (e *BinaryEvaluator[T]) NORParallelAssign(ct0, ct1, ctOut LWECiphertext[T]) {
+	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
+		ctOut.Value[i] = -ct0.Value[i] - ct1.Value[i]
+	}
+	ctOut.Value[0] -= 1 << (e.Parameters.SizeT() - 3)
+
+	e.BaseEvaluator.BootstrapLUTParallelAssign(ctOut, e.signLUT, ctOut)
 }
 
 // XOR returns ct0 XOR ct1.
@@ -153,9 +230,28 @@ func (e *BinaryEvaluator[T]) XORAssign(ct0, ct1, ctOut LWECiphertext[T]) {
 	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		ctOut.Value[i] = 2 * (ct0.Value[i] + ct1.Value[i])
 	}
-	ctOut.Value[0] += 1 << (e.Parameters.sizeT - 2)
+	ctOut.Value[0] += 1 << (e.Parameters.SizeT() - 3)
 
 	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
+}
+
+// XORParallel returns ct0 XOR ct1 in parallel.
+// Equivalent to ct0 != ct1.
+func (e *BinaryEvaluator[T]) XORParallel(ct0, ct1 LWECiphertext[T]) LWECiphertext[T] {
+	ctOut := NewLWECiphertext(e.Parameters)
+	e.XORParallelAssign(ct0, ct1, ctOut)
+	return ctOut
+}
+
+// XORParallelAssign computes ctOut = ct0 XOR ct1 in parallel.
+// Equivalent to ct0 != ct1.
+func (e *BinaryEvaluator[T]) XORParallelAssign(ct0, ct1, ctOut LWECiphertext[T]) {
+	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
+		ctOut.Value[i] = 2 * (ct0.Value[i] + ct1.Value[i])
+	}
+	ctOut.Value[0] += 1 << (e.Parameters.SizeT() - 3)
+
+	e.BaseEvaluator.BootstrapLUTParallelAssign(ctOut, e.signLUT, ctOut)
 }
 
 // XNOR returns ct0 XNOR ct1.
@@ -172,7 +268,26 @@ func (e *BinaryEvaluator[T]) XNORAssign(ct0, ct1, ctOut LWECiphertext[T]) {
 	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		ctOut.Value[i] = 2 * (-ct0.Value[i] - ct1.Value[i])
 	}
-	ctOut.Value[0] -= 1 << (e.Parameters.sizeT - 2)
+	ctOut.Value[0] -= 1 << (e.Parameters.SizeT() - 3)
 
 	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
+}
+
+// XNORParallel returns ct0 XNOR ct1 in parallel.
+// Equivalent to ct0 == ct1.
+func (e *BinaryEvaluator[T]) XNORParallel(ct0, ct1 LWECiphertext[T]) LWECiphertext[T] {
+	ctOut := NewLWECiphertext(e.Parameters)
+	e.XNORParallelAssign(ct0, ct1, ctOut)
+	return ctOut
+}
+
+// XNORParallelAssign computes ctOut = ct0 XNOR ct1 in parallel.
+// Equivalent to ct0 == ct1.
+func (e *BinaryEvaluator[T]) XNORParallelAssign(ct0, ct1, ctOut LWECiphertext[T]) {
+	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
+		ctOut.Value[i] = 2 * (-ct0.Value[i] - ct1.Value[i])
+	}
+	ctOut.Value[0] -= 1 << (e.Parameters.SizeT() - 3)
+
+	e.BaseEvaluator.BootstrapLUTParallelAssign(ctOut, e.signLUT, ctOut)
 }

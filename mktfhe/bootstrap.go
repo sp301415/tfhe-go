@@ -84,8 +84,8 @@ func (e *Evaluator[T]) BlindRotate(ct LWECiphertext[T], lut tfhe.LookUpTable[T])
 // BlindRotateAssign assigns the blind rotation of LWE ciphertext with respect to LUT to ctOut.
 func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut tfhe.LookUpTable[T], ctOut GLWECiphertext[T]) {
 	ctOut.Clear()
-	e.BaseEvaluator.PolyEvaluator.MonomialMulAssign(poly.Poly[T](lut), e.BaseEvaluator.ModSwitchNeg(ct.Value[0]), ctOut.Value[0])
 
+	e.BaseEvaluator.PolyEvaluator.MonomialMulAssign(poly.Poly[T](lut), e.BaseEvaluator.ModSwitchNeg(ct.Value[0]), ctOut.Value[0])
 	for i, ok := range e.PartyBitMap {
 		if ok {
 			e.buffer.ctRotateInputs[i].Value[0] = 0
@@ -179,23 +179,22 @@ func (e *Evaluator[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[
 func (e *Evaluator[T]) KeySwitchForBootstrapAssign(ct, ctOut LWECiphertext[T]) {
 	decomposed := e.BaseEvaluator.DecomposedBuffer(e.Parameters.Parameters.KeySwitchParameters())
 
+	ctOut.Value[0] = ct.Value[0]
+
 	for i, ok := range e.PartyBitMap {
 		ctMask := ct.Value[1+i*e.Parameters.SingleKeyLWELargeDimension() : 1+(i+1)*e.Parameters.SingleKeyLWELargeDimension()]
 		ctOutMask := ctOut.Value[1+i*e.Parameters.SingleKeyLWEDimension() : 1+(i+1)*e.Parameters.SingleKeyLWEDimension()]
-		if !ok {
-			vec.Fill(ctOutMask, 0)
-			continue
-		}
-
-		vec.CopyAssign(ctMask, ctOutMask)
-		for j, jj := e.Parameters.SingleKeyLWEDimension(), 0; j < e.Parameters.SingleKeyLWELargeDimension(); j, jj = j+1, jj+1 {
-			e.SingleKeyEvaluators[i].DecomposeAssign(ctMask[j], e.Parameters.Parameters.KeySwitchParameters(), decomposed)
-			for k := 0; k < e.Parameters.Parameters.KeySwitchParameters().Level(); k++ {
-				vec.ScalarMulAddAssign(e.EvaluationKeys[i].KeySwitchKey.Value[jj].Value[k].Value[1:], decomposed[k], ctOutMask)
-				ctOut.Value[0] += decomposed[k] * e.EvaluationKeys[i].KeySwitchKey.Value[jj].Value[k].Value[0]
+		if ok {
+			vec.CopyAssign(ctMask, ctOutMask)
+			for j, jj := e.Parameters.SingleKeyLWEDimension(), 0; j < e.Parameters.SingleKeyLWELargeDimension(); j, jj = j+1, jj+1 {
+				e.SingleKeyEvaluators[i].DecomposeAssign(ctMask[j], e.Parameters.Parameters.KeySwitchParameters(), decomposed)
+				for k := 0; k < e.Parameters.Parameters.KeySwitchParameters().Level(); k++ {
+					vec.ScalarMulAddAssign(e.EvaluationKeys[i].KeySwitchKey.Value[jj].Value[k].Value[1:], decomposed[k], ctOutMask)
+					ctOut.Value[0] += decomposed[k] * e.EvaluationKeys[i].KeySwitchKey.Value[jj].Value[k].Value[0]
+				}
 			}
+		} else {
+			vec.Fill(ctOutMask, 0)
 		}
 	}
-
-	ctOut.Value[0] += ct.Value[0]
 }

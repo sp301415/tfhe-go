@@ -141,8 +141,8 @@ func newEvaluationBuffer[T tfhe.TorusInt](params Parameters[T]) evaluationBuffer
 		ctFourierAccs:  ctFourierAccs,
 
 		ctRotate:    NewGLWECiphertext(params),
-		ctExtract:   NewLWECiphertextCustom[T](params.partyCount, params.LWELargeDimension()),
-		ctKeySwitch: NewLWECiphertextCustom[T](params.partyCount, params.LWEDimension()),
+		ctExtract:   NewLWECiphertextCustom[T](params.partyCount, params.SingleKeyLWELargeDimension()),
+		ctKeySwitch: NewLWECiphertextCustom[T](params.partyCount, params.SingleKeyLWEDimension()),
 
 		lut: tfhe.NewLookUpTable(params.Parameters),
 	}

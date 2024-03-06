@@ -1,6 +1,8 @@
 package mktfhe
 
-import "github.com/sp301415/tfhe-go/tfhe"
+import (
+	"github.com/sp301415/tfhe-go/tfhe"
+)
 
 // BinaryEncryptor is a multi-key variant of [tfhe.BinaryEncryptor].
 type BinaryEncryptor[T tfhe.TorusInt] struct {
@@ -13,8 +15,8 @@ type BinaryEncryptor[T tfhe.TorusInt] struct {
 }
 
 // NewBinaryEncryptor allocates an empty BinaryEncryptor.
-func NewBinaryEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte) BinaryEncryptor[T] {
-	return BinaryEncryptor[T]{
+func NewBinaryEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte) *BinaryEncryptor[T] {
+	return &BinaryEncryptor[T]{
 		BinaryEncoder: tfhe.NewBinaryEncoder(params.Parameters),
 		Parameters:    params,
 		BaseEncryptor: NewEncryptor(params, idx, crsSeed),
@@ -72,4 +74,42 @@ func (e *BinaryEncryptor[T]) EncryptLWEBitsAssign(message int, ctOut []LWECipher
 		ctOut[i] = e.EncryptLWEBool(message&1 == 1)
 		message >>= 1
 	}
+}
+
+// GenEvaluationKey samples a new evaluation key for bootstrapping.
+//
+// This can take a long time.
+// Use [*Encryptor.GenEvaluationKeyParallel] for better key generation performance.
+func (e *BinaryEncryptor[T]) GenEvaluationKey() EvaluationKey[T] {
+	return e.BaseEncryptor.GenEvaluationKey()
+}
+
+// GenEvaluationKeyParallel samples a new evaluation key for bootstrapping in parallel.
+func (e *BinaryEncryptor[T]) GenEvaluationKeyParallel() EvaluationKey[T] {
+	return e.BaseEncryptor.GenEvaluationKeyParallel()
+}
+
+// GenKeySwitchKeyForBootstrap samples a new keyswitch key LWELargeKey -> LWEKey,
+// used for bootstrapping.
+//
+// This can take a long time.
+// Use [*Encryptor.GenKeySwitchKeyForBootstrapParallel] for better key generation performance.
+func (e *BinaryEncryptor[T]) GenKeySwitchKeyForBootstrap() tfhe.KeySwitchKey[T] {
+	return e.BaseEncryptor.GenKeySwitchKeyForBootstrap()
+}
+
+// GenKeySwitchKeyForBootstrapParallel samples a new keyswitch key LWELargeKey -> LWEKey in parallel,
+// used for bootstrapping.
+func (e *BinaryEncryptor[T]) GenKeySwitchKeyForBootstrapParallel() tfhe.KeySwitchKey[T] {
+	return e.BaseEncryptor.GenKeySwitchKeyForBootstrapParallel()
+}
+
+// GenCRSPublicKey samples a new public key from the common reference string.
+func (e *BinaryEncryptor[T]) GenCRSPublicKey() tfhe.FourierGLevCiphertext[T] {
+	return e.BaseEncryptor.GenCRSPublicKey()
+}
+
+// GenRelinKey samples a new relinearization key.
+func (e *BinaryEncryptor[T]) GenRelinKey() FourierUniEncryption[T] {
+	return e.BaseEncryptor.GenRelinKey()
 }
