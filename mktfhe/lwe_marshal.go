@@ -13,7 +13,7 @@ func (ct LWECiphertext[T]) ByteSize() int {
 	return 8 + len(ct.Value)*(num.SizeT[T]()/8)
 }
 
-// WriteTo implements the io.WriterTo interface.
+// WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
 //

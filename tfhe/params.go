@@ -132,7 +132,7 @@ func (p GadgetParameters[T]) ByteSize() int {
 	return 16
 }
 
-// WriteTo implements the io.WriterTo interface.
+// WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
 //
@@ -570,7 +570,7 @@ func (p Parameters[T]) ByteSize() int {
 	return 8*8 + 2*16 + 1
 }
 
-// WriteTo implements the io.WriterTo interface.
+// WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
 //

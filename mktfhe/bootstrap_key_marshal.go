@@ -10,7 +10,7 @@ func (evk EvaluationKey[T]) ByteSize() int {
 	return evk.EvaluationKey.ByteSize() + evk.CRSPublicKey.ByteSize() + evk.RelinKey.ByteSize()
 }
 
-// WriteTo implements the io.WriterTo interface.
+// WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
 //

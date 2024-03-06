@@ -14,7 +14,7 @@ func (evk EvaluationKey[T]) ByteSize() int {
 	return evk.BootstrapKey.ByteSize() + evk.KeySwitchKey.ByteSize()
 }
 
-// WriteTo implements the io.WriterTo interface.
+// WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
 //
@@ -85,7 +85,7 @@ func (bsk BootstrapKey[T]) ByteSize() int {
 	return 40 + lweDimension*(glweDimension+1)*level*(glweDimension+1)*polyDegree*8
 }
 
-// WriteTo implements the io.WriterTo interface.
+// WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
 //
@@ -207,7 +207,7 @@ func (ksk KeySwitchKey[T]) ByteSize() int {
 	return 32 + inputDimension*level*(outputDimension+1)*(num.SizeT[T]()/8)
 }
 
-// WriteTo implements the io.WriterTo interface.
+// WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
 //

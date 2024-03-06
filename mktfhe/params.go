@@ -153,7 +153,7 @@ func (p Parameters[T]) ByteSize() int {
 	return p.Parameters.ByteSize() + 8 + 2*16
 }
 
-// WriteTo implements the io.WriterTo interface.
+// WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
 //

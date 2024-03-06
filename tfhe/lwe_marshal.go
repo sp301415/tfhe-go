@@ -13,7 +13,7 @@ func (sk LWESecretKey[T]) ByteSize() int {
 	return 8 + len(sk.Value)*(num.SizeT[T]()/8)
 }
 
-// WriteTo implements the io.WriterTo interface.
+// WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
 //
@@ -132,7 +132,7 @@ func (pk LWEPublicKey[T]) ByteSize() int {
 	return 16 + glweDimension*(glweDimension+1)*polyDegree*(num.SizeT[T]()/8)
 }
 
-// WriteTo implements the io.WriterTo interface.
+// WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
 //
@@ -273,7 +273,7 @@ func (pt LWEPlaintext[T]) ByteSize() int {
 	return num.SizeT[T]() / 8
 }
 
-// WriteTo implements the io.WriterTo interface.
+// WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
 //
@@ -362,7 +362,7 @@ func (ct LWECiphertext[T]) ByteSize() int {
 	return 8 + len(ct.Value)*(num.SizeT[T]()/8)
 }
 
-// WriteTo implements the io.WriterTo interface.
+// WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
 //
@@ -482,7 +482,7 @@ func (ct LevCiphertext[T]) ByteSize() int {
 	return 24 + level*(lweDimension+1)*(num.SizeT[T]()/8)
 }
 
-// WriteTo implements the io.WriterTo interface.
+// WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
 //
@@ -621,7 +621,7 @@ func (ct GSWCiphertext[T]) ByteSize() int {
 	return 24 + (lweDimension+1)*level*(lweDimension+1)*(num.SizeT[T]()/8)
 }
 
-// WriteTo implements the io.WriterTo interface.
+// WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
 //

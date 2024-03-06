@@ -17,7 +17,7 @@ func (sk SecretKey[T]) ByteSize() int {
 	return 24 + glweDimension*polyDegree*(num.SizeT[T]()/8) + glweDimension*polyDegree*8
 }
 
-// WriteTo implements the io.WriterTo interface.
+// WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
 //
@@ -175,7 +175,7 @@ func (pk PublicKey[T]) ByteSize() int {
 	return pk.LWEKey.ByteSize() + pk.GLWEKey.ByteSize()
 }
 
-// WriteTo implements the io.WriterTo interface.
+// WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
 //

@@ -17,7 +17,7 @@ func (ct FourierGLWECiphertext[T]) ByteSize() int {
 	return 16 + (glweDimension+1)*polyDegree*8
 }
 
-// WriteTo implements the io.WriterTo interface.
+// WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
 //
@@ -115,7 +115,7 @@ func (ct FourierUniEncryption[T]) ByteSize() int {
 	return 24 + 2*level*2*polyDegree*8
 }
 
-// WriteTo implements the io.WriterTo interface.
+// WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
 //
