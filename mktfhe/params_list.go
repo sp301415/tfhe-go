@@ -14,7 +14,7 @@ var (
 			LWEStdDev:  3.05e-5 * (1 << 64),
 			GLWEStdDev: 4.63e-18 * (1 << 64),
 
-			BlockSize: 1,
+			BlockSize: 2,
 
 			MessageModulus: 1 << 2,
 
@@ -53,7 +53,7 @@ var (
 			LWEStdDev:  3.05e-5 * (1 << 64),
 			GLWEStdDev: 4.63e-18 * (1 << 64),
 
-			BlockSize: 1,
+			BlockSize: 2,
 
 			MessageModulus: 1 << 2,
 
@@ -92,7 +92,7 @@ var (
 			LWEStdDev:  3.05e-5 * (1 << 64),
 			GLWEStdDev: 4.63e-18 * (1 << 64),
 
-			BlockSize: 1,
+			BlockSize: 2,
 
 			MessageModulus: 1 << 2,
 
@@ -131,7 +131,7 @@ var (
 			LWEStdDev:  3.05e-5 * (1 << 64),
 			GLWEStdDev: 4.63e-18 * (1 << 64),
 
-			BlockSize: 1,
+			BlockSize: 2,
 
 			MessageModulus: 1 << 2,
 
@@ -170,7 +170,7 @@ var (
 			LWEStdDev:  3.05e-5 * (1 << 64),
 			GLWEStdDev: 4.63e-18 * (1 << 64),
 
-			BlockSize: 1,
+			BlockSize: 2,
 
 			MessageModulus: 1 << 2,
 
