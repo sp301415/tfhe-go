@@ -37,6 +37,15 @@ type Evaluator[T tfhe.TorusInt] struct {
 
 // evaluationBuffer is a buffer for evaluation.
 type evaluationBuffer[T tfhe.TorusInt] struct {
+	// polyFourierDecomposed holds the decomposed polynomial in Fourier domain.
+	// Initially has length bootstrapParameters.level.
+	// Use [*Evaluator.polyFourierDecomposedBuffer] to get appropriate length of buffer.
+	polyFourierDecomposed []poly.FourierPoly
+	// decomposed holds the decomposed scalar.
+	// Initially has length keyswitchParameters.level.
+	// Use [*Evaluator.decomposedBuffer] to get appropriate length of buffer.
+	decomposed []T
+
 	// ctProd holds the intermediate value in Hybrid Product.
 	ctProd GLWECiphertext[T]
 	// ctFourierProd holds the fourier transformed ctHybrid in Hybrid Product.
@@ -101,6 +110,11 @@ func NewEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationK
 
 // newEvaluationBuffer allocates an empty evaluationBuffer.
 func newEvaluationBuffer[T tfhe.TorusInt](params Parameters[T]) evaluationBuffer[T] {
+	polyFourierDecomposed := make([]poly.FourierPoly, params.relinKeyParameters.Level())
+	for i := range polyFourierDecomposed {
+		polyFourierDecomposed[i] = poly.NewFourierPoly(params.PolyDegree())
+	}
+
 	ctRelin := NewGLWECiphertext(params)
 	ctRelinTransposed := make([]tfhe.GLWECiphertext[T], params.GLWEDimension()+1)
 	for i := 0; i < params.GLWEDimension()+1; i++ {
@@ -126,6 +140,9 @@ func newEvaluationBuffer[T tfhe.TorusInt](params Parameters[T]) evaluationBuffer
 	}
 
 	return evaluationBuffer[T]{
+		polyFourierDecomposed: polyFourierDecomposed,
+		decomposed:            make([]T, params.KeySwitchParameters().Level()),
+
 		ctProd:        NewGLWECiphertext(params),
 		ctFourierProd: NewFourierGLWECiphertext(params),
 

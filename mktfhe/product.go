@@ -16,7 +16,7 @@ func (e *Evaluator[T]) HybridProduct(idx int, ctFourierUniEnc FourierUniEncrypti
 func (e *Evaluator[T]) HybridProductAssign(idx int, ctFourierUniEnc FourierUniEncryption[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
-	polyFourierDecomposed := eIdx.PolyFourierDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
+	polyFourierDecomposed := e.polyFourierDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
 
 	eIdx.FourierDecomposePolyAssign(ctGLWE.Value[0], ctFourierUniEnc.GadgetParameters, polyFourierDecomposed)
 
@@ -67,7 +67,7 @@ func (e *Evaluator[T]) HybridProductAssign(idx int, ctFourierUniEnc FourierUniEn
 func (e *Evaluator[T]) HybridProductAddAssign(idx int, ctFourierUniEnc FourierUniEncryption[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
-	polyFourierDecomposed := eIdx.PolyFourierDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
+	polyFourierDecomposed := e.polyFourierDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
 
 	eIdx.FourierDecomposePolyAssign(ctGLWE.Value[0], ctFourierUniEnc.GadgetParameters, polyFourierDecomposed)
 
@@ -116,7 +116,7 @@ func (e *Evaluator[T]) HybridProductAddAssign(idx int, ctFourierUniEnc FourierUn
 func (e *Evaluator[T]) HybridProductSubAssign(idx int, ctFourierUniEnc FourierUniEncryption[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
-	polyFourierDecomposed := eIdx.PolyFourierDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
+	polyFourierDecomposed := e.polyFourierDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
 
 	eIdx.FourierDecomposePolyAssign(ctGLWE.Value[0], ctFourierUniEnc.GadgetParameters, polyFourierDecomposed)
 
@@ -196,7 +196,7 @@ func (e *Evaluator[T]) HybridProductFourierDecomposedAssign(idx int, ctFourierUn
 		}
 	}
 
-	polyFourierDecomposed := eIdx.PolyFourierDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
+	polyFourierDecomposed := e.polyFourierDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
 	eIdx.FourierEvaluator.ToScaledPolyAssignUnsafe(e.buffer.ctFourierProdSingle, e.buffer.ctProdSingle)
 	eIdx.FourierDecomposePolyAssign(e.buffer.ctProdSingle, ctFourierUniEnc.GadgetParameters, polyFourierDecomposed)
 	for j := 0; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
@@ -242,7 +242,7 @@ func (e *Evaluator[T]) HybridProductFourierDecomposedAddAssign(idx int, ctFourie
 		}
 	}
 
-	polyFourierDecomposed := eIdx.PolyFourierDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
+	polyFourierDecomposed := e.polyFourierDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
 	eIdx.FourierEvaluator.ToScaledPolyAssignUnsafe(e.buffer.ctFourierProdSingle, e.buffer.ctProdSingle)
 	eIdx.FourierDecomposePolyAssign(e.buffer.ctProdSingle, ctFourierUniEnc.GadgetParameters, polyFourierDecomposed)
 	for j := 0; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
@@ -286,7 +286,7 @@ func (e *Evaluator[T]) HybridProductFourierDecomposedSubAssign(idx int, ctFourie
 		}
 	}
 
-	polyFourierDecomposed := eIdx.PolyFourierDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
+	polyFourierDecomposed := e.polyFourierDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
 	eIdx.FourierEvaluator.ToScaledPolyAssignUnsafe(e.buffer.ctFourierProdSingle, e.buffer.ctProdSingle)
 	eIdx.FourierDecomposePolyAssign(e.buffer.ctProdSingle, ctFourierUniEnc.GadgetParameters, polyFourierDecomposed)
 	for j := 0; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
