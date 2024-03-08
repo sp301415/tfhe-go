@@ -145,7 +145,7 @@ All results were measured from Intel i5-13400F, with roughly equivalent paramete
 |Programmable Bootstrapping (6 bits)|45.08ms|70.12ms|
 
 ## Security
-TFHE-go has not been audited or reviewed by security experts, so using it for any real-world production purposes is not recommended. See [SECURITY](https://github.com/sp301415/tfhe-go/blob/master/SECURITY.md) for more details.
+TFHE-go has not been audited or reviewed by security experts, and may contain critical vulnerabilities. Use at your own risk. See [SECURITY](https://github.com/sp301415/tfhe-go/blob/master/SECURITY.md) for more details.
 
 ## License
 TFHE-go is licensed under the Apache 2.0 License.
