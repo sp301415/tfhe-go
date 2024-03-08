@@ -12,9 +12,9 @@ type Evaluator[T tfhe.TorusInt] struct {
 	*tfhe.Encoder[T]
 	// GLWETansformer is an embedded GLWETransformer for this Evaluator.
 	*tfhe.GLWETransformer[T]
-	// BaseEvaluator is a single-key Evaluator for this Evaluator.
+	// BaseSingleKeyEvaluator is a single-key Evaluator for this Evaluator.
 	// This is always guaranteed to be a working, non-nil evaluator without a key.
-	BaseEvaluator *tfhe.Evaluator[T]
+	BaseSingleKeyEvaluator *tfhe.Evaluator[T]
 	// SingleKeyEvaluators are single-key Evaluators for this Evaluator.
 	// If an evaluation key does not exist for given index, it is nil.
 	SingleKeyEvaluators []*tfhe.Evaluator[T]
@@ -84,20 +84,20 @@ type evaluationBuffer[T tfhe.TorusInt] struct {
 // NewEvaluator allocates an empty Evaluator.
 // Only indices between 0 and params.PartyCount is valid for evk.
 func NewEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationKey[T]) *Evaluator[T] {
-	evals := make([]*tfhe.Evaluator[T], len(evk))
-	evks := make([]EvaluationKey[T], len(evk))
+	evals := make([]*tfhe.Evaluator[T], params.PartyCount())
+	evks := make([]EvaluationKey[T], params.PartyCount())
 	partyBitMap := make([]bool, params.PartyCount())
-	for i := range evks {
+	for i := range evk {
 		evals[i] = tfhe.NewEvaluator(params.Parameters, evk[i].EvaluationKey)
 		evks[i] = evk[i]
 		partyBitMap[i] = true
 	}
 
 	return &Evaluator[T]{
-		Encoder:             tfhe.NewEncoder(params.Parameters),
-		GLWETransformer:     tfhe.NewGLWETransformer(params.Parameters),
-		BaseEvaluator:       tfhe.NewEvaluatorWithoutKey(params.Parameters),
-		SingleKeyEvaluators: evals,
+		Encoder:                tfhe.NewEncoder(params.Parameters),
+		GLWETransformer:        tfhe.NewGLWETransformer(params.Parameters),
+		BaseSingleKeyEvaluator: tfhe.NewEvaluatorWithoutKey(params.Parameters),
+		SingleKeyEvaluators:    evals,
 
 		Parameters:  params,
 		PartyBitMap: partyBitMap,
@@ -176,16 +176,18 @@ func (e *Evaluator[T]) AddEvaluationKey(idx int, evk EvaluationKey[T]) {
 // ShallowCopy returns a shallow copy of this Evaluator.
 // Returned Evaluator is safe for concurrent use.
 func (e *Evaluator[T]) ShallowCopy() *Evaluator[T] {
-	evals := make([]*tfhe.Evaluator[T], len(e.SingleKeyEvaluators))
+	evals := make([]*tfhe.Evaluator[T], e.Parameters.partyCount)
 	for i, eval := range e.SingleKeyEvaluators {
-		evals[i] = eval.ShallowCopy()
+		if eval != nil {
+			evals[i] = eval.ShallowCopy()
+		}
 	}
 
 	return &Evaluator[T]{
-		Encoder:             e.Encoder,
-		GLWETransformer:     e.GLWETransformer.ShallowCopy(),
-		BaseEvaluator:       e.BaseEvaluator.ShallowCopy(),
-		SingleKeyEvaluators: evals,
+		Encoder:                e.Encoder,
+		GLWETransformer:        e.GLWETransformer.ShallowCopy(),
+		BaseSingleKeyEvaluator: e.BaseSingleKeyEvaluator.ShallowCopy(),
+		SingleKeyEvaluators:    evals,
 
 		Parameters:  e.Parameters,
 		PartyBitMap: vec.Copy(e.PartyBitMap),

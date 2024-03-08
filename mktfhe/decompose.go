@@ -16,7 +16,7 @@ func (e *Evaluator[T]) polyFourierDecomposedBuffer(gadgetParams tfhe.GadgetParam
 	oldLen := len(e.buffer.polyFourierDecomposed)
 	e.buffer.polyFourierDecomposed = append(e.buffer.polyFourierDecomposed, make([]poly.FourierPoly, gadgetParams.Level()-oldLen)...)
 	for i := oldLen; i < gadgetParams.Level(); i++ {
-		e.buffer.polyFourierDecomposed[i] = e.BaseEvaluator.FourierEvaluator.NewFourierPoly()
+		e.buffer.polyFourierDecomposed[i] = e.BaseSingleKeyEvaluator.FourierEvaluator.NewFourierPoly()
 	}
 	return e.buffer.polyFourierDecomposed
 }

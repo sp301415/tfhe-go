@@ -99,9 +99,11 @@ func (d *Decryptor[T]) AddSecretKey(idx int, sk tfhe.SecretKey[T]) {
 // ShallowCopy returns a shallow copy of this Decryptor.
 // Returned Decryptor is safe for concurrent use.
 func (d *Decryptor[T]) ShallowCopy() *Decryptor[T] {
-	decs := make([]*tfhe.Encryptor[T], len(d.SingleKeyDecryptors))
+	decs := make([]*tfhe.Encryptor[T], d.Parameters.partyCount)
 	for i, dec := range d.SingleKeyDecryptors {
-		decs[i] = dec.ShallowCopy()
+		if dec != nil {
+			decs[i] = dec.ShallowCopy()
+		}
 	}
 
 	return &Decryptor[T]{
