@@ -153,7 +153,7 @@ func (e *Evaluator[T]) SampleExtractAssign(ct GLWECiphertext[T], idx int, ctOut 
 	ctOut.Value[0] = ct.Value[0].Coeffs[idx]
 
 	ctMask, ctOutMask := ct.Value[1:], ctOut.Value[1:]
-	for i := 0; i < e.Parameters.partyCount; i++ {
+	for i := 0; i < e.Parameters.GLWEDimension(); i++ {
 		start := i * e.Parameters.PolyDegree()
 		end := (i + 1) * e.Parameters.PolyDegree()
 

@@ -78,13 +78,13 @@ func (ct GLWECiphertext[T]) ToLWECiphertext(idx int) LWECiphertext[T] {
 //
 // Equivalent to [*Evaluator.SampleExtractAssign].
 func (ct GLWECiphertext[T]) ToLWECiphertextAssign(idx int, ctOut LWECiphertext[T]) {
-	partyCount := len(ct.Value) - 1
+	glweDimension := len(ct.Value) - 1
 	degree := ct.Value[0].Degree()
 
 	ctOut.Value[0] = ct.Value[0].Coeffs[idx]
 
 	ctMask, ctOutMask := ct.Value[1:], ctOut.Value[1:]
-	for i := 0; i < partyCount; i++ {
+	for i := 0; i < glweDimension; i++ {
 		start := i * degree
 		end := (i + 1) * degree
 
