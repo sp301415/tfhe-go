@@ -88,3 +88,15 @@ func (e *BinaryEncryptor[T]) GenEvaluationKey() EvaluationKey[T] {
 func (e *BinaryEncryptor[T]) GenEvaluationKeyParallel() EvaluationKey[T] {
 	return e.BaseEncryptor.GenEvaluationKeyParallel()
 }
+
+// GenPublicKey samples a new public key.
+//
+// Panics when the parameters do not support public key encryption.
+func (e *BinaryEncryptor[T]) GenPublicKey() tfhe.PublicKey[T] {
+	return e.BaseEncryptor.GenPublicKey()
+}
+
+// PublicEncryptor returns a BinaryPublicEncryptor with the same parameters.
+func (e *BinaryEncryptor[T]) PublicEncryptor() *BinaryPublicEncryptor[T] {
+	return NewBinaryPublicEncryptor(e.Parameters, e.BaseEncryptor.Index, e.GenPublicKey())
+}

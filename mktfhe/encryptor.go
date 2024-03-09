@@ -15,7 +15,7 @@ type Encryptor[T tfhe.TorusInt] struct {
 	// SingleKeyEncryptor is a single-key Encryptor for this Encryptor.
 	SingleKeyEncryptor *tfhe.Encryptor[T]
 
-	// Parameters is the parameters for the encryptor.
+	// Parameters is the parameters for this Encryptor.
 	Parameters Parameters[T]
 	// Index is the index of the party.
 	Index int
@@ -232,4 +232,16 @@ func (e *Encryptor[T]) EncryptFourierGLWEPlaintext(pt tfhe.GLWEPlaintext[T]) Fou
 func (e *Encryptor[T]) EncryptFourierGLWEPlaintextAssign(pt tfhe.GLWEPlaintext[T], ctOut FourierGLWECiphertext[T]) {
 	e.EncryptGLWEPlaintextAssign(pt, e.buffer.ctGLWE)
 	e.ToFourierGLWECiphertextAssign(e.buffer.ctGLWE, ctOut)
+}
+
+// GenPublicKey samples a new PublicKey.
+//
+// Panics when the parameters do not support public key encryption.
+func (e *Encryptor[T]) GenPublicKey() tfhe.PublicKey[T] {
+	return e.SingleKeyEncryptor.GenPublicKey()
+}
+
+// PublicEncryptor returns a PublicEncryptor with the same parameters.
+func (e *Encryptor[T]) PublicEncryptor() *PublicEncryptor[T] {
+	return NewPublicEncryptor(e.Parameters, e.Index, e.GenPublicKey())
 }

@@ -16,7 +16,7 @@ import (
 type PublicEncryptor[T TorusInt] struct {
 	// Encoder is an embedded encoder for this PublicEncryptor.
 	*Encoder[T]
-	// GLWETransformer is an embedded GLWETransformer for this Encryptor.
+	// GLWETransformer is an embedded GLWETransformer for this PublicEncryptor.
 	*GLWETransformer[T]
 
 	// Parameters holds the parameters for this PublicEncryptor.

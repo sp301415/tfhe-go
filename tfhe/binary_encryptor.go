@@ -94,6 +94,18 @@ func (e *BinaryEncryptor[T]) DecryptLWEBits(ct []LWECiphertext[T]) int {
 	return message
 }
 
+// GenPublicKey samples a new public key.
+//
+// Panics when the parameters do not support public key encryption.
+func (e *BinaryEncryptor[T]) GenPublicKey() PublicKey[T] {
+	return e.BaseEncryptor.GenPublicKey()
+}
+
+// PublicEncryptor returns a BinaryPublicEncryptor with the same parameters.
+func (e *BinaryEncryptor[T]) PublicEncryptor() *BinaryPublicEncryptor[T] {
+	return NewBinaryPublicEncryptor(e.Parameters, e.GenPublicKey())
+}
+
 // GenEvaluationKey samples a new evaluation key for bootstrapping.
 //
 // This can take a long time.

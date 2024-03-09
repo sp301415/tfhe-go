@@ -19,7 +19,7 @@ type Evaluator[T tfhe.TorusInt] struct {
 	// If an evaluation key does not exist for given index, it is nil.
 	SingleKeyEvaluators []*tfhe.Evaluator[T]
 
-	// Parameters is the parameters for the evaluator.
+	// Parameters is the parameters for this Evaluator.
 	Parameters Parameters[T]
 
 	// PartyBitMap is a bitmap for parties.
