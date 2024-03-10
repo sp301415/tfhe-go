@@ -78,23 +78,23 @@ func (e *Encryptor[T]) GenBootstrapKeyParallel() BootstrapKey[T] {
 	var wg sync.WaitGroup
 	wg.Add(chunkCount)
 	for i := 0; i < chunkCount; i++ {
-		go func(chunkIdx int) {
+		go func(i int) {
 			defer wg.Done()
-			e := encryptorPool[chunkIdx]
+			eIdx := encryptorPool[i]
 
 			for job := range jobs {
 				i, j := job[0], job[1]
 
 				if j == 0 {
-					e.buffer.ptGGSW.Clear()
-					e.buffer.ptGGSW.Coeffs[0] = e.SecretKey.LWEKey.Value[i]
+					eIdx.buffer.ptGGSW.Clear()
+					eIdx.buffer.ptGGSW.Coeffs[0] = eIdx.SecretKey.LWEKey.Value[i]
 				} else {
-					e.PolyEvaluator.ScalarMulAssign(e.SecretKey.GLWEKey.Value[j-1], e.SecretKey.LWEKey.Value[i], e.buffer.ptGGSW)
+					eIdx.PolyEvaluator.ScalarMulAssign(eIdx.SecretKey.GLWEKey.Value[j-1], eIdx.SecretKey.LWEKey.Value[i], eIdx.buffer.ptGGSW)
 				}
-				for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
-					e.PolyEvaluator.ScalarMulAssign(e.buffer.ptGGSW, e.Parameters.bootstrapParameters.ScaledBase(k), e.buffer.ctGLWE.Value[0])
-					e.EncryptGLWEBody(e.buffer.ctGLWE)
-					e.ToFourierGLWECiphertextAssign(e.buffer.ctGLWE, bsk.Value[i].Value[j].Value[k])
+				for k := 0; k < eIdx.Parameters.bootstrapParameters.level; k++ {
+					eIdx.PolyEvaluator.ScalarMulAssign(eIdx.buffer.ptGGSW, eIdx.Parameters.bootstrapParameters.ScaledBase(k), eIdx.buffer.ctGLWE.Value[0])
+					eIdx.EncryptGLWEBody(eIdx.buffer.ctGLWE)
+					eIdx.ToFourierGLWECiphertextAssign(eIdx.buffer.ctGLWE, bsk.Value[i].Value[j].Value[k])
 				}
 			}
 		}(i)
@@ -146,14 +146,14 @@ func (e *Encryptor[T]) GenKeySwitchKeyParallel(skIn LWESecretKey[T], gadgetParam
 	var wg sync.WaitGroup
 	wg.Add(chunkCount)
 	for i := 0; i < chunkCount; i++ {
-		go func(chunkIdx int) {
+		go func(i int) {
 			defer wg.Done()
-			e := encryptorPool[chunkIdx]
+			eIdx := encryptorPool[i]
 
 			for jobs := range jobs {
 				i, j := jobs[0], jobs[1]
 				ksk.Value[i].Value[j].Value[0] = skIn.Value[i] << gadgetParams.ScaledBaseLog(j)
-				e.EncryptLWEBody(ksk.Value[i].Value[j])
+				eIdx.EncryptLWEBody(ksk.Value[i].Value[j])
 			}
 		}(i)
 	}
@@ -211,16 +211,16 @@ func (e *Encryptor[T]) GenKeySwitchKeyForBootstrapParallel() KeySwitchKey[T] {
 	var wg sync.WaitGroup
 	wg.Add(chunkCount)
 	for i := 0; i < chunkCount; i++ {
-		go func(chunkIdx int) {
+		go func(i int) {
 			defer wg.Done()
-			e := encryptorPool[chunkIdx]
+			eIdx := encryptorPool[i]
 
 			for jobs := range jobs {
 				i, j := jobs[0], jobs[1]
-				ksk.Value[i].Value[j].Value[0] = skIn.Value[i] << e.Parameters.keyswitchParameters.ScaledBaseLog(j)
-				e.UniformSampler.SampleSliceAssign(ksk.Value[i].Value[j].Value[1:])
-				ksk.Value[i].Value[j].Value[0] += -vec.Dot(ksk.Value[i].Value[j].Value[1:], e.SecretKey.LWEKey.Value)
-				ksk.Value[i].Value[j].Value[0] += e.GaussianSampler.Sample(e.Parameters.lweStdDev)
+				ksk.Value[i].Value[j].Value[0] = skIn.Value[i] << eIdx.Parameters.keyswitchParameters.ScaledBaseLog(j)
+				eIdx.UniformSampler.SampleSliceAssign(ksk.Value[i].Value[j].Value[1:])
+				ksk.Value[i].Value[j].Value[0] += -vec.Dot(ksk.Value[i].Value[j].Value[1:], eIdx.SecretKey.LWEKey.Value)
+				ksk.Value[i].Value[j].Value[0] += eIdx.GaussianSampler.Sample(eIdx.Parameters.lweStdDev)
 			}
 		}(i)
 	}
