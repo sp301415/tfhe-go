@@ -7,7 +7,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/sp301415/tfhe-go)](https://goreportcard.com/report/github.com/sp301415/tfhe-go)
 ![CI Test Status](https://github.com/sp301415/tfhe-go/actions/workflows/ci.yml/badge.svg)
 
-**TFHE-go** is a Go implementation of TFHE[[CGGI16](https://eprint.iacr.org/2016/870)] and Multi-Key TFHE[[LMS22](https://eprint.iacr.org/2022/1460)] scheme. It provides:
+**TFHE-go** is a Go implementation of TFHE[[CGGI16](https://eprint.iacr.org/2016/870)] and Multi-Key TFHE[[KMS22](https://eprint.iacr.org/2022/1460)] scheme. It provides:
 - Support for binary and integer TFHE and its multi-key variant
 - Pure Go implementation, along with SIMD-accelerated Go Assembly on amd64 platforms
 - Comparable performance to state-of-the-art C++/Rust libraries
