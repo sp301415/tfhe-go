@@ -123,7 +123,7 @@ func newEvaluationBuffer[T tfhe.TorusInt](params Parameters[T]) evaluationBuffer
 
 	ctRotateInputs := make([]tfhe.LWECiphertext[T], params.partyCount)
 	for i := 0; i < params.partyCount; i++ {
-		ctRotateInputs[i] = tfhe.NewLWECiphertext(params.Parameters)
+		ctRotateInputs[i] = tfhe.NewLWECiphertextCustom[T](params.SingleKeyLWEDimension())
 	}
 
 	gadgetLUTs := make([]tfhe.LookUpTable[T], params.accumulatorParameters.Level())

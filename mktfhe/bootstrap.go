@@ -89,7 +89,7 @@ func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut tfhe.LookUpTab
 	for i, ok := range e.PartyBitMap {
 		if ok {
 			e.buffer.ctRotateInputs[i].Value[0] = 0
-			vec.CopyAssign(ct.Value[1+i*e.Parameters.SingleKeyDefaultLWEDimension():1+(i+1)*e.Parameters.SingleKeyDefaultLWEDimension()], e.buffer.ctRotateInputs[i].Value[1:])
+			vec.CopyAssign(ct.Value[1+i*e.Parameters.SingleKeyLWEDimension():1+(i+1)*e.Parameters.SingleKeyLWEDimension()], e.buffer.ctRotateInputs[i].Value[1:])
 			for j := 0; j < e.Parameters.accumulatorParameters.Level(); j++ {
 				e.SingleKeyEvaluators[i].BlindRotateAssign(e.buffer.ctRotateInputs[i], e.buffer.gadgetLUTs[j], e.buffer.ctAccs[i])
 				e.SingleKeyEvaluators[i].ToFourierGLWECiphertextAssign(e.buffer.ctAccs[i], e.buffer.ctFourierAccs[i].Value[j])
@@ -117,7 +117,7 @@ func (e *Evaluator[T]) BlindRotateParallelAssign(ct LWECiphertext[T], lut tfhe.L
 			wg.Add(1)
 			go func(i int) {
 				e.buffer.ctRotateInputs[i].Value[0] = 0
-				vec.CopyAssign(ct.Value[1+i*e.Parameters.SingleKeyDefaultLWEDimension():1+(i+1)*e.Parameters.SingleKeyDefaultLWEDimension()], e.buffer.ctRotateInputs[i].Value[1:])
+				vec.CopyAssign(ct.Value[1+i*e.Parameters.SingleKeyLWEDimension():1+(i+1)*e.Parameters.SingleKeyLWEDimension()], e.buffer.ctRotateInputs[i].Value[1:])
 				for j := 0; j < e.Parameters.accumulatorParameters.Level(); j++ {
 					e.SingleKeyEvaluators[i].BlindRotateAssign(e.buffer.ctRotateInputs[i], e.buffer.gadgetLUTs[j], e.buffer.ctAccs[i])
 					e.SingleKeyEvaluators[i].ToFourierGLWECiphertextAssign(e.buffer.ctAccs[i], e.buffer.ctFourierAccs[i].Value[j])
