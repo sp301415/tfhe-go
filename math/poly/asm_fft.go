@@ -432,9 +432,12 @@ func invFFTInPlace(coeffs []float64, twInv []complex128) {
 	}
 }
 
-// scaleMaxTInPlace scales the coefficients with MaxT.
-func scaleMaxTInPlace(coeffs []float64, maxT float64) {
+// floatModT computes coeffs mod maxT in place.
+func floatModTInPlace(coeffs []float64, maxT, maxTInv float64) {
 	for i := range coeffs {
-		coeffs[i] = (coeffs[i] - math.Round(coeffs[i])) * maxT
+		coeffs[i] = coeffs[i] * maxTInv
+		coeffs[i] = coeffs[i] - math.Round(coeffs[i])
+		coeffs[i] = coeffs[i] * maxT
+		coeffs[i] = math.Round(coeffs[i])
 	}
 }

@@ -82,21 +82,9 @@ func BenchmarkFFT(b *testing.B) {
 		}
 	})
 
-	b.Run("ToScaledFourierPoly", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			fft.ToScaledFourierPolyAssign(p, fpOut)
-		}
-	})
-
 	b.Run("ToPoly", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			fft.ToPolyAssign(fp, pOut)
-		}
-	})
-
-	b.Run("ToScaledPoly", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			fft.ToScaledPolyAssign(fp, pOut)
 		}
 	})
 }

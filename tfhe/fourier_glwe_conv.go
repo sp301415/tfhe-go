@@ -72,7 +72,7 @@ func (e *GLWETransformer[T]) ToFourierGLWECiphertext(ct GLWECiphertext[T]) Fouri
 // ToFourierGLWECiphertextAssign transforms GLWE ciphertext to Fourier GLWE ciphertext and writes it to ctOut.
 func (e *GLWETransformer[T]) ToFourierGLWECiphertextAssign(ctIn GLWECiphertext[T], ctOut FourierGLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierEvaluator.ToScaledFourierPolyAssign(ctIn.Value[i], ctOut.Value[i])
+		e.FourierEvaluator.ToFourierPolyAssign(ctIn.Value[i], ctOut.Value[i])
 	}
 }
 
@@ -86,7 +86,7 @@ func (e *GLWETransformer[T]) ToGLWECiphertext(ct FourierGLWECiphertext[T]) GLWEC
 // ToGLWECiphertextAssign transforms Fourier GLWE ciphertext to GLWE ciphertext and writes it to ctOut.
 func (e *GLWETransformer[T]) ToGLWECiphertextAssign(ctIn FourierGLWECiphertext[T], ctOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.FourierEvaluator.ToScaledPolyAssign(ctIn.Value[i], ctOut.Value[i])
+		e.FourierEvaluator.ToPolyAssign(ctIn.Value[i], ctOut.Value[i])
 	}
 }
 

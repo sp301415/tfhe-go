@@ -25,6 +25,8 @@ type FourierEvaluator[T num.Integer] struct {
 	degree int
 	// maxT is a float64 value of MaxT.
 	maxT float64
+	// maxTInv is a float64 value of 1/MaxT.
+	maxTInv float64
 
 	// tw holds the twiddle factors for fourier transform.
 	// This is stored as "long" form, so that access to the factors are contiguous.
@@ -72,6 +74,7 @@ func NewFourierEvaluator[T num.Integer](N int) *FourierEvaluator[T] {
 	}
 
 	maxT := math.Exp2(float64(num.SizeT[T]()))
+	maxTInv := math.Exp2(-float64(num.SizeT[T]()))
 
 	tw, twInv := genTwiddleFactors(N / 2)
 
@@ -89,8 +92,9 @@ func NewFourierEvaluator[T num.Integer](N int) *FourierEvaluator[T] {
 	vec.BitReverseInPlace(twMonoIdx)
 
 	return &FourierEvaluator[T]{
-		degree: N,
-		maxT:   maxT,
+		degree:  N,
+		maxT:    maxT,
+		maxTInv: maxTInv,
 
 		tw:        tw,
 		twInv:     twInv,
@@ -161,8 +165,9 @@ func newFourierBuffer[T num.Integer](N int) fourierBuffer[T] {
 // Returned FourierEvaluator is safe for concurrent use.
 func (f *FourierEvaluator[T]) ShallowCopy() *FourierEvaluator[T] {
 	return &FourierEvaluator[T]{
-		degree: f.degree,
-		maxT:   f.maxT,
+		degree:  f.degree,
+		maxT:    f.maxT,
+		maxTInv: f.maxTInv,
 
 		tw:        f.tw,
 		twInv:     f.twInv,
