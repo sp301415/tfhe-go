@@ -2,7 +2,7 @@
 
 #include "textflag.h"
 
-TEXT ·monomialSubOneMulAssignUint32AVX2(SB), $0-56
+TEXT ·monomialSubOneMulAssignUint32AVX2(SB), NOSPLIT, $0-56
 	MOVQ p0_base+0(FP), AX
 	MOVQ pOut_base+32(FP), BX
 
@@ -190,7 +190,7 @@ case_1_loop_1_leftover_end:
 
 	RET
 
-TEXT ·monomialSubOneMulAssignUint64AVX2(SB), $0-56
+TEXT ·monomialSubOneMulAssignUint64AVX2(SB), NOSPLIT, $0-56
 	MOVQ p0_base+0(FP), AX
 	MOVQ pOut_base+32(FP), BX
 
@@ -378,7 +378,7 @@ case_1_loop_1_leftover_end:
 
 	RET
 
-TEXT ·monomialSubOneMulAddAssignUint32AVX2(SB), $0-56
+TEXT ·monomialSubOneMulAddAssignUint32AVX2(SB), NOSPLIT, $0-56
 	MOVQ p0_base+0(FP), AX
 	MOVQ pOut_base+32(FP), BX
 
@@ -582,7 +582,7 @@ case_1_loop_1_leftover_end:
 
 	RET
 
-TEXT ·monomialSubOneMulAddAssignUint64AVX2(SB), $0-56
+TEXT ·monomialSubOneMulAddAssignUint64AVX2(SB), NOSPLIT, $0-56
 	MOVQ p0_base+0(FP), AX
 	MOVQ pOut_base+32(FP), BX
 

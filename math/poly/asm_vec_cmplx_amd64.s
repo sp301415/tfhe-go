@@ -2,7 +2,7 @@
 
 #include "textflag.h"
 
-TEXT ·roundCmplxAssignAVX2(SB), $0-48
+TEXT ·roundCmplxAssignAVX2(SB), NOSPLIT, $0-48
 	MOVQ v0+0(FP), AX
 	MOVQ vOut+24(FP), CX
 
@@ -26,7 +26,7 @@ loop_end:
 
 	RET
 
-TEXT ·addCmplxAssignAVX2(SB), $0-72
+TEXT ·addCmplxAssignAVX2(SB), NOSPLIT, $0-72
 	MOVQ v0+0(FP), AX
 	MOVQ v1+24(FP), BX
 	MOVQ vOut+48(FP), CX
@@ -52,7 +52,7 @@ loop_end:
 
 	RET
 
-TEXT ·subCmplxAssignAVX2(SB), $0-72
+TEXT ·subCmplxAssignAVX2(SB), NOSPLIT, $0-72
 	MOVQ v0+0(FP), AX
 	MOVQ v1+24(FP), BX
 	MOVQ vOut+48(FP), CX
@@ -78,7 +78,7 @@ loop_end:
 
 	RET
 
-TEXT ·negCmplxAssignAVX2(SB), $0-48
+TEXT ·negCmplxAssignAVX2(SB), NOSPLIT, $0-48
 	MOVQ v0+0(FP), AX
 	MOVQ vOut+24(FP), CX
 
@@ -103,7 +103,7 @@ loop_end:
 
 	RET
 
-TEXT ·floatMulCmplxAssignAVX2(SB), $0-56
+TEXT ·floatMulCmplxAssignAVX2(SB), NOSPLIT, $0-56
 	MOVQ v0+0(FP), AX
 	MOVQ vOut+32(FP), CX
 
@@ -129,7 +129,7 @@ loop_end:
 
 	RET
 
-TEXT ·floatMulAddCmplxAssignAVX2(SB), $0-56
+TEXT ·floatMulAddCmplxAssignAVX2(SB), NOSPLIT, $0-56
 	MOVQ v0+0(FP), AX
 	MOVQ vOut+32(FP), CX
 
@@ -156,7 +156,7 @@ loop_end:
 
 	RET
 
-TEXT ·floatMulSubCmplxAssignAVX2(SB), $0-56
+TEXT ·floatMulSubCmplxAssignAVX2(SB), NOSPLIT, $0-56
 	MOVQ v0+0(FP), AX
 	MOVQ vOut+32(FP), CX
 
@@ -186,7 +186,7 @@ loop_end:
 
 	RET
 
-TEXT ·cmplxMulCmplxAssignAVX2(SB), $0-64
+TEXT ·cmplxMulCmplxAssignAVX2(SB), NOSPLIT, $0-64
 	MOVQ v0+0(FP), AX
 	MOVQ vOut+40(FP), CX
 
@@ -219,7 +219,7 @@ loop_end:
 
 	RET
 
-TEXT ·cmplxMulAddCmplxAssignAVX2(SB), $0-64
+TEXT ·cmplxMulAddCmplxAssignAVX2(SB), NOSPLIT, $0-64
 	MOVQ v0+0(FP), AX
 	MOVQ vOut+40(FP), CX
 
@@ -254,7 +254,7 @@ loop_end:
 
 	RET
 
-TEXT ·cmplxMulSubCmplxAssignAVX2(SB), $0-64
+TEXT ·cmplxMulSubCmplxAssignAVX2(SB), NOSPLIT, $0-64
 	MOVQ v0+0(FP), AX
 	MOVQ vOut+40(FP), CX
 
@@ -292,7 +292,7 @@ loop_end:
 
 	RET
 
-TEXT ·elementWiseMulCmplxAssignAVX2(SB), $0-72
+TEXT ·elementWiseMulCmplxAssignAVX2(SB), NOSPLIT, $0-72
 	MOVQ v0+0(FP), AX
 	MOVQ v1+24(FP), BX
 	MOVQ vOut+48(FP), CX
@@ -325,7 +325,7 @@ loop_end:
 
 	RET
 
-TEXT ·elementWiseMulAddCmplxAssignAVX2(SB), $0-72
+TEXT ·elementWiseMulAddCmplxAssignAVX2(SB), NOSPLIT, $0-72
 	MOVQ v0+0(FP), AX
 	MOVQ v1+24(FP), BX
 	MOVQ vOut+48(FP), CX
@@ -360,7 +360,7 @@ loop_end:
 
 	RET
 
-TEXT ·elementWiseMulSubCmplxAssignAVX2(SB), $0-72
+TEXT ·elementWiseMulSubCmplxAssignAVX2(SB), NOSPLIT, $0-72
 	MOVQ v0+0(FP), AX
 	MOVQ v1+24(FP), BX
 	MOVQ vOut+48(FP), CX
