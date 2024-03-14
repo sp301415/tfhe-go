@@ -150,6 +150,48 @@ func (f *FourierEvaluator[T]) ToPolyAssign(fp FourierPoly, pOut Poly[T]) {
 	}
 }
 
+// ToPolyAddAssign transforms FourierPoly to Poly and adds it to pOut.
+func (f *FourierEvaluator[T]) ToPolyAddAssign(fp FourierPoly, pOut Poly[T]) {
+	N := f.degree
+
+	f.buffer.fpInv.CopyFrom(fp)
+	invFFTInPlace(f.buffer.fpInv.Coeffs, f.twInv)
+	floatModQInPlace(f.buffer.fpInv.Coeffs, f.q, f.qInv)
+
+	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
+		pOut.Coeffs[jj+0] += T(int64(f.buffer.fpInv.Coeffs[j+0]))
+		pOut.Coeffs[jj+1] += T(int64(f.buffer.fpInv.Coeffs[j+1]))
+		pOut.Coeffs[jj+2] += T(int64(f.buffer.fpInv.Coeffs[j+2]))
+		pOut.Coeffs[jj+3] += T(int64(f.buffer.fpInv.Coeffs[j+3]))
+
+		pOut.Coeffs[jj+0+N/2] += T(int64(f.buffer.fpInv.Coeffs[j+4]))
+		pOut.Coeffs[jj+1+N/2] += T(int64(f.buffer.fpInv.Coeffs[j+5]))
+		pOut.Coeffs[jj+2+N/2] += T(int64(f.buffer.fpInv.Coeffs[j+6]))
+		pOut.Coeffs[jj+3+N/2] += T(int64(f.buffer.fpInv.Coeffs[j+7]))
+	}
+}
+
+// ToPolySubAssign transforms FourierPoly to Poly and subtracts it from pOut.
+func (f *FourierEvaluator[T]) ToPolySubAssign(fp FourierPoly, pOut Poly[T]) {
+	N := f.degree
+
+	f.buffer.fpInv.CopyFrom(fp)
+	invFFTInPlace(f.buffer.fpInv.Coeffs, f.twInv)
+	floatModQInPlace(f.buffer.fpInv.Coeffs, f.q, f.qInv)
+
+	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
+		pOut.Coeffs[jj+0] -= T(int64(f.buffer.fpInv.Coeffs[j+0]))
+		pOut.Coeffs[jj+1] -= T(int64(f.buffer.fpInv.Coeffs[j+1]))
+		pOut.Coeffs[jj+2] -= T(int64(f.buffer.fpInv.Coeffs[j+2]))
+		pOut.Coeffs[jj+3] -= T(int64(f.buffer.fpInv.Coeffs[j+3]))
+
+		pOut.Coeffs[jj+0+N/2] -= T(int64(f.buffer.fpInv.Coeffs[j+4]))
+		pOut.Coeffs[jj+1+N/2] -= T(int64(f.buffer.fpInv.Coeffs[j+5]))
+		pOut.Coeffs[jj+2+N/2] -= T(int64(f.buffer.fpInv.Coeffs[j+6]))
+		pOut.Coeffs[jj+3+N/2] -= T(int64(f.buffer.fpInv.Coeffs[j+7]))
+	}
+}
+
 // ToPolyAssignUnsafe transforms FourierPoly to Poly and writes it to pOut.
 //
 // This method is slightly faster than ToPolyAssign, but it modifies fp directly.
@@ -170,27 +212,6 @@ func (f *FourierEvaluator[T]) ToPolyAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
 		pOut.Coeffs[jj+1+N/2] = T(int64(fp.Coeffs[j+5]))
 		pOut.Coeffs[jj+2+N/2] = T(int64(fp.Coeffs[j+6]))
 		pOut.Coeffs[jj+3+N/2] = T(int64(fp.Coeffs[j+7]))
-	}
-}
-
-// ToPolyAddAssign transforms FourierPoly to Poly and adds it to pOut.
-func (f *FourierEvaluator[T]) ToPolyAddAssign(fp FourierPoly, pOut Poly[T]) {
-	N := f.degree
-
-	f.buffer.fpInv.CopyFrom(fp)
-	invFFTInPlace(f.buffer.fpInv.Coeffs, f.twInv)
-	floatModQInPlace(f.buffer.fpInv.Coeffs, f.q, f.qInv)
-
-	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
-		pOut.Coeffs[jj+0] += T(int64(f.buffer.fpInv.Coeffs[j+0]))
-		pOut.Coeffs[jj+1] += T(int64(f.buffer.fpInv.Coeffs[j+1]))
-		pOut.Coeffs[jj+2] += T(int64(f.buffer.fpInv.Coeffs[j+2]))
-		pOut.Coeffs[jj+3] += T(int64(f.buffer.fpInv.Coeffs[j+3]))
-
-		pOut.Coeffs[jj+0+N/2] += T(int64(f.buffer.fpInv.Coeffs[j+4]))
-		pOut.Coeffs[jj+1+N/2] += T(int64(f.buffer.fpInv.Coeffs[j+5]))
-		pOut.Coeffs[jj+2+N/2] += T(int64(f.buffer.fpInv.Coeffs[j+6]))
-		pOut.Coeffs[jj+3+N/2] += T(int64(f.buffer.fpInv.Coeffs[j+7]))
 	}
 }
 
@@ -217,27 +238,6 @@ func (f *FourierEvaluator[T]) ToPolyAddAssignUnsafe(fp FourierPoly, pOut Poly[T]
 	}
 }
 
-// ToPolySubAssign transforms FourierPoly to Poly and subtracts it from pOut.
-func (f *FourierEvaluator[T]) ToPolySubAssign(fp FourierPoly, pOut Poly[T]) {
-	N := f.degree
-
-	f.buffer.fpInv.CopyFrom(fp)
-	invFFTInPlace(f.buffer.fpInv.Coeffs, f.twInv)
-	floatModQInPlace(f.buffer.fpInv.Coeffs, f.q, f.qInv)
-
-	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
-		pOut.Coeffs[jj+0] -= T(int64(f.buffer.fpInv.Coeffs[j+0]))
-		pOut.Coeffs[jj+1] -= T(int64(f.buffer.fpInv.Coeffs[j+1]))
-		pOut.Coeffs[jj+2] -= T(int64(f.buffer.fpInv.Coeffs[j+2]))
-		pOut.Coeffs[jj+3] -= T(int64(f.buffer.fpInv.Coeffs[j+3]))
-
-		pOut.Coeffs[jj+0+N/2] -= T(int64(f.buffer.fpInv.Coeffs[j+4]))
-		pOut.Coeffs[jj+1+N/2] -= T(int64(f.buffer.fpInv.Coeffs[j+5]))
-		pOut.Coeffs[jj+2+N/2] -= T(int64(f.buffer.fpInv.Coeffs[j+6]))
-		pOut.Coeffs[jj+3+N/2] -= T(int64(f.buffer.fpInv.Coeffs[j+7]))
-	}
-}
-
 // ToPolySubAssignUnsafe transforms FourierPoly to Poly and subtracts it from pOut.
 //
 // This method is slightly faster than ToPolySubAssign, but it modifies fp directly.
@@ -247,6 +247,84 @@ func (f *FourierEvaluator[T]) ToPolySubAssignUnsafe(fp FourierPoly, pOut Poly[T]
 
 	invFFTInPlace(fp.Coeffs, f.twInv)
 	floatModQInPlace(fp.Coeffs, f.q, f.qInv)
+
+	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
+		pOut.Coeffs[jj+0] -= T(int64(fp.Coeffs[j+0]))
+		pOut.Coeffs[jj+1] -= T(int64(fp.Coeffs[j+1]))
+		pOut.Coeffs[jj+2] -= T(int64(fp.Coeffs[j+2]))
+		pOut.Coeffs[jj+3] -= T(int64(fp.Coeffs[j+3]))
+
+		pOut.Coeffs[jj+0+N/2] -= T(int64(fp.Coeffs[j+4]))
+		pOut.Coeffs[jj+1+N/2] -= T(int64(fp.Coeffs[j+5]))
+		pOut.Coeffs[jj+2+N/2] -= T(int64(fp.Coeffs[j+6]))
+		pOut.Coeffs[jj+3+N/2] -= T(int64(fp.Coeffs[j+7]))
+	}
+}
+
+// toPolyExactAssignUnsafe transforms FourierPoly to Poly and writes it to pOut.
+// This is a special path for [*FourierEvaluator.PolyMulBinaryAssign].
+// It is "exact" in a sense that it simpply rounds the FourierPoly coefficients before converting them to Poly,
+// so that the result is exact when the coefficients are smaller than Q.
+//
+// This method is slightly faster than ToPolyAssign, but it modifies fp directly.
+// Use it only if you don't need fp after this method (e.g. fp is a buffer).
+func (f *FourierEvaluator[T]) toPolyExactAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
+	N := f.degree
+
+	invFFTInPlace(fp.Coeffs, f.twInv)
+	roundCmplxAssign(fp.Coeffs, fp.Coeffs)
+
+	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
+		pOut.Coeffs[jj+0] = T(int64(fp.Coeffs[j+0]))
+		pOut.Coeffs[jj+1] = T(int64(fp.Coeffs[j+1]))
+		pOut.Coeffs[jj+2] = T(int64(fp.Coeffs[j+2]))
+		pOut.Coeffs[jj+3] = T(int64(fp.Coeffs[j+3]))
+
+		pOut.Coeffs[jj+0+N/2] = T(int64(fp.Coeffs[j+4]))
+		pOut.Coeffs[jj+1+N/2] = T(int64(fp.Coeffs[j+5]))
+		pOut.Coeffs[jj+2+N/2] = T(int64(fp.Coeffs[j+6]))
+		pOut.Coeffs[jj+3+N/2] = T(int64(fp.Coeffs[j+7]))
+	}
+}
+
+// toPolyExactAddAssignUnsafe transforms FourierPoly to Poly and adds it to pOut.
+// This is a special path for [*FourierEvaluator.PolyMulBinaryAddAssign].
+// It is "exact" in a sense that it simpply rounds the FourierPoly coefficients before converting them to Poly,
+// so that the result is exact when the coefficients are smaller than Q.
+//
+// This method is slightly faster than ToPolyAddAssign, but it modifies fp directly.
+// Use it only if you don't need fp after this method (e.g. fp is a buffer).
+func (f *FourierEvaluator[T]) toPolyExactAddAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
+	N := f.degree
+
+	invFFTInPlace(fp.Coeffs, f.twInv)
+	roundCmplxAssign(fp.Coeffs, fp.Coeffs)
+
+	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
+		pOut.Coeffs[jj+0] += T(int64(fp.Coeffs[j+0]))
+		pOut.Coeffs[jj+1] += T(int64(fp.Coeffs[j+1]))
+		pOut.Coeffs[jj+2] += T(int64(fp.Coeffs[j+2]))
+		pOut.Coeffs[jj+3] += T(int64(fp.Coeffs[j+3]))
+
+		pOut.Coeffs[jj+0+N/2] += T(int64(fp.Coeffs[j+4]))
+		pOut.Coeffs[jj+1+N/2] += T(int64(fp.Coeffs[j+5]))
+		pOut.Coeffs[jj+2+N/2] += T(int64(fp.Coeffs[j+6]))
+		pOut.Coeffs[jj+3+N/2] += T(int64(fp.Coeffs[j+7]))
+	}
+}
+
+// toPolyExactSubAssignUnsafe transforms FourierPoly to Poly and subtracts it from pOut.
+// This is a special path for [*FourierEvaluator.PolyMulBinarySubAssign].
+// It is "exact" in a sense that it simpply rounds the FourierPoly coefficients before converting them to Poly,
+// so that the result is exact when the coefficients are smaller than Q.
+//
+// This method is slightly faster than ToPolySubAssign, but it modifies fp directly.
+// Use it only if you don't need fp after this method (e.g. fp is a buffer).
+func (f *FourierEvaluator[T]) toPolyExactSubAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
+	N := f.degree
+
+	invFFTInPlace(fp.Coeffs, f.twInv)
+	roundCmplxAssign(fp.Coeffs, fp.Coeffs)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] -= T(int64(fp.Coeffs[j+0]))

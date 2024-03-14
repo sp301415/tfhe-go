@@ -438,6 +438,5 @@ func floatModQInPlace(coeffs []float64, Q, QInv float64) {
 		coeffs[i] = coeffs[i] * QInv
 		coeffs[i] = coeffs[i] - math.Round(coeffs[i])
 		coeffs[i] = coeffs[i] * Q
-		coeffs[i] = math.Round(coeffs[i])
 	}
 }
