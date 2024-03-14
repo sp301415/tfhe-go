@@ -388,7 +388,7 @@ type Parameters[T TorusInt] struct {
 	// ScaleLog equals log(Scale).
 	scaleLog int
 
-	// logQ is the value of log(Q).
+	// logQ is the value of log(Q), where Q is the modulus of the ciphertext.
 	logQ int
 
 	// bootstrapParameters is the gadget parameters for Programmable Bootstrapping.
@@ -508,7 +508,7 @@ func (p Parameters[T]) MessageModulusLog() int {
 	return p.messageModulusLog
 }
 
-// LogQ is the value of log(Q).
+// LogQ is the value of log(Q), where Q is the modulus of the ciphertext.
 func (p Parameters[T]) LogQ() int {
 	return p.logQ
 }
