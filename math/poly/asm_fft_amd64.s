@@ -3,8 +3,8 @@
 #include "textflag.h"
 
 TEXT ·fftInPlaceAVX2(SB), $0-48
-	MOVQ coeffs+0(FP), AX
-	MOVQ tw+24(FP), BX
+	MOVQ coeffs_base+0(FP), AX
+	MOVQ tw_base+24(FP), BX
 
 	MOVQ coeffs_len+8(FP), CX
 
@@ -209,8 +209,8 @@ last_loop_1_end:
 	RET
 
 TEXT ·invFFTInPlaceAVX2(SB), $0-56
-	MOVQ coeffs+0(FP), AX
-	MOVQ twInv+24(FP), BX
+	MOVQ coeffs_base+0(FP), AX
+	MOVQ twInv_base+24(FP), BX
 
 	MOVQ coeffs_len+8(FP), CX
 
@@ -419,11 +419,11 @@ last_loop_end:
 	RET
 
 TEXT ·scaleMaxTInPlaceAVX2(SB), $0-32
-	MOVQ v0+0(FP), AX
+	MOVQ coeffs_base+0(FP), AX
 
-	MOVQ v0+8(FP), DX
+	MOVQ coeffs_len+8(FP), DX
 
-	VBROADCASTSD T+24(FP), Y10
+	VBROADCASTSD maxT+24(FP), Y10
 
 	XORQ SI, SI
 	JMP  loop_end

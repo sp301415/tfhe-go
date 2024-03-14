@@ -192,8 +192,8 @@ TEXT ·cmplxMulCmplxAssignAVX2(SB), $0-64
 
 	MOVQ vOut_len+48(FP), DX
 
-	VBROADCASTSD c+24(FP), Y2
-	VBROADCASTSD c+32(FP), Y3
+	VBROADCASTSD c_real+24(FP), Y2
+	VBROADCASTSD c_imag+32(FP), Y3
 
 	XORQ SI, SI
 	JMP  loop_end
@@ -225,8 +225,8 @@ TEXT ·cmplxMulAddCmplxAssignAVX2(SB), $0-64
 
 	MOVQ vOut_len+48(FP), DX
 
-	VBROADCASTSD c+24(FP), Y2
-	VBROADCASTSD c+32(FP), Y3
+	VBROADCASTSD c_real+24(FP), Y2
+	VBROADCASTSD c_imag+32(FP), Y3
 
 	XORQ SI, SI
 	JMP  loop_end
@@ -260,8 +260,8 @@ TEXT ·cmplxMulSubCmplxAssignAVX2(SB), $0-64
 
 	MOVQ vOut_len+48(FP), DX
 
-	VBROADCASTSD c+24(FP), Y2
-	VBROADCASTSD c+32(FP), Y3
+	VBROADCASTSD c_real+24(FP), Y2
+	VBROADCASTSD c_imag+32(FP), Y3
 
 	VPXOR Y10, Y10, Y10
 

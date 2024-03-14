@@ -10,8 +10,8 @@ import (
 	"golang.org/x/sys/cpu"
 )
 
-func decomposePolyAssignUint32AVX2(p []uint32, base uint32, baseLog uint32, lastScaledBaseLog uint32, d [][]uint32)
-func decomposePolyAssignUint64AVX2(p []uint64, base uint64, baseLog uint64, lastScaledBaseLog uint64, d [][]uint64)
+func decomposePolyAssignUint32AVX2(p []uint32, base uint32, baseLog uint32, lastScaledBaseLog uint32, decomposedOut [][]uint32)
+func decomposePolyAssignUint64AVX2(p []uint64, base uint64, baseLog uint64, lastScaledBaseLog uint64, decomposedOut [][]uint64)
 
 // decomposePolyAssign decomposes p with respect to gadgetParams and writes it to decomposedOut.
 func decomposePolyAssign[T TorusInt](p poly.Poly[T], gadgetParams GadgetParameters[T], decomposedOut []poly.Poly[T]) {

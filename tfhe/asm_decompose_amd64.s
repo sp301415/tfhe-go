@@ -9,11 +9,13 @@ GLOBL one64<>+0(SB), (NOPTR+RODATA), $8
 
 TEXT ·decomposePolyAssignUint32AVX2(SB), $0-64
 	MOVQ p+0(FP), AX
-	MOVQ dOut+40(FP), BX
+	MOVQ decomposedOut+40(FP), BX
 
-	MOVQ p_len+8(FP), CX     // N
-	MOVQ dOut_len+48(FP), DX // level
+	MOVQ p_len+8(FP), CX              // N
+	MOVQ decomposedOut_len+48(FP), DX // level
 
+	// VET: go vet complains about VBROADCASTD on uint4 values.
+	// See https://github.com/golang/go/issues/47625.
 	VPBROADCASTD base+24(FP), Y10              // base
 	VPBROADCASTD baseLog+28(FP), Y11           // baseLog
 	VPBROADCASTD lastScaledBaseLog+32(FP), Y12 // lastScaledBaseLog
@@ -90,10 +92,10 @@ N_loop_end:
 
 TEXT ·decomposePolyAssignUint64AVX2(SB), $0-72
 	MOVQ p+0(FP), AX
-	MOVQ dOut+48(FP), BX
+	MOVQ decomposedOut+48(FP), BX
 
-	MOVQ p_len+8(FP), CX     // N
-	MOVQ dOut_len+56(FP), DX // level
+	MOVQ p_len+8(FP), CX              // N
+	MOVQ decomposedOut_len+56(FP), DX // level
 
 	VPBROADCASTQ base+24(FP), Y10              // base
 	VPBROADCASTQ baseLog+32(FP), Y11           // baseLog
