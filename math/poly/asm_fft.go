@@ -432,12 +432,12 @@ func invFFTInPlace(coeffs []float64, twInv []complex128) {
 	}
 }
 
-// floatModT computes coeffs mod maxT in place.
-func floatModTInPlace(coeffs []float64, maxT, maxTInv float64) {
+// floatModQ computes coeffs mod Q in place.
+func floatModQInPlace(coeffs []float64, Q, QInv float64) {
 	for i := range coeffs {
-		coeffs[i] = coeffs[i] * maxTInv
+		coeffs[i] = coeffs[i] * QInv
 		coeffs[i] = coeffs[i] - math.Round(coeffs[i])
-		coeffs[i] = coeffs[i] * maxT
+		coeffs[i] = coeffs[i] * Q
 		coeffs[i] = math.Round(coeffs[i])
 	}
 }

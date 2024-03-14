@@ -2,30 +2,6 @@
 
 #include "textflag.h"
 
-TEXT ·roundCmplxAssignAVX2(SB), NOSPLIT, $0-48
-	MOVQ v0+0(FP), AX
-	MOVQ vOut+24(FP), CX
-
-	MOVQ vOut_len+32(FP), DX
-
-	XORQ SI, SI
-	JMP  loop_end
-
-loop_body:
-	VMOVUPD (AX)(SI*8), Y0
-
-	VROUNDPD $0, Y0, Y0
-
-	VMOVUPD Y0, (CX)(SI*8)
-
-	ADDQ $4, SI
-
-loop_end:
-	CMPQ SI, DX
-	JL   loop_body
-
-	RET
-
 TEXT ·addCmplxAssignAVX2(SB), NOSPLIT, $0-72
 	MOVQ v0+0(FP), AX
 	MOVQ v1+24(FP), BX

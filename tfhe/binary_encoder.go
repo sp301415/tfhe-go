@@ -25,12 +25,12 @@ func NewBinaryEncoder[T TorusInt](params Parameters[T]) *BinaryEncoder[T] {
 // Note that this is different from calling EncodeLWE with 0 or 1.
 func (e *BinaryEncoder[T]) EncodeLWEBool(message bool) LWEPlaintext[T] {
 	if message {
-		return LWEPlaintext[T]{Value: 1 << (e.Parameters.sizeT - 3)}
+		return LWEPlaintext[T]{Value: 1 << (e.Parameters.logQ - 3)}
 	}
-	return LWEPlaintext[T]{Value: 7 << (e.Parameters.sizeT - 3)}
+	return LWEPlaintext[T]{Value: 7 << (e.Parameters.logQ - 3)}
 }
 
 // DecodeLWEBool decodes LWE plaintext to boolean message.
 func (e *BinaryEncoder[T]) DecodeLWEBool(pt LWEPlaintext[T]) bool {
-	return pt.Value < (1 << (e.Parameters.sizeT - 1))
+	return pt.Value < (1 << (e.Parameters.logQ - 1))
 }

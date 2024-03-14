@@ -91,10 +91,10 @@ func (e *Evaluator[T]) ClearPaddingBit(ct LWECiphertext[T]) LWECiphertext[T] {
 
 // ClearPaddingBitAssign clears the padding bit of the LWE ciphertext and writes it to ctOut.
 func (e *Evaluator[T]) ClearPaddingBitAssign(ct LWECiphertext[T], ctOut LWECiphertext[T]) {
-	e.GenLookUpTableFullAssign(func(x int) T { return 1 << (e.Parameters.sizeT - 2) }, e.buffer.lut)
+	e.GenLookUpTableFullAssign(func(x int) T { return 1 << (e.Parameters.logQ - 2) }, e.buffer.lut)
 	e.BootstrapLUTAssign(ct, e.buffer.lut, e.buffer.ctPadding)
 	e.SubLWEAssign(ct, e.buffer.ctPadding, ctOut)
-	ctOut.Value[0] += 1 << (e.Parameters.sizeT - 2)
+	ctOut.Value[0] += 1 << (e.Parameters.logQ - 2)
 }
 
 // ClearPaddingBitInPlace clears the padding bit of the LWE ciphertext in place.
@@ -138,13 +138,13 @@ func (e *Evaluator[T]) BootstrapLUTAssign(ct LWECiphertext[T], lut LookUpTable[T
 // ModSwitch computes x2N = round(2N * x / Q) mod 2N
 // and returns x2N as an unsigned representation.
 func (e *Evaluator[T]) ModSwitch(x T) int {
-	return int(num.RoundRatioBits(x, e.Parameters.sizeT-(e.Parameters.polyLargeDegreeLog+1))) & (2*e.Parameters.polyLargeDegree - 1)
+	return int(num.RoundRatioBits(x, e.Parameters.logQ-(e.Parameters.polyLargeDegreeLog+1))) & (2*e.Parameters.polyLargeDegree - 1)
 }
 
 // ModSwitchNeg computes x2N = round(2N * (-x) / Q) mod 2N
 // and returns -x2N as an unsigned representation.
 func (e *Evaluator[T]) ModSwitchNeg(x T) int {
-	return int(-num.RoundRatioBits(x, e.Parameters.sizeT-(e.Parameters.polyLargeDegreeLog+1))) & (2*e.Parameters.polyLargeDegree - 1)
+	return int(-num.RoundRatioBits(x, e.Parameters.logQ-(e.Parameters.polyLargeDegreeLog+1))) & (2*e.Parameters.polyLargeDegree - 1)
 }
 
 // BlindRotate returns the blind rotation of LWE ciphertext with respect to LUT.

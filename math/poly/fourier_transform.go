@@ -135,7 +135,7 @@ func (f *FourierEvaluator[T]) ToPolyAssign(fp FourierPoly, pOut Poly[T]) {
 
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.twInv)
-	floatModTInPlace(f.buffer.fpInv.Coeffs, f.maxT, f.maxTInv)
+	floatModQInPlace(f.buffer.fpInv.Coeffs, f.q, f.qInv)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] = T(int64(f.buffer.fpInv.Coeffs[j+0]))
@@ -158,7 +158,7 @@ func (f *FourierEvaluator[T]) ToPolyAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
 	N := f.degree
 
 	invFFTInPlace(fp.Coeffs, f.twInv)
-	floatModTInPlace(fp.Coeffs, f.maxT, f.maxTInv)
+	floatModQInPlace(fp.Coeffs, f.q, f.qInv)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] = T(int64(fp.Coeffs[j+0]))
@@ -179,7 +179,7 @@ func (f *FourierEvaluator[T]) ToPolyAddAssign(fp FourierPoly, pOut Poly[T]) {
 
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.twInv)
-	floatModTInPlace(f.buffer.fpInv.Coeffs, f.maxT, f.maxTInv)
+	floatModQInPlace(f.buffer.fpInv.Coeffs, f.q, f.qInv)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] += T(int64(f.buffer.fpInv.Coeffs[j+0]))
@@ -202,7 +202,7 @@ func (f *FourierEvaluator[T]) ToPolyAddAssignUnsafe(fp FourierPoly, pOut Poly[T]
 	N := f.degree
 
 	invFFTInPlace(fp.Coeffs, f.twInv)
-	floatModTInPlace(fp.Coeffs, f.maxT, f.maxTInv)
+	floatModQInPlace(fp.Coeffs, f.q, f.qInv)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] += T(int64(fp.Coeffs[j+0]))
@@ -223,7 +223,7 @@ func (f *FourierEvaluator[T]) ToPolySubAssign(fp FourierPoly, pOut Poly[T]) {
 
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.twInv)
-	floatModTInPlace(f.buffer.fpInv.Coeffs, f.maxT, f.maxTInv)
+	floatModQInPlace(f.buffer.fpInv.Coeffs, f.q, f.qInv)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] -= T(int64(f.buffer.fpInv.Coeffs[j+0]))
@@ -246,7 +246,7 @@ func (f *FourierEvaluator[T]) ToPolySubAssignUnsafe(fp FourierPoly, pOut Poly[T]
 	N := f.degree
 
 	invFFTInPlace(fp.Coeffs, f.twInv)
-	floatModTInPlace(fp.Coeffs, f.maxT, f.maxTInv)
+	floatModQInPlace(fp.Coeffs, f.q, f.qInv)
 
 	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
 		pOut.Coeffs[jj+0] -= T(int64(fp.Coeffs[j+0]))

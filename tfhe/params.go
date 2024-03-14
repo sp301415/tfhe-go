@@ -312,7 +312,7 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 	}
 
 	messageModulusLog := num.Log2(p.MessageModulus)
-	deltaLog := num.SizeT[T]() - 1 - messageModulusLog
+	scaleLog := num.SizeT[T]() - 1 - messageModulusLog
 
 	return Parameters[T]{
 		lweDimension:        p.LWEDimension,
@@ -333,11 +333,10 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 
 		messageModulus:    p.MessageModulus,
 		messageModulusLog: messageModulusLog,
-		delta:             1 << deltaLog,
-		deltaLog:          deltaLog,
+		scale:             1 << scaleLog,
+		scaleLog:          scaleLog,
 
-		sizeT: num.SizeT[T](),
-		maxT:  T(num.MaxT[T]()),
+		logQ: num.SizeT[T](),
 
 		bootstrapParameters: p.BootstrapParameters.Compile(),
 		keyswitchParameters: p.KeySwitchParameters.Compile(),
@@ -383,16 +382,14 @@ type Parameters[T TorusInt] struct {
 	messageModulus T
 	// MessageModulusLog equals log(MessageModulus).
 	messageModulusLog int
-	// Delta is the scaling factor used for message encoding.
-	// The lower log(Delta) bits are reserved for errors.
-	delta T
-	// DeltaLog equals log(Delta).
-	deltaLog int
+	// Scale is the scaling factor used for message encoding.
+	// The lower log(Scale) bits are reserved for errors.
+	scale T
+	// ScaleLog equals log(Scale).
+	scaleLog int
 
-	// maxT is the maximum value of T.
-	maxT T
-	// sizeT is the bit length of T.
-	sizeT int
+	// logQ is the value of log(Q).
+	logQ int
 
 	// bootstrapParameters is the gadget parameters for Programmable Bootstrapping.
 	bootstrapParameters GadgetParameters[T]
@@ -490,15 +487,15 @@ func (p Parameters[T]) BlockCount() int {
 	return p.blockCount
 }
 
-// Delta is the scaling factor used for message encoding.
-// The lower log(Delta) bits are reserved for errors.
-func (p Parameters[T]) Delta() T {
-	return p.delta
+// Scale is the scaling factor used for message encoding.
+// The lower log(Scale) bits are reserved for errors.
+func (p Parameters[T]) Scale() T {
+	return p.scale
 }
 
-// DeltaLog equals log(Delta).
-func (p Parameters[T]) DeltaLog() int {
-	return p.deltaLog
+// ScaleLog equals log(Scale).
+func (p Parameters[T]) ScaleLog() int {
+	return p.scaleLog
 }
 
 // MessageModulus is the modulus of the encoded message.
@@ -511,14 +508,9 @@ func (p Parameters[T]) MessageModulusLog() int {
 	return p.messageModulusLog
 }
 
-// MaxT is the maximum value of T.
-func (p Parameters[T]) MaxT() T {
-	return p.maxT
-}
-
-// SizeT is the bit length of T.
-func (p Parameters[T]) SizeT() int {
-	return p.sizeT
+// LogQ is the value of log(Q).
+func (p Parameters[T]) LogQ() int {
+	return p.logQ
 }
 
 // BootstrapParameters is the gadget parameters for Programmable Bootstrapping.

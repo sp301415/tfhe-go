@@ -418,13 +418,13 @@ last_loop_end:
 
 	RET
 
-TEXT ·floatModTInPlaceAVX2(SB), NOSPLIT, $0-40
+TEXT ·floatModQInPlaceAVX2(SB), NOSPLIT, $0-40
 	MOVQ coeffs_base+0(FP), AX
 
 	MOVQ coeffs_len+8(FP), DX
 
-	VBROADCASTSD maxT+24(FP), Y10
-	VBROADCASTSD maxTInv+32(FP), Y11
+	VBROADCASTSD Q+24(FP), Y10
+	VBROADCASTSD QInv+32(FP), Y11
 
 	XORQ SI, SI
 	JMP  loop_end

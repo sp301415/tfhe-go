@@ -23,35 +23,35 @@ func NewEncoder[T TorusInt](params Parameters[T]) *Encoder[T] {
 }
 
 // EncodeLWE encodes integer message to LWE plaintext.
-// Parameter's MessageModulus and Delta are used.
+// Parameter's MessageModulus and Scale are used.
 func (e *Encoder[T]) EncodeLWE(message int) LWEPlaintext[T] {
-	return LWEPlaintext[T]{Value: (T(message) % e.Parameters.messageModulus) << e.Parameters.deltaLog}
+	return LWEPlaintext[T]{Value: (T(message) % e.Parameters.messageModulus) << e.Parameters.scaleLog}
 }
 
 // EncodeLWECustom encodes integer message to LWE plaintext
-// using custom MessageModulus and Delta.
+// using custom MessageModulus and Scale.
 //
 // If MessageModulus = 0, then no modulus reduction is performed.
-func (e *Encoder[T]) EncodeLWECustom(message int, messageModulus, delta T) LWEPlaintext[T] {
+func (e *Encoder[T]) EncodeLWECustom(message int, messageModulus, scale T) LWEPlaintext[T] {
 	encoded := T(message)
 	if messageModulus != 0 {
 		encoded %= messageModulus
 	}
-	return LWEPlaintext[T]{Value: encoded * delta}
+	return LWEPlaintext[T]{Value: encoded * scale}
 }
 
 // DecodeLWE decodes LWE plaintext to integer message.
-// Parameter's MessageModulus and Delta are used.
+// Parameter's MessageModulus and Scale are used.
 func (e *Encoder[T]) DecodeLWE(pt LWEPlaintext[T]) int {
-	return int(num.RoundRatioBits(pt.Value, e.Parameters.deltaLog) % e.Parameters.messageModulus)
+	return int(num.RoundRatioBits(pt.Value, e.Parameters.scaleLog) % e.Parameters.messageModulus)
 }
 
 // DecodeLWECustom decodes LWE plaintext to integer message
-// using custom MessageModulus and Delta.
+// using custom MessageModulus and Scale.
 //
 // If MessageModulus = 0, then no modulus reduction is performed.
-func (e *Encoder[T]) DecodeLWECustom(pt LWEPlaintext[T], messageModulus, delta T) int {
-	decoded := num.RoundRatio(pt.Value, delta)
+func (e *Encoder[T]) DecodeLWECustom(pt LWEPlaintext[T], messageModulus, scale T) int {
+	decoded := num.RoundRatio(pt.Value, scale)
 	if messageModulus != 0 {
 		decoded %= messageModulus
 	}
@@ -59,7 +59,7 @@ func (e *Encoder[T]) DecodeLWECustom(pt LWEPlaintext[T], messageModulus, delta T
 }
 
 // EncodeGLWE encodes up to Parameters.PolyDegree integer messages into one GLWE plaintext.
-// Parameter's MessageModulus and Delta are used.
+// Parameter's MessageModulus and Scale are used.
 //
 //   - If len(messages) < PolyDegree, the leftovers are padded with zero.
 //   - If len(messages) > PolyDegree, the leftovers are discarded.
@@ -70,50 +70,50 @@ func (e *Encoder[T]) EncodeGLWE(messages []int) GLWEPlaintext[T] {
 }
 
 // EncodeGLWEAssign encodes up to Parameters.PolyDegree integer messages into one GLWE plaintext.
-// Parameter's MessageModulus and Delta are used.
+// Parameter's MessageModulus and Scale are used.
 //
 //   - If len(messages) < PolyDegree, the leftovers are padded with zero.
 //   - If len(messages) > PolyDegree, the leftovers are discarded.
 func (e *Encoder[T]) EncodeGLWEAssign(messages []int, pt GLWEPlaintext[T]) {
 	length := num.Min(e.Parameters.polyDegree, len(messages))
 	for i := 0; i < length; i++ {
-		pt.Value.Coeffs[i] = (T(messages[i]) % e.Parameters.messageModulus) << e.Parameters.deltaLog
+		pt.Value.Coeffs[i] = (T(messages[i]) % e.Parameters.messageModulus) << e.Parameters.scaleLog
 	}
 	vec.Fill(pt.Value.Coeffs[length:], 0)
 }
 
 // EncodeGLWECustom encodes integer message to GLWE plaintext
-// using custom MessageModulus and Delta.
+// using custom MessageModulus and Scale.
 //
 //   - If MessageModulus = 0, then no modulus reduction is performed.
 //   - If len(messages) < PolyDegree, the leftovers are padded with zero.
 //   - If len(messages) > PolyDegree, the leftovers are discarded.
-func (e *Encoder[T]) EncodeGLWECustom(messages []int, messageModulus, delta T) GLWEPlaintext[T] {
+func (e *Encoder[T]) EncodeGLWECustom(messages []int, messageModulus, scale T) GLWEPlaintext[T] {
 	pt := NewGLWEPlaintext(e.Parameters)
-	e.EncodeGLWECustomAssign(messages, messageModulus, delta, pt)
+	e.EncodeGLWECustomAssign(messages, messageModulus, scale, pt)
 	return pt
 }
 
 // EncodeGLWECustomAssign encodes integer message to GLWE plaintext
-// using custom MessageModulus and Delta.
+// using custom MessageModulus and Scale.
 //
 //   - If MessageModulus = 0, then no modulus reduction is performed.
 //   - If len(messages) < PolyDegree, the leftovers are padded with zero.
 //   - If len(messages) > PolyDegree, the leftovers are discarded.
-func (e *Encoder[T]) EncodeGLWECustomAssign(messages []int, messageModulus, delta T, pt GLWEPlaintext[T]) {
+func (e *Encoder[T]) EncodeGLWECustomAssign(messages []int, messageModulus, scale T, pt GLWEPlaintext[T]) {
 	length := num.Min(e.Parameters.polyDegree, len(messages))
 	for i := 0; i < length; i++ {
 		pt.Value.Coeffs[i] = T(messages[i])
 		if messageModulus != 0 {
 			pt.Value.Coeffs[i] %= messageModulus
 		}
-		pt.Value.Coeffs[i] *= delta
+		pt.Value.Coeffs[i] *= scale
 	}
 	vec.Fill(pt.Value.Coeffs[length:], 0)
 }
 
 // DecodeGLWE decodes GLWE plaintext to integer message.
-// Parameter's MessageModulus and Delta are used.
+// Parameter's MessageModulus and Scale are used.
 // The returned messages are always of length PolyDegree.
 func (e *Encoder[T]) DecodeGLWE(pt GLWEPlaintext[T]) []int {
 	messages := make([]int, e.Parameters.polyDegree)
@@ -122,38 +122,38 @@ func (e *Encoder[T]) DecodeGLWE(pt GLWEPlaintext[T]) []int {
 }
 
 // DecodeGLWEAssign decodes GLWE plaintext to integer message.
-// Parameter's MessageModulus and Delta are used.
+// Parameter's MessageModulus and Scale are used.
 //
 //   - If len(messagesOut) < PolyDegree, the leftovers are discarded.
 //   - If len(messagesOut) > PolyDegree, only the first PolyDegree elements are written.
 func (e *Encoder[T]) DecodeGLWEAssign(pt GLWEPlaintext[T], messagesOut []int) {
 	length := num.Min(e.Parameters.polyDegree, len(messagesOut))
 	for i := 0; i < length; i++ {
-		messagesOut[i] = int((num.RoundRatioBits(pt.Value.Coeffs[i], e.Parameters.deltaLog) % e.Parameters.messageModulus))
+		messagesOut[i] = int((num.RoundRatioBits(pt.Value.Coeffs[i], e.Parameters.scaleLog) % e.Parameters.messageModulus))
 	}
 }
 
 // DecodeGLWECustom decodes GLWE plaintext to integer message
-// using custom MessageModulus and Delta.
+// using custom MessageModulus and Scale.
 // The returned messages are always of length PolyDegree.
 //
 // If MessageModulus = 0, then no modulus reduction is performed.
-func (e *Encoder[T]) DecodeGLWECustom(pt GLWEPlaintext[T], messageModulus, delta T) []int {
+func (e *Encoder[T]) DecodeGLWECustom(pt GLWEPlaintext[T], messageModulus, scale T) []int {
 	messages := make([]int, e.Parameters.polyDegree)
-	e.DecodeGLWECustomAssign(pt, messageModulus, delta, messages)
+	e.DecodeGLWECustomAssign(pt, messageModulus, scale, messages)
 	return messages
 }
 
 // DecodeGLWECustomAssign decodes GLWE plaintext to integer message
-// using custom MessageModulus and Delta.
+// using custom MessageModulus and Scale.
 //
 //   - If MessageModulus = 0, then no modulus reduction is performed.
 //   - If len(messagesOut) < PolyDegree, the leftovers are discarded.
 //   - If len(messagesOut) > PolyDegree, only the first PolyDegree elements are written.
-func (e *Encoder[T]) DecodeGLWECustomAssign(pt GLWEPlaintext[T], messageModulus, delta T, messagesOut []int) {
+func (e *Encoder[T]) DecodeGLWECustomAssign(pt GLWEPlaintext[T], messageModulus, scale T, messagesOut []int) {
 	length := num.Min(e.Parameters.polyDegree, len(messagesOut))
 	for i := 0; i < length; i++ {
-		decoded := num.RoundRatio(pt.Value.Coeffs[i], delta)
+		decoded := num.RoundRatio(pt.Value.Coeffs[i], scale)
 		if messageModulus != 0 {
 			decoded %= messageModulus
 		}

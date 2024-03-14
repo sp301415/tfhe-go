@@ -448,19 +448,19 @@ func invFFTInPlace(coeffs []float64, twInv []complex128) {
 	}
 }
 
-func floatModTInPlaceAVX2(coeffs []float64, maxT, maxTInv float64)
+func floatModQInPlaceAVX2(coeffs []float64, Q, QInv float64)
 
-// floatModT computes coeffs mod maxT in place.
-func floatModTInPlace(coeffs []float64, maxT, maxTInv float64) {
+// floatModQ computes coeffs mod Q in place.
+func floatModQInPlace(coeffs []float64, Q, QInv float64) {
 	if cpu.X86.HasAVX2 {
-		floatModTInPlaceAVX2(coeffs, maxT, maxTInv)
+		floatModQInPlaceAVX2(coeffs, Q, QInv)
 		return
 	}
 
 	for i := range coeffs {
-		coeffs[i] = coeffs[i] * maxTInv
+		coeffs[i] = coeffs[i] * QInv
 		coeffs[i] = coeffs[i] - math.Round(coeffs[i])
-		coeffs[i] = coeffs[i] * maxT
+		coeffs[i] = coeffs[i] * Q
 		coeffs[i] = math.Round(coeffs[i])
 	}
 }

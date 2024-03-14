@@ -25,7 +25,7 @@ type BinaryEvaluator[T TorusInt] struct {
 // This does not copy evaluation keys, since they are large.
 func NewBinaryEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *BinaryEvaluator[T] {
 	signLUT := NewLookUpTable(params)
-	vec.Fill(signLUT.Coeffs, 1<<(params.sizeT-3))
+	vec.Fill(signLUT.Coeffs, 1<<(params.logQ-3))
 
 	return &BinaryEvaluator[T]{
 		BinaryEncoder: NewBinaryEncoder(params),
@@ -77,7 +77,7 @@ func (e *BinaryEvaluator[T]) ANDAssign(ct0, ct1, ctOut LWECiphertext[T]) {
 	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		ctOut.Value[i] = ct0.Value[i] + ct1.Value[i]
 	}
-	ctOut.Value[0] -= 1 << (e.Parameters.sizeT - 3)
+	ctOut.Value[0] -= 1 << (e.Parameters.logQ - 3)
 
 	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
 }
@@ -96,7 +96,7 @@ func (e *BinaryEvaluator[T]) NANDAssign(ct0, ct1, ctOut LWECiphertext[T]) {
 	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		ctOut.Value[i] = -ct0.Value[i] - ct1.Value[i]
 	}
-	ctOut.Value[0] += 1 << (e.Parameters.sizeT - 3)
+	ctOut.Value[0] += 1 << (e.Parameters.logQ - 3)
 
 	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
 }
@@ -115,7 +115,7 @@ func (e *BinaryEvaluator[T]) ORAssign(ct0, ct1, ctOut LWECiphertext[T]) {
 	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		ctOut.Value[i] = ct0.Value[i] + ct1.Value[i]
 	}
-	ctOut.Value[0] += 1 << (e.Parameters.sizeT - 3)
+	ctOut.Value[0] += 1 << (e.Parameters.logQ - 3)
 
 	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
 }
@@ -134,7 +134,7 @@ func (e *BinaryEvaluator[T]) NORAssign(ct0, ct1, ctOut LWECiphertext[T]) {
 	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		ctOut.Value[i] = -ct0.Value[i] - ct1.Value[i]
 	}
-	ctOut.Value[0] -= 1 << (e.Parameters.sizeT - 3)
+	ctOut.Value[0] -= 1 << (e.Parameters.logQ - 3)
 
 	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
 }
@@ -153,7 +153,7 @@ func (e *BinaryEvaluator[T]) XORAssign(ct0, ct1, ctOut LWECiphertext[T]) {
 	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		ctOut.Value[i] = 2 * (ct0.Value[i] + ct1.Value[i])
 	}
-	ctOut.Value[0] += 1 << (e.Parameters.sizeT - 2)
+	ctOut.Value[0] += 1 << (e.Parameters.logQ - 2)
 
 	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
 }
@@ -172,7 +172,7 @@ func (e *BinaryEvaluator[T]) XNORAssign(ct0, ct1, ctOut LWECiphertext[T]) {
 	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		ctOut.Value[i] = 2 * (-ct0.Value[i] - ct1.Value[i])
 	}
-	ctOut.Value[0] -= 1 << (e.Parameters.sizeT - 2)
+	ctOut.Value[0] -= 1 << (e.Parameters.logQ - 2)
 
 	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
 }

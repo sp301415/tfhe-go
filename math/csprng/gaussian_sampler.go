@@ -11,8 +11,6 @@ import (
 // which is based on ziggurat method by Marsaglia and Tsang.
 type GaussianSampler[T num.Integer] struct {
 	baseSampler UniformSampler[int32]
-
-	maxT float64
 }
 
 // NewGaussianSampler allocates an empty GaussianSampler.
@@ -21,7 +19,6 @@ type GaussianSampler[T num.Integer] struct {
 func NewGaussianSampler[T num.Integer]() GaussianSampler[T] {
 	return GaussianSampler[T]{
 		baseSampler: NewUniformSampler[int32](),
-		maxT:        float64(num.MaxT[T]()),
 	}
 }
 
@@ -31,7 +28,6 @@ func NewGaussianSampler[T num.Integer]() GaussianSampler[T] {
 func NewGaussianSamplerWithSeed[T num.Integer](seed []byte, stdDev float64) GaussianSampler[T] {
 	return GaussianSampler[T]{
 		baseSampler: NewUniformSamplerWithSeed[int32](seed),
-		maxT:        float64(num.MaxT[T]()),
 	}
 }
 
