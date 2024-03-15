@@ -3,6 +3,8 @@
 package poly
 
 import (
+	"math"
+
 	"github.com/sp301415/tfhe-go/math/num"
 )
 
@@ -84,6 +86,15 @@ func convertPolyToFourierPolyAssign[T num.Integer](p []T, fpOut []float64) {
 			fpOut[j+6] = float64(p[jj+2+N/2])
 			fpOut[j+7] = float64(p[jj+3+N/2])
 		}
+	}
+}
+
+// floatModQ computes coeffs mod Q in place.
+func floatModQInPlace(coeffs []float64, Q, QInv float64) {
+	for i := range coeffs {
+		coeffs[i] = coeffs[i] * QInv
+		coeffs[i] = coeffs[i] - math.Round(coeffs[i])
+		coeffs[i] = coeffs[i] * Q
 	}
 }
 

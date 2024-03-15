@@ -417,32 +417,3 @@ last_loop_end:
 	JL   last_loop
 
 	RET
-
-TEXT ·floatModQInPlaceAVX2(SB), NOSPLIT, $0-40
-	MOVQ coeffs_base+0(FP), AX
-
-	MOVQ coeffs_len+8(FP), DX
-
-	VBROADCASTSD Q+24(FP), Y10
-	VBROADCASTSD QInv+32(FP), Y11
-
-	XORQ SI, SI
-	JMP  loop_end
-
-loop_body:
-	VMOVUPD (AX)(SI*8), Y0
-
-	VMULPD   Y0, Y11, Y0
-	VROUNDPD $0, Y0, Y1
-	VSUBPD   Y1, Y0, Y1
-	VMULPD   Y1, Y10, Y1
-
-	VMOVUPD Y1, (AX)(SI*8)
-
-	ADDQ $4, SI
-
-loop_end:
-	CMPQ SI, DX
-	JL   loop_body
-
-	RET

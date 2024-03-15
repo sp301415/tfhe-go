@@ -2,10 +2,6 @@
 
 package poly
 
-import (
-	"math"
-)
-
 // fftInPlace is a top-level function for FFT.
 // All internal FFT implementations calls this function for performance.
 func fftInPlace(coeffs []float64, tw []complex128) {
@@ -429,14 +425,5 @@ func invFFTInPlace(coeffs []float64, twInv []complex128) {
 		coeffs[j+N/2+5] = UVi1W
 		coeffs[j+N/2+6] = UVi2W
 		coeffs[j+N/2+7] = UVi3W
-	}
-}
-
-// floatModQ computes coeffs mod Q in place.
-func floatModQInPlace(coeffs []float64, Q, QInv float64) {
-	for i := range coeffs {
-		coeffs[i] = coeffs[i] * QInv
-		coeffs[i] = coeffs[i] - math.Round(coeffs[i])
-		coeffs[i] = coeffs[i] * Q
 	}
 }

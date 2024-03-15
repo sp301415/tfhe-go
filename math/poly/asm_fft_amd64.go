@@ -3,8 +3,6 @@
 package poly
 
 import (
-	"math"
-
 	"golang.org/x/sys/cpu"
 )
 
@@ -445,21 +443,5 @@ func invFFTInPlace(coeffs []float64, twInv []complex128) {
 		coeffs[j+N/2+5] = UVi1W
 		coeffs[j+N/2+6] = UVi2W
 		coeffs[j+N/2+7] = UVi3W
-	}
-}
-
-func floatModQInPlaceAVX2(coeffs []float64, Q, QInv float64)
-
-// floatModQ computes coeffs mod Q in place.
-func floatModQInPlace(coeffs []float64, Q, QInv float64) {
-	if cpu.X86.HasAVX2 {
-		floatModQInPlaceAVX2(coeffs, Q, QInv)
-		return
-	}
-
-	for i := range coeffs {
-		coeffs[i] = coeffs[i] * QInv
-		coeffs[i] = coeffs[i] - math.Round(coeffs[i])
-		coeffs[i] = coeffs[i] * Q
 	}
 }
