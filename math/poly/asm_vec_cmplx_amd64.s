@@ -3,8 +3,8 @@
 #include "textflag.h"
 
 TEXT ·roundCmplxAssignAVX2(SB), NOSPLIT, $0-48
-	MOVQ v0+0(FP), AX
-	MOVQ vOut+24(FP), CX
+	MOVQ v0_base+0(FP), AX
+	MOVQ vOut_base+24(FP), CX
 
 	MOVQ vOut_len+32(FP), DX
 
@@ -27,9 +27,9 @@ loop_end:
 	RET
 
 TEXT ·addCmplxAssignAVX2(SB), NOSPLIT, $0-72
-	MOVQ v0+0(FP), AX
-	MOVQ v1+24(FP), BX
-	MOVQ vOut+48(FP), CX
+	MOVQ v0_base+0(FP), AX
+	MOVQ v1_base+24(FP), BX
+	MOVQ vOut_base+48(FP), CX
 
 	MOVQ vOut_len+56(FP), DX
 
@@ -53,9 +53,9 @@ loop_end:
 	RET
 
 TEXT ·subCmplxAssignAVX2(SB), NOSPLIT, $0-72
-	MOVQ v0+0(FP), AX
-	MOVQ v1+24(FP), BX
-	MOVQ vOut+48(FP), CX
+	MOVQ v0_base+0(FP), AX
+	MOVQ v1_base+24(FP), BX
+	MOVQ vOut_base+48(FP), CX
 
 	MOVQ vOut_len+56(FP), DX
 
@@ -79,8 +79,8 @@ loop_end:
 	RET
 
 TEXT ·negCmplxAssignAVX2(SB), NOSPLIT, $0-48
-	MOVQ v0+0(FP), AX
-	MOVQ vOut+24(FP), CX
+	MOVQ v0_base+0(FP), AX
+	MOVQ vOut_base+24(FP), CX
 
 	MOVQ vOut_len+32(FP), DX
 
@@ -104,8 +104,8 @@ loop_end:
 	RET
 
 TEXT ·floatMulCmplxAssignAVX2(SB), NOSPLIT, $0-56
-	MOVQ v0+0(FP), AX
-	MOVQ vOut+32(FP), CX
+	MOVQ v0_base+0(FP), AX
+	MOVQ vOut_base+32(FP), CX
 
 	MOVQ vOut_len+40(FP), DX
 
@@ -130,8 +130,8 @@ loop_end:
 	RET
 
 TEXT ·floatMulAddCmplxAssignAVX2(SB), NOSPLIT, $0-56
-	MOVQ v0+0(FP), AX
-	MOVQ vOut+32(FP), CX
+	MOVQ v0_base+0(FP), AX
+	MOVQ vOut_base+32(FP), CX
 
 	MOVQ vOut_len+40(FP), DX
 
@@ -157,8 +157,8 @@ loop_end:
 	RET
 
 TEXT ·floatMulSubCmplxAssignAVX2(SB), NOSPLIT, $0-56
-	MOVQ v0+0(FP), AX
-	MOVQ vOut+32(FP), CX
+	MOVQ v0_base+0(FP), AX
+	MOVQ vOut_base+32(FP), CX
 
 	MOVQ vOut_len+40(FP), DX
 
@@ -187,8 +187,8 @@ loop_end:
 	RET
 
 TEXT ·cmplxMulCmplxAssignAVX2(SB), NOSPLIT, $0-64
-	MOVQ v0+0(FP), AX
-	MOVQ vOut+40(FP), CX
+	MOVQ v0_base+0(FP), AX
+	MOVQ vOut_base+40(FP), CX
 
 	MOVQ vOut_len+48(FP), DX
 
@@ -220,8 +220,8 @@ loop_end:
 	RET
 
 TEXT ·cmplxMulAddCmplxAssignAVX2(SB), NOSPLIT, $0-64
-	MOVQ v0+0(FP), AX
-	MOVQ vOut+40(FP), CX
+	MOVQ v0_base+0(FP), AX
+	MOVQ vOut_base+40(FP), CX
 
 	MOVQ vOut_len+48(FP), DX
 
@@ -255,8 +255,8 @@ loop_end:
 	RET
 
 TEXT ·cmplxMulSubCmplxAssignAVX2(SB), NOSPLIT, $0-64
-	MOVQ v0+0(FP), AX
-	MOVQ vOut+40(FP), CX
+	MOVQ v0_base+0(FP), AX
+	MOVQ vOut_base+40(FP), CX
 
 	MOVQ vOut_len+48(FP), DX
 
@@ -293,9 +293,9 @@ loop_end:
 	RET
 
 TEXT ·elementWiseMulCmplxAssignAVX2(SB), NOSPLIT, $0-72
-	MOVQ v0+0(FP), AX
-	MOVQ v1+24(FP), BX
-	MOVQ vOut+48(FP), CX
+	MOVQ v0_base+0(FP), AX
+	MOVQ v1_base+24(FP), BX
+	MOVQ vOut_base+48(FP), CX
 
 	MOVQ vOut_len+56(FP), DX
 
@@ -326,9 +326,9 @@ loop_end:
 	RET
 
 TEXT ·elementWiseMulAddCmplxAssignAVX2(SB), NOSPLIT, $0-72
-	MOVQ v0+0(FP), AX
-	MOVQ v1+24(FP), BX
-	MOVQ vOut+48(FP), CX
+	MOVQ v0_base+0(FP), AX
+	MOVQ v1_base+24(FP), BX
+	MOVQ vOut_base+48(FP), CX
 
 	MOVQ vOut_len+56(FP), DX
 
@@ -361,9 +361,9 @@ loop_end:
 	RET
 
 TEXT ·elementWiseMulSubCmplxAssignAVX2(SB), NOSPLIT, $0-72
-	MOVQ v0+0(FP), AX
-	MOVQ v1+24(FP), BX
-	MOVQ vOut+48(FP), CX
+	MOVQ v0_base+0(FP), AX
+	MOVQ v1_base+24(FP), BX
+	MOVQ vOut_base+48(FP), CX
 
 	MOVQ vOut_len+56(FP), DX
 
