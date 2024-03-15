@@ -73,7 +73,7 @@ func (f *FourierEvaluator[T]) ToPolySubAssign(fp FourierPoly, pOut Poly[T]) {
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.twInv)
 	floatModQInPlace(f.buffer.fpInv.Coeffs, f.q, f.qInv)
-	convertFourierPolyToPolyAddAssign(f.buffer.fp.Coeffs, pOut.Coeffs)
+	convertFourierPolyToPolySubAssign(f.buffer.fp.Coeffs, pOut.Coeffs)
 }
 
 // ToPolyAssignUnsafe transforms FourierPoly to Poly and writes it to pOut.
