@@ -1,0 +1,421 @@
+//go:build amd64 && !purego
+
+#include "textflag.h"
+
+// Magic numbers for conversion
+DATA EXP52<>+0(SB)/8, $0x4330000000000000 // 2^52
+GLOBL EXP52<>(SB), RODATA, $8
+DATA EXP8463<>+0(SB)/8, $0x4530000080000000 // 2^84 + 2^63
+GLOBL EXP8463<>(SB), RODATA, $8
+DATA EXP846352<>+0(SB)/8, $0x4530000080100000 // 2^84 + 2^63 + 2^52
+GLOBL EXP846352<>+0(SB), RODATA, $8
+DATA EXP5251<>+0(SB)/8, $0x4338000000000000 // 2^52 + 2^51
+GLOBL EXP5251<>+0(SB), RODATA, $8
+DATA EXP32<>+0(SB)/8, $0x41f0000000000000 // 2^32
+GLOBL EXP32<>+0(SB), RODATA, $8
+DATA EXP32INV<>+0(SB)/8, $0x3df0000000000000 // 2^-32
+GLOBL EXP32INV<>+0(SB), RODATA, $8
+
+TEXT ·convertPolyToFourierPolyAssignUint32AVX2(SB), NOSPLIT, $0-48
+	MOVQ p_base+0(FP), AX
+	MOVQ fpOut_base+24(FP), CX
+
+	MOVQ p_len+8(FP), DX
+
+	MOVQ AX, BX
+	SHLQ $1, DX // Offset: (N/2) * 4bytes = 2N bytes
+	ADDQ DX, BX
+	SHRQ $1, DX
+
+	XORQ SI, SI
+	XORQ DI, DI
+	JMP  loop_end
+
+loop_body:
+	VMOVUPD (AX)(DI*4), X0
+	VMOVUPD (BX)(DI*4), X1
+
+	VCVTDQ2PD X0, Y0
+	VCVTDQ2PD X1, Y1
+
+	VMOVUPD Y0, (CX)(SI*8)
+	VMOVUPD Y1, 32(CX)(SI*8)
+
+	ADDQ $8, SI
+	ADDQ $4, DI
+
+loop_end:
+	CMPQ SI, DX
+	JL   loop_body
+
+	RET
+
+TEXT ·convertPolyToFourierPolyAssignUint64AVX2(SB), NOSPLIT, $0-48
+	MOVQ p_base+0(FP), AX
+	MOVQ fpOut_base+24(FP), CX
+
+	MOVQ p_len+8(FP), DX
+
+	MOVQ AX, BX
+	SHLQ $2, DX // Offset: (N/2) * 8bytes = 4N bytes
+	ADDQ DX, BX
+	SHRQ $2, DX
+
+	VBROADCASTSD EXP52<>+0(SB), Y10     // 2^52
+	VBROADCASTSD EXP8463<>+0(SB), Y11   // 2^84 + 2^63
+	VBROADCASTSD EXP846352<>+0(SB), Y12 // 2^84 + 2^63 + 2^52
+
+	XORQ SI, SI
+	XORQ DI, DI
+	JMP  loop_end
+
+loop_body:
+	VMOVUPD (AX)(DI*8), Y0
+	VMOVUPD (BX)(DI*8), Y1
+
+	VPBLENDD $0b01010101, Y0, Y10, Y2
+	VPSRLQ   $32, Y0, Y3
+	VPXOR    Y3, Y11, Y3
+	VSUBPD   Y12, Y3, Y3
+	VADDPD   Y3, Y2, Y3
+
+	VPBLENDD $0b01010101, Y1, Y10, Y4
+	VPSRLQ   $32, Y1, Y5
+	VPXOR    Y5, Y11, Y5
+	VSUBPD   Y12, Y5, Y5
+	VADDPD   Y5, Y4, Y5
+
+	VMOVUPD Y3, (CX)(SI*8)
+	VMOVUPD Y5, 32(CX)(SI*8)
+
+	ADDQ $8, SI
+	ADDQ $4, DI
+
+loop_end:
+	CMPQ SI, DX
+	JL   loop_body
+
+	RET
+
+TEXT ·convertFourierPolyToPolyAssignUint32AVX2(SB), NOSPLIT, $0-48
+	MOVQ fp_base+0(FP), AX
+	MOVQ pOut_base+24(FP), BX
+
+	MOVQ fp_len+8(FP), DX
+
+	MOVQ BX, CX
+	SHLQ $1, DX // Offset: (N/2) * 4bytes = 2N bytes
+	ADDQ DX, CX
+	SHRQ $1, DX
+
+	XORQ SI, SI
+	XORQ DI, DI
+	JMP  loop_end
+
+loop_body:
+	VMOVUPD (AX)(SI*8), Y0
+	VMOVUPD 32(AX)(SI*8), Y1
+
+	VCVTPD2DQY Y0, X0
+	VCVTPD2DQY Y1, X1
+
+	VMOVUPD X0, (BX)(DI*4)
+	VMOVUPD X1, (CX)(DI*4)
+
+	ADDQ $8, SI
+	ADDQ $4, DI
+
+loop_end:
+	CMPQ SI, DX
+	JL   loop_body
+
+	RET
+
+TEXT ·convertFourierPolyToPolyAssignUint64AVX2(SB), NOSPLIT, $0-48
+	MOVQ fp_base+0(FP), AX
+	MOVQ pOut_base+24(FP), BX
+
+	MOVQ fp_len+8(FP), DX
+
+	MOVQ BX, CX
+	SHLQ $2, DX // Offset: (N/2) * 8bytes = 4N bytes
+	ADDQ DX, CX
+	SHRQ $2, DX
+
+	VBROADCASTSD EXP32<>+0(SB), Y10 // 2^32
+	VBROADCASTSD EXP32INV<>+0(SB), Y11 // 2^-32
+	VBROADCASTSD EXP5251<>+0(SB), Y12 // 2^52 + 2^51
+
+	XORQ SI, SI
+	XORQ DI, DI
+	JMP  loop_end
+
+loop_body:
+	VMOVUPD (AX)(SI*8), Y0
+	VMOVUPD 32(AX)(SI*8), Y1
+
+	VMULPD Y0, Y11, Y2
+
+	VADDPD Y12, Y2, Y2
+	VPSUBD Y12, Y2, Y2
+
+	VPADDD Y12, Y2, Y3
+	VSUBPD Y12, Y3, Y3
+	VMULPD Y3, Y10, Y3
+	VSUBPD Y3, Y0, Y3
+
+	VADDPD Y12, Y3, Y3
+	VPSUBD Y12, Y3, Y3
+
+	VPSLLQ $32, Y2, Y4
+	VPADDD Y3, Y4, Y4
+
+	VMULPD Y1, Y11, Y5
+
+	VADDPD Y12, Y5, Y5
+	VPSUBD Y12, Y5, Y5
+
+	VPADDD Y12, Y5, Y6
+	VSUBPD Y12, Y6, Y6
+	VMULPD Y6, Y10, Y6
+	VSUBPD Y6, Y1, Y6
+
+	VADDPD Y12, Y6, Y6
+	VPSUBD Y12, Y6, Y6
+
+	VPSLLQ $32, Y5, Y7
+	VPADDD Y6, Y7, Y7
+
+	VMOVUPD Y4, (BX)(DI*8)
+	VMOVUPD Y7, (CX)(DI*8)
+
+	ADDQ $8, SI
+	ADDQ $4, DI
+
+loop_end:
+	CMPQ SI, DX
+	JL   loop_body
+
+	RET
+
+TEXT ·convertFourierPolyToPolyAddAssignUint32AVX2(SB), NOSPLIT, $0-48
+	MOVQ fp_base+0(FP), AX
+	MOVQ pOut_base+24(FP), BX
+
+	MOVQ fp_len+8(FP), DX
+
+	MOVQ BX, CX
+	SHLQ $1, DX // Offset: (N/2) * 4bytes = 2N bytes
+	ADDQ DX, CX
+	SHRQ $1, DX
+
+	XORQ SI, SI
+	XORQ DI, DI
+	JMP  loop_end
+
+loop_body:
+	VMOVUPD (AX)(SI*8), Y0
+	VMOVUPD 32(AX)(SI*8), Y1
+	VMOVUPD (BX)(DI*4), X2
+	VMOVUPD (CX)(DI*4), X3
+
+	VCVTPD2DQY Y0, X0
+	VCVTPD2DQY Y1, X1
+
+	VPADDD X0, X2, X0
+	VPADDD X1, X3, X1
+
+	VMOVUPD X0, (BX)(DI*4)
+	VMOVUPD X1, (CX)(DI*4)
+
+	ADDQ $8, SI
+	ADDQ $4, DI
+
+loop_end:
+	CMPQ SI, DX
+	JL   loop_body
+
+	RET
+
+TEXT ·convertFourierPolyToPolyAddAssignUint64AVX2(SB), NOSPLIT, $0-48
+	MOVQ fp_base+0(FP), AX
+	MOVQ pOut_base+24(FP), BX
+
+	MOVQ fp_len+8(FP), DX
+
+	MOVQ BX, CX
+	SHLQ $2, DX // Offset: (N/2) * 8bytes = 4N bytes
+	ADDQ DX, CX
+	SHRQ $2, DX
+
+	VBROADCASTSD EXP32<>+0(SB), Y10 // 2^32
+	VBROADCASTSD EXP32INV<>+0(SB), Y11 // 2^-32
+	VBROADCASTSD EXP5251<>+0(SB), Y12 // 2^52 + 2^51
+
+	XORQ SI, SI
+	XORQ DI, DI
+	JMP  loop_end
+
+loop_body:
+	VMOVUPD (AX)(SI*8), Y0
+	VMOVUPD 32(AX)(SI*8), Y1
+	VMOVUPD (BX)(DI*8), Y8
+	VMOVUPD (CX)(DI*8), Y9
+
+	VMULPD Y0, Y11, Y2
+
+	VADDPD Y12, Y2, Y2
+	VPSUBD Y12, Y2, Y2
+
+	VPADDD Y12, Y2, Y3
+	VSUBPD Y12, Y3, Y3
+	VMULPD Y3, Y10, Y3
+	VSUBPD Y3, Y0, Y3
+
+	VADDPD Y12, Y3, Y3
+	VPSUBD Y12, Y3, Y3
+
+	VPSLLQ $32, Y2, Y4
+	VPADDD Y3, Y4, Y4
+
+	VMULPD Y1, Y11, Y5
+
+	VADDPD Y12, Y5, Y5
+	VPSUBD Y12, Y5, Y5
+
+	VPADDD Y12, Y5, Y6
+	VSUBPD Y12, Y6, Y6
+	VMULPD Y6, Y10, Y6
+	VSUBPD Y6, Y1, Y6
+
+	VADDPD Y12, Y6, Y6
+	VPSUBD Y12, Y6, Y6
+
+	VPSLLQ $32, Y5, Y7
+	VPADDD Y6, Y7, Y7
+
+	VPADDD Y4, Y8, Y8
+	VPADDD Y7, Y9, Y9
+
+	VMOVUPD Y8, (BX)(DI*8)
+	VMOVUPD Y9, (CX)(DI*8)
+
+	ADDQ $8, SI
+	ADDQ $4, DI
+
+loop_end:
+	CMPQ SI, DX
+	JL   loop_body
+
+	RET
+
+TEXT ·convertFourierPolyToPolySubAssignUint32AVX2(SB), NOSPLIT, $0-48
+	MOVQ fp_base+0(FP), AX
+	MOVQ pOut_base+24(FP), BX
+
+	MOVQ fp_len+8(FP), DX
+
+	MOVQ BX, CX
+	SHLQ $1, DX // Offset: (N/2) * 4bytes = 2N bytes
+	ADDQ DX, CX
+	SHRQ $1, DX
+
+	XORQ SI, SI
+	XORQ DI, DI
+	JMP  loop_end
+
+loop_body:
+	VMOVUPD (AX)(SI*8), Y0
+	VMOVUPD 32(AX)(SI*8), Y1
+	VMOVUPD (BX)(DI*4), X2
+	VMOVUPD (CX)(DI*4), X3
+
+	VCVTPD2DQY Y0, X0
+	VCVTPD2DQY Y1, X1
+
+	VPSUBD X0, X2, X0
+	VPSUBD X1, X3, X1
+
+	VMOVUPD X0, (BX)(DI*4)
+	VMOVUPD X1, (CX)(DI*4)
+
+	ADDQ $8, SI
+	ADDQ $4, DI
+
+loop_end:
+	CMPQ SI, DX
+	JL   loop_body
+
+	RET
+
+TEXT ·convertFourierPolyToPolySubAssignUint64AVX2(SB), NOSPLIT, $0-48
+	MOVQ fp_base+0(FP), AX
+	MOVQ pOut_base+24(FP), BX
+
+	MOVQ fp_len+8(FP), DX
+
+	MOVQ BX, CX
+	SHLQ $2, DX // Offset: (N/2) * 8bytes = 4N bytes
+	ADDQ DX, CX
+	SHRQ $2, DX
+
+	VBROADCASTSD EXP32<>+0(SB), Y10 // 2^32
+	VBROADCASTSD EXP32INV<>+0(SB), Y11 // 2^-32
+	VBROADCASTSD EXP5251<>+0(SB), Y12 // 2^52 + 2^51
+
+	XORQ SI, SI
+	XORQ DI, DI
+	JMP  loop_end
+
+loop_body:
+	VMOVUPD (AX)(SI*8), Y0
+	VMOVUPD 32(AX)(SI*8), Y1
+	VMOVUPD (BX)(DI*8), Y8
+	VMOVUPD (CX)(DI*8), Y9
+
+	VMULPD Y0, Y11, Y2
+
+	VADDPD Y12, Y2, Y2
+	VPSUBD Y12, Y2, Y2
+
+	VPADDD Y12, Y2, Y3
+	VSUBPD Y12, Y3, Y3
+	VMULPD Y3, Y10, Y3
+	VSUBPD Y3, Y0, Y3
+
+	VADDPD Y12, Y3, Y3
+	VPSUBD Y12, Y3, Y3
+
+	VPSLLQ $32, Y2, Y4
+	VPADDD Y3, Y4, Y4
+
+	VMULPD Y1, Y11, Y5
+
+	VADDPD Y12, Y5, Y5
+	VPSUBD Y12, Y5, Y5
+
+	VPADDD Y12, Y5, Y6
+	VSUBPD Y12, Y6, Y6
+	VMULPD Y6, Y10, Y6
+	VSUBPD Y6, Y1, Y6
+
+	VADDPD Y12, Y6, Y6
+	VPSUBD Y12, Y6, Y6
+
+	VPSLLQ $32, Y5, Y7
+	VPADDD Y6, Y7, Y7
+
+	VPSUBD Y4, Y8, Y8
+	VPSUBD Y7, Y9, Y9
+
+	VMOVUPD Y8, (BX)(DI*8)
+	VMOVUPD Y9, (CX)(DI*8)
+
+	ADDQ $8, SI
+	ADDQ $4, DI
+
+loop_end:
+	CMPQ SI, DX
+	JL   loop_body
+
+	RET

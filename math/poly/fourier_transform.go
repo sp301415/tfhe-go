@@ -9,84 +9,7 @@ func (f *FourierEvaluator[T]) ToFourierPoly(p Poly[T]) FourierPoly {
 
 // ToFourierPolyAssign transforms Poly to FourierPoly and writes it to fpOut.
 func (f *FourierEvaluator[T]) ToFourierPolyAssign(p Poly[T], fpOut FourierPoly) {
-	N := f.degree
-
-	var z T
-	switch any(z).(type) {
-	case uint, uintptr:
-		for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
-			fpOut.Coeffs[j+0] = float64(int(p.Coeffs[jj+0]))
-			fpOut.Coeffs[j+1] = float64(int(p.Coeffs[jj+1]))
-			fpOut.Coeffs[j+2] = float64(int(p.Coeffs[jj+2]))
-			fpOut.Coeffs[j+3] = float64(int(p.Coeffs[jj+3]))
-
-			fpOut.Coeffs[j+4] = float64(int(p.Coeffs[jj+0+N/2]))
-			fpOut.Coeffs[j+5] = float64(int(p.Coeffs[jj+1+N/2]))
-			fpOut.Coeffs[j+6] = float64(int(p.Coeffs[jj+2+N/2]))
-			fpOut.Coeffs[j+7] = float64(int(p.Coeffs[jj+3+N/2]))
-		}
-	case uint8:
-		for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
-			fpOut.Coeffs[j+0] = float64(int8(p.Coeffs[jj+0]))
-			fpOut.Coeffs[j+1] = float64(int8(p.Coeffs[jj+1]))
-			fpOut.Coeffs[j+2] = float64(int8(p.Coeffs[jj+2]))
-			fpOut.Coeffs[j+3] = float64(int8(p.Coeffs[jj+3]))
-
-			fpOut.Coeffs[j+4] = float64(int8(p.Coeffs[jj+0+N/2]))
-			fpOut.Coeffs[j+5] = float64(int8(p.Coeffs[jj+1+N/2]))
-			fpOut.Coeffs[j+6] = float64(int8(p.Coeffs[jj+2+N/2]))
-			fpOut.Coeffs[j+7] = float64(int8(p.Coeffs[jj+3+N/2]))
-		}
-	case uint16:
-		for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
-			fpOut.Coeffs[j+0] = float64(int16(p.Coeffs[jj+0]))
-			fpOut.Coeffs[j+1] = float64(int16(p.Coeffs[jj+1]))
-			fpOut.Coeffs[j+2] = float64(int16(p.Coeffs[jj+2]))
-			fpOut.Coeffs[j+3] = float64(int16(p.Coeffs[jj+3]))
-
-			fpOut.Coeffs[j+4] = float64(int16(p.Coeffs[jj+0+N/2]))
-			fpOut.Coeffs[j+5] = float64(int16(p.Coeffs[jj+1+N/2]))
-			fpOut.Coeffs[j+6] = float64(int16(p.Coeffs[jj+2+N/2]))
-			fpOut.Coeffs[j+7] = float64(int16(p.Coeffs[jj+3+N/2]))
-		}
-	case uint32:
-		for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
-			fpOut.Coeffs[j+0] = float64(int32(p.Coeffs[jj+0]))
-			fpOut.Coeffs[j+1] = float64(int32(p.Coeffs[jj+1]))
-			fpOut.Coeffs[j+2] = float64(int32(p.Coeffs[jj+2]))
-			fpOut.Coeffs[j+3] = float64(int32(p.Coeffs[jj+3]))
-
-			fpOut.Coeffs[j+4] = float64(int32(p.Coeffs[jj+0+N/2]))
-			fpOut.Coeffs[j+5] = float64(int32(p.Coeffs[jj+1+N/2]))
-			fpOut.Coeffs[j+6] = float64(int32(p.Coeffs[jj+2+N/2]))
-			fpOut.Coeffs[j+7] = float64(int32(p.Coeffs[jj+3+N/2]))
-		}
-	case uint64:
-		for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
-			fpOut.Coeffs[j+0] = float64(int64(p.Coeffs[jj+0]))
-			fpOut.Coeffs[j+1] = float64(int64(p.Coeffs[jj+1]))
-			fpOut.Coeffs[j+2] = float64(int64(p.Coeffs[jj+2]))
-			fpOut.Coeffs[j+3] = float64(int64(p.Coeffs[jj+3]))
-
-			fpOut.Coeffs[j+4] = float64(int64(p.Coeffs[jj+0+N/2]))
-			fpOut.Coeffs[j+5] = float64(int64(p.Coeffs[jj+1+N/2]))
-			fpOut.Coeffs[j+6] = float64(int64(p.Coeffs[jj+2+N/2]))
-			fpOut.Coeffs[j+7] = float64(int64(p.Coeffs[jj+3+N/2]))
-		}
-	default:
-		for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
-			fpOut.Coeffs[j+0] = float64(p.Coeffs[jj+0])
-			fpOut.Coeffs[j+1] = float64(p.Coeffs[jj+1])
-			fpOut.Coeffs[j+2] = float64(p.Coeffs[jj+2])
-			fpOut.Coeffs[j+3] = float64(p.Coeffs[jj+3])
-
-			fpOut.Coeffs[j+4] = float64(p.Coeffs[jj+0+N/2])
-			fpOut.Coeffs[j+5] = float64(p.Coeffs[jj+1+N/2])
-			fpOut.Coeffs[j+6] = float64(p.Coeffs[jj+2+N/2])
-			fpOut.Coeffs[j+7] = float64(p.Coeffs[jj+3+N/2])
-		}
-	}
-
+	convertPolyToFourierPolyAssign(p.Coeffs, fpOut.Coeffs)
 	fftInPlace(fpOut.Coeffs, f.tw)
 }
 
@@ -131,65 +54,26 @@ func (f *FourierEvaluator[T]) ToPoly(fp FourierPoly) Poly[T] {
 
 // ToPolyAssign transforms FourierPoly to Poly and writes it to pOut.
 func (f *FourierEvaluator[T]) ToPolyAssign(fp FourierPoly, pOut Poly[T]) {
-	N := f.degree
-
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.twInv)
 	floatModQInPlace(f.buffer.fpInv.Coeffs, f.q, f.qInv)
-
-	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
-		pOut.Coeffs[jj+0] = T(int64(f.buffer.fpInv.Coeffs[j+0]))
-		pOut.Coeffs[jj+1] = T(int64(f.buffer.fpInv.Coeffs[j+1]))
-		pOut.Coeffs[jj+2] = T(int64(f.buffer.fpInv.Coeffs[j+2]))
-		pOut.Coeffs[jj+3] = T(int64(f.buffer.fpInv.Coeffs[j+3]))
-
-		pOut.Coeffs[jj+0+N/2] = T(int64(f.buffer.fpInv.Coeffs[j+4]))
-		pOut.Coeffs[jj+1+N/2] = T(int64(f.buffer.fpInv.Coeffs[j+5]))
-		pOut.Coeffs[jj+2+N/2] = T(int64(f.buffer.fpInv.Coeffs[j+6]))
-		pOut.Coeffs[jj+3+N/2] = T(int64(f.buffer.fpInv.Coeffs[j+7]))
-	}
+	convertFourierPolyToPolyAssign(f.buffer.fpInv.Coeffs, pOut.Coeffs)
 }
 
 // ToPolyAddAssign transforms FourierPoly to Poly and adds it to pOut.
 func (f *FourierEvaluator[T]) ToPolyAddAssign(fp FourierPoly, pOut Poly[T]) {
-	N := f.degree
-
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.twInv)
 	floatModQInPlace(f.buffer.fpInv.Coeffs, f.q, f.qInv)
-
-	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
-		pOut.Coeffs[jj+0] += T(int64(f.buffer.fpInv.Coeffs[j+0]))
-		pOut.Coeffs[jj+1] += T(int64(f.buffer.fpInv.Coeffs[j+1]))
-		pOut.Coeffs[jj+2] += T(int64(f.buffer.fpInv.Coeffs[j+2]))
-		pOut.Coeffs[jj+3] += T(int64(f.buffer.fpInv.Coeffs[j+3]))
-
-		pOut.Coeffs[jj+0+N/2] += T(int64(f.buffer.fpInv.Coeffs[j+4]))
-		pOut.Coeffs[jj+1+N/2] += T(int64(f.buffer.fpInv.Coeffs[j+5]))
-		pOut.Coeffs[jj+2+N/2] += T(int64(f.buffer.fpInv.Coeffs[j+6]))
-		pOut.Coeffs[jj+3+N/2] += T(int64(f.buffer.fpInv.Coeffs[j+7]))
-	}
+	convertFourierPolyToPolyAddAssign(f.buffer.fpInv.Coeffs, pOut.Coeffs)
 }
 
 // ToPolySubAssign transforms FourierPoly to Poly and subtracts it from pOut.
 func (f *FourierEvaluator[T]) ToPolySubAssign(fp FourierPoly, pOut Poly[T]) {
-	N := f.degree
-
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.twInv)
 	floatModQInPlace(f.buffer.fpInv.Coeffs, f.q, f.qInv)
-
-	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
-		pOut.Coeffs[jj+0] -= T(int64(f.buffer.fpInv.Coeffs[j+0]))
-		pOut.Coeffs[jj+1] -= T(int64(f.buffer.fpInv.Coeffs[j+1]))
-		pOut.Coeffs[jj+2] -= T(int64(f.buffer.fpInv.Coeffs[j+2]))
-		pOut.Coeffs[jj+3] -= T(int64(f.buffer.fpInv.Coeffs[j+3]))
-
-		pOut.Coeffs[jj+0+N/2] -= T(int64(f.buffer.fpInv.Coeffs[j+4]))
-		pOut.Coeffs[jj+1+N/2] -= T(int64(f.buffer.fpInv.Coeffs[j+5]))
-		pOut.Coeffs[jj+2+N/2] -= T(int64(f.buffer.fpInv.Coeffs[j+6]))
-		pOut.Coeffs[jj+3+N/2] -= T(int64(f.buffer.fpInv.Coeffs[j+7]))
-	}
+	convertFourierPolyToPolyAddAssign(f.buffer.fp.Coeffs, pOut.Coeffs)
 }
 
 // ToPolyAssignUnsafe transforms FourierPoly to Poly and writes it to pOut.
@@ -197,22 +81,9 @@ func (f *FourierEvaluator[T]) ToPolySubAssign(fp FourierPoly, pOut Poly[T]) {
 // This method is slightly faster than ToPolyAssign, but it modifies fp directly.
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
 func (f *FourierEvaluator[T]) ToPolyAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
-	N := f.degree
-
 	invFFTInPlace(fp.Coeffs, f.twInv)
 	floatModQInPlace(fp.Coeffs, f.q, f.qInv)
-
-	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
-		pOut.Coeffs[jj+0] = T(int64(fp.Coeffs[j+0]))
-		pOut.Coeffs[jj+1] = T(int64(fp.Coeffs[j+1]))
-		pOut.Coeffs[jj+2] = T(int64(fp.Coeffs[j+2]))
-		pOut.Coeffs[jj+3] = T(int64(fp.Coeffs[j+3]))
-
-		pOut.Coeffs[jj+0+N/2] = T(int64(fp.Coeffs[j+4]))
-		pOut.Coeffs[jj+1+N/2] = T(int64(fp.Coeffs[j+5]))
-		pOut.Coeffs[jj+2+N/2] = T(int64(fp.Coeffs[j+6]))
-		pOut.Coeffs[jj+3+N/2] = T(int64(fp.Coeffs[j+7]))
-	}
+	convertFourierPolyToPolyAssign(fp.Coeffs, pOut.Coeffs)
 }
 
 // ToPolyAddAssignUnsafe transforms FourierPoly to Poly and adds it to pOut.
@@ -220,22 +91,9 @@ func (f *FourierEvaluator[T]) ToPolyAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
 // This method is slightly faster than ToPolyAddAssign, but it modifies fp directly.
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
 func (f *FourierEvaluator[T]) ToPolyAddAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
-	N := f.degree
-
 	invFFTInPlace(fp.Coeffs, f.twInv)
 	floatModQInPlace(fp.Coeffs, f.q, f.qInv)
-
-	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
-		pOut.Coeffs[jj+0] += T(int64(fp.Coeffs[j+0]))
-		pOut.Coeffs[jj+1] += T(int64(fp.Coeffs[j+1]))
-		pOut.Coeffs[jj+2] += T(int64(fp.Coeffs[j+2]))
-		pOut.Coeffs[jj+3] += T(int64(fp.Coeffs[j+3]))
-
-		pOut.Coeffs[jj+0+N/2] += T(int64(fp.Coeffs[j+4]))
-		pOut.Coeffs[jj+1+N/2] += T(int64(fp.Coeffs[j+5]))
-		pOut.Coeffs[jj+2+N/2] += T(int64(fp.Coeffs[j+6]))
-		pOut.Coeffs[jj+3+N/2] += T(int64(fp.Coeffs[j+7]))
-	}
+	convertFourierPolyToPolyAddAssign(fp.Coeffs, pOut.Coeffs)
 }
 
 // ToPolySubAssignUnsafe transforms FourierPoly to Poly and subtracts it from pOut.
@@ -243,22 +101,9 @@ func (f *FourierEvaluator[T]) ToPolyAddAssignUnsafe(fp FourierPoly, pOut Poly[T]
 // This method is slightly faster than ToPolySubAssign, but it modifies fp directly.
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
 func (f *FourierEvaluator[T]) ToPolySubAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
-	N := f.degree
-
 	invFFTInPlace(fp.Coeffs, f.twInv)
 	floatModQInPlace(fp.Coeffs, f.q, f.qInv)
-
-	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
-		pOut.Coeffs[jj+0] -= T(int64(fp.Coeffs[j+0]))
-		pOut.Coeffs[jj+1] -= T(int64(fp.Coeffs[j+1]))
-		pOut.Coeffs[jj+2] -= T(int64(fp.Coeffs[j+2]))
-		pOut.Coeffs[jj+3] -= T(int64(fp.Coeffs[j+3]))
-
-		pOut.Coeffs[jj+0+N/2] -= T(int64(fp.Coeffs[j+4]))
-		pOut.Coeffs[jj+1+N/2] -= T(int64(fp.Coeffs[j+5]))
-		pOut.Coeffs[jj+2+N/2] -= T(int64(fp.Coeffs[j+6]))
-		pOut.Coeffs[jj+3+N/2] -= T(int64(fp.Coeffs[j+7]))
-	}
+	convertFourierPolyToPolySubAssign(fp.Coeffs, pOut.Coeffs)
 }
 
 // toPolyExactAssignUnsafe transforms FourierPoly to Poly and writes it to pOut.
@@ -269,22 +114,9 @@ func (f *FourierEvaluator[T]) ToPolySubAssignUnsafe(fp FourierPoly, pOut Poly[T]
 // This method is slightly faster than ToPolyAssign, but it modifies fp directly.
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
 func (f *FourierEvaluator[T]) toPolyExactAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
-	N := f.degree
-
 	invFFTInPlace(fp.Coeffs, f.twInv)
 	roundCmplxAssign(fp.Coeffs, fp.Coeffs)
-
-	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
-		pOut.Coeffs[jj+0] = T(int64(fp.Coeffs[j+0]))
-		pOut.Coeffs[jj+1] = T(int64(fp.Coeffs[j+1]))
-		pOut.Coeffs[jj+2] = T(int64(fp.Coeffs[j+2]))
-		pOut.Coeffs[jj+3] = T(int64(fp.Coeffs[j+3]))
-
-		pOut.Coeffs[jj+0+N/2] = T(int64(fp.Coeffs[j+4]))
-		pOut.Coeffs[jj+1+N/2] = T(int64(fp.Coeffs[j+5]))
-		pOut.Coeffs[jj+2+N/2] = T(int64(fp.Coeffs[j+6]))
-		pOut.Coeffs[jj+3+N/2] = T(int64(fp.Coeffs[j+7]))
-	}
+	convertFourierPolyToPolyAssign(fp.Coeffs, pOut.Coeffs)
 }
 
 // toPolyExactAddAssignUnsafe transforms FourierPoly to Poly and adds it to pOut.
@@ -295,22 +127,9 @@ func (f *FourierEvaluator[T]) toPolyExactAssignUnsafe(fp FourierPoly, pOut Poly[
 // This method is slightly faster than ToPolyAddAssign, but it modifies fp directly.
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
 func (f *FourierEvaluator[T]) toPolyExactAddAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
-	N := f.degree
-
 	invFFTInPlace(fp.Coeffs, f.twInv)
 	roundCmplxAssign(fp.Coeffs, fp.Coeffs)
-
-	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
-		pOut.Coeffs[jj+0] += T(int64(fp.Coeffs[j+0]))
-		pOut.Coeffs[jj+1] += T(int64(fp.Coeffs[j+1]))
-		pOut.Coeffs[jj+2] += T(int64(fp.Coeffs[j+2]))
-		pOut.Coeffs[jj+3] += T(int64(fp.Coeffs[j+3]))
-
-		pOut.Coeffs[jj+0+N/2] += T(int64(fp.Coeffs[j+4]))
-		pOut.Coeffs[jj+1+N/2] += T(int64(fp.Coeffs[j+5]))
-		pOut.Coeffs[jj+2+N/2] += T(int64(fp.Coeffs[j+6]))
-		pOut.Coeffs[jj+3+N/2] += T(int64(fp.Coeffs[j+7]))
-	}
+	convertFourierPolyToPolyAddAssign(fp.Coeffs, pOut.Coeffs)
 }
 
 // toPolyExactSubAssignUnsafe transforms FourierPoly to Poly and subtracts it from pOut.
@@ -321,20 +140,7 @@ func (f *FourierEvaluator[T]) toPolyExactAddAssignUnsafe(fp FourierPoly, pOut Po
 // This method is slightly faster than ToPolySubAssign, but it modifies fp directly.
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
 func (f *FourierEvaluator[T]) toPolyExactSubAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
-	N := f.degree
-
 	invFFTInPlace(fp.Coeffs, f.twInv)
 	roundCmplxAssign(fp.Coeffs, fp.Coeffs)
-
-	for j, jj := 0, 0; j < N; j, jj = j+8, jj+4 {
-		pOut.Coeffs[jj+0] -= T(int64(fp.Coeffs[j+0]))
-		pOut.Coeffs[jj+1] -= T(int64(fp.Coeffs[j+1]))
-		pOut.Coeffs[jj+2] -= T(int64(fp.Coeffs[j+2]))
-		pOut.Coeffs[jj+3] -= T(int64(fp.Coeffs[j+3]))
-
-		pOut.Coeffs[jj+0+N/2] -= T(int64(fp.Coeffs[j+4]))
-		pOut.Coeffs[jj+1+N/2] -= T(int64(fp.Coeffs[j+5]))
-		pOut.Coeffs[jj+2+N/2] -= T(int64(fp.Coeffs[j+6]))
-		pOut.Coeffs[jj+3+N/2] -= T(int64(fp.Coeffs[j+7]))
-	}
+	convertFourierPolyToPolySubAssign(fp.Coeffs, pOut.Coeffs)
 }
