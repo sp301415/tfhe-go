@@ -32,8 +32,8 @@ TEXT ·convertPolyToFourierPolyAssignUint32AVX2(SB), NOSPLIT, $0-48
 	JMP  loop_end
 
 loop_body:
-	VMOVUPD (AX)(DI*4), X0
-	VMOVUPD (BX)(DI*4), X1
+	VMOVDQU (AX)(DI*4), X0
+	VMOVDQU (BX)(DI*4), X1
 
 	VCVTDQ2PD X0, Y0
 	VCVTDQ2PD X1, Y1
@@ -70,8 +70,8 @@ TEXT ·convertPolyToFourierPolyAssignUint64AVX2(SB), NOSPLIT, $0-48
 	JMP  loop_end
 
 loop_body:
-	VMOVUPD (AX)(DI*8), Y0
-	VMOVUPD (BX)(DI*8), Y1
+	VMOVDQU (AX)(DI*8), Y0
+	VMOVDQU (BX)(DI*8), Y1
 
 	VPBLENDD $0b01010101, Y0, Y10, Y2
 	VPSRLQ   $32, Y0, Y3
@@ -148,8 +148,8 @@ loop_body:
 	VCVTTPD2DQY Y0, X0
 	VCVTTPD2DQY Y1, X1
 
-	VMOVUPD X0, (BX)(DI*4)
-	VMOVUPD X1, (CX)(DI*4)
+	VMOVDQU X0, (BX)(DI*4)
+	VMOVDQU X1, (CX)(DI*4)
 
 	ADDQ $8, SI
 	ADDQ $4, DI
@@ -215,8 +215,8 @@ loop_body:
 	VPSLLQ $32, Y5, Y7
 	VPADDQ Y6, Y7, Y7
 
-	VMOVUPD Y4, (BX)(DI*8)
-	VMOVUPD Y7, (CX)(DI*8)
+	VMOVDQU Y4, (BX)(DI*8)
+	VMOVDQU Y7, (CX)(DI*8)
 
 	ADDQ $8, SI
 	ADDQ $4, DI
@@ -254,8 +254,8 @@ loop_body:
 	VPADDD X0, X2, X0
 	VPADDD X1, X3, X1
 
-	VMOVUPD X0, (BX)(DI*4)
-	VMOVUPD X1, (CX)(DI*4)
+	VMOVDQU X0, (BX)(DI*4)
+	VMOVDQU X1, (CX)(DI*4)
 
 	ADDQ $8, SI
 	ADDQ $4, DI
@@ -318,8 +318,8 @@ loop_body:
 	VPADDQ Y4, Y8, Y8
 	VPADDQ Y7, Y9, Y9
 
-	VMOVUPD Y8, (BX)(DI*8)
-	VMOVUPD Y9, (CX)(DI*8)
+	VMOVDQU Y8, (BX)(DI*8)
+	VMOVDQU Y9, (CX)(DI*8)
 
 	ADDQ $8, SI
 	ADDQ $4, DI
@@ -357,8 +357,8 @@ loop_body:
 	VPSUBD X0, X2, X0
 	VPSUBD X1, X3, X1
 
-	VMOVUPD X0, (BX)(DI*4)
-	VMOVUPD X1, (CX)(DI*4)
+	VMOVDQU X0, (BX)(DI*4)
+	VMOVDQU X1, (CX)(DI*4)
 
 	ADDQ $8, SI
 	ADDQ $4, DI
@@ -421,8 +421,8 @@ loop_body:
 	VPSUBQ Y4, Y8, Y8
 	VPSUBQ Y7, Y9, Y9
 
-	VMOVUPD Y8, (BX)(DI*8)
-	VMOVUPD Y9, (CX)(DI*8)
+	VMOVDQU Y8, (BX)(DI*8)
+	VMOVDQU Y9, (CX)(DI*8)
 
 	ADDQ $8, SI
 	ADDQ $4, DI
