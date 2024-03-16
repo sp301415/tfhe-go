@@ -24,6 +24,18 @@ type GadgetParametersLiteral[T TorusInt] struct {
 	Level int
 }
 
+// WithBase sets the base and returns the new GadgetParametersLiteral.
+func (p GadgetParametersLiteral[T]) WithBase(base T) GadgetParametersLiteral[T] {
+	p.Base = base
+	return p
+}
+
+// WithLevel sets the level and returns the new GadgetParametersLiteral.
+func (p GadgetParametersLiteral[T]) WithLevel(level int) GadgetParametersLiteral[T] {
+	p.Level = level
+	return p
+}
+
 // Compile transforms GadgetParametersLiteral to read-only GadgetParameters.
 // If there is any invalid parameter in the literal, it panics.
 func (p GadgetParametersLiteral[T]) Compile() GadgetParameters[T] {
@@ -271,6 +283,72 @@ type ParametersLiteral[T TorusInt] struct {
 	//
 	// Moreover, public key encryption is supported only with OrderKeySwitchBlindRotate.
 	BootstrapOrder BootstrapOrder
+}
+
+// WithLWEDimension sets the LWEDimension and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithLWEDimension(lweDimension int) ParametersLiteral[T] {
+	p.LWEDimension = lweDimension
+	return p
+}
+
+// WithGLWEDimension sets the GLWEDimension and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithGLWEDimension(glweDimension int) ParametersLiteral[T] {
+	p.GLWEDimension = glweDimension
+	return p
+}
+
+// WithPolyDegree sets the PolyDegree and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithPolyDegree(polyDegree int) ParametersLiteral[T] {
+	p.PolyDegree = polyDegree
+	return p
+}
+
+// WithPolyLargeDegree sets the PolyLargeDegree and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithPolyLargeDegree(polyLargeDegree int) ParametersLiteral[T] {
+	p.PolyLargeDegree = polyLargeDegree
+	return p
+}
+
+// WithLWEStdDev sets the LWEStdDev and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithLWEStdDev(lweStdDev float64) ParametersLiteral[T] {
+	p.LWEStdDev = lweStdDev
+	return p
+}
+
+// WithGLWEStdDev sets the GLWEStdDev and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithGLWEStdDev(glweStdDev float64) ParametersLiteral[T] {
+	p.GLWEStdDev = glweStdDev
+	return p
+}
+
+// WithBlockSize sets the BlockSize and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithBlockSize(blockSize int) ParametersLiteral[T] {
+	p.BlockSize = blockSize
+	return p
+}
+
+// WithMessageModulus sets the MessageModulus and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithMessageModulus(messageModulus T) ParametersLiteral[T] {
+	p.MessageModulus = messageModulus
+	return p
+}
+
+// WithBootstrapParameters sets the BootstrapParameters and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithBootstrapParameters(bootstrapParameters GadgetParametersLiteral[T]) ParametersLiteral[T] {
+	p.BootstrapParameters = bootstrapParameters
+	return p
+}
+
+// WithKeySwitchParameters sets the KeySwitchParameters and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithKeySwitchParameters(keyswitchParameters GadgetParametersLiteral[T]) ParametersLiteral[T] {
+	p.KeySwitchParameters = keyswitchParameters
+	return p
+}
+
+// WithBootstrapOrder sets the BootstrapOrder and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithBootstrapOrder(bootstrapOrder BootstrapOrder) ParametersLiteral[T] {
+	p.BootstrapOrder = bootstrapOrder
+	return p
 }
 
 // Compile transforms ParametersLiteral to read-only Parameters.

@@ -34,6 +34,90 @@ type ParametersLiteral[T tfhe.TorusInt] struct {
 	RelinKeyParameters tfhe.GadgetParametersLiteral[T]
 }
 
+// WithLWEDimension sets the LWEDimension and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithLWEDimension(lweDimension int) ParametersLiteral[T] {
+	p.LWEDimension = lweDimension
+	return p
+}
+
+// WithGLWEDimension sets the GLWEDimension and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithGLWEDimension(glweDimension int) ParametersLiteral[T] {
+	p.GLWEDimension = glweDimension
+	return p
+}
+
+// WithPolyDegree sets the PolyDegree and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithPolyDegree(polyDegree int) ParametersLiteral[T] {
+	p.PolyDegree = polyDegree
+	return p
+}
+
+// WithPolyLargeDegree sets the PolyLargeDegree and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithPolyLargeDegree(polyLargeDegree int) ParametersLiteral[T] {
+	p.PolyLargeDegree = polyLargeDegree
+	return p
+}
+
+// WithLWEStdDev sets the LWEStdDev and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithLWEStdDev(lweStdDev float64) ParametersLiteral[T] {
+	p.LWEStdDev = lweStdDev
+	return p
+}
+
+// WithGLWEStdDev sets the GLWEStdDev and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithGLWEStdDev(glweStdDev float64) ParametersLiteral[T] {
+	p.GLWEStdDev = glweStdDev
+	return p
+}
+
+// WithBlockSize sets the BlockSize and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithBlockSize(blockSize int) ParametersLiteral[T] {
+	p.BlockSize = blockSize
+	return p
+}
+
+// WithMessageModulus sets the MessageModulus and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithMessageModulus(messageModulus T) ParametersLiteral[T] {
+	p.MessageModulus = messageModulus
+	return p
+}
+
+// WithBootstrapParameters sets the BootstrapParameters and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithBootstrapParameters(bootstrapParameters tfhe.GadgetParametersLiteral[T]) ParametersLiteral[T] {
+	p.BootstrapParameters = bootstrapParameters
+	return p
+}
+
+// WithKeySwitchParameters sets the KeySwitchParameters and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithKeySwitchParameters(keyswitchParameters tfhe.GadgetParametersLiteral[T]) ParametersLiteral[T] {
+	p.KeySwitchParameters = keyswitchParameters
+	return p
+}
+
+// WithBootstrapOrder sets the BootstrapOrder and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithBootstrapOrder(bootstrapOrder tfhe.BootstrapOrder) ParametersLiteral[T] {
+	p.BootstrapOrder = bootstrapOrder
+	return p
+}
+
+// WithPartyCount sets the PartyCount and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithPartyCount(partyCount int) ParametersLiteral[T] {
+	p.PartyCount = partyCount
+	return p
+}
+
+// WithAccumulatorParameters sets the AccumulatorParameters and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithAccumulatorParameters(accumulatorParameters tfhe.GadgetParametersLiteral[T]) ParametersLiteral[T] {
+	p.AccumulatorParameters = accumulatorParameters
+	return p
+}
+
+// WithRelinKeyParameters sets the RelinKeyParameters and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithRelinKeyParameters(relinKeyParameters tfhe.GadgetParametersLiteral[T]) ParametersLiteral[T] {
+	p.RelinKeyParameters = relinKeyParameters
+	return p
+}
+
 // Compile transforms ParametersLiteral to read-only Parameters.
 // If there is any invalid parameter in the literal, it panics.
 // Default parameters are guaranteed to be compiled without panics.
