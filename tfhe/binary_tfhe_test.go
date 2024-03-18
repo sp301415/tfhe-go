@@ -80,6 +80,17 @@ func TestBinaryEvaluator(t *testing.T) {
 
 		assert.Equal(t, testBinaryEncryptor.DecryptLWEBits(ctOut), msg0^msg1)
 	})
+
+	t.Run("BootstrapOriginal", func(t *testing.T) {
+		paramsBinaryOriginal := testBinaryParams.Literal().WithBlockSize(1).Compile()
+
+		originalEncryptor := tfhe.NewBinaryEncryptorWithKey(paramsBinaryOriginal, testBinaryEncryptor.BaseEncryptor.SecretKey)
+		originalEvaluator := tfhe.NewBinaryEvaluator(paramsBinaryOriginal, testBinaryEvaluator.BaseEvaluator.EvaluationKey)
+
+		for _, tc := range tests {
+			assert.Equal(t, tc.pt0 && tc.pt1, originalEncryptor.DecryptLWEBool(originalEvaluator.AND(tc.ct0, tc.ct1)))
+		}
+	})
 }
 
 func BenchmarkGateBootstrap(b *testing.B) {

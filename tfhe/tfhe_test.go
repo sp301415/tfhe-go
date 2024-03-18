@@ -159,8 +159,8 @@ func TestEvaluator(t *testing.T) {
 
 		paramsOriginalBootstrap := testParams.Literal().WithBlockSize(1).Compile()
 
-		originalEncryptor := tfhe.NewEncryptor(paramsOriginalBootstrap)
-		originalEvaluator := tfhe.NewEvaluator(paramsOriginalBootstrap, originalEncryptor.GenEvaluationKeyParallel())
+		originalEncryptor := tfhe.NewEncryptorWithKey(paramsOriginalBootstrap, testEncryptor.SecretKey)
+		originalEvaluator := tfhe.NewEvaluator(paramsOriginalBootstrap, testEvaluator.EvaluationKey)
 
 		for _, m := range messages {
 			ct := originalEncryptor.EncryptLWE(m)
