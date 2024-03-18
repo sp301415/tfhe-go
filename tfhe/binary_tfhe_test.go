@@ -17,14 +17,6 @@ func TestBinaryParams(t *testing.T) {
 	t.Run("ParamsBinary", func(t *testing.T) {
 		assert.NotPanics(t, func() { tfhe.ParamsBinary.Compile() })
 	})
-
-	t.Run("ParamsBinaryCompact", func(t *testing.T) {
-		assert.NotPanics(t, func() { tfhe.ParamsBinaryCompact.Compile() })
-	})
-
-	t.Run("ParamsOriginalBinary", func(t *testing.T) {
-		assert.NotPanics(t, func() { tfhe.ParamsBinaryOriginal.Compile() })
-	})
 }
 
 func TestBinaryEvaluator(t *testing.T) {

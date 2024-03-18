@@ -157,9 +157,7 @@ func TestEvaluator(t *testing.T) {
 	t.Run("BootstrapOriginalFunc", func(t *testing.T) {
 		f := func(x int) int { return 2 * x }
 
-		paramsOriginalBootstrapLiteral := testParams.Literal()
-		paramsOriginalBootstrapLiteral.BlockSize = 1
-		paramsOriginalBootstrap := paramsOriginalBootstrapLiteral.Compile()
+		paramsOriginalBootstrap := testParams.Literal().WithBlockSize(1).Compile()
 
 		originalEncryptor := tfhe.NewEncryptor(paramsOriginalBootstrap)
 		originalEvaluator := tfhe.NewEvaluator(paramsOriginalBootstrap, originalEncryptor.GenEvaluationKeyParallel())
