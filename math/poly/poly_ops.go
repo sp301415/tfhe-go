@@ -234,17 +234,3 @@ func (e *Evaluator[T]) MonomialMulSubAssign(p0 Poly[T], d int, pOut Poly[T]) {
 		}
 	}
 }
-
-// MonomialMulSubOneMulAssign computes pOut = (X^d - 1) * p0.
-//
-// d should be positive, and p0 and pOut should not overlap.
-func (e *Evaluator[T]) MonomialSubOneMulAssign(p0 Poly[T], d int, pOut Poly[T]) {
-	monomialSubOneMulAssign(p0, d&(2*e.degree-1), pOut)
-}
-
-// MonomialMulSubOneMulAddAssign computes pOut += (X^d - 1) * p0.
-//
-// d should be positive, and p0 and pOut should not overlap.
-func (e *Evaluator[T]) MonomialSubOneMulAddAssign(p0 Poly[T], d int, pOut Poly[T]) {
-	monomialSubOneMulAddAssign(p0, d&(2*e.degree-1), pOut)
-}

@@ -54,6 +54,9 @@ type fourierBuffer[T num.Integer] struct {
 	// fpInv holds the InvFFT value of fp.
 	fpInv FourierPoly
 
+	// fpMul holds the FFT value of p in multiplication.
+	fpMul FourierPoly
+
 	// pSplit holds the split value of p in [*FourierEvaluator.PolyMulBinary].
 	pSplit Poly[T]
 	// fpSplit holds the fourier transformed pSplit.
@@ -156,6 +159,7 @@ func newFourierBuffer[T num.Integer](N int) fourierBuffer[T] {
 	return fourierBuffer[T]{
 		fp:      NewFourierPoly(N),
 		fpInv:   NewFourierPoly(N),
+		fpMul:   NewFourierPoly(N),
 		pSplit:  NewPoly[T](N),
 		fpSplit: NewFourierPoly(N),
 	}

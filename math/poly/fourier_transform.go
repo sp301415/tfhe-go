@@ -13,6 +13,20 @@ func (f *FourierEvaluator[T]) ToFourierPolyAssign(p Poly[T], fpOut FourierPoly) 
 	fftInPlace(fpOut.Coeffs, f.tw)
 }
 
+// ToFourierPolyAddAssign transforms Poly to FourierPoly and adds it to fpOut.
+func (f *FourierEvaluator[T]) ToFourierPolyAddAssign(p Poly[T], fpOut FourierPoly) {
+	convertPolyToFourierPolyAssign(p.Coeffs, f.buffer.fp.Coeffs)
+	fftInPlace(f.buffer.fp.Coeffs, f.tw)
+	addCmplxAssign(fpOut.Coeffs, f.buffer.fp.Coeffs, fpOut.Coeffs)
+}
+
+// ToFourierPolySubAssign transforms Poly to FourierPoly and subtracts it from fpOut.
+func (f *FourierEvaluator[T]) ToFourierPolySubAssign(p Poly[T], fpOut FourierPoly) {
+	convertPolyToFourierPolyAssign(p.Coeffs, f.buffer.fp.Coeffs)
+	fftInPlace(f.buffer.fp.Coeffs, f.tw)
+	subCmplxAssign(fpOut.Coeffs, f.buffer.fp.Coeffs, fpOut.Coeffs)
+}
+
 // MonomialToFourierPoly transforms X^d to FourierPoly.
 //
 // d should be positive.
@@ -45,6 +59,38 @@ func (f *FourierEvaluator[T]) MonomialToFourierPolyAssign(d int, fpOut FourierPo
 	}
 }
 
+// MonomialSubOneToFourierPoly transforms X^d-1 to FourierPoly.
+//
+// d should be positive.
+func (f *FourierEvaluator[T]) MonomialSubOneToFourierPoly(d int) FourierPoly {
+	fpOut := NewFourierPoly(f.degree)
+	f.MonomialSubOneToFourierPolyAssign(d, fpOut)
+	return fpOut
+}
+
+// MonomialSubOneToFourierPolyAssign transforms X^d-1 to FourierPoly and writes it to fpOut.
+//
+// d should be positive.
+func (f *FourierEvaluator[T]) MonomialSubOneToFourierPolyAssign(d int, fpOut FourierPoly) {
+	for j, jj := 0, 0; j < f.degree; j, jj = j+8, jj+4 {
+		c0 := f.twMono[(f.twMonoIdx[jj+0]*d)&(2*f.degree-1)]
+		fpOut.Coeffs[j+0] = real(c0) - 1
+		fpOut.Coeffs[j+4] = imag(c0)
+
+		c1 := f.twMono[(f.twMonoIdx[jj+1]*d)&(2*f.degree-1)]
+		fpOut.Coeffs[j+1] = real(c1) - 1
+		fpOut.Coeffs[j+5] = imag(c1)
+
+		c2 := f.twMono[(f.twMonoIdx[jj+2]*d)&(2*f.degree-1)]
+		fpOut.Coeffs[j+2] = real(c2) - 1
+		fpOut.Coeffs[j+6] = imag(c2)
+
+		c3 := f.twMono[(f.twMonoIdx[jj+3]*d)&(2*f.degree-1)]
+		fpOut.Coeffs[j+3] = real(c3) - 1
+		fpOut.Coeffs[j+7] = imag(c3)
+	}
+}
+
 // ToPoly transforms FourierPoly to Poly.
 func (f *FourierEvaluator[T]) ToPoly(fp FourierPoly) Poly[T] {
 	pOut := NewPoly[T](f.degree)
@@ -73,7 +119,7 @@ func (f *FourierEvaluator[T]) ToPolySubAssign(fp FourierPoly, pOut Poly[T]) {
 	f.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(f.buffer.fpInv.Coeffs, f.twInv)
 	floatModQInPlace(f.buffer.fpInv.Coeffs, f.q, f.qInv)
-	convertFourierPolyToPolySubAssign(f.buffer.fp.Coeffs, pOut.Coeffs)
+	convertFourierPolyToPolySubAssign(f.buffer.fpInv.Coeffs, pOut.Coeffs)
 }
 
 // ToPolyAssignUnsafe transforms FourierPoly to Poly and writes it to pOut.

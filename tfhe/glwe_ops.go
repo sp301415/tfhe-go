@@ -172,21 +172,3 @@ func (e *Evaluator[T]) MonomialMulSubGLWEAssign(ct0 GLWECiphertext[T], d int, ct
 		e.PolyEvaluator.MonomialMulSubAssign(ct0.Value[i], d, ctOut.Value[i])
 	}
 }
-
-// MonomialMulSubOneMulAssign computes ctOut = (X^d - 1) * ct0.
-//
-// d should be positive, and ct0 and ctOut should not overlap.
-func (e *Evaluator[T]) MonomialSubOneMulGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.PolyEvaluator.MonomialSubOneMulAssign(ct0.Value[i], d, ctOut.Value[i])
-	}
-}
-
-// MonomialMulSubOneMulAddAssign computes ctOut += (X^d - 1) * ct0.
-//
-// d should be positive, and ct0 and ctOut should not overlap.
-func (e *Evaluator[T]) MonomialSubOneMulAddGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.glweDimension+1; i++ {
-		e.PolyEvaluator.MonomialSubOneMulAddAssign(ct0.Value[i], d, ctOut.Value[i])
-	}
-}
