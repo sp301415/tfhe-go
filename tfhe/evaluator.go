@@ -61,11 +61,10 @@ type evaluationBuffer[T TorusInt] struct {
 	// This has length PolyExpandFactor.
 	ctFourierAcc []FourierGLWECiphertext[T]
 	// ctBlockFourierAcc holds the auxillary accumulator in BlindRotateBlock and BlindRotateOriginal.
-	ctBlockFourierAcc FourierGLWECiphertext[T]
+	ctBlockFourierAcc []FourierGLWECiphertext[T]
 	// ctAccFourierDecomposed holds the decomposed ctAcc in Blind Rotation.
 	// In case of BlindRotateBlock and BlindRotateOriginal, only the first element is used.
-	// This has length PolyExpandFactor + 1,
-	// where the last element is used as an auxiliary buffer.
+	// This has length PolyExpandFactor.
 	ctAccFourierDecomposed [][][]poly.FourierPoly
 	// fMono holds the fourier transformed monomial in Blind Rotation.
 	fMono poly.FourierPoly
@@ -120,14 +119,16 @@ func newEvaluationBuffer[T TorusInt](params Parameters[T]) evaluationBuffer[T] {
 		polyFourierDecomposed[i] = poly.NewFourierPoly(params.polyDegree)
 	}
 
-	ctAcc := make([]poly.Poly[T], params.polyExtendFactor)
 	ctFourierAcc := make([]FourierGLWECiphertext[T], params.polyExtendFactor)
+	ctBlockFourierAcc := make([]FourierGLWECiphertext[T], params.polyExtendFactor)
+	pAcc := make([]poly.Poly[T], params.polyExtendFactor)
 	for i := range ctFourierAcc {
 		ctFourierAcc[i] = NewFourierGLWECiphertext(params)
-		ctAcc[i] = poly.NewPoly[T](params.polyDegree)
+		ctBlockFourierAcc[i] = NewFourierGLWECiphertext(params)
+		pAcc[i] = poly.NewPoly[T](params.polyDegree)
 	}
 
-	ctAccFourierDecomposed := make([][][]poly.FourierPoly, params.polyExtendFactor+1)
+	ctAccFourierDecomposed := make([][][]poly.FourierPoly, params.polyExtendFactor)
 	for i := range ctAccFourierDecomposed {
 		ctAccFourierDecomposed[i] = make([][]poly.FourierPoly, params.glweDimension+1)
 		for j := range ctAccFourierDecomposed[i] {
@@ -147,9 +148,9 @@ func newEvaluationBuffer[T TorusInt](params Parameters[T]) evaluationBuffer[T] {
 		ctFourierProd: NewFourierGLWECiphertext(params),
 		ctCMux:        NewGLWECiphertext(params),
 
-		pAcc:                   ctAcc,
+		pAcc:                   pAcc,
 		ctFourierAcc:           ctFourierAcc,
-		ctBlockFourierAcc:      NewFourierGLWECiphertext(params),
+		ctBlockFourierAcc:      ctBlockFourierAcc,
 		ctAccFourierDecomposed: ctAccFourierDecomposed,
 		fMono:                  poly.NewFourierPoly(params.polyDegree),
 

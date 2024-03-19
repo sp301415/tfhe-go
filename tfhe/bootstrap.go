@@ -169,7 +169,6 @@ func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T]
 // blindRotateExtendedAssign computes the blind rotation when PolyLargeDegree > PolyDegree.
 // This is equivalent to the blind rotation algorithm using extended polynomials, as explained in https://eprint.iacr.org/2023/402.
 func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
-	ctAccFourierDecomposedSub := e.buffer.ctAccFourierDecomposed[e.Parameters.polyExtendFactor]
 	polyDecomposed := e.buffer.polyDecomposed[:e.Parameters.bootstrapParameters.level]
 
 	b2N := e.ModSwitchNeg(ct.Value[0])
@@ -208,31 +207,25 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 		a2N := e.ModSwitchNeg(ct.Value[j+1])
 		a2NSmall, a2NIdx := a2N>>e.Parameters.polyExtendFactorLog, a2N&(e.Parameters.polyExtendFactor-1)
 
+		for k := 0; k < e.Parameters.polyExtendFactor; k++ {
+			e.GadgetProductFourierDecomposedFourierAssign(e.EvaluationKey.BootstrapKey.Value[j].Value[0], e.buffer.ctAccFourierDecomposed[k][0], e.buffer.ctBlockFourierAcc[k])
+		}
+
 		if a2NIdx == 0 {
 			e.FourierEvaluator.MonomialSubOneToFourierPolyAssign(a2NSmall, e.buffer.fMono)
 			for k := 0; k < e.Parameters.polyExtendFactor; k++ {
-				for m := 0; m < e.Parameters.bootstrapParameters.level; m++ {
-					e.FourierEvaluator.MulAssign(e.buffer.ctAccFourierDecomposed[k][0][m], e.buffer.fMono, ctAccFourierDecomposedSub[0][m])
-				}
-				e.GadgetProductFourierDecomposedAddFourierAssign(e.EvaluationKey.BootstrapKey.Value[j].Value[0], ctAccFourierDecomposedSub[0], e.buffer.ctFourierAcc[k])
+				e.FourierPolyMulAddFourierGLWEAssign(e.buffer.ctBlockFourierAcc[k], e.buffer.fMono, e.buffer.ctFourierAcc[k])
 			}
 		} else {
 			e.FourierEvaluator.MonomialToFourierPolyAssign(a2NSmall+1, e.buffer.fMono)
 			for k, kk := 0, e.Parameters.polyExtendFactor-a2NIdx; k < a2NIdx; k, kk = k+1, kk+1 {
-				for m := 0; m < e.Parameters.bootstrapParameters.level; m++ {
-					e.FourierEvaluator.MulAssign(e.buffer.ctAccFourierDecomposed[kk][0][m], e.buffer.fMono, ctAccFourierDecomposedSub[0][m])
-					e.FourierEvaluator.SubAssign(ctAccFourierDecomposedSub[0][m], e.buffer.ctAccFourierDecomposed[k][0][m], ctAccFourierDecomposedSub[0][m])
-				}
-				e.GadgetProductFourierDecomposedAddFourierAssign(e.EvaluationKey.BootstrapKey.Value[j].Value[0], ctAccFourierDecomposedSub[0], e.buffer.ctFourierAcc[k])
+				e.FourierPolyMulAddFourierGLWEAssign(e.buffer.ctBlockFourierAcc[kk], e.buffer.fMono, e.buffer.ctFourierAcc[k])
+				e.SubFourierGLWEAssign(e.buffer.ctFourierAcc[k], e.buffer.ctBlockFourierAcc[k], e.buffer.ctFourierAcc[k])
 			}
-
 			e.FourierEvaluator.MonomialToFourierPolyAssign(a2NSmall, e.buffer.fMono)
 			for k, kk := a2NIdx, 0; k < e.Parameters.polyExtendFactor; k, kk = k+1, kk+1 {
-				for m := 0; m < e.Parameters.bootstrapParameters.level; m++ {
-					e.FourierEvaluator.MulAssign(e.buffer.ctAccFourierDecomposed[kk][0][m], e.buffer.fMono, ctAccFourierDecomposedSub[0][m])
-					e.FourierEvaluator.SubAssign(ctAccFourierDecomposedSub[0][m], e.buffer.ctAccFourierDecomposed[k][0][m], ctAccFourierDecomposedSub[0][m])
-				}
-				e.GadgetProductFourierDecomposedAddFourierAssign(e.EvaluationKey.BootstrapKey.Value[j].Value[0], ctAccFourierDecomposedSub[0], e.buffer.ctFourierAcc[k])
+				e.FourierPolyMulAddFourierGLWEAssign(e.buffer.ctBlockFourierAcc[kk], e.buffer.fMono, e.buffer.ctFourierAcc[k])
+				e.SubFourierGLWEAssign(e.buffer.ctFourierAcc[k], e.buffer.ctBlockFourierAcc[k], e.buffer.ctFourierAcc[k])
 			}
 		}
 	}
@@ -240,8 +233,8 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 	for i := 1; i < e.Parameters.blockCount-1; i++ {
 		for j := 0; j < e.Parameters.polyExtendFactor; j++ {
 			for k := 0; k < e.Parameters.glweDimension+1; k++ {
-				e.FourierEvaluator.ToPolyAssign(e.buffer.ctFourierAcc[j].Value[k], e.buffer.pAcc[j])
-				e.DecomposePolyAssign(e.buffer.pAcc[j], e.Parameters.bootstrapParameters, polyDecomposed)
+				e.FourierEvaluator.ToPolyAssign(e.buffer.ctFourierAcc[j].Value[k], e.buffer.pAcc[0])
+				e.DecomposePolyAssign(e.buffer.pAcc[0], e.Parameters.bootstrapParameters, polyDecomposed)
 				for l := 0; l < e.Parameters.bootstrapParameters.level; l++ {
 					e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[l], e.buffer.ctAccFourierDecomposed[j][k][l])
 				}
@@ -252,37 +245,25 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 			a2N := e.ModSwitchNeg(ct.Value[j+1])
 			a2NSmall, a2NIdx := a2N>>e.Parameters.polyExtendFactorLog, a2N&(e.Parameters.polyExtendFactor-1)
 
+			for k := 0; k < e.Parameters.polyExtendFactor; k++ {
+				e.ExternalProductFourierDecomposedFourierAssign(e.EvaluationKey.BootstrapKey.Value[j], e.buffer.ctAccFourierDecomposed[k], e.buffer.ctBlockFourierAcc[k])
+			}
+
 			if a2NIdx == 0 {
 				e.FourierEvaluator.MonomialSubOneToFourierPolyAssign(a2NSmall, e.buffer.fMono)
 				for k := 0; k < e.Parameters.polyExtendFactor; k++ {
-					for l := 0; l < e.Parameters.glweDimension+1; l++ {
-						for m := 0; m < e.Parameters.bootstrapParameters.level; m++ {
-							e.FourierEvaluator.MulAssign(e.buffer.ctAccFourierDecomposed[k][l][m], e.buffer.fMono, ctAccFourierDecomposedSub[l][m])
-						}
-					}
-					e.ExternalProductFourierDecomposedAddFourierAssign(e.EvaluationKey.BootstrapKey.Value[j], ctAccFourierDecomposedSub, e.buffer.ctFourierAcc[k])
+					e.FourierPolyMulAddFourierGLWEAssign(e.buffer.ctBlockFourierAcc[k], e.buffer.fMono, e.buffer.ctFourierAcc[k])
 				}
 			} else {
 				e.FourierEvaluator.MonomialToFourierPolyAssign(a2NSmall+1, e.buffer.fMono)
 				for k, kk := 0, e.Parameters.polyExtendFactor-a2NIdx; k < a2NIdx; k, kk = k+1, kk+1 {
-					for l := 0; l < e.Parameters.glweDimension+1; l++ {
-						for m := 0; m < e.Parameters.bootstrapParameters.level; m++ {
-							e.FourierEvaluator.MulAssign(e.buffer.ctAccFourierDecomposed[kk][l][m], e.buffer.fMono, ctAccFourierDecomposedSub[l][m])
-							e.FourierEvaluator.SubAssign(ctAccFourierDecomposedSub[l][m], e.buffer.ctAccFourierDecomposed[k][l][m], ctAccFourierDecomposedSub[l][m])
-						}
-					}
-					e.ExternalProductFourierDecomposedAddFourierAssign(e.EvaluationKey.BootstrapKey.Value[j], ctAccFourierDecomposedSub, e.buffer.ctFourierAcc[k])
+					e.FourierPolyMulAddFourierGLWEAssign(e.buffer.ctBlockFourierAcc[kk], e.buffer.fMono, e.buffer.ctFourierAcc[k])
+					e.SubFourierGLWEAssign(e.buffer.ctFourierAcc[k], e.buffer.ctBlockFourierAcc[k], e.buffer.ctFourierAcc[k])
 				}
-
 				e.FourierEvaluator.MonomialToFourierPolyAssign(a2NSmall, e.buffer.fMono)
 				for k, kk := a2NIdx, 0; k < e.Parameters.polyExtendFactor; k, kk = k+1, kk+1 {
-					for l := 0; l < e.Parameters.glweDimension+1; l++ {
-						for m := 0; m < e.Parameters.bootstrapParameters.level; m++ {
-							e.FourierEvaluator.MulAssign(e.buffer.ctAccFourierDecomposed[kk][l][m], e.buffer.fMono, ctAccFourierDecomposedSub[l][m])
-							e.FourierEvaluator.SubAssign(ctAccFourierDecomposedSub[l][m], e.buffer.ctAccFourierDecomposed[k][l][m], ctAccFourierDecomposedSub[l][m])
-						}
-					}
-					e.ExternalProductFourierDecomposedAddFourierAssign(e.EvaluationKey.BootstrapKey.Value[j], ctAccFourierDecomposedSub, e.buffer.ctFourierAcc[k])
+					e.FourierPolyMulAddFourierGLWEAssign(e.buffer.ctBlockFourierAcc[kk], e.buffer.fMono, e.buffer.ctFourierAcc[k])
+					e.SubFourierGLWEAssign(e.buffer.ctFourierAcc[k], e.buffer.ctBlockFourierAcc[k], e.buffer.ctFourierAcc[k])
 				}
 			}
 		}
@@ -290,8 +271,8 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 
 	for j := 0; j < e.Parameters.polyExtendFactor; j++ {
 		for k := 0; k < e.Parameters.glweDimension+1; k++ {
-			e.FourierEvaluator.ToPolyAssign(e.buffer.ctFourierAcc[j].Value[k], e.buffer.pAcc[j])
-			e.DecomposePolyAssign(e.buffer.pAcc[j], e.Parameters.bootstrapParameters, polyDecomposed)
+			e.FourierEvaluator.ToPolyAssign(e.buffer.ctFourierAcc[j].Value[k], e.buffer.pAcc[0])
+			e.DecomposePolyAssign(e.buffer.pAcc[0], e.Parameters.bootstrapParameters, polyDecomposed)
 			for l := 0; l < e.Parameters.bootstrapParameters.level; l++ {
 				e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[l], e.buffer.ctAccFourierDecomposed[j][k][l])
 			}
@@ -303,23 +284,16 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 		a2NSmall, a2NIdx := a2N>>e.Parameters.polyExtendFactorLog, a2N&(e.Parameters.polyExtendFactor-1)
 
 		if a2NIdx == 0 {
+			e.ExternalProductFourierDecomposedFourierAssign(e.EvaluationKey.BootstrapKey.Value[j], e.buffer.ctAccFourierDecomposed[0], e.buffer.ctBlockFourierAcc[0])
 			e.FourierEvaluator.MonomialSubOneToFourierPolyAssign(a2NSmall, e.buffer.fMono)
-			for l := 0; l < e.Parameters.glweDimension+1; l++ {
-				for m := 0; m < e.Parameters.bootstrapParameters.level; m++ {
-					e.FourierEvaluator.MulAssign(e.buffer.ctAccFourierDecomposed[0][l][m], e.buffer.fMono, ctAccFourierDecomposedSub[l][m])
-				}
-			}
-			e.ExternalProductFourierDecomposedAddFourierAssign(e.EvaluationKey.BootstrapKey.Value[j], ctAccFourierDecomposedSub, e.buffer.ctFourierAcc[0])
+			e.FourierPolyMulAddFourierGLWEAssign(e.buffer.ctBlockFourierAcc[0], e.buffer.fMono, e.buffer.ctFourierAcc[0])
 		} else {
-			e.FourierEvaluator.MonomialToFourierPolyAssign(a2NSmall+1, e.buffer.fMono)
 			kk := e.Parameters.polyExtendFactor - a2NIdx
-			for l := 0; l < e.Parameters.glweDimension+1; l++ {
-				for m := 0; m < e.Parameters.bootstrapParameters.level; m++ {
-					e.FourierEvaluator.MulAssign(e.buffer.ctAccFourierDecomposed[kk][l][m], e.buffer.fMono, ctAccFourierDecomposedSub[l][m])
-					e.FourierEvaluator.SubAssign(ctAccFourierDecomposedSub[l][m], e.buffer.ctAccFourierDecomposed[0][l][m], ctAccFourierDecomposedSub[l][m])
-				}
-			}
-			e.ExternalProductFourierDecomposedAddFourierAssign(e.EvaluationKey.BootstrapKey.Value[j], ctAccFourierDecomposedSub, e.buffer.ctFourierAcc[0])
+			e.ExternalProductFourierDecomposedFourierAssign(e.EvaluationKey.BootstrapKey.Value[j], e.buffer.ctAccFourierDecomposed[0], e.buffer.ctBlockFourierAcc[0])
+			e.ExternalProductFourierDecomposedFourierAssign(e.EvaluationKey.BootstrapKey.Value[j], e.buffer.ctAccFourierDecomposed[kk], e.buffer.ctBlockFourierAcc[kk])
+			e.FourierEvaluator.MonomialToFourierPolyAssign(a2NSmall+1, e.buffer.fMono)
+			e.FourierPolyMulAddFourierGLWEAssign(e.buffer.ctBlockFourierAcc[kk], e.buffer.fMono, e.buffer.ctFourierAcc[0])
+			e.SubFourierGLWEAssign(e.buffer.ctFourierAcc[0], e.buffer.ctBlockFourierAcc[0], e.buffer.ctFourierAcc[0])
 		}
 	}
 
@@ -345,9 +319,9 @@ func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTab
 	}
 
 	for j := 0; j < e.Parameters.blockSize; j++ {
-		e.GadgetProductFourierDecomposedFourierAssign(e.EvaluationKey.BootstrapKey.Value[j].Value[0], e.buffer.ctAccFourierDecomposed[0][0], e.buffer.ctBlockFourierAcc)
+		e.GadgetProductFourierDecomposedFourierAssign(e.EvaluationKey.BootstrapKey.Value[j].Value[0], e.buffer.ctAccFourierDecomposed[0][0], e.buffer.ctBlockFourierAcc[0])
 		e.FourierEvaluator.MonomialSubOneToFourierPolyAssign(e.ModSwitchNeg(ct.Value[j+1]), e.buffer.fMono)
-		e.FourierPolyMulAddFourierGLWEAssign(e.buffer.ctBlockFourierAcc, e.buffer.fMono, e.buffer.ctFourierAcc[0])
+		e.FourierPolyMulAddFourierGLWEAssign(e.buffer.ctBlockFourierAcc[0], e.buffer.fMono, e.buffer.ctFourierAcc[0])
 	}
 
 	for i := 1; i < e.Parameters.blockCount; i++ {
@@ -360,9 +334,9 @@ func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTab
 		}
 
 		for j := i * e.Parameters.blockSize; j < (i+1)*e.Parameters.blockSize; j++ {
-			e.ExternalProductFourierDecomposedFourierAssign(e.EvaluationKey.BootstrapKey.Value[j], e.buffer.ctAccFourierDecomposed[0], e.buffer.ctBlockFourierAcc)
+			e.ExternalProductFourierDecomposedFourierAssign(e.EvaluationKey.BootstrapKey.Value[j], e.buffer.ctAccFourierDecomposed[0], e.buffer.ctBlockFourierAcc[0])
 			e.FourierEvaluator.MonomialSubOneToFourierPolyAssign(e.ModSwitchNeg(ct.Value[j+1]), e.buffer.fMono)
-			e.FourierPolyMulAddFourierGLWEAssign(e.buffer.ctBlockFourierAcc, e.buffer.fMono, e.buffer.ctFourierAcc[0])
+			e.FourierPolyMulAddFourierGLWEAssign(e.buffer.ctBlockFourierAcc[0], e.buffer.fMono, e.buffer.ctFourierAcc[0])
 		}
 	}
 
@@ -380,12 +354,12 @@ func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUp
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pAcc[0], e.buffer.ctFourierAcc[0].Value[0])
 
 	e.FourierEvaluator.MonomialSubOneToFourierPolyAssign(e.ModSwitchNeg(ct.Value[1]), e.buffer.fMono)
-	e.FourierEvaluator.MulAssign(e.buffer.ctFourierAcc[0].Value[0], e.buffer.fMono, e.buffer.ctBlockFourierAcc.Value[0])
+	e.FourierEvaluator.MulAssign(e.buffer.ctFourierAcc[0].Value[0], e.buffer.fMono, e.buffer.ctBlockFourierAcc[0].Value[0])
 	for i := 1; i < e.Parameters.glweDimension+1; i++ {
 		e.buffer.ctFourierAcc[0].Value[i].Clear()
 	}
 
-	e.FourierEvaluator.ToPolyAssignUnsafe(e.buffer.ctBlockFourierAcc.Value[0], e.buffer.pAcc[0])
+	e.FourierEvaluator.ToPolyAssignUnsafe(e.buffer.ctBlockFourierAcc[0].Value[0], e.buffer.pAcc[0])
 	e.DecomposePolyAssign(e.buffer.pAcc[0], e.Parameters.bootstrapParameters, polyDecomposed)
 	for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
 		e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[k], e.buffer.ctAccFourierDecomposed[0][0][k])
@@ -395,10 +369,10 @@ func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUp
 
 	for i := 1; i < e.Parameters.lweDimension; i++ {
 		e.FourierEvaluator.MonomialSubOneToFourierPolyAssign(e.ModSwitchNeg(ct.Value[i+1]), e.buffer.fMono)
-		e.FourierPolyMulFourierGLWEAssign(e.buffer.ctFourierAcc[0], e.buffer.fMono, e.buffer.ctBlockFourierAcc)
+		e.FourierPolyMulFourierGLWEAssign(e.buffer.ctFourierAcc[0], e.buffer.fMono, e.buffer.ctBlockFourierAcc[0])
 
 		for j := 0; j < e.Parameters.glweDimension+1; j++ {
-			e.FourierEvaluator.ToPolyAssignUnsafe(e.buffer.ctBlockFourierAcc.Value[j], e.buffer.pAcc[0])
+			e.FourierEvaluator.ToPolyAssignUnsafe(e.buffer.ctBlockFourierAcc[0].Value[j], e.buffer.pAcc[0])
 			e.DecomposePolyAssign(e.buffer.pAcc[0], e.Parameters.bootstrapParameters, polyDecomposed)
 			for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
 				e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[k], e.buffer.ctAccFourierDecomposed[0][j][k])
