@@ -2,6 +2,9 @@
 
 #include "textflag.h"
 
+DATA ONE<>+0(SB)/8, $0x1 // 1
+GLOBL ONE<>(SB), NOPTR | RODATA, $8
+
 TEXT ·decomposePolyAssignUint32AVX2(SB), NOSPLIT, $0-64
 	MOVQ p+0(FP), AX
 	MOVQ decomposedOut+40(FP), BX
@@ -16,9 +19,7 @@ TEXT ·decomposePolyAssignUint32AVX2(SB), NOSPLIT, $0-64
 	VPBROADCASTD lastScaledBaseLog+32(FP), Y12 // lastScaledBaseLog
 
 	// Create (1, 1, 1, ..., 1)
-	XORQ         SI, SI
-	INCQ         SI
-	VPBROADCASTD SI, Y0 // ONE
+	VPBROADCASTD ONE<>+0(SB), Y0 // ONE
 
 	VPSUBD Y0, Y10, Y13 // baseMask = base - 1
 	VPSRLD $1, Y10, Y14 // baseHalf = base / 2
@@ -99,9 +100,7 @@ TEXT ·decomposePolyAssignUint64AVX2(SB), NOSPLIT, $0-72
 	VPBROADCASTQ lastScaledBaseLog+40(FP), Y12 // lastScaledBaseLog
 
 	// Create (1, 1, 1, ..., 1)
-	XORQ         SI, SI
-	INCQ         SI
-	VPBROADCASTQ SI, Y0 // ONE
+	VPBROADCASTQ ONE<>+0(SB), Y0 // ONE
 
 	VPSUBQ Y0, Y10, Y13 // baseMask = base - 1
 	VPSRLQ $1, Y10, Y14 // baseHalf = base / 2
