@@ -110,30 +110,27 @@ func NewEvaluatorWithoutKey[T TorusInt](params Parameters[T]) *Evaluator[T] {
 // newEvaluationBuffer allocates an empty evaluationBuffer.
 func newEvaluationBuffer[T TorusInt](params Parameters[T]) evaluationBuffer[T] {
 	polyDecomposed := make([]poly.Poly[T], params.bootstrapParameters.level)
-	for i := range polyDecomposed {
-		polyDecomposed[i] = poly.NewPoly[T](params.polyDegree)
-	}
-
 	polyFourierDecomposed := make([]poly.FourierPoly, params.bootstrapParameters.level)
-	for i := range polyFourierDecomposed {
+	for i := 0; i < params.bootstrapParameters.level; i++ {
+		polyDecomposed[i] = poly.NewPoly[T](params.polyDegree)
 		polyFourierDecomposed[i] = poly.NewFourierPoly(params.polyDegree)
 	}
 
+	pAcc := make([]poly.Poly[T], params.polyExtendFactor)
 	ctFourierAcc := make([]FourierGLWECiphertext[T], params.polyExtendFactor)
 	ctBlockFourierAcc := make([]FourierGLWECiphertext[T], params.polyExtendFactor)
-	pAcc := make([]poly.Poly[T], params.polyExtendFactor)
-	for i := range ctFourierAcc {
+	for i := 0; i < params.polyExtendFactor; i++ {
+		pAcc[i] = poly.NewPoly[T](params.polyDegree)
 		ctFourierAcc[i] = NewFourierGLWECiphertext(params)
 		ctBlockFourierAcc[i] = NewFourierGLWECiphertext(params)
-		pAcc[i] = poly.NewPoly[T](params.polyDegree)
 	}
 
 	ctAccFourierDecomposed := make([][][]poly.FourierPoly, params.polyExtendFactor)
-	for i := range ctAccFourierDecomposed {
+	for i := 0; i < params.polyExtendFactor; i++ {
 		ctAccFourierDecomposed[i] = make([][]poly.FourierPoly, params.glweDimension+1)
-		for j := range ctAccFourierDecomposed[i] {
+		for j := 0; j < params.glweDimension+1; j++ {
 			ctAccFourierDecomposed[i][j] = make([]poly.FourierPoly, params.bootstrapParameters.level)
-			for k := range ctAccFourierDecomposed[i][j] {
+			for k := 0; k < params.bootstrapParameters.level; k++ {
 				ctAccFourierDecomposed[i][j][k] = poly.NewFourierPoly(params.polyDegree)
 			}
 		}

@@ -111,7 +111,7 @@ func NewEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationK
 // newEvaluationBuffer allocates an empty evaluationBuffer.
 func newEvaluationBuffer[T tfhe.TorusInt](params Parameters[T]) evaluationBuffer[T] {
 	polyFourierDecomposed := make([]poly.FourierPoly, params.relinKeyParameters.Level())
-	for i := range polyFourierDecomposed {
+	for i := 0; i < params.relinKeyParameters.Level(); i++ {
 		polyFourierDecomposed[i] = poly.NewFourierPoly(params.PolyDegree())
 	}
 

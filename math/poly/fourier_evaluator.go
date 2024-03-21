@@ -187,6 +187,11 @@ func (f *FourierEvaluator[T]) Degree() int {
 	return f.degree
 }
 
+// NewPoly allocates an empty polynomial with the same degree as the evaluator.
+func (f *FourierEvaluator[T]) NewPoly() Poly[T] {
+	return Poly[T]{Coeffs: make([]T, f.degree)}
+}
+
 // NewFourierPoly allocates an empty fourier polynomial with the same degree as the evaluator.
 func (f *FourierEvaluator[T]) NewFourierPoly() FourierPoly {
 	return FourierPoly{Coeffs: make([]float64, f.degree)}

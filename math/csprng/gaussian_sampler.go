@@ -8,7 +8,7 @@ import (
 
 // GaussianSampler samples from Rounded Gaussian Distribution, centered around zero.
 // This uses the same algorithm as Go's standard library,
-// which is based on ziggurat method by Marsaglia and Tsang.
+// which is based on Ziggurat method by Marsaglia and Tsang.
 type GaussianSampler[T num.Integer] struct {
 	baseSampler UniformSampler[int32]
 }
@@ -76,19 +76,19 @@ func (s GaussianSampler[T]) Sample(stdDev float64) T {
 	return T(int64(math.Round(u)))
 }
 
-// SampleSliceAssign samples rounded gaussian values to v,
-// with standard deviation |stdDev|.
-func (s GaussianSampler[T]) SampleSliceAssign(stdDev float64, v []T) {
-	for i := range v {
-		v[i] = s.Sample(stdDev)
+// SampleSliceAssign samples rounded gaussian values
+// with standard deviation |stdDev|, and writes it to vOut.
+func (s GaussianSampler[T]) SampleSliceAssign(stdDev float64, vOut []T) {
+	for i := range vOut {
+		vOut[i] = s.Sample(stdDev)
 	}
 }
 
-// SampleSliceAddAssign samples rounded gaussian values to v,
-// with standard deviation |stdDev|, and adds to v.
-func (s GaussianSampler[T]) SampleSliceAddAssign(stdDev float64, v []T) {
-	for i := range v {
-		v[i] += s.Sample(stdDev)
+// SampleSliceAddAssign samples rounded gaussian values
+// with standard deviation |stdDev|, and adds to vOut.
+func (s GaussianSampler[T]) SampleSliceAddAssign(stdDev float64, vOut []T) {
+	for i := range vOut {
+		vOut[i] += s.Sample(stdDev)
 	}
 }
 
