@@ -60,7 +60,7 @@ type evaluationBuffer[T TorusInt] struct {
 	// In case of BlindRotateBlock and BlindRotateOriginal, only the first element is used.
 	// This has length PolyExpandFactor.
 	ctFourierAcc []FourierGLWECiphertext[T]
-	// ctBlockFourierAcc holds the auxillary accumulator in BlindRotateBlock and BlindRotateOriginal.
+	// ctBlockFourierAcc holds the auxiliary accumulator in BlindRotateBlock and BlindRotateOriginal.
 	ctBlockFourierAcc []FourierGLWECiphertext[T]
 	// ctAccFourierDecomposed holds the decomposed ctAcc in Blind Rotation.
 	// In case of BlindRotateBlock and BlindRotateOriginal, only the first element is used.
