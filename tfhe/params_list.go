@@ -24,7 +24,63 @@ var (
 			Level: 4,
 		},
 
+		BootstrapOrder: OrderBlindRotateKeySwitch,
+	}
+
+	// ParamsBinaryCompact is a parameter set for binary TFHE
+	// with OrderKeySwitchBlindRotate.
+	//
+	// This parameter set is slightly more compact than ParamsBinary,
+	// giving a faster performance.
+	ParamsBinaryCompact = ParametersLiteral[uint32]{
+		LWEDimension:    664,
+		GLWEDimension:   2,
+		PolyDegree:      512,
+		PolyLargeDegree: 512,
+
+		LWEStdDev:  0.0000380828292345977 * (1 << 32),
+		GLWEStdDev: 0.00000004990272175010415 * (1 << 32),
+
+		BlockSize: 2,
+
+		MessageModulus: 1 << 2,
+
+		BootstrapParameters: GadgetParametersLiteral[uint32]{
+			Base:  1 << 6,
+			Level: 3,
+		},
+		KeySwitchParameters: GadgetParametersLiteral[uint32]{
+			Base:  1 << 3,
+			Level: 4,
+		},
+
 		BootstrapOrder: OrderKeySwitchBlindRotate,
+	}
+
+	// ParamsBinaryOriginal is a parameter set from the original C++ TFHE library.
+	ParamsBinaryOriginal = ParametersLiteral[uint32]{
+		LWEDimension:    630,
+		GLWEDimension:   1,
+		PolyDegree:      1024,
+		PolyLargeDegree: 1024,
+
+		LWEStdDev:  0.000030517578125 * (1 << 32),
+		GLWEStdDev: 0.0000000298023223876953125 * (1 << 32),
+
+		BlockSize: 1,
+
+		MessageModulus: 1 << 2,
+
+		BootstrapParameters: GadgetParametersLiteral[uint32]{
+			Base:  1 << 7,
+			Level: 3,
+		},
+		KeySwitchParameters: GadgetParametersLiteral[uint32]{
+			Base:  1 << 2,
+			Level: 8,
+		},
+
+		BootstrapOrder: OrderBlindRotateKeySwitch,
 	}
 
 	// ParamsUint2 is a parameter set with 2 bits of message space.
@@ -42,12 +98,12 @@ var (
 		MessageModulus: 1 << 2,
 
 		BootstrapParameters: GadgetParametersLiteral[uint64]{
-			Base:  1 << 6,
-			Level: 3,
+			Base:  1 << 8,
+			Level: 2,
 		},
 		KeySwitchParameters: GadgetParametersLiteral[uint64]{
-			Base:  1 << 2,
-			Level: 6,
+			Base:  1 << 3,
+			Level: 4,
 		},
 
 		BootstrapOrder: OrderKeySwitchBlindRotate,
@@ -72,8 +128,8 @@ var (
 			Level: 1,
 		},
 		KeySwitchParameters: GadgetParametersLiteral[uint64]{
-			Base:  1 << 3,
-			Level: 5,
+			Base:  1 << 4,
+			Level: 3,
 		},
 
 		BootstrapOrder: OrderKeySwitchBlindRotate,
@@ -98,8 +154,8 @@ var (
 			Level: 1,
 		},
 		KeySwitchParameters: GadgetParametersLiteral[uint64]{
-			Base:  1 << 2,
-			Level: 7,
+			Base:  1 << 3,
+			Level: 5,
 		},
 
 		BootstrapOrder: OrderKeySwitchBlindRotate,
