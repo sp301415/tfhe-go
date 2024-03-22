@@ -1,6 +1,8 @@
 package tfhe
 
 import (
+	"math"
+
 	"github.com/sp301415/tfhe-go/math/num"
 	"github.com/sp301415/tfhe-go/math/vec"
 )
@@ -49,13 +51,13 @@ func (e *Encoder[T]) DecodeLWE(pt LWEPlaintext[T]) int {
 // DecodeLWECustom decodes LWE plaintext to integer message
 // using custom MessageModulus and Scale.
 //
-// If MessageModulus = 0, then no modulus reduction is performed.
+// If MessageModulus = 0, then it is automatically set to round(Q / scale).
 func (e *Encoder[T]) DecodeLWECustom(pt LWEPlaintext[T], messageModulus, scale T) int {
 	decoded := num.RoundRatio(pt.Value, scale)
-	if messageModulus != 0 {
-		decoded %= messageModulus
+	if messageModulus == 0 {
+		messageModulus = T(math.Round(math.Exp2(float64(e.Parameters.logQ)) / float64(scale)))
 	}
-	return int(decoded)
+	return int(decoded % messageModulus)
 }
 
 // EncodeGLWE encodes up to Parameters.PolyDegree integer messages into one GLWE plaintext.
@@ -147,16 +149,16 @@ func (e *Encoder[T]) DecodeGLWECustom(pt GLWEPlaintext[T], messageModulus, scale
 // DecodeGLWECustomAssign decodes GLWE plaintext to integer message
 // using custom MessageModulus and Scale.
 //
-//   - If MessageModulus = 0, then no modulus reduction is performed.
+//   - If MessageModulus = 0, then it is automatically set to round(Q / scale).
 //   - If len(messagesOut) < PolyDegree, the leftovers are discarded.
 //   - If len(messagesOut) > PolyDegree, only the first PolyDegree elements are written.
 func (e *Encoder[T]) DecodeGLWECustomAssign(pt GLWEPlaintext[T], messageModulus, scale T, messagesOut []int) {
 	length := num.Min(e.Parameters.polyDegree, len(messagesOut))
 	for i := 0; i < length; i++ {
 		decoded := num.RoundRatio(pt.Value.Coeffs[i], scale)
-		if messageModulus != 0 {
-			decoded %= messageModulus
+		if messageModulus == 0 {
+			messageModulus = T(math.Round(math.Exp2(float64(e.Parameters.logQ)) / float64(scale)))
 		}
-		messagesOut[i] = int(decoded)
+		messagesOut[i] = int(decoded % messageModulus)
 	}
 }

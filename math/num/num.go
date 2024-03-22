@@ -123,7 +123,7 @@ func Log2[T Integer](x T) int {
 
 // RoundRatio returns round(x/y).
 func RoundRatio[T Integer](x, y T) T {
-	return T(math.Round(float64(int64(x)) / float64(int64(y))))
+	return T(math.Round(float64(x) / float64(y)))
 }
 
 // RoundRatioBits is a bit-optimzed version of RoundRatio: it returns round(x/2^bits).
