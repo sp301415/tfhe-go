@@ -26,6 +26,7 @@ func decomposePolyAssign[T TorusInt](p poly.Poly[T], gadgetParams GadgetParamete
 				uint32(gadgetParams.scaledBasesLog[gadgetParams.level-1]),
 				*(*[][]uint32)(unsafe.Pointer(&decomposedOut)),
 			)
+			return
 		case uint64:
 			decomposePolyAssignUint64AVX2(
 				*(*[]uint64)(unsafe.Pointer(&p)),
@@ -34,20 +35,20 @@ func decomposePolyAssign[T TorusInt](p poly.Poly[T], gadgetParams GadgetParamete
 				uint64(gadgetParams.scaledBasesLog[gadgetParams.level-1]),
 				*(*[][]uint64)(unsafe.Pointer(&decomposedOut)),
 			)
+			return
 		}
-		return
 	}
 
 	lastScaledBaseLog := gadgetParams.scaledBasesLog[gadgetParams.level-1]
 	for i := 0; i < p.Degree(); i++ {
 		c := num.RoundRatioBits(p.Coeffs[i], lastScaledBaseLog)
 		for j := gadgetParams.level - 1; j >= 1; j-- {
-			decomposedOut[j].Coeffs[i] = c & gadgetParams.baseMask
+			decomposedOut[j].Coeffs[i] = c & (gadgetParams.base - 1)
 			c >>= gadgetParams.baseLog
-			c += decomposedOut[j].Coeffs[i] >> gadgetParams.baseLogMinusOne
-			decomposedOut[j].Coeffs[i] -= (decomposedOut[j].Coeffs[i] & gadgetParams.baseHalf) << 1
+			c += decomposedOut[j].Coeffs[i] >> (gadgetParams.baseLog - 1)
+			decomposedOut[j].Coeffs[i] -= (decomposedOut[j].Coeffs[i] & (gadgetParams.base >> 1)) << 1
 		}
-		decomposedOut[0].Coeffs[i] = c & gadgetParams.baseMask
-		decomposedOut[0].Coeffs[i] -= (decomposedOut[0].Coeffs[i] & gadgetParams.baseHalf) << 1
+		decomposedOut[0].Coeffs[i] = c & (gadgetParams.base - 1)
+		decomposedOut[0].Coeffs[i] -= (decomposedOut[0].Coeffs[i] & (gadgetParams.base >> 1)) << 1
 	}
 }

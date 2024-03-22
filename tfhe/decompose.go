@@ -17,13 +17,13 @@ func (e *Evaluator[T]) DecomposeAssign(x T, gadgetParams GadgetParameters[T], de
 	lastScaledBaseLog := gadgetParams.scaledBasesLog[gadgetParams.level-1]
 	u := num.RoundRatioBits(x, lastScaledBaseLog)
 	for i := gadgetParams.level - 1; i >= 1; i-- {
-		decomposedOut[i] = u & gadgetParams.baseMask
+		decomposedOut[i] = u & (gadgetParams.base - 1)
 		u >>= gadgetParams.baseLog
-		u += decomposedOut[i] >> gadgetParams.baseLogMinusOne
-		decomposedOut[i] -= (decomposedOut[i] & gadgetParams.baseHalf) << 1
+		u += decomposedOut[i] >> (gadgetParams.baseLog - 1)
+		decomposedOut[i] -= (decomposedOut[i] & (gadgetParams.base >> 1)) << 1
 	}
-	decomposedOut[0] = u & gadgetParams.baseMask
-	decomposedOut[0] -= (decomposedOut[0] & gadgetParams.baseHalf) << 1
+	decomposedOut[0] = u & (gadgetParams.base - 1)
+	decomposedOut[0] -= (decomposedOut[0] & (gadgetParams.base >> 1)) << 1
 }
 
 // DecomposePoly decomposes p with respect to gadgetParams.

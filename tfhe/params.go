@@ -55,13 +55,10 @@ func (p GadgetParametersLiteral[T]) Compile() GadgetParameters[T] {
 	}
 
 	return GadgetParameters[T]{
-		base:            p.Base,
-		baseHalf:        p.Base / 2,
-		baseMask:        p.Base - 1,
-		baseLog:         baseLog,
-		baseLogMinusOne: baseLog - 1,
-		level:           p.Level,
-		scaledBasesLog:  scaledBasesLog,
+		base:           p.Base,
+		baseLog:        baseLog,
+		level:          p.Level,
+		scaledBasesLog: scaledBasesLog,
 	}
 }
 
@@ -69,15 +66,8 @@ func (p GadgetParametersLiteral[T]) Compile() GadgetParameters[T] {
 type GadgetParameters[T TorusInt] struct {
 	// Base is a base of gadget. It must be power of two.
 	base T
-	// BaseHalf equals Base / 2.
-	baseHalf T
-	// BaseMask equals Base - 1.
-	// This is used for modulo operation, where c % Base equals c & BaseMask.
-	baseMask T
 	// BaseLog equals log(Base).
 	baseLog int
-	// BaseLogMinusOne equals BaseLog - 1.
-	baseLogMinusOne int
 	// Level is a length of gadget.
 	level int
 	// scaledBasesLog holds the log of scaled gadget: Log(Q / B^l) for l = 1 ~ Level.
