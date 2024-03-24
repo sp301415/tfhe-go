@@ -24,9 +24,9 @@ func (e *Evaluator[T]) HybridProductAssign(idx int, ctFourierUniEnc FourierUniEn
 		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[0])
 	}
 
-	eIdx.FourierEvaluator.MulAssign(ctFourierUniEnc.Value[0].Value[0].Value[1], polyFourierDecomposed[0], e.buffer.ctFourierProdSingle)
+	eIdx.FourierEvaluator.MulAssign(e.EvaluationKeys[idx].CRSPublicKey.Value[0].Value[1], polyFourierDecomposed[0], e.buffer.ctFourierProdSingle)
 	for j := 1; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[0].Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProdSingle)
+		eIdx.FourierEvaluator.MulAddAssign(e.EvaluationKeys[idx].CRSPublicKey.Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProdSingle)
 	}
 	eIdx.FourierEvaluator.NegAssign(e.buffer.ctFourierProdSingle, e.buffer.ctFourierProdSingle)
 
@@ -75,9 +75,9 @@ func (e *Evaluator[T]) HybridProductAddAssign(idx int, ctFourierUniEnc FourierUn
 		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[0])
 	}
 
-	eIdx.FourierEvaluator.MulAssign(ctFourierUniEnc.Value[0].Value[0].Value[1], polyFourierDecomposed[0], e.buffer.ctFourierProdSingle)
+	eIdx.FourierEvaluator.MulAssign(e.EvaluationKeys[idx].CRSPublicKey.Value[0].Value[1], polyFourierDecomposed[0], e.buffer.ctFourierProdSingle)
 	for j := 1; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[0].Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProdSingle)
+		eIdx.FourierEvaluator.MulAddAssign(e.EvaluationKeys[idx].CRSPublicKey.Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProdSingle)
 	}
 	eIdx.FourierEvaluator.NegAssign(e.buffer.ctFourierProdSingle, e.buffer.ctFourierProdSingle)
 
@@ -124,9 +124,9 @@ func (e *Evaluator[T]) HybridProductSubAssign(idx int, ctFourierUniEnc FourierUn
 		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[0])
 	}
 
-	eIdx.FourierEvaluator.MulAssign(ctFourierUniEnc.Value[0].Value[0].Value[1], polyFourierDecomposed[0], e.buffer.ctFourierProdSingle)
+	eIdx.FourierEvaluator.MulAssign(e.EvaluationKeys[idx].CRSPublicKey.Value[0].Value[1], polyFourierDecomposed[0], e.buffer.ctFourierProdSingle)
 	for j := 1; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[0].Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProdSingle)
+		eIdx.FourierEvaluator.MulAddAssign(e.EvaluationKeys[idx].CRSPublicKey.Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProdSingle)
 	}
 	eIdx.FourierEvaluator.NegAssign(e.buffer.ctFourierProdSingle, e.buffer.ctFourierProdSingle)
 
