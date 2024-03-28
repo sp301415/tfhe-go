@@ -38,14 +38,14 @@ func (e *Encryptor[T]) UniEncryptPlaintextAssign(pt tfhe.GLWEPlaintext[T], ctOut
 
 	for i := 0; i < ctOut.GadgetParameters.Level(); i++ {
 		ctOut.Value[0].Value[i].Value[1].CopyFrom(e.CRS[i])
-		e.SingleKeyEncryptor.PolyEvaluator.ScalarMulAssign(pt.Value, ctOut.GadgetParameters.ScaledBase(i), ctOut.Value[0].Value[i].Value[0])
+		e.SingleKeyEncryptor.PolyEvaluator.ScalarMulAssign(pt.Value, ctOut.GadgetParameters.BaseQ(i), ctOut.Value[0].Value[i].Value[0])
 
 		e.SingleKeyEncryptor.FourierEvaluator.PolyMulBinaryAddAssign(e.buffer.auxFourierKey.Value[0], ctOut.Value[0].Value[i].Value[1], ctOut.Value[0].Value[i].Value[0])
-		e.SingleKeyEncryptor.GaussianSampler.SampleSliceAddAssign(e.Parameters.GLWEStdDev(), ctOut.Value[0].Value[i].Value[0].Coeffs)
+		e.SingleKeyEncryptor.GaussianSampler.SampleSliceAddAssign(e.Parameters.GLWEStdDevQ(), ctOut.Value[0].Value[i].Value[0].Coeffs)
 	}
 
 	for i := 0; i < ctOut.GadgetParameters.Level(); i++ {
-		e.SingleKeyEncryptor.PolyEvaluator.ScalarMulAssign(e.buffer.auxKey.Value[0], ctOut.GadgetParameters.ScaledBase(i), ctOut.Value[1].Value[i].Value[0])
+		e.SingleKeyEncryptor.PolyEvaluator.ScalarMulAssign(e.buffer.auxKey.Value[0], ctOut.GadgetParameters.BaseQ(i), ctOut.Value[1].Value[i].Value[0])
 		e.SingleKeyEncryptor.EncryptGLWEBody(ctOut.Value[1].Value[i])
 	}
 }
@@ -63,7 +63,7 @@ func (e *Encryptor[T]) UniDecryptAssign(ct UniEncryption[T], messagesOut []int) 
 
 	length := num.Min(e.Parameters.PolyDegree(), len(messagesOut))
 	for i := 0; i < length; i++ {
-		messagesOut[i] = int(num.RoundRatioBits(e.buffer.ptGLWE.Value.Coeffs[i], ct.GadgetParameters.LastScaledBaseLog()) % e.Parameters.MessageModulus())
+		messagesOut[i] = int(num.RoundRatioBits(e.buffer.ptGLWE.Value.Coeffs[i], ct.GadgetParameters.LastBaseQLog()) % e.Parameters.MessageModulus())
 	}
 }
 
@@ -78,7 +78,7 @@ func (e *Encryptor[T]) UniDecryptPlaintext(ct UniEncryption[T]) tfhe.GLWEPlainte
 func (e *Encryptor[T]) UniDecryptPlaintextAssign(ct UniEncryption[T], ptOut tfhe.GLWEPlaintext[T]) {
 	e.SingleKeyEncryptor.DecryptGLevPlaintextAssign(ct.Value[1], tfhe.GLWEPlaintext[T]{Value: e.buffer.auxKey.Value[0]})
 	for i := 0; i < e.Parameters.PolyDegree(); i++ {
-		e.buffer.auxKey.Value[0].Coeffs[i] = num.RoundRatioBits(e.buffer.auxKey.Value[0].Coeffs[i], ct.GadgetParameters.LastScaledBaseLog()) & (1<<ct.GadgetParameters.BaseLog() - 1)
+		e.buffer.auxKey.Value[0].Coeffs[i] = num.RoundRatioBits(e.buffer.auxKey.Value[0].Coeffs[i], ct.GadgetParameters.LastBaseQLog()) & (1<<ct.GadgetParameters.BaseLog() - 1)
 	}
 	e.SingleKeyEncryptor.ToFourierGLWESecretKeyAssign(e.buffer.auxKey, e.buffer.auxFourierKey)
 

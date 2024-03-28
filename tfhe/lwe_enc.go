@@ -33,7 +33,7 @@ func (e *Encryptor[T]) EncryptLWEPlaintextAssign(pt LWEPlaintext[T], ctOut LWECi
 func (e *Encryptor[T]) EncryptLWEBody(ct LWECiphertext[T]) {
 	e.UniformSampler.SampleSliceAssign(ct.Value[1:])
 	ct.Value[0] += -vec.Dot(ct.Value[1:], e.DefaultLWESecretKey().Value)
-	ct.Value[0] += e.GaussianSampler.Sample(e.Parameters.DefaultLWEStdDev())
+	ct.Value[0] += e.GaussianSampler.Sample(e.Parameters.DefaultLWEStdDevQ())
 }
 
 // DecryptLWE decrypts and decodes LWE ciphertext to integer message.
@@ -69,7 +69,7 @@ func (e *Encryptor[T]) EncryptLevPlaintext(pt LWEPlaintext[T], gadgetParams Gadg
 // EncryptLevPlaintextAssign encrypts LWE plaintext to Lev ciphertext and writes it to ctOut.
 func (e *Encryptor[T]) EncryptLevPlaintextAssign(pt LWEPlaintext[T], ctOut LevCiphertext[T]) {
 	for i := 0; i < ctOut.GadgetParameters.level; i++ {
-		ctOut.Value[i].Value[0] = pt.Value << ctOut.GadgetParameters.ScaledBaseLog(i)
+		ctOut.Value[i].Value[0] = pt.Value << ctOut.GadgetParameters.BaseQLog(i)
 		e.EncryptLWEBody(ctOut.Value[i])
 	}
 }
@@ -77,7 +77,7 @@ func (e *Encryptor[T]) EncryptLevPlaintextAssign(pt LWEPlaintext[T], ctOut LevCi
 // DecryptLev decrypts Lev ciphertext to integer message.
 func (e *Encryptor[T]) DecryptLev(ct LevCiphertext[T]) int {
 	pt := e.DecryptLevPlaintext(ct)
-	return int(num.RoundRatioBits(pt.Value, ct.GadgetParameters.LastScaledBaseLog()) % e.Parameters.messageModulus)
+	return int(num.RoundRatioBits(pt.Value, ct.GadgetParameters.LastBaseQLog()) % e.Parameters.messageModulus)
 }
 
 // DecryptLevPlaintext decrypts Lev ciphertext to LWE plaintext.
@@ -111,7 +111,7 @@ func (e *Encryptor[T]) EncryptGSWPlaintextAssign(pt LWEPlaintext[T], ctOut GSWCi
 
 	for i := 1; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		for j := 0; j < ctOut.GadgetParameters.level; j++ {
-			ctOut.Value[i].Value[j].Value[0] = e.DefaultLWESecretKey().Value[i-1] * pt.Value << ctOut.GadgetParameters.ScaledBaseLog(j)
+			ctOut.Value[i].Value[j].Value[0] = e.DefaultLWESecretKey().Value[i-1] * pt.Value << ctOut.GadgetParameters.BaseQLog(j)
 			e.EncryptLWEBody(ctOut.Value[i].Value[j])
 		}
 	}

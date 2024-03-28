@@ -45,6 +45,6 @@ func (e *PublicEncryptor[T]) EncryptGLWEBody(ct GLWECiphertext[T]) {
 	}
 
 	for j := 0; j < e.Parameters.glweDimension+1; j++ {
-		e.GaussianSampler.SampleSliceAddAssign(e.Parameters.glweStdDev, ct.Value[j].Coeffs)
+		e.GaussianSampler.SampleSliceAddAssign(e.Parameters.GLWEStdDevQ(), ct.Value[j].Coeffs)
 	}
 }

@@ -10,8 +10,8 @@ import (
 	"golang.org/x/sys/cpu"
 )
 
-func decomposePolyAssignUint32AVX2(p []uint32, base uint32, baseLog uint32, lastScaledBaseLog uint32, decomposedOut [][]uint32)
-func decomposePolyAssignUint64AVX2(p []uint64, base uint64, baseLog uint64, lastScaledBaseLog uint64, decomposedOut [][]uint64)
+func decomposePolyAssignUint32AVX2(p []uint32, base uint32, baseLog uint32, lastBaseQLog uint32, decomposedOut [][]uint32)
+func decomposePolyAssignUint64AVX2(p []uint64, base uint64, baseLog uint64, lastBaseQLog uint64, decomposedOut [][]uint64)
 
 // decomposePolyAssign decomposes p with respect to gadgetParams and writes it to decomposedOut.
 func decomposePolyAssign[T TorusInt](p poly.Poly[T], gadgetParams GadgetParameters[T], decomposedOut []poly.Poly[T]) {
@@ -23,7 +23,7 @@ func decomposePolyAssign[T TorusInt](p poly.Poly[T], gadgetParams GadgetParamete
 				*(*[]uint32)(unsafe.Pointer(&p)),
 				uint32(gadgetParams.base),
 				uint32(gadgetParams.baseLog),
-				uint32(gadgetParams.scaledBasesLog[gadgetParams.level-1]),
+				uint32(gadgetParams.basesQLog[gadgetParams.level-1]),
 				*(*[][]uint32)(unsafe.Pointer(&decomposedOut)),
 			)
 			return
@@ -32,16 +32,16 @@ func decomposePolyAssign[T TorusInt](p poly.Poly[T], gadgetParams GadgetParamete
 				*(*[]uint64)(unsafe.Pointer(&p)),
 				uint64(gadgetParams.base),
 				uint64(gadgetParams.baseLog),
-				uint64(gadgetParams.scaledBasesLog[gadgetParams.level-1]),
+				uint64(gadgetParams.basesQLog[gadgetParams.level-1]),
 				*(*[][]uint64)(unsafe.Pointer(&decomposedOut)),
 			)
 			return
 		}
 	}
 
-	lastScaledBaseLog := gadgetParams.scaledBasesLog[gadgetParams.level-1]
+	lastBaseQLog := gadgetParams.basesQLog[gadgetParams.level-1]
 	for i := 0; i < p.Degree(); i++ {
-		c := num.RoundRatioBits(p.Coeffs[i], lastScaledBaseLog)
+		c := num.RoundRatioBits(p.Coeffs[i], lastBaseQLog)
 		for j := gadgetParams.level - 1; j >= 1; j-- {
 			decomposedOut[j].Coeffs[i] = c & (gadgetParams.base - 1)
 			c >>= gadgetParams.baseLog

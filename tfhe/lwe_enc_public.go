@@ -35,7 +35,7 @@ func (e *PublicEncryptor[T]) EncryptLWEBody(ct LWECiphertext[T]) {
 		e.BinarySampler.SampleSliceAssign(e.buffer.auxKey.Value[i].Coeffs)
 		ct.Value[0] += vec.Dot(e.buffer.auxKey.Value[i].Coeffs, e.PublicKey.LWEKey.Value[i].Value[0].Coeffs)
 	}
-	ct.Value[0] += e.GaussianSampler.Sample(e.Parameters.glweStdDev)
+	ct.Value[0] += e.GaussianSampler.Sample(e.Parameters.GLWEStdDevQ())
 
 	for i := 0; i < e.Parameters.glweDimension; i++ {
 		vec.ReverseInPlace(e.buffer.auxKey.Value[i].Coeffs)
@@ -54,6 +54,6 @@ func (e *PublicEncryptor[T]) EncryptLWEBody(ct LWECiphertext[T]) {
 	}
 
 	for j := 0; j < e.Parameters.glweDimension; j++ {
-		e.GaussianSampler.SampleSliceAddAssign(e.Parameters.glweStdDev, ctGLWE[j].Coeffs)
+		e.GaussianSampler.SampleSliceAddAssign(e.Parameters.GLWEStdDevQ(), ctGLWE[j].Coeffs)
 	}
 }

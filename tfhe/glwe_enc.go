@@ -39,7 +39,7 @@ func (e *Encryptor[T]) EncryptGLWEBody(ct GLWECiphertext[T]) {
 		e.FourierEvaluator.PolyMulBinarySubAssign(e.SecretKey.FourierGLWEKey.Value[i-1], ct.Value[i], ct.Value[0])
 	}
 
-	e.GaussianSampler.SampleSliceAddAssign(e.Parameters.glweStdDev, ct.Value[0].Coeffs)
+	e.GaussianSampler.SampleSliceAddAssign(e.Parameters.GLWEStdDevQ(), ct.Value[0].Coeffs)
 }
 
 // DecryptGLWE decrypts and decodes GLWE ciphertext to integer message.
@@ -97,7 +97,7 @@ func (e *Encryptor[T]) EncryptGLevPlaintext(pt GLWEPlaintext[T], gadgetParams Ga
 // EncryptGLevPlaintextAssign encrypts GLWE plaintext to GLev ciphertext and writes it to ctOut.
 func (e *Encryptor[T]) EncryptGLevPlaintextAssign(pt GLWEPlaintext[T], ctOut GLevCiphertext[T]) {
 	for i := 0; i < ctOut.GadgetParameters.level; i++ {
-		e.PolyEvaluator.ScalarMulAssign(pt.Value, ctOut.GadgetParameters.ScaledBase(i), ctOut.Value[i].Value[0])
+		e.PolyEvaluator.ScalarMulAssign(pt.Value, ctOut.GadgetParameters.BaseQ(i), ctOut.Value[i].Value[0])
 		e.EncryptGLWEBody(ctOut.Value[i])
 	}
 }
@@ -115,7 +115,7 @@ func (e *Encryptor[T]) DecryptGLevAssign(ct GLevCiphertext[T], messagesOut []int
 
 	length := num.Min(e.Parameters.polyDegree, len(messagesOut))
 	for i := 0; i < length; i++ {
-		messagesOut[i] = int(num.RoundRatioBits(e.buffer.ptGLWE.Value.Coeffs[i], ct.GadgetParameters.LastScaledBaseLog()) % e.Parameters.messageModulus)
+		messagesOut[i] = int(num.RoundRatioBits(e.buffer.ptGLWE.Value.Coeffs[i], ct.GadgetParameters.LastBaseQLog()) % e.Parameters.messageModulus)
 	}
 }
 
@@ -165,7 +165,7 @@ func (e *Encryptor[T]) EncryptGGSWPlaintextAssign(pt GLWEPlaintext[T], ctOut GGS
 	for i := 1; i < e.Parameters.glweDimension+1; i++ {
 		e.FourierEvaluator.PolyMulBinaryAssign(e.SecretKey.FourierGLWEKey.Value[i-1], pt.Value, e.buffer.ptGGSW)
 		for j := 0; j < ctOut.GadgetParameters.level; j++ {
-			e.PolyEvaluator.ScalarMulAssign(e.buffer.ptGGSW, ctOut.GadgetParameters.ScaledBase(j), ctOut.Value[i].Value[j].Value[0])
+			e.PolyEvaluator.ScalarMulAssign(e.buffer.ptGGSW, ctOut.GadgetParameters.BaseQ(j), ctOut.Value[i].Value[j].Value[0])
 			e.EncryptGLWEBody(ctOut.Value[i].Value[j])
 		}
 	}

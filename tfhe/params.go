@@ -49,16 +49,16 @@ func (p GadgetParametersLiteral[T]) Compile() GadgetParameters[T] {
 	}
 
 	baseLog := num.Log2(p.Base)
-	scaledBasesLog := make([]int, p.Level)
-	for i := range scaledBasesLog {
-		scaledBasesLog[i] = num.SizeT[T]() - (i+1)*baseLog
+	basesQLog := make([]int, p.Level)
+	for i := range basesQLog {
+		basesQLog[i] = num.SizeT[T]() - (i+1)*baseLog
 	}
 
 	return GadgetParameters[T]{
-		base:           p.Base,
-		baseLog:        baseLog,
-		level:          p.Level,
-		scaledBasesLog: scaledBasesLog,
+		base:      p.Base,
+		baseLog:   baseLog,
+		level:     p.Level,
+		basesQLog: basesQLog,
 	}
 }
 
@@ -70,8 +70,8 @@ type GadgetParameters[T TorusInt] struct {
 	baseLog int
 	// Level is a length of gadget.
 	level int
-	// scaledBasesLog holds the log of scaled gadget: Log(Q / B^l) for l = 1 ~ Level.
-	scaledBasesLog []int
+	// basesQLog holds the log of scaled gadget: Log(Q / B^l) for l = 1 ~ Level.
+	basesQLog []int
 }
 
 // Base is a base of gadget. It must be power of two.
@@ -89,36 +89,36 @@ func (p GadgetParameters[T]) Level() int {
 	return p.level
 }
 
-// ScaledBase returns Q / Base^(i+1) for 0 <= i < Level.
-// For the most common usages i = 0 and i = Level-1, use FirstScaledBase() and LastScaledBase().
-func (p GadgetParameters[T]) ScaledBase(i int) T {
-	return T(1 << p.scaledBasesLog[i])
+// BaseQ returns Q / Base^(i+1) for 0 <= i < Level.
+// For the most common usages i = 0 and i = Level-1, use [GadgetParameters.FirstBaseQ] and [GadgetParameters.LastBaseQ].
+func (p GadgetParameters[T]) BaseQ(i int) T {
+	return T(1 << p.basesQLog[i])
 }
 
-// FirstScaledBase returns Q / Base.
-func (p GadgetParameters[T]) FirstScaledBase() T {
-	return p.ScaledBase(0)
+// FirstBaseQ returns Q / Base.
+func (p GadgetParameters[T]) FirstBaseQ() T {
+	return p.BaseQ(0)
 }
 
-// LastScaledBase returns Q / Base^Level.
-func (p GadgetParameters[T]) LastScaledBase() T {
-	return p.ScaledBase(p.level - 1)
+// LastBaseQ returns Q / Base^Level.
+func (p GadgetParameters[T]) LastBaseQ() T {
+	return p.BaseQ(p.level - 1)
 }
 
-// ScaledBaseLog returns log(Q / Base^(i+1)) for 0 <= i < Level.
-// For the most common usages i = 0 and i = Level-1, use FirstScaledBaseLog() and LastScaledBaseLog().
-func (p GadgetParameters[T]) ScaledBaseLog(i int) int {
-	return p.scaledBasesLog[i]
+// BaseQLog returns log(Q / Base^(i+1)) for 0 <= i < Level.
+// For the most common usages i = 0 and i = Level-1, use [GadgetParameters.FirstBaseQLog] and [GadgetParameters.LastBaseQLog].
+func (p GadgetParameters[T]) BaseQLog(i int) int {
+	return p.basesQLog[i]
 }
 
-// FirstScaledBaseLog returns log(Q / Base).
-func (p GadgetParameters[T]) FirstScaledBaseLog() int {
-	return p.ScaledBaseLog(0)
+// FirstBaseQLog returns log(Q / Base).
+func (p GadgetParameters[T]) FirstBaseQLog() int {
+	return p.BaseQLog(0)
 }
 
-// LastScaledBaseLog returns log(Q / Base^Level).
-func (p GadgetParameters[T]) LastScaledBaseLog() int {
-	return p.ScaledBaseLog(p.level - 1)
+// LastBaseQLog returns log(Q / Base^Level).
+func (p GadgetParameters[T]) LastBaseQLog() int {
+	return p.BaseQLog(p.level - 1)
 }
 
 // Literal returns a GadgetParametersLiteral from this GadgetParameters.
@@ -404,7 +404,8 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		scale:             1 << scaleLog,
 		scaleLog:          scaleLog,
 
-		logQ: num.SizeT[T](),
+		logQ:   num.SizeT[T](),
+		floatQ: math.Exp2(float64(num.SizeT[T]())),
 
 		bootstrapParameters: p.BootstrapParameters.Compile(),
 		keyswitchParameters: p.KeySwitchParameters.Compile(),
@@ -458,6 +459,8 @@ type Parameters[T TorusInt] struct {
 
 	// logQ is the value of log(Q), where Q is the modulus of the ciphertext.
 	logQ int
+	// floatQ is the value of Q as float64.
+	floatQ float64
 
 	// bootstrapParameters is the gadget parameters for Programmable Bootstrapping.
 	bootstrapParameters GadgetParameters[T]
@@ -535,14 +538,32 @@ func (p Parameters[T]) DefaultLWEStdDev() float64 {
 	return p.glweStdDev
 }
 
+// DefaultLWEStdDevQ returns DefaultLWEStdDev * Q.
+func (p Parameters[T]) DefaultLWEStdDevQ() float64 {
+	if p.bootstrapOrder == OrderBlindRotateKeySwitch {
+		return p.lweStdDev * p.floatQ
+	}
+	return p.glweStdDev * p.floatQ
+}
+
 // LWEStdDev is the standard deviation used for gaussian error sampling in LWE encryption.
 func (p Parameters[T]) LWEStdDev() float64 {
 	return p.lweStdDev
 }
 
+// LWEStdDevQ returns LWEStdDev * Q.
+func (p Parameters[T]) LWEStdDevQ() float64 {
+	return p.lweStdDev * p.floatQ
+}
+
 // GLWEStdDev is the standard deviation used for gaussian error sampling in GLWE encryption.
 func (p Parameters[T]) GLWEStdDev() float64 {
 	return p.glweStdDev
+}
+
+// GLWEStdDevQ returns GLWEStdDev * Q.
+func (p Parameters[T]) GLWEStdDevQ() float64 {
+	return p.glweStdDev * p.floatQ
 }
 
 // BlockSize is the size of block to be used for LWE key sampling.

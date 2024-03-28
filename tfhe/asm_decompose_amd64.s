@@ -16,7 +16,7 @@ TEXT ·decomposePolyAssignUint32AVX2(SB), NOSPLIT, $0-64
 	// See https://github.com/golang/go/issues/47625.
 	VPBROADCASTD base+24(FP), Y10              // base
 	VPBROADCASTD baseLog+28(FP), Y11           // baseLog
-	VPBROADCASTD lastScaledBaseLog+32(FP), Y12 // lastScaledBaseLog
+	VPBROADCASTD lastBaseQLog+32(FP), Y12 // lastBaseQLog
 
 	// Create (1, 1, 1, ..., 1)
 	VPBROADCASTD ONE<>+0(SB), Y0 // ONE
@@ -24,7 +24,7 @@ TEXT ·decomposePolyAssignUint32AVX2(SB), NOSPLIT, $0-64
 	VPSUBD Y0, Y10, Y13 // baseMask = base - 1
 	VPSRLD $1, Y10, Y14 // baseHalf = base / 2
 	VPSUBD Y0, Y11, Y15 // baseLog - 1
-	VPSUBD Y0, Y12, Y9  // lastScaledBaseLog - 1
+	VPSUBD Y0, Y12, Y9  // lastBaseQLog - 1
 
 	XORQ SI, SI
 	JMP  N_loop_end
@@ -97,7 +97,7 @@ TEXT ·decomposePolyAssignUint64AVX2(SB), NOSPLIT, $0-72
 
 	VPBROADCASTQ base+24(FP), Y10              // base
 	VPBROADCASTQ baseLog+32(FP), Y11           // baseLog
-	VPBROADCASTQ lastScaledBaseLog+40(FP), Y12 // lastScaledBaseLog
+	VPBROADCASTQ lastBaseQLog+40(FP), Y12 // lastBaseQLog
 
 	// Create (1, 1, 1, ..., 1)
 	VPBROADCASTQ ONE<>+0(SB), Y0 // ONE
@@ -105,7 +105,7 @@ TEXT ·decomposePolyAssignUint64AVX2(SB), NOSPLIT, $0-72
 	VPSUBQ Y0, Y10, Y13 // baseMask = base - 1
 	VPSRLQ $1, Y10, Y14 // baseHalf = base / 2
 	VPSUBQ Y0, Y11, Y15 // baseLog - 1
-	VPSUBQ Y0, Y12, Y9  // lastScaledBaseLog - 1
+	VPSUBQ Y0, Y12, Y9  // lastBaseQLog - 1
 
 	XORQ SI, SI
 	JMP  N_loop_end

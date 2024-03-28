@@ -129,7 +129,7 @@ func newEvaluationBuffer[T tfhe.TorusInt](params Parameters[T]) evaluationBuffer
 	gadgetLUTs := make([]tfhe.LookUpTable[T], params.accumulatorParameters.Level())
 	for i := 0; i < params.accumulatorParameters.Level(); i++ {
 		gadgetLUTs[i] = tfhe.NewLookUpTable(params.Parameters)
-		gadgetLUTs[i].Coeffs[0] = params.accumulatorParameters.ScaledBase(i)
+		gadgetLUTs[i].Coeffs[0] = params.accumulatorParameters.BaseQ(i)
 	}
 
 	ctAccs := make([]tfhe.GLWECiphertext[T], params.partyCount)
