@@ -204,7 +204,7 @@ func (ksk KeySwitchKey[T]) ByteSize() int {
 	level := len(ksk.Value[0].Value)
 	outputDimension := len(ksk.Value[0].Value[0].Value) - 1
 
-	return 32 + inputDimension*level*(outputDimension+1)*(num.SizeT[T]()/8)
+	return 32 + inputDimension*level*(outputDimension+1)*num.ByteSizeT[T]()
 }
 
 // WriteTo implements the [io.WriterTo] interface.

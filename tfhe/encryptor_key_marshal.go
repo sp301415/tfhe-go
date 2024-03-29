@@ -14,7 +14,7 @@ func (sk SecretKey[T]) ByteSize() int {
 	glweDimension := len(sk.GLWEKey.Value)
 	polyDegree := sk.GLWEKey.Value[0].Degree()
 
-	return 24 + glweDimension*polyDegree*(num.SizeT[T]()/8) + glweDimension*polyDegree*8
+	return 24 + glweDimension*polyDegree*num.ByteSizeT[T]() + glweDimension*polyDegree*8
 }
 
 // WriteTo implements the [io.WriterTo] interface.

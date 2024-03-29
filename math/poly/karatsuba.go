@@ -27,9 +27,7 @@ type karatsubaBuffer[T num.Integer] struct {
 // newKaratsubaBuffer allocates a slice of karatsuba buffer.
 // Each value of the buffer can be accessed with karatsubaTreeIndex.
 func newKaratsubaBuffer[T num.Integer](N int) []karatsubaBuffer[T] {
-	// The full depth of the tree = log2(N / KaratsubaThreshold)
 	fullDepth := num.Log2(N / karatsubaRecurseThreshold)
-	// We only need fullDepth buffers.
 	buff := make([]karatsubaBuffer[T], fullDepth)
 	for i := 0; i < fullDepth; i++ {
 		// In depth i, karatsuba inputs have size N / 2^i

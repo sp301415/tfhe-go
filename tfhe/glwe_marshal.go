@@ -13,7 +13,7 @@ func (sk GLWESecretKey[T]) ByteSize() int {
 	glweDimension := len(sk.Value)
 	polyDegree := sk.Value[0].Degree()
 
-	return 16 + glweDimension*polyDegree*(num.SizeT[T]()/8)
+	return 16 + glweDimension*polyDegree*num.ByteSizeT[T]()
 }
 
 // WriteTo implements the [io.WriterTo] interface.
@@ -149,7 +149,7 @@ func (pk GLWEPublicKey[T]) ByteSize() int {
 	glweDimension := len(pk.Value)
 	polyDegree := pk.Value[0].Value[0].Degree()
 
-	return 16 + glweDimension*(glweDimension+1)*polyDegree*(num.SizeT[T]()/8)
+	return 16 + glweDimension*(glweDimension+1)*polyDegree*num.ByteSizeT[T]()
 }
 
 // WriteTo implements the [io.WriterTo] interface.
@@ -292,7 +292,7 @@ func (pk *GLWEPublicKey[T]) UnmarshalBinary(data []byte) error {
 func (pt GLWEPlaintext[T]) ByteSize() int {
 	polyDegree := pt.Value.Degree()
 
-	return 8 + polyDegree*(num.SizeT[T]()/8)
+	return 8 + polyDegree*num.ByteSizeT[T]()
 }
 
 // WriteTo implements the [io.WriterTo] interface.
@@ -414,7 +414,7 @@ func (ct GLWECiphertext[T]) ByteSize() int {
 	glweDimension := len(ct.Value) - 1
 	polyDegree := ct.Value[0].Degree()
 
-	return 16 + (glweDimension+1)*polyDegree*(num.SizeT[T]()/8)
+	return 16 + (glweDimension+1)*polyDegree*num.ByteSizeT[T]()
 }
 
 // WriteTo implements the [io.WriterTo] interface.
@@ -551,7 +551,7 @@ func (ct GLevCiphertext[T]) ByteSize() int {
 	glweDimension := len(ct.Value[0].Value) - 1
 	polyDegree := ct.Value[0].Value[0].Degree()
 
-	return 32 + level*(glweDimension+1)*polyDegree*(num.SizeT[T]()/8)
+	return 32 + level*(glweDimension+1)*polyDegree*num.ByteSizeT[T]()
 }
 
 // WriteTo implements the [io.WriterTo] interface.
@@ -703,7 +703,7 @@ func (ct GGSWCiphertext[T]) ByteSize() int {
 	level := len(ct.Value[0].Value)
 	polyDegree := ct.Value[0].Value[0].Value[0].Degree()
 
-	return 32 + (glweDimension+1)*level*(glweDimension+1)*polyDegree*(num.SizeT[T]()/8)
+	return 32 + (glweDimension+1)*level*(glweDimension+1)*polyDegree*num.ByteSizeT[T]()
 }
 
 // WriteTo implements the [io.WriterTo] interface.

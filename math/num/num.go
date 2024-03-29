@@ -82,6 +82,11 @@ func SizeT[T Integer]() int {
 	return 64
 }
 
+// ByteSizeT returns the bytes required to express value of type T in int.
+func ByteSizeT[T Integer]() int {
+	return SizeT[T]() / 8
+}
+
 // MinT returns the minimum possible value of type T in int64.
 func MinT[T Integer]() int64 {
 	var z T
@@ -112,13 +117,19 @@ func IsPowerOfTwo[T Integer](x T) bool {
 	return (x > 0) && (x&(x-1)) == 0
 }
 
-// Log2 returns floor(log2(|x|)).
-// If x == 0, it returns 0.
+// Log2 returns floor(log2(x)).
+//
+//   - If x = 0, it returns 0.
+//   - If x < 0, it panics.
 func Log2[T Integer](x T) int {
-	if x == 0 {
+	switch {
+	case x == 0:
 		return 0
+	case x < 0:
+		panic("negative log2 undefined")
 	}
-	return int(bits.Len64(uint64(Abs(x)))) - 1
+
+	return int(bits.Len64(uint64(x))) - 1
 }
 
 // RoundRatio returns round(x/y).
@@ -131,14 +142,6 @@ func RoundRatio[T Integer](x, y T) T {
 // If bits <= 0, it panics.
 func RoundRatioBits[T Integer](x T, bits int) T {
 	return (x >> bits) + ((x >> (bits - 1)) & 1)
-}
-
-// ClosestMultipleBits returns the closest multiple of x respect to 2^bits.
-// It is same as round(x/2^bits) * 2^bits.
-//
-// If bits <= 0, it panics.
-func ClosestMultipleBits[T Integer](x T, bits int) T {
-	return RoundRatioBits(x, bits) << bits
 }
 
 // Min returns the smaller value between x and y.

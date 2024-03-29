@@ -14,7 +14,7 @@ func (ct GLWECiphertext[T]) ByteSize() int {
 	glweDimension := len(ct.Value) - 1
 	polyDegree := ct.Value[0].Degree()
 
-	return 16 + (glweDimension+1)*polyDegree*(num.SizeT[T]()/8)
+	return 16 + (glweDimension+1)*polyDegree*num.ByteSizeT[T]()
 }
 
 // WriteTo implements the [io.WriterTo] interface.
@@ -150,7 +150,7 @@ func (ct UniEncryption[T]) ByteSize() int {
 	level := len(ct.Value[0].Value)
 	polyDegree := ct.Value[0].Value[0].Value[0].Degree()
 
-	return 24 + 2*level*2*polyDegree*(num.SizeT[T]()/8)
+	return 24 + 2*level*2*polyDegree*num.ByteSizeT[T]()
 }
 
 // WriteTo implements the [io.WriterTo] interface.

@@ -10,7 +10,7 @@ import (
 
 // ByteSize returns the size of the ciphertext in bytes.
 func (ct LWECiphertext[T]) ByteSize() int {
-	return 8 + len(ct.Value)*(num.SizeT[T]()/8)
+	return 8 + len(ct.Value)*num.ByteSizeT[T]()
 }
 
 // WriteTo implements the [io.WriterTo] interface.

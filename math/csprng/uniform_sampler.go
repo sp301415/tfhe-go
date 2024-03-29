@@ -45,7 +45,7 @@ func NewUniformSamplerWithSeed[T num.Integer](seed []byte) UniformSampler[T] {
 		prng: bufio.NewReader(prng),
 
 		maxT: T(num.MaxT[T]()),
-		buf:  make([]byte, num.SizeT[T]()/8),
+		buf:  make([]byte, num.ByteSizeT[T]()),
 	}
 }
 

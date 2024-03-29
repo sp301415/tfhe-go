@@ -235,9 +235,9 @@ type ParametersLiteral[T TorusInt] struct {
 	// To use the original TFHE bootstrapping, set this to PolyDegree.
 	PolyLargeDegree int
 
-	// LWEStdDev is the standard deviation used for gaussian error sampling in LWE encryption.
+	// LWEStdDev is the normalized standard deviation used for gaussian error sampling in LWE encryption.
 	LWEStdDev float64
-	// GLWEStdDev is the standard deviation used for gaussian error sampling in GLWE encryption.
+	// GLWEStdDev is the normalized standard deviation used for gaussian error sampling in GLWE encryption.
 	GLWEStdDev float64
 
 	// BlockSize is the size of block to be used for LWE key sampling.
@@ -437,9 +437,9 @@ type Parameters[T TorusInt] struct {
 	// polyExtendFactorLog equals log(PolyLargeDegree / PolyDegree).
 	polyExtendFactorLog int
 
-	// LWEStdDev is the standard deviation used for gaussian error sampling in LWE encryption.
+	// LWEStdDev is the normalized standard deviation used for gaussian error sampling in LWE encryption.
 	lweStdDev float64
-	// GLWEStdDev is the standard deviation used for gaussian error sampling in GLWE encryption.
+	// GLWEStdDev is the normalized standard deviation used for gaussian error sampling in GLWE encryption.
 	glweStdDev float64
 
 	// BlockSize is the size of block to be used for LWE key sampling.
@@ -531,6 +531,9 @@ func (p Parameters[T]) PolyExtendFactorLog() int {
 // DefaultLWEStdDev returns the default standard deviation for LWE entities.
 // Returns LWEStdDev if BootstrapOrder is OrderBlindRotateKeySwitch,
 // and GLWEStdDev otherwise.
+//
+// This is a normlized standard deviation.
+// For actual sampling, use [Parameters.DefaultLWEStdDevQ].
 func (p Parameters[T]) DefaultLWEStdDev() float64 {
 	if p.bootstrapOrder == OrderBlindRotateKeySwitch {
 		return p.lweStdDev
@@ -547,6 +550,9 @@ func (p Parameters[T]) DefaultLWEStdDevQ() float64 {
 }
 
 // LWEStdDev is the standard deviation used for gaussian error sampling in LWE encryption.
+//
+// This is a normlized standard deviation.
+// For actual sampling, use [Parameters.LWEStdDevQ].
 func (p Parameters[T]) LWEStdDev() float64 {
 	return p.lweStdDev
 }
@@ -557,6 +563,9 @@ func (p Parameters[T]) LWEStdDevQ() float64 {
 }
 
 // GLWEStdDev is the standard deviation used for gaussian error sampling in GLWE encryption.
+//
+// This is a normlized standard deviation.
+// For actual sampling, use [Parameters.GLWEStdDevQ].
 func (p Parameters[T]) GLWEStdDev() float64 {
 	return p.glweStdDev
 }
