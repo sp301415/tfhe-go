@@ -12,7 +12,7 @@ import (
 type Evaluator[T TorusInt] struct {
 	// Encoder is an embedded encoder for this Evaluator.
 	*Encoder[T]
-	// glweTransformer is an embedded glweTransformer for this Evaluator.
+	// GLWETransformer is an embedded GLWETransformer for this Evaluator.
 	*GLWETransformer[T]
 
 	// Parameters holds the parameters for this Evaluator.

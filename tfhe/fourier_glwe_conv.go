@@ -17,7 +17,7 @@ type GLWETransformer[T TorusInt] struct {
 	FourierEvaluator *poly.FourierEvaluator[T]
 }
 
-// NewGLWETransformer returns a new glweTransformer with given parameters.
+// NewGLWETransformer returns a new GLWETransformer with given parameters.
 func NewGLWETransformer[T TorusInt](params Parameters[T]) *GLWETransformer[T] {
 	return &GLWETransformer[T]{
 		Parameters:       params,
@@ -25,8 +25,8 @@ func NewGLWETransformer[T TorusInt](params Parameters[T]) *GLWETransformer[T] {
 	}
 }
 
-// ShallowCopy returns a shallow copy of this glweTransformer.
-// Returned glweTransformer is safe for concurrent use.
+// ShallowCopy returns a shallow copy of this GLWETransformer.
+// Returned GLWETransformer is safe for concurrent use.
 func (e *GLWETransformer[T]) ShallowCopy() *GLWETransformer[T] {
 	return &GLWETransformer[T]{
 		Parameters:       e.Parameters,
