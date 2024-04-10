@@ -85,25 +85,25 @@ var (
 
 	// ParamsUint2 is a parameter set with 2 bits of message space.
 	ParamsUint2 = ParametersLiteral[uint64]{
-		LWEDimension:    656,
-		GLWEDimension:   2,
+		LWEDimension:    700,
+		GLWEDimension:   3,
 		PolyDegree:      512,
 		PolyLargeDegree: 512,
 
-		LWEStdDev:  0.000034119201269311964,
-		GLWEStdDev: 0.00000004053919869756513,
+		LWEStdDev:  1.9974501253932986e-05,
+		GLWEStdDev: 3.966608917163306e-12,
 
 		BlockSize: 2,
 
 		MessageModulus: 1 << 2,
 
 		BootstrapParameters: GadgetParametersLiteral[uint64]{
-			Base:  1 << 8,
-			Level: 2,
+			Base:  1 << 18,
+			Level: 1,
 		},
 		KeySwitchParameters: GadgetParametersLiteral[uint64]{
-			Base:  1 << 3,
-			Level: 4,
+			Base:  1 << 4,
+			Level: 3,
 		},
 
 		BootstrapOrder: OrderKeySwitchBlindRotate,
@@ -111,13 +111,13 @@ var (
 
 	// ParamsUint3 is a parameter set with 3 bits of message space.
 	ParamsUint3 = ParametersLiteral[uint64]{
-		LWEDimension:    744,
+		LWEDimension:    759,
 		GLWEDimension:   2,
 		PolyDegree:      1024,
 		PolyLargeDegree: 1024,
 
-		LWEStdDev:  0.000007069849454709433,
-		GLWEStdDev: 0.00000000000000029403601535432533,
+		LWEStdDev:  6.607570143466592e-06,
+		GLWEStdDev: 3.1529322391500584e-16,
 
 		BlockSize: 3,
 
@@ -137,13 +137,13 @@ var (
 
 	// ParamsUint4 is a parameter set with 4 bits of message space.
 	ParamsUint4 = ParametersLiteral[uint64]{
-		LWEDimension:    744,
+		LWEDimension:    762,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
 		PolyLargeDegree: 2048,
 
-		LWEStdDev:  0.000007069849454709433,
-		GLWEStdDev: 0.00000000000000029403601535432533,
+		LWEStdDev:  6.36835566258815e-06,
+		GLWEStdDev: 3.1529322391500584e-16,
 
 		BlockSize: 3,
 
@@ -163,13 +163,13 @@ var (
 
 	// ParamsUint5 is a parameter set with 5 bits of message space.
 	ParamsUint5 = ParametersLiteral[uint64]{
-		LWEDimension:    808,
+		LWEDimension:    852,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
 		PolyLargeDegree: 4096,
 
-		LWEStdDev:  0.0000021515145918907506,
-		GLWEStdDev: 0.00000000000000029403601535432533,
+		LWEStdDev:  1.2571599559956785e-06,
+		GLWEStdDev: 3.1529322391500584e-16,
 
 		BlockSize: 4,
 
@@ -180,8 +180,8 @@ var (
 			Level: 1,
 		},
 		KeySwitchParameters: GadgetParametersLiteral[uint64]{
-			Base:  1 << 3,
-			Level: 5,
+			Base:  1 << 4,
+			Level: 4,
 		},
 
 		BootstrapOrder: OrderKeySwitchBlindRotate,
@@ -189,13 +189,13 @@ var (
 
 	// ParamsUint6 is a parameter set with 6 bits of message space.
 	ParamsUint6 = ParametersLiteral[uint64]{
-		LWEDimension:    915,
+		LWEDimension:    935,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
 		PolyLargeDegree: 8192,
 
-		LWEStdDev:  0.00000029804653749339636,
-		GLWEStdDev: 0.00000000000000029403601535432533,
+		LWEStdDev:  2.77202526552345e-07,
+		GLWEStdDev: 3.1529322391500584e-16,
 
 		BlockSize: 5,
 
@@ -215,13 +215,13 @@ var (
 
 	// ParamsUint7 is a parameter set with 7 bits of message space.
 	ParamsUint7 = ParametersLiteral[uint64]{
-		LWEDimension:    930,
+		LWEDimension:    950,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
 		PolyLargeDegree: 16384,
 
-		LWEStdDev:  0.00000022649232786295453,
-		GLWEStdDev: 0.00000000000000029403601535432533,
+		LWEStdDev:  2.0638655780656257e-07,
+		GLWEStdDev: 3.1529322391500584e-16,
 
 		BlockSize: 5,
 
@@ -241,13 +241,13 @@ var (
 
 	// ParamsUint8 is a parameter set with 8 bits of message space.
 	ParamsUint8 = ParametersLiteral[uint64]{
-		LWEDimension:    1020,
+		LWEDimension:    1032,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
 		PolyLargeDegree: 32768,
 
-		LWEStdDev:  0.0000000460803851108693,
-		GLWEStdDev: 0.00000000000000029403601535432533,
+		LWEStdDev:  4.305923848218434e-08,
+		GLWEStdDev: 3.1529322391500584e-16,
 
 		BlockSize: 6,
 
