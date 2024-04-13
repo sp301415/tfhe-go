@@ -40,7 +40,7 @@ func MaxT[T Integer]() uint64 {
 	switch any(z).(type) {
 	case int:
 		return math.MaxInt
-	case uint:
+	case uint, uintptr:
 		return math.MaxUint
 	case int8:
 		return math.MaxInt8
@@ -58,8 +58,6 @@ func MaxT[T Integer]() uint64 {
 		return math.MaxInt64
 	case uint64:
 		return math.MaxUint64
-	case uintptr:
-		return math.MaxUint
 	}
 	return math.MaxUint
 }
@@ -105,28 +103,22 @@ func MinT[T Integer]() int64 {
 	return 0
 }
 
-// IsSigned returns if type T is a signed type.
+// IsSigned returns true if type T is a signed type.
 func IsSigned[T Real]() bool {
 	var z T
 	return z-1 < 0
 }
 
 // IsPowerOfTwo returns whether x is a power of two.
-// If x <= 0, it always returns false.
+// If x < 0, it always returns false.
 func IsPowerOfTwo[T Integer](x T) bool {
-	return (x > 0) && (x&(x-1)) == 0
+	return (x == 0) || ((x > 0) && (x&(x-1)) == 0)
 }
 
-// Log2 returns floor(log2(x)).
-//
-//   - If x = 0, it returns 0.
-//   - If x < 0, it panics.
+// Log2 returns floor(log2(x)). Panics if x <= 0.
 func Log2[T Integer](x T) int {
-	switch {
-	case x == 0:
-		return 0
-	case x < 0:
-		panic("negative log2 undefined")
+	if x <= 0 {
+		panic("non-positive log2 undefined")
 	}
 
 	return int(bits.Len64(uint64(x))) - 1
@@ -194,7 +186,28 @@ func MinN[T Real](x ...T) T {
 	return min
 }
 
-// Sqrt returns round(sqrt2(x)). Usually used for dividing even chunks for parallelism.
+// Sqrt returns floor(sqrt2(x)). Panics if x < 0.
 func Sqrt[T Integer](x T) T {
-	return T(math.Round(math.Sqrt(float64(x))))
+	if x < 0 {
+		panic("negative sqrt undefined")
+	}
+
+	t := uint64(x)
+	c := uint64(0)
+	d := uint64(1 << 62)
+	for d > t {
+		d >>= 2
+	}
+
+	for d != 0 {
+		if t >= c+d {
+			t -= c + d
+			c = (c >> 1) + d
+		} else {
+			c >>= 1
+		}
+		d >>= 2
+	}
+
+	return T(c)
 }
