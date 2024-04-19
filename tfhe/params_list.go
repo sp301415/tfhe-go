@@ -13,7 +13,7 @@ var (
 
 		BlockSize: 3,
 
-		MessageModulus: 1 << 2,
+		MessageModulus: 1 << 1,
 
 		BootstrapParameters: GadgetParametersLiteral[uint32]{
 			Base:  1 << 6,
@@ -43,7 +43,7 @@ var (
 
 		BlockSize: 2,
 
-		MessageModulus: 1 << 2,
+		MessageModulus: 1 << 1,
 
 		BootstrapParameters: GadgetParametersLiteral[uint32]{
 			Base:  1 << 6,
@@ -69,7 +69,7 @@ var (
 
 		BlockSize: 1,
 
-		MessageModulus: 1 << 2,
+		MessageModulus: 1 << 1,
 
 		BootstrapParameters: GadgetParametersLiteral[uint32]{
 			Base:  1 << 7,

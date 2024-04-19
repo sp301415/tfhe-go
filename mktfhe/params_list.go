@@ -16,14 +16,14 @@ var (
 
 			BlockSize: 2,
 
-			MessageModulus: 1 << 2,
+			MessageModulus: 1 << 1,
 
 			BootstrapParameters: tfhe.GadgetParametersLiteral[uint64]{
 				Base:  1 << 12,
 				Level: 3,
 			},
 			KeySwitchParameters: tfhe.GadgetParametersLiteral[uint64]{
-				Base:  1 << 2,
+				Base:  1 << 1,
 				Level: 8,
 			},
 
@@ -55,14 +55,14 @@ var (
 
 			BlockSize: 2,
 
-			MessageModulus: 1 << 2,
+			MessageModulus: 1 << 1,
 
 			BootstrapParameters: tfhe.GadgetParametersLiteral[uint64]{
 				Base:  1 << 8,
 				Level: 5,
 			},
 			KeySwitchParameters: tfhe.GadgetParametersLiteral[uint64]{
-				Base:  1 << 2,
+				Base:  1 << 1,
 				Level: 8,
 			},
 
@@ -94,14 +94,14 @@ var (
 
 			BlockSize: 2,
 
-			MessageModulus: 1 << 2,
+			MessageModulus: 1 << 1,
 
 			BootstrapParameters: tfhe.GadgetParametersLiteral[uint64]{
 				Base:  1 << 9,
 				Level: 4,
 			},
 			KeySwitchParameters: tfhe.GadgetParametersLiteral[uint64]{
-				Base:  1 << 2,
+				Base:  1 << 1,
 				Level: 8,
 			},
 
@@ -133,14 +133,14 @@ var (
 
 			BlockSize: 2,
 
-			MessageModulus: 1 << 2,
+			MessageModulus: 1 << 1,
 
 			BootstrapParameters: tfhe.GadgetParametersLiteral[uint64]{
 				Base:  1 << 8,
 				Level: 5,
 			},
 			KeySwitchParameters: tfhe.GadgetParametersLiteral[uint64]{
-				Base:  1 << 2,
+				Base:  1 << 1,
 				Level: 8,
 			},
 
@@ -172,14 +172,14 @@ var (
 
 			BlockSize: 2,
 
-			MessageModulus: 1 << 2,
+			MessageModulus: 1 << 1,
 
 			BootstrapParameters: tfhe.GadgetParametersLiteral[uint64]{
 				Base:  1 << 7,
 				Level: 6,
 			},
 			KeySwitchParameters: tfhe.GadgetParametersLiteral[uint64]{
-				Base:  1 << 2,
+				Base:  1 << 1,
 				Level: 8,
 			},
 
@@ -193,7 +193,7 @@ var (
 			Level: 3,
 		},
 		RelinKeyParameters: tfhe.GadgetParametersLiteral[uint64]{
-			Base:  1 << 2,
+			Base:  1 << 1,
 			Level: 16,
 		},
 	}

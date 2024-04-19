@@ -26,7 +26,7 @@ var (
 )
 
 func TestEncryptor(t *testing.T) {
-	messages := []int{1, 2, 3}
+	messages := []int{0, 1}
 	gadgetParams := testParams.RelinKeyParameters()
 
 	t.Run("LWE", func(t *testing.T) {
@@ -58,12 +58,12 @@ func TestEncryptor(t *testing.T) {
 }
 
 func TestEvaluator(t *testing.T) {
-	messages := []int{1, 2}
+	messages := []int{0, 1}
 
 	t.Run("HybridProduct", func(t *testing.T) {
 		ct := testEncryptors[0].EncryptGLWE(messages)
 
-		mul := 2
+		mul := 1
 		ctMul := testEncryptors[0].FourierUniEncrypt([]int{mul}, testParams.RelinKeyParameters())
 
 		ctOut := testEvaluator.HybridProduct(0, ctMul, ct)
@@ -76,7 +76,7 @@ func TestEvaluator(t *testing.T) {
 	t.Run("ExternalProduct", func(t *testing.T) {
 		ct := testEncryptors[0].EncryptGLWE(messages)
 
-		mul := 2
+		mul := 1
 		ctMul := testEncryptors[0].SingleKeyEncryptor.EncryptFourierGLev([]int{mul}, testParams.AccumulatorParameters())
 
 		ctOut := testEvaluator.ExternalProduct(0, ctMul, ct)
@@ -87,7 +87,7 @@ func TestEvaluator(t *testing.T) {
 	})
 
 	t.Run("BootstrapFunc", func(t *testing.T) {
-		f := func(x int) int { return x + 1 }
+		f := func(x int) int { return 1 - x }
 		for _, m := range messages {
 			ct := testEncryptors[0].EncryptLWE(m)
 			ctOut := testEvaluator.BootstrapFunc(ct, f)
@@ -96,7 +96,7 @@ func TestEvaluator(t *testing.T) {
 	})
 
 	t.Run("BootstrapFuncParallel", func(t *testing.T) {
-		f := func(x int) int { return x + 1 }
+		f := func(x int) int { return 1 - x }
 		for _, m := range messages {
 			ct := testEncryptors[0].EncryptLWE(m)
 			ctOut := testEvaluator.BootstrapFuncParallel(ct, f)
