@@ -46,7 +46,7 @@ func NewPublicEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, publicKe
 	}
 
 	return &PublicEncryptor[T]{
-		Encoder:                  tfhe.NewEncoder[T](params.Parameters),
+		Encoder:                  tfhe.NewEncoder(params.Parameters),
 		GLWETransformer:          NewGLWETransformer(params),
 		SingleKeyPublicEncryptor: tfhe.NewPublicEncryptor(params.Parameters, publicKey),
 

@@ -82,26 +82,6 @@ func (e *Evaluator[T]) GenLookUpTableFullAssign(f func(int) T, lutOut LookUpTabl
 	}
 }
 
-// ClearPaddingBit clears the padding bit of the LWE ciphertext.
-func (e *Evaluator[T]) ClearPaddingBit(ct LWECiphertext[T]) LWECiphertext[T] {
-	ctOut := NewLWECiphertext(e.Parameters)
-	e.ClearPaddingBitAssign(ct, ctOut)
-	return ctOut
-}
-
-// ClearPaddingBitAssign clears the padding bit of the LWE ciphertext and writes it to ctOut.
-func (e *Evaluator[T]) ClearPaddingBitAssign(ct LWECiphertext[T], ctOut LWECiphertext[T]) {
-	e.GenLookUpTableFullAssign(func(x int) T { return 1 << (e.Parameters.logQ - 2) }, e.buffer.lut)
-	e.BootstrapLUTAssign(ct, e.buffer.lut, e.buffer.ctPadding)
-	e.SubLWEAssign(ct, e.buffer.ctPadding, ctOut)
-	ctOut.Value[0] += 1 << (e.Parameters.logQ - 2)
-}
-
-// ClearPaddingBitInPlace clears the padding bit of the LWE ciphertext in place.
-func (e *Evaluator[T]) ClearPaddingBitInPlace(ct LWECiphertext[T]) {
-	e.ClearPaddingBitAssign(ct, ct)
-}
-
 // BootstrapFunc returns a bootstrapped LWE ciphertext with resepect to given function.
 func (e *Evaluator[T]) BootstrapFunc(ct LWECiphertext[T], f func(int) int) LWECiphertext[T] {
 	e.GenLookUpTableAssign(f, e.buffer.lut)

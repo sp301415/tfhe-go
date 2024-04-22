@@ -54,24 +54,24 @@ type decryptionBuffer[T tfhe.TorusInt] struct {
 // NewDecryptor allocates an empty Decryptor.
 // Only indices between 0 and params.PartyCount is valid for sk.
 func NewDecryptor[T tfhe.TorusInt](params Parameters[T], sk map[int]tfhe.SecretKey[T]) *Decryptor[T] {
-	encs := make([]*tfhe.Encryptor[T], len(sk))
-	sks := make([]tfhe.SecretKey[T], len(sk))
+	singleEncs := make([]*tfhe.Encryptor[T], len(sk))
+	singleKeys := make([]tfhe.SecretKey[T], len(sk))
 	partyBitMap := make([]bool, params.PartyCount())
 	for i := range sk {
-		encs[i] = tfhe.NewEncryptorWithKey(params.Parameters, sk[i])
-		sks[i] = sk[i]
+		singleEncs[i] = tfhe.NewEncryptorWithKey(params.Parameters, sk[i])
+		singleKeys[i] = sk[i]
 		partyBitMap[i] = true
 	}
 
 	return &Decryptor[T]{
 		Encoder:             tfhe.NewEncoder(params.Parameters),
 		GLWETransformer:     NewGLWETransformer(params),
-		SingleKeyDecryptors: encs,
+		SingleKeyDecryptors: singleEncs,
 
 		Parameters:  params,
 		PartyBitMap: partyBitMap,
 
-		SecretKeys: sks,
+		SecretKeys: singleKeys,
 
 		buffer: newDecryptionBuffer(params),
 	}

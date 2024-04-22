@@ -76,9 +76,6 @@ type evaluationBuffer[T TorusInt] struct {
 	// ctKeySwitch holds LWEDimension sized ciphertext from keyswitching.
 	ctKeySwitch LWECiphertext[T]
 
-	// ctPadding holds the padding bit of a ciphertext.
-	ctPadding LWECiphertext[T]
-
 	// lut is an empty lut, used for BlindRotateFunc.
 	lut LookUpTable[T]
 }
@@ -104,7 +101,7 @@ func NewEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *Evalu
 // NewEvaluatorWithoutKey allocates an empty Evaluator based on parameters, but without evaluation keys.
 // This will panic if any operation that requires evaluation key is called.
 func NewEvaluatorWithoutKey[T TorusInt](params Parameters[T]) *Evaluator[T] {
-	return NewEvaluator[T](params, EvaluationKey[T]{})
+	return NewEvaluator(params, EvaluationKey[T]{})
 }
 
 // newEvaluationBuffer allocates an empty evaluationBuffer.
@@ -154,8 +151,6 @@ func newEvaluationBuffer[T TorusInt](params Parameters[T]) evaluationBuffer[T] {
 		ctRotate:    NewGLWECiphertext(params),
 		ctExtract:   NewLWECiphertextCustom[T](params.lweLargeDimension),
 		ctKeySwitch: NewLWECiphertextCustom[T](params.lweDimension),
-
-		ctPadding: NewLWECiphertext(params),
 
 		lut: NewLookUpTable(params),
 	}
