@@ -6,6 +6,8 @@ import (
 )
 
 // SecretKey is a structure containing LWE and GLWE key.
+// All keys should be treated as read-only.
+// Changing them mid-operation will usually result in wrong results.
 //
 // LWEKey and GLWEKey is sampled together, as explained in https://eprint.iacr.org/2023/958.
 // As a result, LWEKey and GLWEKey share the same backing slice, so modifying one will affect the other.
@@ -100,6 +102,8 @@ func (sk *SecretKey[T]) Clear() {
 }
 
 // PublicKey is a structure containing LWE and GLWE public key.
+// All keys should be treated as read-only.
+// Changing them mid-operation will usually result in wrong computation.
 //
 // We use compact public key, explained in https://eprint.iacr.org/2023/603.
 // This means that not all parameters support public key encryption.

@@ -2,6 +2,8 @@ package tfhe
 
 // EvaluationKey is a public key for Evaluator,
 // which consists of Bootstrapping Key and KeySwitching Key.
+// All keys should be treated as read-only.
+// Changing them mid-operation will usually result in wrong results.
 type EvaluationKey[T TorusInt] struct {
 	// BootstrapKey is a bootstrap key.
 	BootstrapKey BootstrapKey[T]
