@@ -12,7 +12,7 @@ var (
 			PolyLargeDegree: 2048,
 
 			LWEStdDev:  0.0000305,
-			GLWEStdDev: 0.0000000000000000043,
+			GLWEStdDev: 0.00000000000000000463,
 
 			BlockSize: 2,
 
@@ -51,7 +51,7 @@ var (
 			PolyLargeDegree: 2048,
 
 			LWEStdDev:  0.0000305,
-			GLWEStdDev: 0.0000000000000000043,
+			GLWEStdDev: 0.00000000000000000463,
 
 			BlockSize: 2,
 
@@ -90,7 +90,7 @@ var (
 			PolyLargeDegree: 2048,
 
 			LWEStdDev:  0.0000305,
-			GLWEStdDev: 0.0000000000000000043,
+			GLWEStdDev: 0.00000000000000000463,
 
 			BlockSize: 2,
 
@@ -129,7 +129,7 @@ var (
 			PolyLargeDegree: 2048,
 
 			LWEStdDev:  0.0000305,
-			GLWEStdDev: 0.0000000000000000043,
+			GLWEStdDev: 0.00000000000000000463,
 
 			BlockSize: 2,
 
@@ -168,7 +168,7 @@ var (
 			PolyLargeDegree: 2048,
 
 			LWEStdDev:  0.0000305,
-			GLWEStdDev: 0.0000000000000000043,
+			GLWEStdDev: 0.00000000000000000463,
 
 			BlockSize: 2,
 
