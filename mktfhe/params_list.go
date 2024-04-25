@@ -23,7 +23,7 @@ var (
 				Level: 3,
 			},
 			KeySwitchParameters: tfhe.GadgetParametersLiteral[uint64]{
-				Base:  1 << 1,
+				Base:  1 << 2,
 				Level: 8,
 			},
 
@@ -62,7 +62,7 @@ var (
 				Level: 5,
 			},
 			KeySwitchParameters: tfhe.GadgetParametersLiteral[uint64]{
-				Base:  1 << 1,
+				Base:  1 << 2,
 				Level: 8,
 			},
 
@@ -101,7 +101,7 @@ var (
 				Level: 4,
 			},
 			KeySwitchParameters: tfhe.GadgetParametersLiteral[uint64]{
-				Base:  1 << 1,
+				Base:  1 << 2,
 				Level: 8,
 			},
 
@@ -140,7 +140,7 @@ var (
 				Level: 5,
 			},
 			KeySwitchParameters: tfhe.GadgetParametersLiteral[uint64]{
-				Base:  1 << 1,
+				Base:  1 << 2,
 				Level: 8,
 			},
 
@@ -179,7 +179,7 @@ var (
 				Level: 6,
 			},
 			KeySwitchParameters: tfhe.GadgetParametersLiteral[uint64]{
-				Base:  1 << 1,
+				Base:  1 << 2,
 				Level: 8,
 			},
 
@@ -193,7 +193,7 @@ var (
 			Level: 3,
 		},
 		RelinKeyParameters: tfhe.GadgetParametersLiteral[uint64]{
-			Base:  1 << 1,
+			Base:  1 << 2,
 			Level: 16,
 		},
 	}
