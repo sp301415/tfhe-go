@@ -229,7 +229,7 @@ type ParametersLiteral[T TorusInt] struct {
 	GLWEDimension int
 	// PolyDegree is the degree of polynomials in GLWE entities. Usually this is denoted by N.
 	PolyDegree int
-	// PolyLargeDegree is the degree of polynomial used in Blind Roation.
+	// PolyLargeDegree is the degree of polynomial used in Blind Rotation.
 	//
 	// This is used in Extended Bootstrapping, as explained in https://eprint.iacr.org/2023/402.
 	// To use the original TFHE bootstrapping, set this to PolyDegree.
@@ -428,7 +428,7 @@ type Parameters[T TorusInt] struct {
 	polyDegree int
 	// PolyDegreeLog equals log(PolyDegree).
 	polyDegreeLog int
-	// PolyLargeDegree is the degree of polynomial used in Blind Roation.
+	// PolyLargeDegree is the degree of polynomial used in Blind Rotation.
 	polyLargeDegree int
 	// PolyLargeDegreeLog equals log(PolyLargeDegree).
 	polyLargeDegreeLog int
@@ -508,7 +508,7 @@ func (p Parameters[T]) PolyDegreeLog() int {
 	return p.polyDegreeLog
 }
 
-// PolyLargeDegree is the degree of polynomial used in Blind Roation.
+// PolyLargeDegree is the degree of polynomial used in Blind Rotation.
 func (p Parameters[T]) PolyLargeDegree() int {
 	return p.polyLargeDegree
 }
