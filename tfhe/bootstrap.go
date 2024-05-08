@@ -6,7 +6,7 @@ import (
 	"github.com/sp301415/tfhe-go/math/vec"
 )
 
-// LookUpTable is a trivially encrypted GLWE ciphertext that holds
+// LookUpTable is a polynomial that holds
 // the lookup table for function evaluations during programmable bootstrapping.
 //
 // The degree of a LUT equals to PolyLargeDegree.
