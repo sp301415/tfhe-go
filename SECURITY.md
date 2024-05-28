@@ -5,7 +5,7 @@ Theoretical security of TFHE is based on hardness of [LWE](https://en.wikipedia.
 TFHE-go has not been audited or reviewed by security experts. It is highly likely that it contains critical vulnerabilities to implementation-related attacks, such as side-channel attacks. Use at your own risk.
 
 ## Parameter Selection
-Single-key parameters of TFHE-go is based on [TFHE-rs](https://github.com/zama-ai/tfhe-rs), and ensures at least 128 bits of security. Multi-key parameters are based on [[KMS22](https://eprint.iacr.org/2022/1460)] and ensures at least 110 bits of security. They were validated using latest commit([7ea215a](https://github.com/malb/lattice-estimator/commit/7ea215a4d55f200e06394399d8aa728c9092c5ef)) of [lattice-estimator](https://github.com/malb/lattice-estimator). Attack costs were estimated with two strategies, `primal_usvp` and `dual_hybrid`, with `red_cost_model = RC.BDGL16`.
+Single-key parameters of TFHE-go is based on [TFHE-rs](https://github.com/zama-ai/tfhe-rs), and ensures at least 128 bits of security. Multi-Key parameters are based on [[KMS22](https://eprint.iacr.org/2022/1460)] and ensures at least 110 bits of security. They were validated using latest commit([7ea215a](https://github.com/malb/lattice-estimator/commit/7ea215a4d55f200e06394399d8aa728c9092c5ef)) of [lattice-estimator](https://github.com/malb/lattice-estimator). Attack costs were estimated with two strategies, `primal_usvp` and `dual_hybrid`, with `red_cost_model = RC.BDGL16`.
 
 ### Block Binary Keys
 
