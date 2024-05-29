@@ -70,14 +70,22 @@ func (s GaussianSampler[T]) normFloat64() float64 {
 }
 
 // Sample returns a number sampled from rounded gaussian distribution
-// with standard deviation |stdDev|.
+// with standard deviation stdDev.
+//
+// Panics when stdDev < 0.
 func (s GaussianSampler[T]) Sample(stdDev float64) T {
+	if stdDev < 0 {
+		panic("negative standard deviation")
+	}
+
 	u := s.normFloat64() * stdDev
 	return T(int64(math.Round(u)))
 }
 
 // SampleSliceAssign samples rounded gaussian values
-// with standard deviation |stdDev|, and writes it to vOut.
+// with standard deviation stdDev, and writes it to vOut.
+//
+// Panics when stdDev < 0.
 func (s GaussianSampler[T]) SampleSliceAssign(stdDev float64, vOut []T) {
 	for i := range vOut {
 		vOut[i] = s.Sample(stdDev)
@@ -86,6 +94,8 @@ func (s GaussianSampler[T]) SampleSliceAssign(stdDev float64, vOut []T) {
 
 // SampleSliceAddAssign samples rounded gaussian values
 // with standard deviation |stdDev|, and adds to vOut.
+//
+// Panics when stdDev < 0.
 func (s GaussianSampler[T]) SampleSliceAddAssign(stdDev float64, vOut []T) {
 	for i := range vOut {
 		vOut[i] += s.Sample(stdDev)
