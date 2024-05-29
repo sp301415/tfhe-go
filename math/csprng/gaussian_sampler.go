@@ -10,14 +10,14 @@ import (
 // This uses the same algorithm as Go's standard library,
 // which is based on Ziggurat method by Marsaglia and Tsang.
 type GaussianSampler[T num.Integer] struct {
-	baseSampler UniformSampler[int32]
+	baseSampler *UniformSampler[int32]
 }
 
 // NewGaussianSampler allocates an empty GaussianSampler.
 //
 // Panics when read from crypto/rand or blake2b initialization fails.
-func NewGaussianSampler[T num.Integer]() GaussianSampler[T] {
-	return GaussianSampler[T]{
+func NewGaussianSampler[T num.Integer]() *GaussianSampler[T] {
+	return &GaussianSampler[T]{
 		baseSampler: NewUniformSampler[int32](),
 	}
 }
@@ -25,19 +25,19 @@ func NewGaussianSampler[T num.Integer]() GaussianSampler[T] {
 // NewGaussianSamplerWithSeed allocates an empty GaussianSampler, with user supplied seed.
 //
 // Panics when blake2b initialization fails.
-func NewGaussianSamplerWithSeed[T num.Integer](seed []byte, stdDev float64) GaussianSampler[T] {
-	return GaussianSampler[T]{
+func NewGaussianSamplerWithSeed[T num.Integer](seed []byte, stdDev float64) *GaussianSampler[T] {
+	return &GaussianSampler[T]{
 		baseSampler: NewUniformSamplerWithSeed[int32](seed),
 	}
 }
 
 // uniformFloat samples float64 from uniform distribution in [-1, +1].
-func (s GaussianSampler[T]) uniformFloat() float64 {
+func (s *GaussianSampler[T]) uniformFloat() float64 {
 	return float64(s.baseSampler.Sample()) * float32Inv
 }
 
 // normFloat samples float64 from normal distribution.
-func (s GaussianSampler[T]) normFloat64() float64 {
+func (s *GaussianSampler[T]) normFloat64() float64 {
 	for {
 		var x, y float64
 
@@ -73,7 +73,7 @@ func (s GaussianSampler[T]) normFloat64() float64 {
 // with standard deviation stdDev.
 //
 // Panics when stdDev < 0.
-func (s GaussianSampler[T]) Sample(stdDev float64) T {
+func (s *GaussianSampler[T]) Sample(stdDev float64) T {
 	if stdDev < 0 {
 		panic("negative standard deviation")
 	}
@@ -86,7 +86,7 @@ func (s GaussianSampler[T]) Sample(stdDev float64) T {
 // with standard deviation stdDev, and writes it to vOut.
 //
 // Panics when stdDev < 0.
-func (s GaussianSampler[T]) SampleSliceAssign(stdDev float64, vOut []T) {
+func (s *GaussianSampler[T]) SampleSliceAssign(stdDev float64, vOut []T) {
 	for i := range vOut {
 		vOut[i] = s.Sample(stdDev)
 	}
@@ -96,7 +96,7 @@ func (s GaussianSampler[T]) SampleSliceAssign(stdDev float64, vOut []T) {
 // with standard deviation |stdDev|, and adds to vOut.
 //
 // Panics when stdDev < 0.
-func (s GaussianSampler[T]) SampleSliceAddAssign(stdDev float64, vOut []T) {
+func (s *GaussianSampler[T]) SampleSliceAddAssign(stdDev float64, vOut []T) {
 	for i := range vOut {
 		vOut[i] += s.Sample(stdDev)
 	}

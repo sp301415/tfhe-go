@@ -20,7 +20,7 @@ type UniformSampler[T num.Integer] struct {
 // NewUniformSampler allocates an empty UniformSampler.
 //
 // Panics when read from crypto/rand or blake2b initialization fails.
-func NewUniformSampler[T num.Integer]() UniformSampler[T] {
+func NewUniformSampler[T num.Integer]() *UniformSampler[T] {
 	seed := make([]byte, 16)
 	if _, err := rand.Read(seed); err != nil {
 		panic(err)
@@ -31,7 +31,7 @@ func NewUniformSampler[T num.Integer]() UniformSampler[T] {
 // NewUniformSamplerWithSeed allocates an empty UniformSampler, with user supplied seed.
 //
 // Panics when blake2b initialization fails.
-func NewUniformSamplerWithSeed[T num.Integer](seed []byte) UniformSampler[T] {
+func NewUniformSamplerWithSeed[T num.Integer](seed []byte) *UniformSampler[T] {
 	prng, err := blake2b.NewXOF(blake2b.OutputLengthUnknown, nil)
 	if err != nil {
 		panic(err)
@@ -41,7 +41,7 @@ func NewUniformSamplerWithSeed[T num.Integer](seed []byte) UniformSampler[T] {
 		panic(err)
 	}
 
-	return UniformSampler[T]{
+	return &UniformSampler[T]{
 		prng: bufio.NewReader(prng),
 
 		maxT: T(num.MaxT[T]()),
@@ -50,7 +50,7 @@ func NewUniformSamplerWithSeed[T num.Integer](seed []byte) UniformSampler[T] {
 }
 
 // Sample uniformly samples a random integer of type T.
-func (s UniformSampler[T]) Sample() T {
+func (s *UniformSampler[T]) Sample() T {
 	if _, err := s.prng.Read(s.buf); err != nil {
 		panic(err)
 	}
@@ -81,7 +81,7 @@ func (s UniformSampler[T]) Sample() T {
 }
 
 // SampleN uniformly samples a random integer of type T in [0, N).
-func (s UniformSampler[T]) SampleN(N T) T {
+func (s *UniformSampler[T]) SampleN(N T) T {
 	bound := s.maxT - (s.maxT % N)
 	for {
 		res := s.Sample()
@@ -91,8 +91,8 @@ func (s UniformSampler[T]) SampleN(N T) T {
 	}
 }
 
-// SampleSliceAssign samples uniform values to v.
-func (s UniformSampler[T]) SampleSliceAssign(v []T) {
+// SampleSliceAssign samples *Uniform values to v.
+func (s *UniformSampler[T]) SampleSliceAssign(v []T) {
 	for i := range v {
 		v[i] = s.Sample()
 	}
