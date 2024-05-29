@@ -75,7 +75,7 @@ func (s *GaussianSampler[T]) normFloat64() float64 {
 // Panics when stdDev < 0.
 func (s *GaussianSampler[T]) Sample(stdDev float64) T {
 	if stdDev < 0 {
-		panic("negative standard deviation")
+		panic("standard deviation not positive")
 	}
 
 	u := s.normFloat64() * stdDev
