@@ -108,6 +108,12 @@ func NewEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationK
 	}
 }
 
+// NewEvaluatorWithoutKey allocates an empty Evaluator based on parameters, but without evaluation keys.
+// This will panic if any operation that requires evaluation key is called.
+func NewEvaluatorWithoutKey[T tfhe.TorusInt](params Parameters[T]) *Evaluator[T] {
+	return NewEvaluator(params, map[int]EvaluationKey[T]{})
+}
+
 // newEvaluationBuffer allocates an empty evaluationBuffer.
 func newEvaluationBuffer[T tfhe.TorusInt](params Parameters[T]) evaluationBuffer[T] {
 	polyFourierDecomposed := make([]poly.FourierPoly, params.relinKeyParameters.Level())

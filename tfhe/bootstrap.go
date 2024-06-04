@@ -112,10 +112,10 @@ func (e *Evaluator[T]) BootstrapLUTAssign(ct LWECiphertext[T], lut LookUpTable[T
 	case OrderKeySwitchBlindRotate:
 		e.KeySwitchForBootstrapAssign(ct, e.buffer.ctKeySwitch)
 		e.BlindRotateAssign(e.buffer.ctKeySwitch, lut, e.buffer.ctRotate)
-		e.SampleExtractAssign(e.buffer.ctRotate, 0, ctOut)
+		e.buffer.ctRotate.ToLWECiphertextAssign(0, ctOut)
 	case OrderBlindRotateKeySwitch:
 		e.BlindRotateAssign(ct, lut, e.buffer.ctRotate)
-		e.SampleExtractAssign(e.buffer.ctRotate, 0, e.buffer.ctExtract)
+		e.buffer.ctRotate.ToLWECiphertextAssign(0, e.buffer.ctExtract)
 		e.KeySwitchForBootstrapAssign(e.buffer.ctExtract, ctOut)
 	}
 }
@@ -365,36 +365,9 @@ func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUp
 	}
 }
 
-// SampleExtract extracts LWE ciphertext of given index from GLWE ciphertext.
-// The output ciphertext will be of dimension LWELargeDimension + 1,
-// encrypted with LWELargeKey.
-func (e *Evaluator[T]) SampleExtract(ct GLWECiphertext[T], idx int) LWECiphertext[T] {
-	ctOut := NewLWECiphertextCustom[T](e.Parameters.lweLargeDimension)
-	e.SampleExtractAssign(ct, idx, ctOut)
-	return ctOut
-}
-
-// SampleExtractAssign extracts LWE ciphertext of given index from GLWE ciphertext and writes it to ctOut.
-// The output ciphertext should be of dimension LWELargeDimension + 1,
-// and it will be a ciphertext encrypted with LWELargeKey.
-func (e *Evaluator[T]) SampleExtractAssign(ct GLWECiphertext[T], idx int, ctOut LWECiphertext[T]) {
-	ctOut.Value[0] = ct.Value[0].Coeffs[idx]
-
-	ctMask, ctOutMask := ct.Value[1:], ctOut.Value[1:]
-	for i := 0; i < e.Parameters.glweDimension; i++ {
-		start := i * e.Parameters.polyDegree
-		end := (i + 1) * e.Parameters.polyDegree
-
-		vec.ReverseAssign(ctMask[i].Coeffs, ctOutMask[start:end])
-
-		vec.RotateInPlace(ctOutMask[start:end], idx+1)
-		vec.NegAssign(ctOutMask[start+idx+1:end], ctOutMask[start+idx+1:end])
-	}
-}
-
 // KeySwitch switches key of ct.
-// Input ciphertext should be of dimension ksk.InputLWEDimension + 1,
-// and output ciphertext will be of dimension ksk.OutputLWEDimension + 1.
+// Input ciphertext should be of length ksk.InputLWEDimension + 1,
+// and output ciphertext will be of length ksk.OutputLWEDimension + 1.
 func (e *Evaluator[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchKey[T]) LWECiphertext[T] {
 	ctOut := NewLWECiphertextCustom[T](ksk.OutputLWEDimension())
 	e.KeySwitchAssign(ct, ksk, ctOut)
@@ -402,8 +375,8 @@ func (e *Evaluator[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchKey[T]) LWECi
 }
 
 // KeySwitchAssign switches key of ct and writes it to ctOut.
-// Input ciphertext should be of dimension ksk.InputLWEDimension + 1,
-// and output ciphertext should be of dimension ksk.OutputLWEDimension + 1.
+// Input ciphertext should be of length ksk.InputLWEDimension + 1,
+// and output ciphertext should be of length ksk.OutputLWEDimension + 1.
 func (e *Evaluator[T]) KeySwitchAssign(ct LWECiphertext[T], ksk KeySwitchKey[T], ctOut LWECiphertext[T]) {
 	decomposed := e.DecomposedBuffer(ksk.GadgetParameters)
 
@@ -424,8 +397,8 @@ func (e *Evaluator[T]) KeySwitchAssign(ct LWECiphertext[T], ksk KeySwitchKey[T],
 }
 
 // KeySwitchForBootstrap performs the keyswitching using evaulater's evaluation key.
-// Input ciphertext should be of dimension LWELargeDimension + 1.
-// Output ciphertext will be of dimension LWEDimension + 1.
+// Input ciphertext should be of length LWELargeDimension + 1.
+// Output ciphertext will be of length LWEDimension + 1.
 func (e *Evaluator[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[T] {
 	ctOut := NewLWECiphertextCustom[T](e.Parameters.lweDimension)
 	e.KeySwitchForBootstrapAssign(ct, ctOut)
@@ -433,8 +406,8 @@ func (e *Evaluator[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[
 }
 
 // KeySwitchForBootstrapAssign performs the keyswitching using evaulater's evaluation key.
-// Input ciphertext should be of dimension LWELargeDimension + 1.
-// Output ciphertext should be of dimension LWEDimension + 1.
+// Input ciphertext should be of length LWELargeDimension + 1.
+// Output ciphertext should be of length LWEDimension + 1.
 func (e *Evaluator[T]) KeySwitchForBootstrapAssign(ct, ctOut LWECiphertext[T]) {
 	decomposed := e.buffer.decomposed[:e.Parameters.keyswitchParameters.level]
 
