@@ -85,7 +85,7 @@ func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut tfhe.LookUpTab
 	ctOut.Clear()
 
 	vec.CopyAssign(lut.Value, ctOut.Value[0].Coeffs)
-	e.BaseSingleKeyEvaluator.PolyEvaluator.MonomialMulInPlace(ctOut.Value[0], e.BaseSingleKeyEvaluator.ModSwitchNeg(ct.Value[0]))
+	e.BaseSingleKeyEvaluator.PolyEvaluator.MonomialMulInPlace(ctOut.Value[0], -e.BaseSingleKeyEvaluator.ModSwitch(ct.Value[0]))
 	for i, ok := range e.PartyBitMap {
 		if ok {
 			e.buffer.ctRotateInputs[i].Value[0] = 0
@@ -111,7 +111,7 @@ func (e *Evaluator[T]) BlindRotateParallelAssign(ct LWECiphertext[T], lut tfhe.L
 	ctOut.Clear()
 
 	vec.CopyAssign(lut.Value, ctOut.Value[0].Coeffs)
-	e.BaseSingleKeyEvaluator.PolyEvaluator.MonomialMulInPlace(ctOut.Value[0], e.BaseSingleKeyEvaluator.ModSwitchNeg(ct.Value[0]))
+	e.BaseSingleKeyEvaluator.PolyEvaluator.MonomialMulInPlace(ctOut.Value[0], -e.BaseSingleKeyEvaluator.ModSwitch(ct.Value[0]))
 
 	var wg sync.WaitGroup
 	for i, ok := range e.PartyBitMap {
