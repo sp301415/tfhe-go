@@ -87,13 +87,13 @@ func (e *Evaluator[T]) GenLookUpTableFullAssign(f func(int) T, lutOut LookUpTabl
 	}
 }
 
-// BootstrapFunc returns a bootstrapped LWE ciphertext with resepect to given function.
+// BootstrapFunc returns a bootstrapped LWE ciphertext with respect to given function.
 func (e *Evaluator[T]) BootstrapFunc(ct LWECiphertext[T], f func(int) int) LWECiphertext[T] {
 	e.GenLookUpTableAssign(f, e.buffer.lut)
 	return e.BootstrapLUT(ct, e.buffer.lut)
 }
 
-// BootstrapFuncAssign bootstraps LWE ciphertext with resepect to given function and writes it to ctOut.
+// BootstrapFuncAssign bootstraps LWE ciphertext with respect to given function and writes it to ctOut.
 func (e *Evaluator[T]) BootstrapFuncAssign(ct LWECiphertext[T], f func(int) int, ctOut LWECiphertext[T]) {
 	e.GenLookUpTableAssign(f, e.buffer.lut)
 	e.BootstrapLUTAssign(ct, e.buffer.lut, ctOut)

@@ -7,13 +7,13 @@ import (
 	"github.com/sp301415/tfhe-go/tfhe"
 )
 
-// BootstrapFunc returns a bootstrapped LWE ciphertext with resepect to given function.
+// BootstrapFunc returns a bootstrapped LWE ciphertext with respect to given function.
 func (e *Evaluator[T]) BootstrapFunc(ct LWECiphertext[T], f func(int) int) LWECiphertext[T] {
 	e.BaseSingleKeyEvaluator.GenLookUpTableAssign(f, e.buffer.lut)
 	return e.BootstrapLUT(ct, e.buffer.lut)
 }
 
-// BootstrapFuncAssign bootstraps LWE ciphertext with resepect to given function and writes it to ctOut.
+// BootstrapFuncAssign bootstraps LWE ciphertext with respect to given function and writes it to ctOut.
 func (e *Evaluator[T]) BootstrapFuncAssign(ct LWECiphertext[T], f func(int) int, ctOut LWECiphertext[T]) {
 	e.BaseSingleKeyEvaluator.GenLookUpTableAssign(f, e.buffer.lut)
 	e.BootstrapLUTAssign(ct, e.buffer.lut, ctOut)
@@ -40,13 +40,13 @@ func (e *Evaluator[T]) BootstrapLUTAssign(ct LWECiphertext[T], lut tfhe.LookUpTa
 	}
 }
 
-// BootstrapFuncParallel returns a bootstrapped LWE ciphertext with resepect to given function in parallel.
+// BootstrapFuncParallel returns a bootstrapped LWE ciphertext with respect to given function in parallel.
 func (e *Evaluator[T]) BootstrapFuncParallel(ct LWECiphertext[T], f func(int) int) LWECiphertext[T] {
 	e.BaseSingleKeyEvaluator.GenLookUpTableAssign(f, e.buffer.lut)
 	return e.BootstrapLUTParallel(ct, e.buffer.lut)
 }
 
-// BootstrapFuncParallelAssign bootstraps LWE ciphertext with resepect to given function and writes it to ctOut in parallel.
+// BootstrapFuncParallelAssign bootstraps LWE ciphertext with respect to given function and writes it to ctOut in parallel.
 func (e *Evaluator[T]) BootstrapFuncParallelAssign(ct LWECiphertext[T], f func(int) int, ctOut LWECiphertext[T]) {
 	e.BaseSingleKeyEvaluator.GenLookUpTableAssign(f, e.buffer.lut)
 	e.BootstrapLUTAssign(ct, e.buffer.lut, ctOut)
