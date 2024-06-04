@@ -13,7 +13,7 @@ import (
 // Multi-Key parameters have more restrictions than single-key parameters:
 //
 //   - GLWEDimension must be 1.
-//   - PolyLargeDegree should be equal to PolyDegree.
+//   - LookUpTable should be equal to PolyDegree.
 //
 // # Warning
 //
@@ -52,9 +52,9 @@ func (p ParametersLiteral[T]) WithPolyDegree(polyDegree int) ParametersLiteral[T
 	return p
 }
 
-// WithPolyLargeDegree sets the PolyLargeDegree and returns the new ParametersLiteral.
-func (p ParametersLiteral[T]) WithPolyLargeDegree(polyLargeDegree int) ParametersLiteral[T] {
-	p.PolyLargeDegree = polyLargeDegree
+// WithLookUpTableSize sets the LookUpTableSize and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithLookUpTableSize(lookUpTableSize int) ParametersLiteral[T] {
+	p.LookUpTableSize = lookUpTableSize
 	return p
 }
 
@@ -134,8 +134,8 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("PartyCount smaller than zero")
 	case p.GLWEDimension != 1:
 		panic("Multi-Key TFHE only supports GLWE dimension 1")
-	case p.PolyLargeDegree != p.PolyDegree:
-		panic("Multi-Key TFHE only supports PolyLargeDegree equal to PolyDegree")
+	case p.LookUpTableSize != p.PolyDegree:
+		panic("Multi-Key TFHE only supports LookUpTableSize equal to PolyDegree")
 	}
 
 	return Parameters[T]{

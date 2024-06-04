@@ -3,7 +3,6 @@ package mktfhe
 import (
 	"sync"
 
-	"github.com/sp301415/tfhe-go/math/poly"
 	"github.com/sp301415/tfhe-go/math/vec"
 	"github.com/sp301415/tfhe-go/tfhe"
 )
@@ -85,7 +84,8 @@ func (e *Evaluator[T]) BlindRotate(ct LWECiphertext[T], lut tfhe.LookUpTable[T])
 func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut tfhe.LookUpTable[T], ctOut GLWECiphertext[T]) {
 	ctOut.Clear()
 
-	e.BaseSingleKeyEvaluator.PolyEvaluator.MonomialMulAssign(poly.Poly[T](lut), e.BaseSingleKeyEvaluator.ModSwitchNeg(ct.Value[0]), ctOut.Value[0])
+	vec.CopyAssign(lut.Value, ctOut.Value[0].Coeffs)
+	e.BaseSingleKeyEvaluator.PolyEvaluator.MonomialMulInPlace(ctOut.Value[0], e.BaseSingleKeyEvaluator.ModSwitchNeg(ct.Value[0]))
 	for i, ok := range e.PartyBitMap {
 		if ok {
 			e.buffer.ctRotateInputs[i].Value[0] = 0
@@ -109,7 +109,9 @@ func (e *Evaluator[T]) BlindRotateParallel(ct LWECiphertext[T], lut tfhe.LookUpT
 // BlindRotateParallelAssign assigns the blind rotation of LWE ciphertext with respect to LUT to ctOut in parallel.
 func (e *Evaluator[T]) BlindRotateParallelAssign(ct LWECiphertext[T], lut tfhe.LookUpTable[T], ctOut GLWECiphertext[T]) {
 	ctOut.Clear()
-	e.BaseSingleKeyEvaluator.PolyEvaluator.MonomialMulAssign(poly.Poly[T](lut), e.BaseSingleKeyEvaluator.ModSwitchNeg(ct.Value[0]), ctOut.Value[0])
+
+	vec.CopyAssign(lut.Value, ctOut.Value[0].Coeffs)
+	e.BaseSingleKeyEvaluator.PolyEvaluator.MonomialMulInPlace(ctOut.Value[0], e.BaseSingleKeyEvaluator.ModSwitchNeg(ct.Value[0]))
 
 	var wg sync.WaitGroup
 	for i, ok := range e.PartyBitMap {

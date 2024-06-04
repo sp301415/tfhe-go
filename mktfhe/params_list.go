@@ -9,7 +9,7 @@ var (
 			LWEDimension:    560,
 			GLWEDimension:   1,
 			PolyDegree:      2048,
-			PolyLargeDegree: 2048,
+			LookUpTableSize: 2048,
 
 			LWEStdDev:  0.0000305,
 			GLWEStdDev: 0.00000000000000000463,
@@ -48,7 +48,7 @@ var (
 			LWEDimension:    560,
 			GLWEDimension:   1,
 			PolyDegree:      2048,
-			PolyLargeDegree: 2048,
+			LookUpTableSize: 2048,
 
 			LWEStdDev:  0.0000305,
 			GLWEStdDev: 0.00000000000000000463,
@@ -87,7 +87,7 @@ var (
 			LWEDimension:    560,
 			GLWEDimension:   1,
 			PolyDegree:      2048,
-			PolyLargeDegree: 2048,
+			LookUpTableSize: 2048,
 
 			LWEStdDev:  0.0000305,
 			GLWEStdDev: 0.00000000000000000463,
@@ -126,7 +126,7 @@ var (
 			LWEDimension:    560,
 			GLWEDimension:   1,
 			PolyDegree:      2048,
-			PolyLargeDegree: 2048,
+			LookUpTableSize: 2048,
 
 			LWEStdDev:  0.0000305,
 			GLWEStdDev: 0.00000000000000000463,
@@ -165,7 +165,7 @@ var (
 			LWEDimension:    560,
 			GLWEDimension:   1,
 			PolyDegree:      2048,
-			PolyLargeDegree: 2048,
+			LookUpTableSize: 2048,
 
 			LWEStdDev:  0.0000305,
 			GLWEStdDev: 0.00000000000000000463,

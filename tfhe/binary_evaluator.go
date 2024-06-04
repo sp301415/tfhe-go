@@ -25,7 +25,7 @@ type BinaryEvaluator[T TorusInt] struct {
 // This does not copy evaluation keys, since they are large.
 func NewBinaryEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *BinaryEvaluator[T] {
 	signLUT := NewLookUpTable(params)
-	vec.Fill(signLUT.Coeffs, 1<<(params.logQ-3))
+	vec.Fill(signLUT.Value, 1<<(params.logQ-3))
 
 	return &BinaryEvaluator[T]{
 		BinaryEncoder: NewBinaryEncoder(params),

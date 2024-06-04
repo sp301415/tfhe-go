@@ -1,6 +1,8 @@
 package tfhe
 
 import (
+	"math"
+
 	"github.com/sp301415/tfhe-go/math/poly"
 )
 
@@ -25,6 +27,9 @@ type Evaluator[T TorusInt] struct {
 
 	// EvaluationKey holds the evaluation key for this Evaluator.
 	EvaluationKey EvaluationKey[T]
+
+	// modSwitchConstant is a constant for modulus switching.
+	modSwitchConstant float64
 
 	// buffer holds the buffer values for this Evaluator.
 	buffer evaluationBuffer[T]
@@ -93,6 +98,8 @@ func NewEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *Evalu
 		FourierEvaluator: poly.NewFourierEvaluator[T](params.polyDegree),
 
 		EvaluationKey: evk,
+
+		modSwitchConstant: float64(params.polyExtendFactor) / math.Exp2(float64(params.logQ-params.polyDegreeLog-1)),
 
 		buffer: newEvaluationBuffer(params),
 	}
@@ -169,6 +176,8 @@ func (e *Evaluator[T]) ShallowCopy() *Evaluator[T] {
 		FourierEvaluator: e.FourierEvaluator.ShallowCopy(),
 
 		EvaluationKey: e.EvaluationKey,
+
+		modSwitchConstant: e.modSwitchConstant,
 
 		buffer: newEvaluationBuffer(e.Parameters),
 	}

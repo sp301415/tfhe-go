@@ -229,11 +229,13 @@ type ParametersLiteral[T TorusInt] struct {
 	GLWEDimension int
 	// PolyDegree is the degree of polynomials in GLWE entities. Usually this is denoted by N.
 	PolyDegree int
-	// PolyLargeDegree is the degree of polynomial used in Blind Rotation.
+	// LookUpTableSize is the size of the Lookup Table used in Blind Rotation.
 	//
-	// This is used in Extended Bootstrapping, as explained in https://eprint.iacr.org/2023/402.
+	// In case of Extended Bootstrapping, this may differ from PolyDegree as explained in https://eprint.iacr.org/2023/402.
+	// In particular, it may not be a power of two.
+	// However, it must be a multiple of PolyDegree.
 	// To use the original TFHE bootstrapping, set this to PolyDegree.
-	PolyLargeDegree int
+	LookUpTableSize int
 
 	// LWEStdDev is the normalized standard deviation used for gaussian error sampling in LWE encryption.
 	LWEStdDev float64
@@ -293,9 +295,9 @@ func (p ParametersLiteral[T]) WithPolyDegree(polyDegree int) ParametersLiteral[T
 	return p
 }
 
-// WithPolyLargeDegree sets the PolyLargeDegree and returns the new ParametersLiteral.
-func (p ParametersLiteral[T]) WithPolyLargeDegree(polyLargeDegree int) ParametersLiteral[T] {
-	p.PolyLargeDegree = polyLargeDegree
+// WithLookUpTableSize sets the LookUpTableSize and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithLookUpTableSize(lookUpTableSize int) ParametersLiteral[T] {
+	p.LookUpTableSize = lookUpTableSize
 	return p
 }
 
@@ -359,8 +361,8 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("LWEDimension larger than GLWEDimension * PolyDegree")
 	case p.GLWEDimension <= 0:
 		panic("GLWEDimension smaller than zero")
-	case p.PolyLargeDegree < p.PolyDegree:
-		panic("PolyLargeDegree smaller than PolyDegree")
+	case p.LookUpTableSize < p.PolyDegree:
+		panic("LookUpTableSize smaller than PolyDegree")
 	case p.LWEStdDev <= 0:
 		panic("LWEStdDev smaller than zero")
 	case p.GLWEStdDev <= 0:
@@ -369,10 +371,10 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("BlockSize smaller than zero")
 	case p.LWEDimension%p.BlockSize != 0:
 		panic("LWEDimension not multiple of BlockSize")
+	case p.LookUpTableSize%p.PolyDegree != 0:
+		panic("LookUpTableSize not multiple of PolyDegree")
 	case !num.IsPowerOfTwo(p.PolyDegree):
 		panic("PolyDegree not power of two")
-	case !num.IsPowerOfTwo(p.PolyLargeDegree):
-		panic("PolyLargeDegree not power of two")
 	case !num.IsPowerOfTwo(p.MessageModulus):
 		panic("MessageModulus not power of two")
 	case !(p.BootstrapOrder == OrderKeySwitchBlindRotate || p.BootstrapOrder == OrderBlindRotateKeySwitch):
@@ -383,15 +385,13 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 	scaleLog := num.SizeT[T]() - 1 - messageModulusLog
 
 	return Parameters[T]{
-		lweDimension:        p.LWEDimension,
-		lweLargeDimension:   p.GLWEDimension * p.PolyDegree,
-		glweDimension:       p.GLWEDimension,
-		polyDegree:          p.PolyDegree,
-		polyDegreeLog:       num.Log2(p.PolyDegree),
-		polyLargeDegree:     p.PolyLargeDegree,
-		polyLargeDegreeLog:  num.Log2(p.PolyLargeDegree),
-		polyExtendFactor:    p.PolyLargeDegree / p.PolyDegree,
-		polyExtendFactorLog: num.Log2(p.PolyLargeDegree / p.PolyDegree),
+		lweDimension:      p.LWEDimension,
+		lweLargeDimension: p.GLWEDimension * p.PolyDegree,
+		glweDimension:     p.GLWEDimension,
+		polyDegree:        p.PolyDegree,
+		polyDegreeLog:     num.Log2(p.PolyDegree),
+		lookUpTableSize:   p.LookUpTableSize,
+		polyExtendFactor:  p.LookUpTableSize / p.PolyDegree,
 
 		lweStdDev:  p.LWEStdDev,
 		glweStdDev: p.GLWEStdDev,
@@ -428,14 +428,10 @@ type Parameters[T TorusInt] struct {
 	polyDegree int
 	// PolyDegreeLog equals log(PolyDegree).
 	polyDegreeLog int
-	// PolyLargeDegree is the degree of polynomial used in Blind Rotation.
-	polyLargeDegree int
-	// PolyLargeDegreeLog equals log(PolyLargeDegree).
-	polyLargeDegreeLog int
-	// polyExtendFactor equals PolyLargeDegree / PolyDegree.
+	// LookUpTableSize is the size of Lookup Table used in Blind Rotation.
+	lookUpTableSize int
+	// PolyExtendFactor equals LookUpTableSize / PolyDegree.
 	polyExtendFactor int
-	// polyExtendFactorLog equals log(PolyLargeDegree / PolyDegree).
-	polyExtendFactorLog int
 
 	// LWEStdDev is the normalized standard deviation used for gaussian error sampling in LWE encryption.
 	lweStdDev float64
@@ -508,24 +504,14 @@ func (p Parameters[T]) PolyDegreeLog() int {
 	return p.polyDegreeLog
 }
 
-// PolyLargeDegree is the degree of polynomial used in Blind Rotation.
-func (p Parameters[T]) PolyLargeDegree() int {
-	return p.polyLargeDegree
+// LookUpTableSize is the size of LookUpTable used in Blind Rotation.
+func (p Parameters[T]) LookUpTableSize() int {
+	return p.lookUpTableSize
 }
 
-// PolyLargeDegreeLog equals log(PolyLargeDegree).
-func (p Parameters[T]) PolyLargeDegreeLog() int {
-	return p.polyLargeDegreeLog
-}
-
-// PolyExtendFactor returns PolyLargeDegree / PolyDegree.
+// PolyExtendFactor returns LookUpTableSize / PolyDegree.
 func (p Parameters[T]) PolyExtendFactor() int {
 	return p.polyExtendFactor
-}
-
-// PolyExtendFactorLog returns log(PolyLargeDegree / PolyDegree).
-func (p Parameters[T]) PolyExtendFactorLog() int {
-	return p.polyExtendFactorLog
 }
 
 // DefaultLWEStdDev returns the default standard deviation for LWE entities.
@@ -639,7 +625,7 @@ func (p Parameters[T]) Literal() ParametersLiteral[T] {
 		LWEDimension:    p.lweDimension,
 		GLWEDimension:   p.glweDimension,
 		PolyDegree:      p.polyDegree,
-		PolyLargeDegree: p.polyLargeDegree,
+		LookUpTableSize: p.lookUpTableSize,
 
 		LWEStdDev:  p.lweStdDev,
 		GLWEStdDev: p.glweStdDev,
@@ -667,7 +653,7 @@ func (p Parameters[T]) ByteSize() int {
 //	[ 8] LWEDimension
 //	[ 8] GLWEDimension
 //	[ 8] PolyDegree
-//	[ 8] PolyLargeDegree
+//	[ 8] LookUpTableSize
 //	[ 8] LWEStdDev
 //	[ 8] GLWEStdDev
 //	[ 8] BlockSize
@@ -681,7 +667,7 @@ func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
 	binary.BigEndian.PutUint64(buf[0:8], uint64(p.lweDimension))
 	binary.BigEndian.PutUint64(buf[8:16], uint64(p.glweDimension))
 	binary.BigEndian.PutUint64(buf[16:24], uint64(p.polyDegree))
-	binary.BigEndian.PutUint64(buf[24:32], uint64(p.polyLargeDegree))
+	binary.BigEndian.PutUint64(buf[24:32], uint64(p.lookUpTableSize))
 	binary.BigEndian.PutUint64(buf[32:40], math.Float64bits(p.lweStdDev))
 	binary.BigEndian.PutUint64(buf[40:48], math.Float64bits(p.glweStdDev))
 	binary.BigEndian.PutUint64(buf[48:56], uint64(p.blockSize))
@@ -717,7 +703,7 @@ func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	lweDimension := binary.BigEndian.Uint64(buf[0:8])
 	glweDimension := binary.BigEndian.Uint64(buf[8:16])
 	polyDegree := binary.BigEndian.Uint64(buf[16:24])
-	polyLargeDegree := binary.BigEndian.Uint64(buf[24:32])
+	lookUpTableSize := binary.BigEndian.Uint64(buf[24:32])
 	lweStdDev := math.Float64frombits(binary.BigEndian.Uint64(buf[32:40]))
 	glweStdDev := math.Float64frombits(binary.BigEndian.Uint64(buf[40:48]))
 	blockSize := binary.BigEndian.Uint64(buf[48:56])
@@ -738,7 +724,7 @@ func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
 		LWEDimension:        int(lweDimension),
 		GLWEDimension:       int(glweDimension),
 		PolyDegree:          int(polyDegree),
-		PolyLargeDegree:     int(polyLargeDegree),
+		LookUpTableSize:     int(lookUpTableSize),
 		LWEStdDev:           lweStdDev,
 		GLWEStdDev:          glweStdDev,
 		BlockSize:           int(blockSize),

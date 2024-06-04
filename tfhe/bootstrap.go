@@ -1,35 +1,36 @@
 package tfhe
 
 import (
+	"math"
+
 	"github.com/sp301415/tfhe-go/math/num"
-	"github.com/sp301415/tfhe-go/math/poly"
 	"github.com/sp301415/tfhe-go/math/vec"
 )
 
-// LookUpTable is a polynomial that holds
-// the lookup table for function evaluations during programmable bootstrapping.
-//
-// The degree of a LUT equals to PolyLargeDegree.
-type LookUpTable[T TorusInt] poly.Poly[T]
+// LookUpTable is a polynomial that holds the lookup table
+// for function evaluations during programmable bootstrapping.
+type LookUpTable[T TorusInt] struct {
+	Value []T
+}
 
 // NewLookUpTable allocates an empty lookup table.
 func NewLookUpTable[T TorusInt](params Parameters[T]) LookUpTable[T] {
-	return LookUpTable[T](poly.NewPoly[T](params.polyLargeDegree))
+	return LookUpTable[T]{Value: make([]T, params.lookUpTableSize)}
 }
 
 // Copy returns a copy of the LUT.
 func (lut LookUpTable[T]) Copy() LookUpTable[T] {
-	return LookUpTable[T](poly.Poly[T](lut).Copy())
+	return LookUpTable[T]{Value: vec.Copy(lut.Value)}
 }
 
 // CopyFrom copies values from the LUT.
 func (lut *LookUpTable[T]) CopyFrom(lutIn LookUpTable[T]) {
-	vec.CopyAssign(lutIn.Coeffs, lut.Coeffs)
+	vec.CopyAssign(lutIn.Value, lut.Value)
 }
 
 // Clear clears the LUT.
 func (lut *LookUpTable[T]) Clear() {
-	vec.Fill(lut.Coeffs, 0)
+	vec.Fill(lut.Value, 0)
 }
 
 // GenLookUpTable generates a lookup table based on function f.
@@ -43,17 +44,19 @@ func (e *Evaluator[T]) GenLookUpTable(f func(int) int) LookUpTable[T] {
 // GenLookUpTableAssign generates a lookup table based on function f and writes it to lutOut.
 // Input and output of f is cut by MessageModulus.
 func (e *Evaluator[T]) GenLookUpTableAssign(f func(int) int, lutOut LookUpTable[T]) {
-	boxSize := 1 << (e.Parameters.polyLargeDegreeLog - e.Parameters.messageModulusLog)
 	for x := 0; x < 1<<e.Parameters.messageModulusLog; x++ {
+		start := num.RoundRatioBits(x*e.Parameters.lookUpTableSize, e.Parameters.messageModulusLog)
+		end := num.RoundRatioBits((x+1)*e.Parameters.lookUpTableSize, e.Parameters.messageModulusLog)
 		y := e.EncodeLWE(f(x)).Value
-		for xx := x * boxSize; xx < (x+1)*boxSize; xx++ {
-			lutOut.Coeffs[xx] = y
+		for xx := start; xx < end; xx++ {
+			lutOut.Value[xx] = y
 		}
 	}
 
-	vec.RotateInPlace(lutOut.Coeffs, -boxSize/2)
-	for i := e.Parameters.polyLargeDegree - boxSize/2; i < e.Parameters.polyLargeDegree; i++ {
-		lutOut.Coeffs[i] = -lutOut.Coeffs[i]
+	offset := num.RoundRatioBits(e.Parameters.lookUpTableSize, e.Parameters.messageModulusLog+1)
+	vec.RotateInPlace(lutOut.Value, -offset)
+	for i := e.Parameters.lookUpTableSize - offset; i < e.Parameters.lookUpTableSize; i++ {
+		lutOut.Value[i] = -lutOut.Value[i]
 	}
 }
 
@@ -68,17 +71,19 @@ func (e *Evaluator[T]) GenLookUpTableFull(f func(int) T) LookUpTable[T] {
 // GenLookUpTableFullAssign generates a lookup table based on function f and writes it to lutOut.
 // Output of f is encoded as-is.
 func (e *Evaluator[T]) GenLookUpTableFullAssign(f func(int) T, lutOut LookUpTable[T]) {
-	boxSize := 1 << (e.Parameters.polyLargeDegreeLog - e.Parameters.messageModulusLog)
 	for x := 0; x < 1<<e.Parameters.messageModulusLog; x++ {
+		start := num.RoundRatioBits(x*e.Parameters.lookUpTableSize, e.Parameters.messageModulusLog)
+		end := num.RoundRatioBits((x+1)*e.Parameters.lookUpTableSize, e.Parameters.messageModulusLog)
 		y := f(x)
-		for xx := x * boxSize; xx < (x+1)*boxSize; xx++ {
-			lutOut.Coeffs[xx] = y
+		for xx := start; xx < end; xx++ {
+			lutOut.Value[xx] = y
 		}
 	}
 
-	vec.RotateInPlace(lutOut.Coeffs, -boxSize/2)
-	for i := e.Parameters.polyLargeDegree - boxSize/2; i < e.Parameters.polyLargeDegree; i++ {
-		lutOut.Coeffs[i] = -lutOut.Coeffs[i]
+	offset := num.RoundRatioBits(e.Parameters.lookUpTableSize, e.Parameters.messageModulusLog+1)
+	vec.RotateInPlace(lutOut.Value, -offset)
+	for i := e.Parameters.lookUpTableSize - offset; i < e.Parameters.lookUpTableSize; i++ {
+		lutOut.Value[i] = -lutOut.Value[i]
 	}
 }
 
@@ -118,13 +123,13 @@ func (e *Evaluator[T]) BootstrapLUTAssign(ct LWECiphertext[T], lut LookUpTable[T
 // ModSwitch computes x2N = round(2N * x / Q) mod 2N
 // and returns x2N as an unsigned representation.
 func (e *Evaluator[T]) ModSwitch(x T) int {
-	return int(num.RoundRatioBits(x, e.Parameters.logQ-(e.Parameters.polyLargeDegreeLog+1))) & (2*e.Parameters.polyLargeDegree - 1)
+	return int(math.Round(e.modSwitchConstant * float64(x)))
 }
 
 // ModSwitchNeg computes x2N = round(2N * (-x) / Q) mod 2N
 // and returns -x2N as an unsigned representation.
 func (e *Evaluator[T]) ModSwitchNeg(x T) int {
-	return int(-num.RoundRatioBits(x, e.Parameters.logQ-(e.Parameters.polyLargeDegreeLog+1))) & (2*e.Parameters.polyLargeDegree - 1)
+	return 2*e.Parameters.lookUpTableSize - int(math.Round(e.modSwitchConstant*float64(x)))
 }
 
 // BlindRotate returns the blind rotation of LWE ciphertext with respect to LUT.
@@ -137,7 +142,7 @@ func (e *Evaluator[T]) BlindRotate(ct LWECiphertext[T], lut LookUpTable[T]) GLWE
 // BlindRotateAssign computes the blind rotation of LWE ciphertext with respect to LUT.
 func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
 	switch {
-	case e.Parameters.polyLargeDegree > e.Parameters.polyDegree:
+	case e.Parameters.lookUpTableSize > e.Parameters.polyDegree:
 		e.blindRotateExtendedAssign(ct, lut, ctOut)
 	case e.Parameters.blockSize > 1:
 		e.blindRotateBlockAssign(ct, lut, ctOut)
@@ -146,18 +151,18 @@ func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T]
 	}
 }
 
-// blindRotateExtendedAssign computes the blind rotation when PolyLargeDegree > PolyDegree.
+// blindRotateExtendedAssign computes the blind rotation when LookUpTableSize > PolyDegree.
 // This is equivalent to the blind rotation algorithm using extended polynomials, as explained in https://eprint.iacr.org/2023/402.
 func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
 	polyDecomposed := e.buffer.polyDecomposed[:e.Parameters.bootstrapParameters.level]
 
 	b2N := e.ModSwitchNeg(ct.Value[0])
-	b2NSmall, b2NIdx := b2N>>e.Parameters.polyExtendFactorLog, b2N&(e.Parameters.polyExtendFactor-1)
+	b2NSmall, b2NIdx := b2N/e.Parameters.polyExtendFactor, b2N%e.Parameters.polyExtendFactor
 
 	for i := 0; i < e.Parameters.polyExtendFactor; i++ {
-		ii := (i + b2N) & (e.Parameters.polyExtendFactor - 1)
+		ii := (i + b2N) % e.Parameters.polyExtendFactor
 		for j := 0; j < e.Parameters.polyDegree; j++ {
-			e.buffer.pAcc[ii].Coeffs[j] = lut.Coeffs[j*e.Parameters.polyExtendFactor+i]
+			e.buffer.pAcc[ii].Coeffs[j] = lut.Value[j*e.Parameters.polyExtendFactor+i]
 		}
 	}
 
@@ -185,7 +190,7 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 
 	for j := 0; j < e.Parameters.blockSize; j++ {
 		a2N := e.ModSwitchNeg(ct.Value[j+1])
-		a2NSmall, a2NIdx := a2N>>e.Parameters.polyExtendFactorLog, a2N&(e.Parameters.polyExtendFactor-1)
+		a2NSmall, a2NIdx := a2N/e.Parameters.polyExtendFactor, a2N%e.Parameters.polyExtendFactor
 
 		for k := 0; k < e.Parameters.polyExtendFactor; k++ {
 			e.GadgetProductFourierDecomposedFourierAssign(e.EvaluationKey.BootstrapKey.Value[j].Value[0], e.buffer.ctAccFourierDecomposed[k][0], e.buffer.ctBlockFourierAcc[k])
@@ -223,7 +228,7 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 
 		for j := i * e.Parameters.blockSize; j < (i+1)*e.Parameters.blockSize; j++ {
 			a2N := e.ModSwitchNeg(ct.Value[j+1])
-			a2NSmall, a2NIdx := a2N>>e.Parameters.polyExtendFactorLog, a2N&(e.Parameters.polyExtendFactor-1)
+			a2NSmall, a2NIdx := a2N/e.Parameters.polyExtendFactor, a2N%e.Parameters.polyExtendFactor
 
 			for k := 0; k < e.Parameters.polyExtendFactor; k++ {
 				e.ExternalProductFourierDecomposedFourierAssign(e.EvaluationKey.BootstrapKey.Value[j], e.buffer.ctAccFourierDecomposed[k], e.buffer.ctBlockFourierAcc[k])
@@ -261,7 +266,7 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 
 	for j := e.Parameters.lweDimension - e.Parameters.blockSize; j < e.Parameters.lweDimension; j++ {
 		a2N := e.ModSwitchNeg(ct.Value[j+1])
-		a2NSmall, a2NIdx := a2N>>e.Parameters.polyExtendFactorLog, a2N&(e.Parameters.polyExtendFactor-1)
+		a2NSmall, a2NIdx := a2N/e.Parameters.polyExtendFactor, a2N%e.Parameters.polyExtendFactor
 
 		if a2NIdx == 0 {
 			e.ExternalProductFourierDecomposedFourierAssign(e.EvaluationKey.BootstrapKey.Value[j], e.buffer.ctAccFourierDecomposed[0], e.buffer.ctBlockFourierAcc[0])
@@ -282,12 +287,13 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 	}
 }
 
-// blindRotateBlockAssign computes the blind rotation when PolyDegree = PolyLargeDegree and BlockSize > 1.
+// blindRotateBlockAssign computes the blind rotation when PolyDegree = LookUpTableSize and BlockSize > 1.
 // This is equivalent to the blind rotation algorithm using block binary keys, as explained in https://eprint.iacr.org/2023/958.
 func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
 	polyDecomposed := e.buffer.polyDecomposed[:e.Parameters.bootstrapParameters.level]
 
-	e.PolyEvaluator.MonomialMulAssign(poly.Poly[T](lut), e.ModSwitchNeg(ct.Value[0]), e.buffer.pAcc[0])
+	vec.CopyAssign(lut.Value, e.buffer.pAcc[0].Coeffs)
+	e.PolyEvaluator.MonomialMulInPlace(e.buffer.pAcc[0], e.ModSwitchNeg(ct.Value[0]))
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pAcc[0], e.buffer.ctFourierAcc[0].Value[0])
 	for i := 1; i < e.Parameters.glweDimension+1; i++ {
 		e.buffer.ctFourierAcc[0].Value[i].Clear()
@@ -325,12 +331,13 @@ func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTab
 	}
 }
 
-// blindRotateOriginalAssign computes the blind rotation when PolyDegree = PolyLargeDegree and BlockSize = 1.
+// blindRotateOriginalAssign computes the blind rotation when PolyDegree = LookUpTableSize and BlockSize = 1.
 // This is equivalent to the original blind rotation algorithm.
 func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
 	polyDecomposed := e.buffer.polyDecomposed[:e.Parameters.bootstrapParameters.level]
 
-	e.PolyEvaluator.MonomialMulAssign(poly.Poly[T](lut), e.ModSwitchNeg(ct.Value[0]), e.buffer.pAcc[0])
+	vec.CopyAssign(lut.Value, e.buffer.pAcc[0].Coeffs)
+	e.PolyEvaluator.MonomialMulInPlace(e.buffer.pAcc[0], e.ModSwitchNeg(ct.Value[0]))
 	e.FourierEvaluator.ToFourierPolyAssign(e.buffer.pAcc[0], e.buffer.ctFourierAcc[0].Value[0])
 	for i := 1; i < e.Parameters.glweDimension+1; i++ {
 		e.buffer.ctFourierAcc[0].Value[i].Clear()

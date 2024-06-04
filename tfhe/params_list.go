@@ -6,7 +6,7 @@ var (
 		LWEDimension:    723,
 		GLWEDimension:   2,
 		PolyDegree:      512,
-		PolyLargeDegree: 512,
+		LookUpTableSize: 512,
 
 		LWEStdDev:  0.000013071021089943935,
 		GLWEStdDev: 0.00000004990272175010415,
@@ -36,7 +36,7 @@ var (
 		LWEDimension:    664,
 		GLWEDimension:   2,
 		PolyDegree:      512,
-		PolyLargeDegree: 512,
+		LookUpTableSize: 512,
 
 		LWEStdDev:  0.0000380828292345977,
 		GLWEStdDev: 0.00000004990272175010415,
@@ -62,7 +62,7 @@ var (
 		LWEDimension:    630,
 		GLWEDimension:   1,
 		PolyDegree:      1024,
-		PolyLargeDegree: 1024,
+		LookUpTableSize: 1024,
 
 		LWEStdDev:  0.000030517578125,
 		GLWEStdDev: 0.0000000298023223876953125,
@@ -88,7 +88,7 @@ var (
 		LWEDimension:    700,
 		GLWEDimension:   3,
 		PolyDegree:      512,
-		PolyLargeDegree: 512,
+		LookUpTableSize: 512,
 
 		LWEStdDev:  0.000019974501253932986,
 		GLWEStdDev: 0.000000000003966608917163306,
@@ -114,7 +114,7 @@ var (
 		LWEDimension:    759,
 		GLWEDimension:   2,
 		PolyDegree:      1024,
-		PolyLargeDegree: 1024,
+		LookUpTableSize: 1024,
 
 		LWEStdDev:  0.000006607570143466592,
 		GLWEStdDev: 0.00000000000000031529322391500584,
@@ -140,7 +140,7 @@ var (
 		LWEDimension:    762,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
-		PolyLargeDegree: 2048,
+		LookUpTableSize: 2048,
 
 		LWEStdDev:  0.00000636835566258815,
 		GLWEStdDev: 0.00000000000000031529322391500584,
@@ -166,7 +166,7 @@ var (
 		LWEDimension:    852,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
-		PolyLargeDegree: 4096,
+		LookUpTableSize: 4096,
 
 		LWEStdDev:  0.0000012571599559956785,
 		GLWEStdDev: 0.00000000000000031529322391500584,
@@ -192,7 +192,7 @@ var (
 		LWEDimension:    935,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
-		PolyLargeDegree: 8192,
+		LookUpTableSize: 8192,
 
 		LWEStdDev:  0.000000277202526552345,
 		GLWEStdDev: 0.00000000000000031529322391500584,
@@ -218,7 +218,7 @@ var (
 		LWEDimension:    950,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
-		PolyLargeDegree: 16384,
+		LookUpTableSize: 16384,
 
 		LWEStdDev:  0.00000020638655780656257,
 		GLWEStdDev: 0.00000000000000031529322391500584,
@@ -244,7 +244,7 @@ var (
 		LWEDimension:    1032,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
-		PolyLargeDegree: 32768,
+		LookUpTableSize: 32768,
 
 		LWEStdDev:  0.00000004305923848218434,
 		GLWEStdDev: 0.00000000000000031529322391500584,
