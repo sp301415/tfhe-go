@@ -120,10 +120,9 @@ func (e *Evaluator[T]) BootstrapLUTAssign(ct LWECiphertext[T], lut LookUpTable[T
 	}
 }
 
-// ModSwitch computes x2N = round(2N * x / Q)
-// and returns x2N as an unsigned representation.
+// ModSwitch switches the modulus of x from Q to 2 * LookUpTableSize.
 func (e *Evaluator[T]) ModSwitch(x T) int {
-	return int(math.Round(e.modSwitchConstant * float64(x)))
+	return int(math.Round(e.modSwitchConstant*float64(x))) % (2 * e.Parameters.lookUpTableSize)
 }
 
 // BlindRotate returns the blind rotation of LWE ciphertext with respect to LUT.
@@ -133,7 +132,7 @@ func (e *Evaluator[T]) BlindRotate(ct LWECiphertext[T], lut LookUpTable[T]) GLWE
 	return ctOut
 }
 
-// BlindRotateAssign computes the blind rotation of LWE ciphertext with respect to LUT.
+// BlindRotateAssign computes the blind rotation of LWE ciphertext with respect to LUT, and writes it to ctOut.
 func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
 	switch {
 	case e.Parameters.lookUpTableSize > e.Parameters.polyDegree:

@@ -80,7 +80,7 @@ func (e *Evaluator[T]) BlindRotate(ct LWECiphertext[T], lut tfhe.LookUpTable[T])
 	return ctOut
 }
 
-// BlindRotateAssign assigns the blind rotation of LWE ciphertext with respect to LUT to ctOut.
+// BlindRotateAssign computes the blind rotation of LWE ciphertext with respect to LUT and writes it to ctOut.
 func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut tfhe.LookUpTable[T], ctOut GLWECiphertext[T]) {
 	ctOut.Clear()
 
@@ -106,7 +106,7 @@ func (e *Evaluator[T]) BlindRotateParallel(ct LWECiphertext[T], lut tfhe.LookUpT
 	return ctOut
 }
 
-// BlindRotateParallelAssign assigns the blind rotation of LWE ciphertext with respect to LUT to ctOut in parallel.
+// BlindRotateParallelAssign computes the blind rotation of LWE ciphertext with respect to LUT and writes it to ctOut in parallel.
 func (e *Evaluator[T]) BlindRotateParallelAssign(ct LWECiphertext[T], lut tfhe.LookUpTable[T], ctOut GLWECiphertext[T]) {
 	ctOut.Clear()
 
