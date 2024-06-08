@@ -138,7 +138,7 @@ fmt.Println(dec.DecryptLWEBool(ctOut)) // false
 ```
 
 ## Benchmarks
-All results were measured with Intel Xeon Platinum 8268 CPU @ 2.90GHz and 384GB of RAM. Roughly equivalant parameters were used.
+All benchmarks were measured on a machine equipped with Intel Xeon Platinum 8268 CPU @ 2.90GHz and 384GB of RAM. Roughly equivalent parameters were used.
 |Operation|TFHE-go|TFHE-rs (v0.6.1)|
 |---------|-------|-------|
 |Gate Bootstrapping|10.36ms|10.84ms|
