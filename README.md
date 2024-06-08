@@ -138,11 +138,11 @@ fmt.Println(dec.DecryptLWEBool(ctOut)) // false
 ```
 
 ## Benchmarks
-All results were measured from Intel i5-13400F, with roughly equivalent parameters.
+All results were measured with Intel Xeon Platinum 8268 CPU @ 2.90GHz and 384GB of RAM. Roughly equivalant parameters were used.
 |Operation|TFHE-go|TFHE-rs (v0.6.1)|
 |---------|-------|-------|
-|Gate Bootstrapping|8.13ms|8.45ms|
-|Programmable Bootstrapping (6 bits)|26.30ms|69.22ms|
+|Gate Bootstrapping|10.36ms|10.84ms|
+|Programmable Bootstrapping (6 bits)|37.03ms|89.48ms|
 
 ## Security
 TFHE-go has not been audited or reviewed by security experts, and may contain critical vulnerabilities. Use at your own risk. See [SECURITY](https://github.com/sp301415/tfhe-go/blob/master/SECURITY.md) for more details.
