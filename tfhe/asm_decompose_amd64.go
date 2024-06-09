@@ -23,7 +23,7 @@ func decomposePolyAssign[T TorusInt](p poly.Poly[T], gadgetParams GadgetParamete
 				*(*[]uint32)(unsafe.Pointer(&p)),
 				uint32(gadgetParams.base),
 				uint32(gadgetParams.baseLog),
-				uint32(gadgetParams.basesQLog[gadgetParams.level-1]),
+				uint32(gadgetParams.LastBaseQLog()),
 				*(*[][]uint32)(unsafe.Pointer(&decomposedOut)),
 			)
 			return
@@ -32,14 +32,14 @@ func decomposePolyAssign[T TorusInt](p poly.Poly[T], gadgetParams GadgetParamete
 				*(*[]uint64)(unsafe.Pointer(&p)),
 				uint64(gadgetParams.base),
 				uint64(gadgetParams.baseLog),
-				uint64(gadgetParams.basesQLog[gadgetParams.level-1]),
+				uint64(gadgetParams.LastBaseQLog()),
 				*(*[][]uint64)(unsafe.Pointer(&decomposedOut)),
 			)
 			return
 		}
 	}
 
-	lastBaseQLog := gadgetParams.basesQLog[gadgetParams.level-1]
+	lastBaseQLog := gadgetParams.LastBaseQLog()
 	for i := 0; i < p.Degree(); i++ {
 		c := num.RoundRatioBits(p.Coeffs[i], lastBaseQLog)
 		for j := gadgetParams.level - 1; j >= 1; j-- {

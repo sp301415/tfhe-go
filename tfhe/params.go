@@ -48,17 +48,11 @@ func (p GadgetParametersLiteral[T]) Compile() GadgetParameters[T] {
 		panic("Base * Level larger than Q")
 	}
 
-	baseLog := num.Log2(p.Base)
-	basesQLog := make([]int, p.Level)
-	for i := range basesQLog {
-		basesQLog[i] = num.SizeT[T]() - (i+1)*baseLog
-	}
-
 	return GadgetParameters[T]{
-		base:      p.Base,
-		baseLog:   baseLog,
-		level:     p.Level,
-		basesQLog: basesQLog,
+		base:    p.Base,
+		baseLog: num.Log2(p.Base),
+		level:   p.Level,
+		sizeT:   num.SizeT[T](),
 	}
 }
 
@@ -70,8 +64,8 @@ type GadgetParameters[T TorusInt] struct {
 	baseLog int
 	// Level is a length of gadget.
 	level int
-	// basesQLog holds the log of scaled gadget: Log(Q / B^l) for l = 1 ~ Level.
-	basesQLog []int
+	// sizeT is the size of T in bits.
+	sizeT int
 }
 
 // Base is a base of gadget. It must be power of two.
@@ -92,33 +86,33 @@ func (p GadgetParameters[T]) Level() int {
 // BaseQ returns Q / Base^(i+1) for 0 <= i < Level.
 // For the most common usages i = 0 and i = Level-1, use [GadgetParameters.FirstBaseQ] and [GadgetParameters.LastBaseQ].
 func (p GadgetParameters[T]) BaseQ(i int) T {
-	return T(1 << p.basesQLog[i])
+	return T(1 << (p.sizeT - (i+1)*p.baseLog))
 }
 
 // FirstBaseQ returns Q / Base.
 func (p GadgetParameters[T]) FirstBaseQ() T {
-	return p.BaseQ(0)
+	return T(1 << (p.sizeT - p.baseLog))
 }
 
 // LastBaseQ returns Q / Base^Level.
 func (p GadgetParameters[T]) LastBaseQ() T {
-	return p.BaseQ(p.level - 1)
+	return T(1 << (p.sizeT - p.level*p.baseLog))
 }
 
 // BaseQLog returns log(Q / Base^(i+1)) for 0 <= i < Level.
 // For the most common usages i = 0 and i = Level-1, use [GadgetParameters.FirstBaseQLog] and [GadgetParameters.LastBaseQLog].
 func (p GadgetParameters[T]) BaseQLog(i int) int {
-	return p.basesQLog[i]
+	return p.sizeT - (i+1)*p.baseLog
 }
 
 // FirstBaseQLog returns log(Q / Base).
 func (p GadgetParameters[T]) FirstBaseQLog() int {
-	return p.BaseQLog(0)
+	return p.sizeT - p.baseLog
 }
 
 // LastBaseQLog returns log(Q / Base^Level).
 func (p GadgetParameters[T]) LastBaseQLog() int {
-	return p.BaseQLog(p.level - 1)
+	return p.sizeT - p.level*p.baseLog
 }
 
 // Literal returns a GadgetParametersLiteral from this GadgetParameters.

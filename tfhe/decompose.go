@@ -14,7 +14,7 @@ func (e *Evaluator[T]) Decompose(x T, gadgetParams GadgetParameters[T]) []T {
 
 // DecomposeAssign decomposes x with respect to gadgetParams and writes it to decomposedOut.
 func (e *Evaluator[T]) DecomposeAssign(x T, gadgetParams GadgetParameters[T], decomposedOut []T) {
-	lastBaseQLog := gadgetParams.basesQLog[gadgetParams.level-1]
+	lastBaseQLog := gadgetParams.LastBaseQLog()
 	u := num.RoundRatioBits(x, lastBaseQLog)
 	for i := gadgetParams.level - 1; i >= 1; i-- {
 		decomposedOut[i] = u & (gadgetParams.base - 1)
