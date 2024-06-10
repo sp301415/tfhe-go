@@ -60,7 +60,7 @@ type evaluationBuffer[T TorusInt] struct {
 	// pAcc holds the inverse fourier transformed ctFourierAcc in Blind Rotate.
 	// Since we perform inverse FFT on the fly, we only need one polynomial
 	// rather than a whole ciphertext.
-	pAcc []poly.Poly[T]
+	ctAcc []GLWECiphertext[T]
 	// ctFourierAcc holds the accumulator in Blind Rotation.
 	// In case of BlindRotateBlock and BlindRotateOriginal, only the first element is used.
 	// This has length PolyExpandFactor.
@@ -120,11 +120,11 @@ func newEvaluationBuffer[T TorusInt](params Parameters[T]) evaluationBuffer[T] {
 		polyFourierDecomposed[i] = poly.NewFourierPoly(params.polyDegree)
 	}
 
-	pAcc := make([]poly.Poly[T], params.polyExtendFactor)
+	ctAcc := make([]GLWECiphertext[T], params.polyExtendFactor)
 	ctFourierAcc := make([]FourierGLWECiphertext[T], params.polyExtendFactor)
 	ctBlockFourierAcc := make([]FourierGLWECiphertext[T], params.polyExtendFactor)
 	for i := 0; i < params.polyExtendFactor; i++ {
-		pAcc[i] = poly.NewPoly[T](params.polyDegree)
+		ctAcc[i] = NewGLWECiphertext(params)
 		ctFourierAcc[i] = NewFourierGLWECiphertext(params)
 		ctBlockFourierAcc[i] = NewFourierGLWECiphertext(params)
 	}
@@ -149,7 +149,7 @@ func newEvaluationBuffer[T TorusInt](params Parameters[T]) evaluationBuffer[T] {
 		ctFourierProd: NewFourierGLWECiphertext(params),
 		ctCMux:        NewGLWECiphertext(params),
 
-		pAcc:                   pAcc,
+		ctAcc:                  ctAcc,
 		ctFourierAcc:           ctFourierAcc,
 		ctBlockFourierAcc:      ctBlockFourierAcc,
 		ctAccFourierDecomposed: ctAccFourierDecomposed,
