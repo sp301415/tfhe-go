@@ -57,15 +57,14 @@ type evaluationBuffer[T TorusInt] struct {
 	// ctCMux holds ct1 - ct0 in CMux.
 	ctCMux GLWECiphertext[T]
 
-	// pAcc holds the inverse fourier transformed ctFourierAcc in Blind Rotate.
-	// Since we perform inverse FFT on the fly, we only need one polynomial
-	// rather than a whole ciphertext.
+	// ctAcc holds the accumulator in BlindRotateExtended.
+	// This has length PolyExtendFactor.
 	ctAcc []GLWECiphertext[T]
-	// ctFourierAcc holds the accumulator in Blind Rotation.
+	// ctFourierAcc holds the fourier transformed accumulator in Blind Rotation.
 	// In case of BlindRotateBlock and BlindRotateOriginal, only the first element is used.
-	// This has length PolyExpandFactor.
+	// This has length PolyExtendFactor.
 	ctFourierAcc []FourierGLWECiphertext[T]
-	// ctBlockFourierAcc holds the auxiliary accumulator in BlindRotateBlock and BlindRotateOriginal.
+	// ctBlockFourierAcc holds the auxiliary accumulator in BlindRotateBlock and BlindRotateExtended.
 	ctBlockFourierAcc []FourierGLWECiphertext[T]
 	// ctAccFourierDecomposed holds the decomposed ctAcc in Blind Rotation.
 	// In case of BlindRotateBlock and BlindRotateOriginal, only the first element is used.
