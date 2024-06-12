@@ -67,6 +67,13 @@ func BenchmarkFourierTransform(b *testing.B) {
 			}
 		})
 
+		x := rand.Int() % (2 * N)
+		b.Run(fmt.Sprintf("MonomialToFourierPoly/%v", N), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				fft.MonomialToFourierPolyAssign(x, fp)
+			}
+		})
+
 		b.Run(fmt.Sprintf("ToPoly/%v", N), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				fft.ToPolyAssignUnsafe(fp, p)
