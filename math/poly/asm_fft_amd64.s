@@ -167,7 +167,7 @@ last_loop_2_end:
 	JL   last_loop_2
 
 	// Last Loop - stride 1
-	VPXOR Y10, Y10, Y10 // (0, 0, 0, 0)
+	VPXOR Y10, Y10, Y10
 
 	XORQ SI, SI          // j
 	JMP  last_loop_1_end

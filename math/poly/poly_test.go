@@ -84,7 +84,7 @@ func BenchmarkFFT(b *testing.B) {
 
 	b.Run("ToPoly", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			fft.ToPolyAssign(fp, pOut)
+			fft.ToPolyAssignUnsafe(fp, pOut)
 		}
 	})
 }

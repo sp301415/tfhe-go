@@ -381,7 +381,7 @@ func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTab
 	}
 
 	for j := 0; j < e.Parameters.glweDimension+1; j++ {
-		e.FourierEvaluator.ToPolyAddAssign(e.buffer.ctFourierAcc[0].Value[j], ctOut.Value[j])
+		e.FourierEvaluator.ToPolyAddAssignUnsafe(e.buffer.ctFourierAcc[0].Value[j], ctOut.Value[j])
 	}
 
 	for i := 1; i < e.Parameters.blockCount; i++ {
@@ -402,7 +402,7 @@ func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTab
 		}
 
 		for j := 0; j < e.Parameters.glweDimension+1; j++ {
-			e.FourierEvaluator.ToPolyAddAssign(e.buffer.ctFourierAcc[0].Value[j], ctOut.Value[j])
+			e.FourierEvaluator.ToPolyAddAssignUnsafe(e.buffer.ctFourierAcc[0].Value[j], ctOut.Value[j])
 		}
 	}
 }
