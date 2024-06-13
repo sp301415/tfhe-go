@@ -67,7 +67,7 @@ func BenchmarkFourierTransform(b *testing.B) {
 			}
 		})
 
-		x := rand.Int() % (2 * N)
+		x := N / 3
 		b.Run(fmt.Sprintf("MonomialToFourierPoly/%v", N), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				fft.MonomialToFourierPolyAssign(x, fp)
