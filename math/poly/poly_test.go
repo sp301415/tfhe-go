@@ -28,19 +28,19 @@ func BenchmarkFourierOps(b *testing.B) {
 			fp1.Coeffs[i] = (2*rand.Float64() - 1.0) * math.Exp(63)
 		}
 
-		b.Run(fmt.Sprintf("Add/%v", N), func(b *testing.B) {
+		b.Run(fmt.Sprintf("op=Add/N=%v", N), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				fft.AddAssign(fp0, fp1, fpOut)
 			}
 		})
 
-		b.Run(fmt.Sprintf("Sub/%v", N), func(b *testing.B) {
+		b.Run(fmt.Sprintf("op=Sub/N=%v", N), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				fft.SubAssign(fp0, fp1, fpOut)
 			}
 		})
 
-		b.Run(fmt.Sprintf("Mul/%v", N), func(b *testing.B) {
+		b.Run(fmt.Sprintf("op=Mul/N=%v", N), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				fft.MulAssign(fp0, fp1, fpOut)
 			}
@@ -61,20 +61,20 @@ func BenchmarkFourierTransform(b *testing.B) {
 			p.Coeffs[i] = rand.Uint64()
 		}
 
-		b.Run(fmt.Sprintf("ToFourierPoly/%v", N), func(b *testing.B) {
+		b.Run(fmt.Sprintf("op=ToFourierPoly/N=%v", N), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				fft.ToFourierPolyAssign(p, fp)
 			}
 		})
 
 		x := N / 3
-		b.Run(fmt.Sprintf("MonomialToFourierPoly/%v", N), func(b *testing.B) {
+		b.Run(fmt.Sprintf("op=MonomialToFourierPoly/N=%v", N), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				fft.MonomialToFourierPolyAssign(x, fp)
 			}
 		})
 
-		b.Run(fmt.Sprintf("ToPoly/%v", N), func(b *testing.B) {
+		b.Run(fmt.Sprintf("op=ToPoly/N=%v", N), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				fft.ToPolyAssignUnsafe(fp, p)
 			}
