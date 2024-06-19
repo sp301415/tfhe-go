@@ -5,7 +5,7 @@
   <a href="https://goreportcard.com/report/github.com/sp301415/tfhe-go"><img src="https://goreportcard.com/badge/github.com/sp301415/tfhe-go"/></a>
   <img src="https://github.com/sp301415/tfhe-go/actions/workflows/ci.yml/badge.svg"/></a>
 </p>
-<p align="center"><img src="LOGO.png" width="200"/></p>
+<p align="center"><img src="LOGO.png" width="300"/></p>
 
 > [!IMPORTANT]
 > TFHE-go is still under heavy development. There may be backward-incompatible changes at any time.
