@@ -1,11 +1,14 @@
-# TFHE-go
+<h1 align="center">TFHE-go</h1>
+<p align="center">Go implementation of (MK)TFHE scheme</p>
+<p align="center">
+  <a href="https://pkg.go.dev/github.com/sp301415/tfhe-go"><img src="https://pkg.go.dev/badge/github.com/sp301415/tfhe-go.svg"/></a>
+  <a href="https://goreportcard.com/report/github.com/sp301415/tfhe-go"><img src="https://goreportcard.com/badge/github.com/sp301415/tfhe-go"/></a>
+  <img src="https://github.com/sp301415/tfhe-go/actions/workflows/ci.yml/badge.svg"/></a>
+</p>
+<p align="center"><img src="LOGO.png" width="200"/></p>
 
 > [!IMPORTANT]
 > TFHE-go is still under heavy development. There may be backward-incompatible changes at any time.
-
-[![Go Reference](https://pkg.go.dev/badge/github.com/sp301415/tfhe-go.svg)](https://pkg.go.dev/github.com/sp301415/tfhe-go)
-[![Go Report Card](https://goreportcard.com/badge/github.com/sp301415/tfhe-go)](https://goreportcard.com/report/github.com/sp301415/tfhe-go)
-![CI Test Status](https://github.com/sp301415/tfhe-go/actions/workflows/ci.yml/badge.svg)
 
 **TFHE-go** is a Go implementation of TFHE[[CGGI16](https://eprint.iacr.org/2016/870)] and Multi-Key TFHE[[KMS22](https://eprint.iacr.org/2022/1460)] scheme. It provides:
 - Support for binary and integer TFHE and its multi-key variant
@@ -163,6 +166,7 @@ To cite TFHE-go, please use the following BibTeX entry:
 
 ## Acknowledgements
 Special thanks to Seonhong Min([@snu-lukemin](https://github.com/snu-lukemin)) for providing many helpful insights.
+TFHE-go logo is designed by [@mlgng2010](https://www.instagram.com/mlgng2010/), based on the Go Gopher by [Renee French](https://reneefrench.blogspot.com).
 
 ## References
 - TFHE: Fast Fully Homomorphic Encryption over the Torus (https://eprint.iacr.org/2018/421)
