@@ -153,7 +153,6 @@ You can use the standard go test tool to reproduce benchmarks:
 $ go test ./tfhe -run=^$ -bench="GateBootstrap|ProgrammableBootstrap"
 ```
 
-
 ## Security
 TFHE-go has not been audited or reviewed by security experts, and may contain critical vulnerabilities. Use at your own risk. See [SECURITY](https://github.com/sp301415/tfhe-go/blob/master/SECURITY.md) for more details.
 
