@@ -3,25 +3,25 @@ package tfhe
 var (
 	// ParamsBinary is a default parameter set for binary TFHE.
 	ParamsBinary = ParametersLiteral[uint32]{
-		LWEDimension:    723,
-		GLWEDimension:   2,
+		LWEDimension:    812,
+		GLWEDimension:   3,
 		PolyDegree:      512,
 		LookUpTableSize: 512,
 
-		LWEStdDev:  0.000013071021089943935,
-		GLWEStdDev: 0.00000004990272175010415,
+		LWEStdDev:  0.0000052851456906764125,
+		GLWEStdDev: 0.0000000009315272083503367,
 
-		BlockSize: 3,
+		BlockSize: 4,
 
 		MessageModulus: 1 << 1,
 
 		BootstrapParameters: GadgetParametersLiteral[uint32]{
-			Base:  1 << 6,
-			Level: 3,
+			Base:  1 << 10,
+			Level: 2,
 		},
 		KeySwitchParameters: GadgetParametersLiteral[uint32]{
 			Base:  1 << 3,
-			Level: 4,
+			Level: 5,
 		},
 
 		BootstrapOrder: OrderBlindRotateKeySwitch,
@@ -33,25 +33,25 @@ var (
 	// This parameter set is slightly more compact than ParamsBinary,
 	// giving a faster performance.
 	ParamsBinaryCompact = ParametersLiteral[uint32]{
-		LWEDimension:    664,
-		GLWEDimension:   2,
+		LWEDimension:    747,
+		GLWEDimension:   3,
 		PolyDegree:      512,
 		LookUpTableSize: 512,
 
-		LWEStdDev:  0.0000380828292345977,
-		GLWEStdDev: 0.00000004990272175010415,
+		LWEStdDev:  0.00001622209113562635,
+		GLWEStdDev: 0.0000000009315272083503367,
 
-		BlockSize: 2,
+		BlockSize: 3,
 
 		MessageModulus: 1 << 1,
 
 		BootstrapParameters: GadgetParametersLiteral[uint32]{
-			Base:  1 << 6,
-			Level: 3,
+			Base:  1 << 10,
+			Level: 2,
 		},
 		KeySwitchParameters: GadgetParametersLiteral[uint32]{
 			Base:  1 << 3,
-			Level: 4,
+			Level: 5,
 		},
 
 		BootstrapOrder: OrderKeySwitchBlindRotate,
@@ -85,20 +85,20 @@ var (
 
 	// ParamsUint2 is a parameter set with 2 bits of message space.
 	ParamsUint2 = ParametersLiteral[uint64]{
-		LWEDimension:    700,
+		LWEDimension:    780,
 		GLWEDimension:   3,
 		PolyDegree:      512,
 		LookUpTableSize: 512,
 
-		LWEStdDev:  0.000019974501253932986,
-		GLWEStdDev: 0.000000000003966608917163306,
+		LWEStdDev:  0.000009179845226680863,
+		GLWEStdDev: 0.000000000019524392655548086,
 
-		BlockSize: 2,
+		BlockSize: 3,
 
 		MessageModulus: 1 << 2,
 
 		BootstrapParameters: GadgetParametersLiteral[uint64]{
-			Base:  1 << 18,
+			Base:  1 << 17,
 			Level: 1,
 		},
 		KeySwitchParameters: GadgetParametersLiteral[uint64]{
@@ -111,15 +111,15 @@ var (
 
 	// ParamsUint3 is a parameter set with 3 bits of message space.
 	ParamsUint3 = ParametersLiteral[uint64]{
-		LWEDimension:    759,
+		LWEDimension:    860,
 		GLWEDimension:   2,
 		PolyDegree:      1024,
 		LookUpTableSize: 1024,
 
-		LWEStdDev:  0.000006607570143466592,
-		GLWEStdDev: 0.00000000000000031529322391500584,
+		LWEStdDev:  0.0000023088161607134664,
+		GLWEStdDev: 0.000000000000002845267479601915,
 
-		BlockSize: 3,
+		BlockSize: 4,
 
 		MessageModulus: 1 << 3,
 
@@ -128,7 +128,7 @@ var (
 			Level: 1,
 		},
 		KeySwitchParameters: GadgetParametersLiteral[uint64]{
-			Base:  1 << 4,
+			Base:  1 << 5,
 			Level: 3,
 		},
 
@@ -137,20 +137,20 @@ var (
 
 	// ParamsUint4 is a parameter set with 4 bits of message space.
 	ParamsUint4 = ParametersLiteral[uint64]{
-		LWEDimension:    762,
+		LWEDimension:    840,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
 		LookUpTableSize: 2048,
 
-		LWEStdDev:  0.00000636835566258815,
-		GLWEStdDev: 0.00000000000000031529322391500584,
+		LWEStdDev:  0.0000032602496351120776,
+		GLWEStdDev: 0.000000000000002845267479601915,
 
-		BlockSize: 3,
+		BlockSize: 4,
 
 		MessageModulus: 1 << 4,
 
 		BootstrapParameters: GadgetParametersLiteral[uint64]{
-			Base:  1 << 23,
+			Base:  1 << 22,
 			Level: 1,
 		},
 		KeySwitchParameters: GadgetParametersLiteral[uint64]{
@@ -163,15 +163,15 @@ var (
 
 	// ParamsUint5 is a parameter set with 5 bits of message space.
 	ParamsUint5 = ParametersLiteral[uint64]{
-		LWEDimension:    852,
+		LWEDimension:    950,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
 		LookUpTableSize: 4096,
 
-		LWEStdDev:  0.0000012571599559956785,
-		GLWEStdDev: 0.00000000000000031529322391500584,
+		LWEStdDev:  0.0000004803076706754256,
+		GLWEStdDev: 0.000000000000002845267479601915,
 
-		BlockSize: 4,
+		BlockSize: 5,
 
 		MessageModulus: 1 << 5,
 
@@ -189,15 +189,15 @@ var (
 
 	// ParamsUint6 is a parameter set with 6 bits of message space.
 	ParamsUint6 = ParametersLiteral[uint64]{
-		LWEDimension:    935,
+		LWEDimension:    1020,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
 		LookUpTableSize: 8192,
 
-		LWEStdDev:  0.000000277202526552345,
-		GLWEStdDev: 0.00000000000000031529322391500584,
+		LWEStdDev:  0.00000015380716530060473,
+		GLWEStdDev: 0.000000000000002845267479601915,
 
-		BlockSize: 5,
+		BlockSize: 6,
 
 		MessageModulus: 1 << 6,
 
@@ -206,8 +206,8 @@ var (
 			Level: 1,
 		},
 		KeySwitchParameters: GadgetParametersLiteral[uint64]{
-			Base:  1 << 4,
-			Level: 4,
+			Base:  1 << 3,
+			Level: 7,
 		},
 
 		BootstrapOrder: OrderKeySwitchBlindRotate,
@@ -215,25 +215,25 @@ var (
 
 	// ParamsUint7 is a parameter set with 7 bits of message space.
 	ParamsUint7 = ParametersLiteral[uint64]{
-		LWEDimension:    950,
+		LWEDimension:    1062,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
 		LookUpTableSize: 16384,
 
-		LWEStdDev:  0.00000020638655780656257,
-		GLWEStdDev: 0.00000000000000031529322391500584,
+		LWEStdDev:  0.00000007324438557758654,
+		GLWEStdDev: 0.000000000000002845267479601915,
 
-		BlockSize: 5,
+		BlockSize: 6,
 
 		MessageModulus: 1 << 7,
 
 		BootstrapParameters: GadgetParametersLiteral[uint64]{
-			Base:  1 << 15,
+			Base:  1 << 17,
 			Level: 2,
 		},
 		KeySwitchParameters: GadgetParametersLiteral[uint64]{
 			Base:  1 << 3,
-			Level: 6,
+			Level: 7,
 		},
 
 		BootstrapOrder: OrderKeySwitchBlindRotate,
@@ -241,15 +241,15 @@ var (
 
 	// ParamsUint8 is a parameter set with 8 bits of message space.
 	ParamsUint8 = ParametersLiteral[uint64]{
-		LWEDimension:    1032,
+		LWEDimension:    1127,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
 		LookUpTableSize: 32768,
 
-		LWEStdDev:  0.00000004305923848218434,
-		GLWEStdDev: 0.00000000000000031529322391500584,
+		LWEStdDev:  0.000000023053576495153107,
+		GLWEStdDev: 0.000000000000002845267479601915,
 
-		BlockSize: 6,
+		BlockSize: 7,
 
 		MessageModulus: 1 << 8,
 
@@ -258,8 +258,8 @@ var (
 			Level: 2,
 		},
 		KeySwitchParameters: GadgetParametersLiteral[uint64]{
-			Base:  1 << 4,
-			Level: 5,
+			Base:  1 << 2,
+			Level: 12,
 		},
 
 		BootstrapOrder: OrderKeySwitchBlindRotate,
