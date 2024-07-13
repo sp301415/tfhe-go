@@ -240,8 +240,3 @@ func (e *Encryptor[T]) EncryptFourierGLWEPlaintextAssign(pt tfhe.GLWEPlaintext[T
 func (e *Encryptor[T]) GenPublicKey() tfhe.PublicKey[T] {
 	return e.SingleKeyEncryptor.GenPublicKey()
 }
-
-// PublicEncryptor returns a PublicEncryptor with the same parameters.
-func (e *Encryptor[T]) PublicEncryptor() *PublicEncryptor[T] {
-	return NewPublicEncryptor(e.Parameters, e.Index, e.GenPublicKey())
-}

@@ -197,8 +197,3 @@ func (e *Encryptor[T]) GenPublicKey() PublicKey[T] {
 
 	return pk
 }
-
-// PublicEncryptor returns a PublicEncryptor with the same parameters.
-func (e *Encryptor[T]) PublicEncryptor() *PublicEncryptor[T] {
-	return NewPublicEncryptor(e.Parameters, e.GenPublicKey())
-}

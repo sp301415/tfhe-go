@@ -14,7 +14,7 @@ import (
 var (
 	params = tfhe.ParamsUint3.Compile()
 	enc    = tfhe.NewEncryptor(params)
-	pkEnc  = enc.PublicEncryptor()
+	pkEnc  = tfhe.NewPublicEncryptor(params, enc.GenPublicKey())
 	eval   = tfhe.NewEvaluator(params, enc.GenEvaluationKeyParallel())
 
 	paramsList = []tfhe.ParametersLiteral[uint64]{
