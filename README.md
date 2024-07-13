@@ -145,8 +145,8 @@ All benchmarks were measured on a machine equipped with Intel Xeon Platinum 8268
 
 |Operation|TFHE-go|TFHE-rs (v0.7.0)|
 |---------|-------|-------|
-|Gate Bootstrapping|13.38ms|14.84ms|
-|Programmable Bootstrapping (6 bits)|39.31ms|110.62ms|
+|Gate Bootstrapping|9.72ms|14.84ms|
+|Programmable Bootstrapping (6 bits)|28.05ms|110.62ms|
 
 You can use the standard go test tool to reproduce benchmarks:
 ```
