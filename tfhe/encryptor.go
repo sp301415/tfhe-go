@@ -9,7 +9,7 @@ import (
 // Encryptor encrypts and decrypts TFHE plaintexts and ciphertexts.
 // This is meant to be private, only for clients.
 //
-// Encrryptor is not safe for concurrent use.
+// Encryptor is not safe for concurrent use.
 // Use [*Encryptor.ShallowCopy] to get a safe copy.
 type Encryptor[T TorusInt] struct {
 	// Encoder is an embedded encoder for this Encryptor.

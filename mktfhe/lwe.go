@@ -5,7 +5,7 @@ import (
 	"github.com/sp301415/tfhe-go/tfhe"
 )
 
-// LWECiphertext is a multi-key LWE ciphertext.
+// LWECiphertext is a multi-key variant of [tfhe.LWECiphertext].
 type LWECiphertext[T tfhe.TorusInt] struct {
 	// Value has length DefaultDimension + 1.
 	Value []T
