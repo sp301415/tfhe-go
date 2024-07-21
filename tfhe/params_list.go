@@ -160,12 +160,12 @@ var (
 
 	// ParamsUint5 is a parameter set with 5 bits of message space.
 	ParamsUint5 = ParametersLiteral[uint64]{
-		LWEDimension:    848,
+		LWEDimension:    844,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
 		LookUpTableSize: 4096,
 
-		LWEStdDev:  0.0000011473894119264823,
+		LWEStdDev:  0.0000012218952178957204,
 		GLWEStdDev: 0.00000000000000031529322391500584,
 
 		BlockSize: 4,
@@ -186,12 +186,12 @@ var (
 
 	// ParamsUint6 is a parameter set with 6 bits of message space.
 	ParamsUint6 = ParametersLiteral[uint64]{
-		LWEDimension:    920,
+		LWEDimension:    905,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
 		LookUpTableSize: 6144,
 
-		LWEStdDev:  0.0000003129243850710165,
+		LWEStdDev:  0.0000004097819328310259,
 		GLWEStdDev: 0.00000000000000031529322391500584,
 
 		BlockSize: 5,
@@ -212,12 +212,12 @@ var (
 
 	// ParamsUint7 is a parameter set with 7 bits of message space.
 	ParamsUint7 = ParametersLiteral[uint64]{
-		LWEDimension:    996,
+		LWEDimension:    978,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
 		LookUpTableSize: 10240,
 
-		LWEStdDev:  0.00000007823109626791676,
+		LWEStdDev:  0.00000010803341865561196,
 		GLWEStdDev: 0.00000000000000031529322391500584,
 
 		BlockSize: 6,
