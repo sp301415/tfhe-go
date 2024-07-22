@@ -58,7 +58,7 @@ ctFlag := enc.EncryptFourierGGSW([]int{1}, gadgetParams)
 
 // Set up Evaluator.
 // Note that we don't need evaluation key for CMUX.
-eval := tfhe.NewEvaluatorWithoutKey(params)
+eval := tfhe.NewEvaluator(params, tfhe.EvaluationKey[uint64]{})
 
 ctOut := eval.CMux(ctFlag, ct0, ct1)
 fmt.Println(enc.DecryptGLWE(ctOut)[0]) // 5

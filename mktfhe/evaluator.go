@@ -96,7 +96,7 @@ func NewEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationK
 	return &Evaluator[T]{
 		Encoder:                tfhe.NewEncoder(params.Parameters),
 		GLWETransformer:        tfhe.NewGLWETransformer(params.Parameters),
-		BaseSingleKeyEvaluator: tfhe.NewEvaluatorWithoutKey(params.Parameters),
+		BaseSingleKeyEvaluator: tfhe.NewEvaluator(params.Parameters, tfhe.EvaluationKey[T]{}),
 		SingleKeyEvaluators:    singleEvals,
 
 		Parameters:  params,
@@ -106,12 +106,6 @@ func NewEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationK
 
 		buffer: newEvaluationBuffer(params),
 	}
-}
-
-// NewEvaluatorWithoutKey allocates an empty Evaluator based on parameters, but without evaluation keys.
-// This will panic if any operation that requires evaluation key is called.
-func NewEvaluatorWithoutKey[T tfhe.TorusInt](params Parameters[T]) *Evaluator[T] {
-	return NewEvaluator(params, map[int]EvaluationKey[T]{})
 }
 
 // newEvaluationBuffer allocates an empty evaluationBuffer.

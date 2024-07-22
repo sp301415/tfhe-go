@@ -104,12 +104,6 @@ func NewEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *Evalu
 	}
 }
 
-// NewEvaluatorWithoutKey allocates an empty Evaluator based on parameters, but without evaluation keys.
-// This will panic if any operation that requires evaluation key is called.
-func NewEvaluatorWithoutKey[T TorusInt](params Parameters[T]) *Evaluator[T] {
-	return NewEvaluator(params, EvaluationKey[T]{})
-}
-
 // newEvaluationBuffer allocates an empty evaluationBuffer.
 func newEvaluationBuffer[T TorusInt](params Parameters[T]) evaluationBuffer[T] {
 	polyDecomposed := make([]poly.Poly[T], params.bootstrapParameters.level)
