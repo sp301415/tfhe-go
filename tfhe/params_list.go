@@ -160,15 +160,15 @@ var (
 
 	// ParamsUint5 is a parameter set with 5 bits of message space.
 	ParamsUint5 = ParametersLiteral[uint64]{
-		LWEDimension:    844,
+		LWEDimension:    978,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
-		LookUpTableSize: 4096,
+		LookUpTableSize: 2048,
 
-		LWEStdDev:  0.000001168164535421825,
+		LWEStdDev:  0.00000010240471256147537,
 		GLWEStdDev: 0.00000000000000037036182440289164,
 
-		BlockSize: 4,
+		BlockSize: 6,
 
 		MessageModulus: 1 << 5,
 
@@ -177,7 +177,7 @@ var (
 			Level: 1,
 		},
 		KeySwitchParameters: GadgetParametersLiteral[uint64]{
-			Base:  1 << 5,
+			Base:  1 << 6,
 			Level: 3,
 		},
 
@@ -186,15 +186,15 @@ var (
 
 	// ParamsUint6 is a parameter set with 6 bits of message space.
 	ParamsUint6 = ParametersLiteral[uint64]{
-		LWEDimension:    905,
+		LWEDimension:    1071,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
-		LookUpTableSize: 6144,
+		LookUpTableSize: 4096,
 
-		LWEStdDev:  0.0000003856990599874632,
+		LWEStdDev:  0.000000018906129901669814,
 		GLWEStdDev: 0.00000000000000037036182440289164,
 
-		BlockSize: 5,
+		BlockSize: 7,
 
 		MessageModulus: 1 << 6,
 
@@ -203,7 +203,7 @@ var (
 			Level: 1,
 		},
 		KeySwitchParameters: GadgetParametersLiteral[uint64]{
-			Base:  1 << 5,
+			Base:  1 << 6,
 			Level: 3,
 		},
 
@@ -212,15 +212,15 @@ var (
 
 	// ParamsUint7 is a parameter set with 7 bits of message space.
 	ParamsUint7 = ParametersLiteral[uint64]{
-		LWEDimension:    978,
+		LWEDimension:    1160,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
-		LookUpTableSize: 10240,
+		LookUpTableSize: 8192,
 
-		LWEStdDev:  0.00000010240471256147537,
+		LWEStdDev:  0.000000003753557436461315,
 		GLWEStdDev: 0.00000000000000037036182440289164,
 
-		BlockSize: 6,
+		BlockSize: 8,
 
 		MessageModulus: 1 << 7,
 
@@ -229,7 +229,7 @@ var (
 			Level: 1,
 		},
 		KeySwitchParameters: GadgetParametersLiteral[uint64]{
-			Base:  1 << 6,
+			Base:  1 << 7,
 			Level: 3,
 		},
 
@@ -238,15 +238,15 @@ var (
 
 	// ParamsUint8 is a parameter set with 8 bits of message space.
 	ParamsUint8 = ParametersLiteral[uint64]{
-		LWEDimension:    1071,
+		LWEDimension:    1160,
 		GLWEDimension:   1,
 		PolyDegree:      2048,
-		LookUpTableSize: 22528,
+		LookUpTableSize: 20480,
 
-		LWEStdDev:  0.000000018906129901669814,
+		LWEStdDev:  0.000000003753557436461315,
 		GLWEStdDev: 0.00000000000000037036182440289164,
 
-		BlockSize: 7,
+		BlockSize: 8,
 
 		MessageModulus: 1 << 8,
 
@@ -255,7 +255,7 @@ var (
 			Level: 1,
 		},
 		KeySwitchParameters: GadgetParametersLiteral[uint64]{
-			Base:  1 << 6,
+			Base:  1 << 7,
 			Level: 3,
 		},
 
