@@ -108,15 +108,15 @@ var (
 
 	// ParamsUint3 is a parameter set with 3 bits of message space.
 	ParamsUint3 = ParametersLiteral[uint64]{
-		LWEDimension:    744,
+		LWEDimension:    804,
 		GLWEDimension:   2,
 		PolyDegree:      1024,
 		LookUpTableSize: 1024,
 
-		LWEStdDev:  0.000007185340549036591,
+		LWEStdDev:  0.0000024159133456520037,
 		GLWEStdDev: 0.00000000000000037036182440289164,
 
-		BlockSize: 3,
+		BlockSize: 4,
 
 		MessageModulus: 1 << 3,
 
@@ -125,8 +125,8 @@ var (
 			Level: 1,
 		},
 		KeySwitchParameters: GadgetParametersLiteral[uint64]{
-			Base:  1 << 4,
-			Level: 3,
+			Base:  1 << 6,
+			Level: 2,
 		},
 
 		BootstrapOrder: OrderKeySwitchBlindRotate,
