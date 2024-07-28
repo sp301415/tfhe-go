@@ -24,6 +24,12 @@ jobs:
           go test ./math/poly -timeout=0 -count=1 -tags=purego
           GODEBUG=cpu.all=off go test ./math/poly -count=1
 
+      - name: Test math/vec
+        run: |
+          go test ./math/vec -timeout=0 -count=1
+          go test ./math/vec -timeout=0 -count=1 -tags=purego
+          GODEBUG=cpu.all=off go test ./math/vec -count=1
+
       - name: Test tfhe
         run: |
           go test ./tfhe -timeout=0 -count=1
