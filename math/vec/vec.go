@@ -158,25 +158,11 @@ func Add[T num.Number](v0, v1 []T) []T {
 	return vOut
 }
 
-// AddAssign computes vOut = v0 + v1.
-func AddAssign[T num.Number](v0, v1, vOut []T) {
-	for i := range vOut {
-		vOut[i] = v0[i] + v1[i]
-	}
-}
-
 // Sub returns v0 - v1.
 func Sub[T num.Number](v0, v1 []T) []T {
 	vOut := make([]T, len(v0))
 	SubAssign(v0, v1, vOut)
 	return vOut
-}
-
-// SubAssign computes vOut = v0 - v1.
-func SubAssign[T num.Number](v0, v1, vOut []T) {
-	for i := range vOut {
-		vOut[i] = v0[i] - v1[i]
-	}
 }
 
 // Neg returns -v0.
@@ -200,53 +186,11 @@ func ScalarMul[T num.Number](v0 []T, c T) []T {
 	return vOut
 }
 
-// ScalarMulAssign computes vOut = c * v0.
-func ScalarMulAssign[T num.Number](v0 []T, c T, vOut []T) {
-	for i := range vOut {
-		vOut[i] = c * v0[i]
-	}
-}
-
-// ScalarMulAddAssign computes vOut += c * v0.
-func ScalarMulAddAssign[T num.Number](v0 []T, c T, vOut []T) {
-	for i := range vOut {
-		vOut[i] += c * v0[i]
-	}
-}
-
-// ScalarMulSubAssign computes vOut -= c * v0.
-func ScalarMulSubAssign[T num.Number](v0 []T, c T, vOut []T) {
-	for i := range vOut {
-		vOut[i] -= c * v0[i]
-	}
-}
-
 // ElementWiseMul returns v0 * v1, where * is an elementwise multiplication.
 func ElementWiseMul[T num.Number](v0, v1 []T) []T {
 	vOut := make([]T, len(v0))
 	ElementWiseMulAssign(v0, v1, vOut)
 	return vOut
-}
-
-// ElementWiseMulAssign computes vOut = v0 * v1, where * is an elementwise multiplication.
-func ElementWiseMulAssign[T num.Number](v0, v1, vOut []T) {
-	for i := range vOut {
-		vOut[i] = v0[i] * v1[i]
-	}
-}
-
-// ElementWiseMulAddAssign computes vOut += v0 * v1, where * is an elementwise multiplication.
-func ElementWiseMulAddAssign[T num.Number](v0, v1, vOut []T) {
-	for i := range vOut {
-		vOut[i] += v0[i] * v1[i]
-	}
-}
-
-// ElementWiseMulSubAssign computes vOut -= v0 * v1, where * is an elementwise multiplication.
-func ElementWiseMulSubAssign[T num.Number](v0, v1, vOut []T) {
-	for i := range vOut {
-		vOut[i] -= v0[i] * v1[i]
-	}
 }
 
 // CmplxToFloat4 converts a complex128 vector to
