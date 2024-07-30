@@ -150,7 +150,7 @@ func (e *Evaluator[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[
 // Input ciphertext should be of length LWELargeDimension + 1.
 // Output ciphertext should be of length LWEDimension + 1.
 func (e *Evaluator[T]) KeySwitchForBootstrapAssign(ct, ctOut LWECiphertext[T]) {
-	decomposed := e.BaseSingleKeyEvaluator.DecomposedBuffer(e.Parameters.KeySwitchParameters())
+	decomposed := e.buffer.decomposed[:e.Parameters.KeySwitchParameters().Level()]
 
 	ctOut.Value[0] = ct.Value[0]
 

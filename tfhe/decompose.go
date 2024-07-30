@@ -95,10 +95,10 @@ func (e *Evaluator[T]) polyFourierDecomposedBuffer(gadgetParams GadgetParameters
 	return e.buffer.polyFourierDecomposed
 }
 
-// DecomposedBuffer returns the decomposed buffer of Evaluator.
+// decomposedBuffer returns the decomposed buffer of Evaluator.
 // if len(decomposed) >= Level, it returns the subslice of the buffer.
 // otherwise, it extends the buffer of the Evaluator and returns it.
-func (e *Evaluator[T]) DecomposedBuffer(gadgetParams GadgetParameters[T]) []T {
+func (e *Evaluator[T]) decomposedBuffer(gadgetParams GadgetParameters[T]) []T {
 	if len(e.buffer.decomposed) >= gadgetParams.level {
 		return e.buffer.decomposed[:gadgetParams.level]
 	}

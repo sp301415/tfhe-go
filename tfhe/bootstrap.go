@@ -460,7 +460,7 @@ func (e *Evaluator[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchKey[T]) LWECi
 // Input ciphertext should be of length ksk.InputLWEDimension + 1,
 // and output ciphertext should be of length ksk.OutputLWEDimension + 1.
 func (e *Evaluator[T]) KeySwitchAssign(ct LWECiphertext[T], ksk KeySwitchKey[T], ctOut LWECiphertext[T]) {
-	decomposed := e.DecomposedBuffer(ksk.GadgetParameters)
+	decomposed := e.decomposedBuffer(ksk.GadgetParameters)
 
 	e.DecomposeAssign(ct.Value[1], ksk.GadgetParameters, decomposed)
 	e.ScalarMulLWEAssign(ksk.Value[0].Value[0], decomposed[0], ctOut)
