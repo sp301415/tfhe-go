@@ -42,8 +42,7 @@ type evaluationBuffer[T tfhe.TorusInt] struct {
 	// Use [*Evaluator.polyFourierDecomposedBuffer] to get appropriate length of buffer.
 	polyFourierDecomposed []poly.FourierPoly
 	// decomposed holds the decomposed scalar.
-	// Initially has length keyswitchParameters.level.
-	// Use [*Evaluator.decomposedBuffer] to get appropriate length of buffer.
+	// Has length keyswitchParameters.level.
 	decomposed []T
 
 	// ctProd holds the intermediate value in Hybrid Product.
