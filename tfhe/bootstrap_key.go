@@ -20,10 +20,10 @@ func NewEvaluationKey[T TorusInt](params Parameters[T]) EvaluationKey[T] {
 }
 
 // NewEvaluationKeyCustom allocates an empty EvaluationKey with custom parameters.
-func NewEvaluationKeyCustom[T TorusInt](lweDimension, glweDimension, polyDegree int, bootstrapParams, keyswitchParams GadgetParameters[T]) EvaluationKey[T] {
+func NewEvaluationKeyCustom[T TorusInt](lweDimension, glweRank, polyDegree int, bootstrapParams, keyswitchParams GadgetParameters[T]) EvaluationKey[T] {
 	return EvaluationKey[T]{
-		BootstrapKey: NewBootstrapKeyCustom(lweDimension, glweDimension, polyDegree, bootstrapParams),
-		KeySwitchKey: NewKeySwitchKeyForBootstrapCustom(lweDimension, glweDimension, polyDegree, keyswitchParams),
+		BootstrapKey: NewBootstrapKeyCustom(lweDimension, glweRank, polyDegree, bootstrapParams),
+		KeySwitchKey: NewKeySwitchKeyForBootstrapCustom(lweDimension, glweRank, polyDegree, keyswitchParams),
 	}
 }
 
@@ -67,10 +67,10 @@ func NewBootstrapKey[T TorusInt](params Parameters[T]) BootstrapKey[T] {
 }
 
 // NewBootstrapKeyCustom allocates an empty BootstrappingKey with custom parameters.
-func NewBootstrapKeyCustom[T TorusInt](lweDimension, glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) BootstrapKey[T] {
+func NewBootstrapKeyCustom[T TorusInt](lweDimension, glweRank, polyDegree int, gadgetParams GadgetParameters[T]) BootstrapKey[T] {
 	bsk := make([]FourierGGSWCiphertext[T], lweDimension)
 	for i := 0; i < lweDimension; i++ {
-		bsk[i] = NewFourierGGSWCiphertextCustom[T](glweDimension, polyDegree, gadgetParams)
+		bsk[i] = NewFourierGGSWCiphertextCustom[T](glweRank, polyDegree, gadgetParams)
 	}
 	return BootstrapKey[T]{Value: bsk, GadgetParameters: gadgetParams}
 }
@@ -118,12 +118,12 @@ func NewKeySwitchKey[T TorusInt](inputDimension, outputDimension int, gadgetPara
 
 // NewKeySwitchKeyForBootstrap allocates an empty KeySwitchingKey for bootstrapping.
 func NewKeySwitchKeyForBootstrap[T TorusInt](params Parameters[T]) KeySwitchKey[T] {
-	return NewKeySwitchKey[T](params.lweLargeDimension-params.lweDimension, params.lweDimension, params.keyswitchParameters)
+	return NewKeySwitchKey[T](params.glweDimension-params.lweDimension, params.lweDimension, params.keyswitchParameters)
 }
 
 // NewKeySwitchKeyForBootstrapCustom allocates an empty KeySwitchingKey with custom parameters.
-func NewKeySwitchKeyForBootstrapCustom[T TorusInt](lweDimension, glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
-	return NewKeySwitchKey[T](glweDimension*polyDegree-lweDimension, lweDimension, gadgetParams)
+func NewKeySwitchKeyForBootstrapCustom[T TorusInt](lweDimension, glweRank, polyDegree int, gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
+	return NewKeySwitchKey[T](glweRank*polyDegree-lweDimension, lweDimension, gadgetParams)
 }
 
 // InputLWEDimension returns the input LWEDimension of this key.

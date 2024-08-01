@@ -31,29 +31,29 @@ func (e *PublicEncryptor[T]) EncryptLWEPlaintextAssign(pt LWEPlaintext[T], ctOut
 // EncryptLWEBody encrypts the value in the body of LWE ciphertext and overrides it.
 // This avoids the need for most buffers.
 func (e *PublicEncryptor[T]) EncryptLWEBody(ct LWECiphertext[T]) {
-	for i := 0; i < e.Parameters.glweDimension; i++ {
+	for i := 0; i < e.Parameters.glweRank; i++ {
 		e.BinarySampler.SampleSliceAssign(e.buffer.auxKey.Value[i].Coeffs)
 		ct.Value[0] += vec.Dot(e.buffer.auxKey.Value[i].Coeffs, e.PublicKey.LWEKey.Value[i].Value[0].Coeffs)
 	}
 	ct.Value[0] += e.GaussianSampler.Sample(e.Parameters.GLWEStdDevQ())
 
-	for i := 0; i < e.Parameters.glweDimension; i++ {
+	for i := 0; i < e.Parameters.glweRank; i++ {
 		vec.ReverseInPlace(e.buffer.auxKey.Value[i].Coeffs)
 	}
 	e.ToFourierGLWESecretKeyAssign(e.buffer.auxKey, e.buffer.auxFourierKey)
 
-	ctGLWE := make([]poly.Poly[T], e.Parameters.glweDimension)
-	for i := 0; i < e.Parameters.glweDimension; i++ {
+	ctGLWE := make([]poly.Poly[T], e.Parameters.glweRank)
+	for i := 0; i < e.Parameters.glweRank; i++ {
 		ctGLWE[i] = poly.Poly[T]{Coeffs: ct.Value[1+i*e.Parameters.polyDegree : 1+(i+1)*e.Parameters.polyDegree]}
 	}
 
-	for i := 0; i < e.Parameters.glweDimension; i++ {
-		for j := 0; j < e.Parameters.glweDimension; j++ {
+	for i := 0; i < e.Parameters.glweRank; i++ {
+		for j := 0; j < e.Parameters.glweRank; j++ {
 			e.FourierEvaluator.PolyMulBinaryAddAssign(e.buffer.auxFourierKey.Value[i], e.PublicKey.LWEKey.Value[i].Value[j+1], ctGLWE[j])
 		}
 	}
 
-	for j := 0; j < e.Parameters.glweDimension; j++ {
+	for j := 0; j < e.Parameters.glweRank; j++ {
 		e.GaussianSampler.SampleSliceAddAssign(e.Parameters.GLWEStdDevQ(), ctGLWE[j].Coeffs)
 	}
 }

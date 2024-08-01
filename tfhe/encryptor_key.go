@@ -12,7 +12,7 @@ import (
 // LWEKey and GLWEKey is sampled together, as explained in https://eprint.iacr.org/2023/958.
 // As a result, LWEKey and GLWEKey share the same backing slice, so modifying one will affect the other.
 type SecretKey[T TorusInt] struct {
-	// LWELargeKey is a LWE key with length LWELargeDimension.
+	// LWELargeKey is a LWE key with length GLWEDimension.
 	// Essentially, this is same as GLWEKey but parsed differently.
 	LWELargeKey LWESecretKey[T]
 	// GLWEKey is a key used for GLWE encryption and decryption.
@@ -29,10 +29,10 @@ type SecretKey[T TorusInt] struct {
 // NewSecretKey allocates an empty SecretKey.
 // Each key shares the same backing slice, held by LWEKey.
 func NewSecretKey[T TorusInt](params Parameters[T]) SecretKey[T] {
-	lweLargeKey := LWESecretKey[T]{Value: make([]T, params.lweLargeDimension)}
+	lweLargeKey := LWESecretKey[T]{Value: make([]T, params.glweDimension)}
 
-	glweKey := GLWESecretKey[T]{Value: make([]poly.Poly[T], params.glweDimension)}
-	for i := 0; i < params.glweDimension; i++ {
+	glweKey := GLWESecretKey[T]{Value: make([]poly.Poly[T], params.glweRank)}
+	for i := 0; i < params.glweRank; i++ {
 		glweKey.Value[i].Coeffs = lweLargeKey.Value[i*params.polyDegree : (i+1)*params.polyDegree]
 	}
 	fourierGLWEKey := NewFourierGLWESecretKey(params)
@@ -49,14 +49,14 @@ func NewSecretKey[T TorusInt](params Parameters[T]) SecretKey[T] {
 
 // NewSecretKeyCustom allocates an empty SecretKey with given dimension and polyDegree.
 // Each key shares the same backing slice, held by LWEKey.
-func NewSecretKeyCustom[T TorusInt](lweDimension, glweDimension, polyDegree int) SecretKey[T] {
-	lweLargeKey := LWESecretKey[T]{Value: make([]T, glweDimension*polyDegree)}
+func NewSecretKeyCustom[T TorusInt](lweDimension, glweRank, polyDegree int) SecretKey[T] {
+	lweLargeKey := LWESecretKey[T]{Value: make([]T, glweRank*polyDegree)}
 
-	glweKey := GLWESecretKey[T]{Value: make([]poly.Poly[T], glweDimension)}
-	for i := 0; i < glweDimension; i++ {
+	glweKey := GLWESecretKey[T]{Value: make([]poly.Poly[T], glweRank)}
+	for i := 0; i < glweRank; i++ {
 		glweKey.Value[i].Coeffs = lweLargeKey.Value[i*polyDegree : (i+1)*polyDegree]
 	}
-	fourierGLWEKey := NewFourierGLWESecretKeyCustom[T](glweDimension, polyDegree)
+	fourierGLWEKey := NewFourierGLWESecretKeyCustom[T](glweRank, polyDegree)
 
 	lweKey := LWESecretKey[T]{Value: lweLargeKey.Value[:lweDimension]}
 
@@ -133,10 +133,10 @@ func NewPublicKey[T TorusInt](params Parameters[T]) PublicKey[T] {
 }
 
 // NewPublicKeyCustom allocates an empty PublicKey with given dimension and polyDegree.
-func NewPublicKeyCustom[T TorusInt](glweDimension, polyDegree int) PublicKey[T] {
+func NewPublicKeyCustom[T TorusInt](glweRank, polyDegree int) PublicKey[T] {
 	return PublicKey[T]{
-		LWEKey:  NewLWEPublicKeyCustom[T](glweDimension, polyDegree),
-		GLWEKey: NewGLWEPublicKeyCustom[T](glweDimension, polyDegree),
+		LWEKey:  NewLWEPublicKeyCustom[T](glweRank, polyDegree),
+		GLWEKey: NewGLWEPublicKeyCustom[T](glweRank, polyDegree),
 	}
 }
 

@@ -36,63 +36,63 @@ func (e *GLWETransformer[T]) ShallowCopy() *GLWETransformer[T] {
 
 // ToFourierGLWESecretKey transforms GLWE secret key to Fourier GLWE secret key.
 func (e *GLWETransformer[T]) ToFourierGLWESecretKey(sk GLWESecretKey[T]) FourierGLWESecretKey[T] {
-	skOut := NewFourierGLWESecretKeyCustom[T](e.Parameters.glweDimension, e.Parameters.polyDegree)
+	skOut := NewFourierGLWESecretKeyCustom[T](e.Parameters.glweRank, e.Parameters.polyDegree)
 	e.ToFourierGLWESecretKeyAssign(sk, skOut)
 	return skOut
 }
 
 // ToFourierGLWESecretKeyAssign transforms GLWE secret key to Fourier GLWE secret key and writes it to skOut.
 func (e *GLWETransformer[T]) ToFourierGLWESecretKeyAssign(skIn GLWESecretKey[T], skOut FourierGLWESecretKey[T]) {
-	for i := 0; i < e.Parameters.glweDimension; i++ {
+	for i := 0; i < e.Parameters.glweRank; i++ {
 		e.FourierEvaluator.ToFourierPolyAssign(skIn.Value[i], skOut.Value[i])
 	}
 }
 
 // ToGLWESecretKey transforms Fourier GLWE secret key to GLWE secret key.
 func (e *GLWETransformer[T]) ToGLWESecretKey(sk FourierGLWESecretKey[T]) GLWESecretKey[T] {
-	skOut := NewGLWESecretKeyCustom[T](e.Parameters.glweDimension, e.Parameters.polyDegree)
+	skOut := NewGLWESecretKeyCustom[T](e.Parameters.glweRank, e.Parameters.polyDegree)
 	e.ToGLWESecretKeyAssign(sk, skOut)
 	return skOut
 }
 
 // ToGLWESecretKeyAssign transforms Fourier GLWE secret key to GLWE secret key and writes it to skOut.
 func (e *GLWETransformer[T]) ToGLWESecretKeyAssign(skIn FourierGLWESecretKey[T], skOut GLWESecretKey[T]) {
-	for i := 0; i < e.Parameters.glweDimension; i++ {
+	for i := 0; i < e.Parameters.glweRank; i++ {
 		e.FourierEvaluator.ToPolyAssign(skIn.Value[i], skOut.Value[i])
 	}
 }
 
 // ToFourierGLWECiphertext transforms GLWE ciphertext to Fourier GLWE ciphertext.
 func (e *GLWETransformer[T]) ToFourierGLWECiphertext(ct GLWECiphertext[T]) FourierGLWECiphertext[T] {
-	ctOut := NewFourierGLWECiphertextCustom[T](e.Parameters.glweDimension, e.Parameters.polyDegree)
+	ctOut := NewFourierGLWECiphertextCustom[T](e.Parameters.glweRank, e.Parameters.polyDegree)
 	e.ToFourierGLWECiphertextAssign(ct, ctOut)
 	return ctOut
 }
 
 // ToFourierGLWECiphertextAssign transforms GLWE ciphertext to Fourier GLWE ciphertext and writes it to ctOut.
 func (e *GLWETransformer[T]) ToFourierGLWECiphertextAssign(ctIn GLWECiphertext[T], ctOut FourierGLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+	for i := 0; i < e.Parameters.glweRank+1; i++ {
 		e.FourierEvaluator.ToFourierPolyAssign(ctIn.Value[i], ctOut.Value[i])
 	}
 }
 
 // ToGLWECiphertext transforms Fourier GLWE ciphertext to GLWE ciphertext.
 func (e *GLWETransformer[T]) ToGLWECiphertext(ct FourierGLWECiphertext[T]) GLWECiphertext[T] {
-	ctOut := NewGLWECiphertextCustom[T](e.Parameters.glweDimension, e.Parameters.polyDegree)
+	ctOut := NewGLWECiphertextCustom[T](e.Parameters.glweRank, e.Parameters.polyDegree)
 	e.ToGLWECiphertextAssign(ct, ctOut)
 	return ctOut
 }
 
 // ToGLWECiphertextAssign transforms Fourier GLWE ciphertext to GLWE ciphertext and writes it to ctOut.
 func (e *GLWETransformer[T]) ToGLWECiphertextAssign(ctIn FourierGLWECiphertext[T], ctOut GLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+	for i := 0; i < e.Parameters.glweRank+1; i++ {
 		e.FourierEvaluator.ToPolyAssign(ctIn.Value[i], ctOut.Value[i])
 	}
 }
 
 // ToFourierGLevCiphertext transforms GLev ciphertext to Fourier GLev ciphertext.
 func (e *GLWETransformer[T]) ToFourierGLevCiphertext(ct GLevCiphertext[T]) FourierGLevCiphertext[T] {
-	ctOut := NewFourierGLevCiphertextCustom(e.Parameters.glweDimension, e.Parameters.polyDegree, ct.GadgetParameters)
+	ctOut := NewFourierGLevCiphertextCustom(e.Parameters.glweRank, e.Parameters.polyDegree, ct.GadgetParameters)
 	e.ToFourierGLevCiphertextAssign(ct, ctOut)
 	return ctOut
 }
@@ -106,7 +106,7 @@ func (e *GLWETransformer[T]) ToFourierGLevCiphertextAssign(ctIn GLevCiphertext[T
 
 // ToGLevCiphertext transforms Fourier GLev ciphertext to GLev ciphertext.
 func (e *GLWETransformer[T]) ToGLevCiphertext(ct FourierGLevCiphertext[T]) GLevCiphertext[T] {
-	ctOut := NewGLevCiphertextCustom[T](e.Parameters.glweDimension, e.Parameters.polyDegree, ct.GadgetParameters)
+	ctOut := NewGLevCiphertextCustom[T](e.Parameters.glweRank, e.Parameters.polyDegree, ct.GadgetParameters)
 	e.ToGLevCiphertextAssign(ct, ctOut)
 	return ctOut
 }
@@ -120,28 +120,28 @@ func (e *GLWETransformer[T]) ToGLevCiphertextAssign(ctIn FourierGLevCiphertext[T
 
 // ToFourierGGSWCiphertext transforms GGSW ciphertext to Fourier GGSW ciphertext.
 func (e *GLWETransformer[T]) ToFourierGGSWCiphertext(ct GGSWCiphertext[T]) FourierGGSWCiphertext[T] {
-	ctOut := NewFourierGGSWCiphertextCustom[T](e.Parameters.glweDimension, e.Parameters.polyDegree, ct.GadgetParameters)
+	ctOut := NewFourierGGSWCiphertextCustom[T](e.Parameters.glweRank, e.Parameters.polyDegree, ct.GadgetParameters)
 	e.ToFourierGGSWCiphertextAssign(ct, ctOut)
 	return ctOut
 }
 
 // ToFourierGGSWCiphertextAssign transforms GGSW ciphertext to Fourier GGSW ciphertext and writes it to ctOut.
 func (e *GLWETransformer[T]) ToFourierGGSWCiphertextAssign(ctIn GGSWCiphertext[T], ctOut FourierGGSWCiphertext[T]) {
-	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+	for i := 0; i < e.Parameters.glweRank+1; i++ {
 		e.ToFourierGLevCiphertextAssign(ctIn.Value[i], ctOut.Value[i])
 	}
 }
 
 // ToGGSWCiphertext transforms Fourier GGSW ciphertext to GGSW ciphertext.
 func (e *GLWETransformer[T]) ToGGSWCiphertext(ct FourierGGSWCiphertext[T]) GGSWCiphertext[T] {
-	ctOut := NewGGSWCiphertextCustom[T](e.Parameters.glweDimension, e.Parameters.polyDegree, ct.GadgetParameters)
+	ctOut := NewGGSWCiphertextCustom[T](e.Parameters.glweRank, e.Parameters.polyDegree, ct.GadgetParameters)
 	e.ToGGSWCiphertextAssign(ct, ctOut)
 	return ctOut
 }
 
 // ToGGSWCiphertextAssign transforms Fourier GGSW ciphertext to GGSW ciphertext and writes it to ctOut.
 func (e *GLWETransformer[T]) ToGGSWCiphertextAssign(ctIn FourierGGSWCiphertext[T], ctOut GGSWCiphertext[T]) {
-	for i := 0; i < e.Parameters.glweDimension+1; i++ {
+	for i := 0; i < e.Parameters.glweRank+1; i++ {
 		e.ToGLevCiphertextAssign(ctIn.Value[i], ctOut.Value[i])
 	}
 }

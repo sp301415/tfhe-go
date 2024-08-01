@@ -34,7 +34,7 @@ func (e *Encryptor[T]) EncryptGLWEPlaintextAssign(pt GLWEPlaintext[T], ctOut GLW
 // EncryptGLWEBody encrypts the value in the body of GLWE ciphertext and overrides it.
 // This avoids the need for most buffers.
 func (e *Encryptor[T]) EncryptGLWEBody(ct GLWECiphertext[T]) {
-	for i := 1; i < e.Parameters.glweDimension+1; i++ {
+	for i := 1; i < e.Parameters.glweRank+1; i++ {
 		e.UniformSampler.SampleSliceAssign(ct.Value[i].Coeffs)
 		e.FourierEvaluator.PolyMulBinarySubAssign(e.SecretKey.FourierGLWEKey.Value[i-1], ct.Value[i], ct.Value[0])
 	}
@@ -64,7 +64,7 @@ func (e *Encryptor[T]) DecryptGLWEPlaintext(ct GLWECiphertext[T]) GLWEPlaintext[
 // DecryptGLWEPlaintextAssign decrypts GLWE ciphertext to GLWE plaintext and writes it to ptOut.
 func (e *Encryptor[T]) DecryptGLWEPlaintextAssign(ct GLWECiphertext[T], ptOut GLWEPlaintext[T]) {
 	ptOut.Value.CopyFrom(ct.Value[0])
-	for i := 0; i < e.Parameters.glweDimension; i++ {
+	for i := 0; i < e.Parameters.glweRank; i++ {
 		e.FourierEvaluator.PolyMulBinaryAddAssign(e.SecretKey.FourierGLWEKey.Value[i], ct.Value[i+1], ptOut.Value)
 	}
 }
@@ -162,7 +162,7 @@ func (e *Encryptor[T]) EncryptGGSWPlaintext(pt GLWEPlaintext[T], gadgetParams Ga
 // EncryptGGSWPlaintextAssign encrypts GLWE plaintext to GGSW ciphertext and writes it to ctOut.
 func (e *Encryptor[T]) EncryptGGSWPlaintextAssign(pt GLWEPlaintext[T], ctOut GGSWCiphertext[T]) {
 	e.EncryptGLevPlaintextAssign(pt, ctOut.Value[0])
-	for i := 1; i < e.Parameters.glweDimension+1; i++ {
+	for i := 1; i < e.Parameters.glweRank+1; i++ {
 		e.FourierEvaluator.PolyMulBinaryAssign(e.SecretKey.FourierGLWEKey.Value[i-1], pt.Value, e.buffer.ptGGSW)
 		for j := 0; j < ctOut.GadgetParameters.level; j++ {
 			e.PolyEvaluator.ScalarMulAssign(e.buffer.ptGGSW, ctOut.GadgetParameters.BaseQ(j), ctOut.Value[i].Value[j].Value[0])

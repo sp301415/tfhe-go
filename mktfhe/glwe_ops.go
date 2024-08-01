@@ -14,7 +14,7 @@ func (e *Evaluator[T]) AddGLWE(ct0, ct1 GLWECiphertext[T]) GLWECiphertext[T] {
 
 // AddGLWEAssign computes ctOut = ct0 + ct1.
 func (e *Evaluator[T]) AddGLWEAssign(ct0, ct1, ctOut GLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
+	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
 		e.BaseSingleKeyEvaluator.PolyEvaluator.AddAssign(ct0.Value[i], ct1.Value[i], ctOut.Value[i])
 	}
 }
@@ -28,7 +28,7 @@ func (e *Evaluator[T]) AddPlainGLWE(ct0 GLWECiphertext[T], pt tfhe.GLWEPlaintext
 
 // AddPlainGLWEAssign computes ctOut = ct0 + pt.
 func (e *Evaluator[T]) AddPlainGLWEAssign(ct0 GLWECiphertext[T], pt tfhe.GLWEPlaintext[T], ctOut GLWECiphertext[T]) {
-	for i := 1; i < e.Parameters.GLWEDimension()+1; i++ {
+	for i := 1; i < e.Parameters.GLWERank()+1; i++ {
 		ctOut.Value[i].CopyFrom(ct0.Value[i])
 	}
 	e.BaseSingleKeyEvaluator.PolyEvaluator.AddAssign(ct0.Value[0], pt.Value, ctOut.Value[0])
@@ -43,7 +43,7 @@ func (e *Evaluator[T]) SubGLWE(ct0, ct1 GLWECiphertext[T]) GLWECiphertext[T] {
 
 // SubGLWEAssign computes ctOut = ct0 - ct1.
 func (e *Evaluator[T]) SubGLWEAssign(ct0, ct1, ctOut GLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
+	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
 		e.BaseSingleKeyEvaluator.PolyEvaluator.SubAssign(ct0.Value[i], ct1.Value[i], ctOut.Value[i])
 	}
 }
@@ -57,7 +57,7 @@ func (e *Evaluator[T]) SubPlainGLWE(ct0 GLWECiphertext[T], pt tfhe.GLWEPlaintext
 
 // SubPlainGLWEAssign computes ctOut = ct0 - pt.
 func (e *Evaluator[T]) SubPlainGLWEAssign(ct0 GLWECiphertext[T], pt tfhe.GLWEPlaintext[T], ctOut GLWECiphertext[T]) {
-	for i := 1; i < e.Parameters.GLWEDimension()+1; i++ {
+	for i := 1; i < e.Parameters.GLWERank()+1; i++ {
 		ctOut.Value[i].CopyFrom(ct0.Value[i])
 	}
 	e.BaseSingleKeyEvaluator.PolyEvaluator.SubAssign(ct0.Value[0], pt.Value, ctOut.Value[0])
@@ -72,7 +72,7 @@ func (e *Evaluator[T]) NegGLWE(ct0 GLWECiphertext[T]) GLWECiphertext[T] {
 
 // NegGLWEAssign computes ctOut = -ct0.
 func (e *Evaluator[T]) NegGLWEAssign(ct0, ctOut GLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
+	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
 		e.BaseSingleKeyEvaluator.PolyEvaluator.NegAssign(ct0.Value[i], ctOut.Value[i])
 	}
 }
@@ -86,21 +86,21 @@ func (e *Evaluator[T]) ScalarMulGLWE(ct0 GLWECiphertext[T], c T) GLWECiphertext[
 
 // ScalarMulGLWEAssign computes ctOut = c * ct0.
 func (e *Evaluator[T]) ScalarMulGLWEAssign(ct0 GLWECiphertext[T], c T, ctOut GLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
+	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
 		e.BaseSingleKeyEvaluator.PolyEvaluator.ScalarMulAssign(ct0.Value[i], c, ctOut.Value[i])
 	}
 }
 
 // ScalarMulAddGLWEAssign computes ctOut += c * ct0.
 func (e *Evaluator[T]) ScalarMulAddGLWEAssign(ct0 GLWECiphertext[T], c T, ctOut GLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
+	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
 		e.BaseSingleKeyEvaluator.PolyEvaluator.ScalarMulAddAssign(ct0.Value[i], c, ctOut.Value[i])
 	}
 }
 
 // ScalarMulSubGLWEAssign computes ctOut -= c * ct0.
 func (e *Evaluator[T]) ScalarMulSubGLWEAssign(ct0 GLWECiphertext[T], c T, ctOut GLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
+	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
 		e.BaseSingleKeyEvaluator.PolyEvaluator.ScalarMulSubAssign(ct0.Value[i], c, ctOut.Value[i])
 	}
 }
@@ -114,21 +114,21 @@ func (e *Evaluator[T]) PolyMulGLWE(ct0 GLWECiphertext[T], p poly.Poly[T]) GLWECi
 
 // PolyMulGLWEAssign computes ctOut = p * ct0.
 func (e *Evaluator[T]) PolyMulGLWEAssign(ct0 GLWECiphertext[T], p poly.Poly[T], ctOut GLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
+	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
 		e.BaseSingleKeyEvaluator.PolyEvaluator.MulAssign(ct0.Value[i], p, ctOut.Value[i])
 	}
 }
 
 // PolyMulAddGLWEAssign computes ctOut += p * ct0.
 func (e *Evaluator[T]) PolyMulAddGLWEAssign(ct0 GLWECiphertext[T], p poly.Poly[T], ctOut GLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
+	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
 		e.BaseSingleKeyEvaluator.PolyEvaluator.MulAddAssign(ct0.Value[i], p, ctOut.Value[i])
 	}
 }
 
 // PolyMulSubGLWEAssign computes ctOut -= p * ct0.
 func (e *Evaluator[T]) PolyMulSubGLWEAssign(ct0 GLWECiphertext[T], p poly.Poly[T], ctOut GLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
+	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
 		e.BaseSingleKeyEvaluator.PolyEvaluator.MulSubAssign(ct0.Value[i], p, ctOut.Value[i])
 	}
 }
@@ -144,14 +144,14 @@ func (e *Evaluator[T]) MonomialMulGLWE(ct0 GLWECiphertext[T], d int) GLWECiphert
 //
 // ct0 and ctOut should not overlap.
 func (e *Evaluator[T]) MonomialMulGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
+	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
 		e.BaseSingleKeyEvaluator.PolyEvaluator.MonomialMulAssign(ct0.Value[i], d, ctOut.Value[i])
 	}
 }
 
 // MonomialMulGLWEInPlace computes ct0 = X^d * ct0.
 func (e *Evaluator[T]) MonomialMulGLWEInPlace(ct0 GLWECiphertext[T], d int) {
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
+	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
 		e.BaseSingleKeyEvaluator.PolyEvaluator.MonomialMulInPlace(ct0.Value[i], d)
 	}
 }
@@ -160,7 +160,7 @@ func (e *Evaluator[T]) MonomialMulGLWEInPlace(ct0 GLWECiphertext[T], d int) {
 //
 // ct0 and ctOut should not overlap.
 func (e *Evaluator[T]) MonomialMulAddGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
+	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
 		e.BaseSingleKeyEvaluator.PolyEvaluator.MonomialMulAddAssign(ct0.Value[i], d, ctOut.Value[i])
 	}
 }
@@ -169,7 +169,7 @@ func (e *Evaluator[T]) MonomialMulAddGLWEAssign(ct0 GLWECiphertext[T], d int, ct
 //
 // ct0 and ctOut should not overlap.
 func (e *Evaluator[T]) MonomialMulSubGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWEDimension()+1; i++ {
+	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
 		e.BaseSingleKeyEvaluator.PolyEvaluator.MonomialMulSubAssign(ct0.Value[i], d, ctOut.Value[i])
 	}
 }

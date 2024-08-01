@@ -12,8 +12,8 @@ import (
 //
 // Multi-Key parameters have more restrictions than single-key parameters:
 //
-//   - GLWEDimension must be 1.
-//   - LookUpTable should be equal to PolyDegree.
+//   - GLWERank must be 1.
+//   - LookUpTableSize should be equal to PolyDegree.
 //
 // # Warning
 //
@@ -40,9 +40,9 @@ func (p ParametersLiteral[T]) WithLWEDimension(lweDimension int) ParametersLiter
 	return p
 }
 
-// WithGLWEDimension sets the GLWEDimension and returns the new ParametersLiteral.
-func (p ParametersLiteral[T]) WithGLWEDimension(glweDimension int) ParametersLiteral[T] {
-	p.GLWEDimension = glweDimension
+// WithGLWERank sets the GLWERank and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithGLWERank(glweRank int) ParametersLiteral[T] {
+	p.GLWERank = glweRank
 	return p
 }
 
@@ -132,7 +132,7 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 	switch {
 	case p.PartyCount <= 0:
 		panic("PartyCount smaller than zero")
-	case p.GLWEDimension != 1:
+	case p.GLWERank != 1:
 		panic("Multi-Key TFHE only supports GLWE dimension 1")
 	case p.LookUpTableSize != p.PolyDegree:
 		panic("Multi-Key TFHE only supports LookUpTableSize equal to PolyDegree")
@@ -180,9 +180,9 @@ func (p Parameters[T]) LWEDimension() int {
 	return p.partyCount * p.Parameters.LWEDimension()
 }
 
-// LWELargeDimension returns the large dimension of multi-key LWE entities.
-func (p Parameters[T]) LWELargeDimension() int {
-	return p.partyCount * p.Parameters.LWELargeDimension()
+// GLWEDimension returns the glwe dimension of multi-key LWE entities.
+func (p Parameters[T]) GLWEDimension() int {
+	return p.partyCount * p.Parameters.GLWEDimension()
 }
 
 // SingleKeyDefaultLWEDimension returns the default dimension of single-key LWE entities.
@@ -195,19 +195,19 @@ func (p Parameters[T]) SingleKeyLWEDimension() int {
 	return p.Parameters.LWEDimension()
 }
 
-// SingleKeyLWELargeDimension returns the large dimension of single-key LWE entities.
-func (p Parameters[T]) SingleKeyLWELargeDimension() int {
-	return p.Parameters.LWELargeDimension()
-}
-
-// GLWEDimension returns the dimension of multi-key GLWE entities.
-func (p Parameters[T]) GLWEDimension() int {
-	return p.partyCount * p.Parameters.GLWEDimension()
-}
-
-// SingleKeyGLWEDimension returns the dimension of single-key GLWE entities.
+// SingleKeyGLWEDimension returns the glwe dimension of single-key LWE entities.
 func (p Parameters[T]) SingleKeyGLWEDimension() int {
 	return p.Parameters.GLWEDimension()
+}
+
+// GLWERank returns the rank of multi-key GLWE entities.
+func (p Parameters[T]) GLWERank() int {
+	return p.partyCount * p.Parameters.GLWERank()
+}
+
+// SingleKeyGLWERank returns the dimension of single-key GLWE entities.
+func (p Parameters[T]) SingleKeyGLWERank() int {
+	return p.Parameters.GLWERank()
 }
 
 // AccumulatorParameters returns the gadget parameters for the accumulator.

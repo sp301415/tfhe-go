@@ -115,8 +115,8 @@ func newEvaluationBuffer[T tfhe.TorusInt](params Parameters[T]) evaluationBuffer
 	}
 
 	ctRelin := NewGLWECiphertext(params)
-	ctRelinTransposed := make([]tfhe.GLWECiphertext[T], params.GLWEDimension()+1)
-	for i := 0; i < params.GLWEDimension()+1; i++ {
+	ctRelinTransposed := make([]tfhe.GLWECiphertext[T], params.GLWERank()+1)
+	for i := 0; i < params.GLWERank()+1; i++ {
 		ctRelinTransposed[i] = tfhe.NewGLWECiphertext(params.Parameters)
 	}
 
@@ -157,7 +157,7 @@ func newEvaluationBuffer[T tfhe.TorusInt](params Parameters[T]) evaluationBuffer
 		ctFourierAccs:  ctFourierAccs,
 
 		ctRotate:    NewGLWECiphertext(params),
-		ctExtract:   NewLWECiphertextCustom[T](params.LWELargeDimension()),
+		ctExtract:   NewLWECiphertextCustom[T](params.GLWEDimension()),
 		ctKeySwitch: NewLWECiphertextCustom[T](params.LWEDimension()),
 
 		lut: tfhe.NewLookUpTable(params.Parameters),

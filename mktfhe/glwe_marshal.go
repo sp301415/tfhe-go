@@ -11,27 +11,27 @@ import (
 
 // ByteSize returns the size of the ciphertext in bytes.
 func (ct GLWECiphertext[T]) ByteSize() int {
-	glweDimension := len(ct.Value) - 1
+	glweRank := len(ct.Value) - 1
 	polyDegree := ct.Value[0].Degree()
 
-	return 16 + (glweDimension+1)*polyDegree*num.ByteSizeT[T]()
+	return 16 + (glweRank+1)*polyDegree*num.ByteSizeT[T]()
 }
 
 // WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
 //
-//	[8] GLWEDimension
+//	[8] GLWERank
 //	[8] PolyDegree
 //	    Value
 func (ct GLWECiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 
-	glweDimension := len(ct.Value) - 1
+	glweRank := len(ct.Value) - 1
 	polyDegree := ct.Value[0].Degree()
 
 	var metadata [16]byte
-	binary.BigEndian.PutUint64(metadata[0:8], uint64(glweDimension))
+	binary.BigEndian.PutUint64(metadata[0:8], uint64(glweRank))
 	binary.BigEndian.PutUint64(metadata[8:16], uint64(polyDegree))
 	nn, err = w.Write(metadata[:])
 	n += int64(nn)
@@ -90,10 +90,10 @@ func (ct *GLWECiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 		return
 	}
 
-	glweDimension := int(binary.BigEndian.Uint64(metadata[0:8]))
+	glweRank := int(binary.BigEndian.Uint64(metadata[0:8]))
 	polyDegree := int(binary.BigEndian.Uint64(metadata[8:16]))
 
-	*ct = NewGLWECiphertextCustom[T](glweDimension, polyDegree)
+	*ct = NewGLWECiphertextCustom[T](glweRank, polyDegree)
 
 	var z T
 	switch any(z).(type) {

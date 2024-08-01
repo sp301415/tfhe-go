@@ -4,7 +4,7 @@ var (
 	// ParamsBinary is a default parameter set for binary TFHE.
 	ParamsBinary = ParametersLiteral[uint32]{
 		LWEDimension:    687,
-		GLWEDimension:   2,
+		GLWERank:        2,
 		PolyDegree:      512,
 		LookUpTableSize: 512,
 
@@ -31,7 +31,7 @@ var (
 	// with OrderKeySwitchBlindRotate.
 	ParamsBinaryCompact = ParametersLiteral[uint32]{
 		LWEDimension:    687,
-		GLWEDimension:   2,
+		GLWERank:        2,
 		PolyDegree:      512,
 		LookUpTableSize: 512,
 
@@ -57,7 +57,7 @@ var (
 	// ParamsBinaryOriginal is a parameter set from the original C++ TFHE library.
 	ParamsBinaryOriginal = ParametersLiteral[uint32]{
 		LWEDimension:    630,
-		GLWEDimension:   1,
+		GLWERank:        1,
 		PolyDegree:      1024,
 		LookUpTableSize: 1024,
 
@@ -83,7 +83,7 @@ var (
 	// ParamsUint2 is a parameter set with 2 bits of message space.
 	ParamsUint2 = ParametersLiteral[uint64]{
 		LWEDimension:    687,
-		GLWEDimension:   3,
+		GLWERank:        3,
 		PolyDegree:      512,
 		LookUpTableSize: 512,
 
@@ -109,7 +109,7 @@ var (
 	// ParamsUint3 is a parameter set with 3 bits of message space.
 	ParamsUint3 = ParametersLiteral[uint64]{
 		LWEDimension:    804,
-		GLWEDimension:   2,
+		GLWERank:        2,
 		PolyDegree:      1024,
 		LookUpTableSize: 1024,
 
@@ -135,7 +135,7 @@ var (
 	// ParamsUint4 is a parameter set with 4 bits of message space.
 	ParamsUint4 = ParametersLiteral[uint64]{
 		LWEDimension:    804,
-		GLWEDimension:   1,
+		GLWERank:        1,
 		PolyDegree:      2048,
 		LookUpTableSize: 2048,
 
@@ -161,7 +161,7 @@ var (
 	// ParamsUint5 is a parameter set with 5 bits of message space.
 	ParamsUint5 = ParametersLiteral[uint64]{
 		LWEDimension:    978,
-		GLWEDimension:   1,
+		GLWERank:        1,
 		PolyDegree:      2048,
 		LookUpTableSize: 2048,
 
@@ -187,7 +187,7 @@ var (
 	// ParamsUint6 is a parameter set with 6 bits of message space.
 	ParamsUint6 = ParametersLiteral[uint64]{
 		LWEDimension:    1071,
-		GLWEDimension:   1,
+		GLWERank:        1,
 		PolyDegree:      2048,
 		LookUpTableSize: 4096,
 
@@ -213,7 +213,7 @@ var (
 	// ParamsUint7 is a parameter set with 7 bits of message space.
 	ParamsUint7 = ParametersLiteral[uint64]{
 		LWEDimension:    1160,
-		GLWEDimension:   1,
+		GLWERank:        1,
 		PolyDegree:      2048,
 		LookUpTableSize: 8192,
 
@@ -239,7 +239,7 @@ var (
 	// ParamsUint8 is a parameter set with 8 bits of message space.
 	ParamsUint8 = ParametersLiteral[uint64]{
 		LWEDimension:    1160,
-		GLWEDimension:   1,
+		GLWERank:        1,
 		PolyDegree:      2048,
 		LookUpTableSize: 20480,
 

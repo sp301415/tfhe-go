@@ -127,26 +127,26 @@ func (sk *LWESecretKey[T]) UnmarshalBinary(data []byte) error {
 
 // ByteSize returns the size of the key in bytes.
 func (pk LWEPublicKey[T]) ByteSize() int {
-	glweDimension := len(pk.Value)
+	glweRank := len(pk.Value)
 	polyDegree := pk.Value[0].Value[0].Degree()
-	return 16 + glweDimension*(glweDimension+1)*polyDegree*num.ByteSizeT[T]()
+	return 16 + glweRank*(glweRank+1)*polyDegree*num.ByteSizeT[T]()
 }
 
 // WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
 //
-//	[8] GLWEDimension
+//	[8] GLWERank
 //	[8] PolyDegree
 //	    Value
 func (pk LWEPublicKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 
-	glweDimension := len(pk.Value)
+	glweRank := len(pk.Value)
 	polyDegree := pk.Value[0].Value[0].Degree()
 
 	var metadata [16]byte
-	binary.BigEndian.PutUint64(metadata[0:8], uint64(glweDimension))
+	binary.BigEndian.PutUint64(metadata[0:8], uint64(glweRank))
 	binary.BigEndian.PutUint64(metadata[8:16], uint64(polyDegree))
 	nn, err = w.Write(metadata[:])
 	n += int64(nn)
@@ -209,10 +209,10 @@ func (pk *LWEPublicKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 		return
 	}
 
-	glweDimension := int(binary.BigEndian.Uint64(metadata[0:8]))
+	glweRank := int(binary.BigEndian.Uint64(metadata[0:8]))
 	polyDegree := int(binary.BigEndian.Uint64(metadata[8:16]))
 
-	*pk = NewLWEPublicKeyCustom[T](glweDimension, polyDegree)
+	*pk = NewLWEPublicKeyCustom[T](glweRank, polyDegree)
 
 	var z T
 	switch any(z).(type) {

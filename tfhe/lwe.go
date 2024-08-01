@@ -40,7 +40,7 @@ func (sk *LWESecretKey[T]) Clear() {
 // as explained in https://eprint.iacr.org/2023/603.
 // This means that not all parameters support public key encryption.
 type LWEPublicKey[T TorusInt] struct {
-	// Value has length GLWEDimension.
+	// Value has length GLWERank.
 	Value []GLWECiphertext[T]
 }
 
@@ -52,18 +52,18 @@ func NewLWEPublicKey[T TorusInt](params Parameters[T]) LWEPublicKey[T] {
 		panic("Parameters do not support public key encryption")
 	}
 
-	pk := make([]GLWECiphertext[T], params.glweDimension)
-	for i := 0; i < params.glweDimension; i++ {
+	pk := make([]GLWECiphertext[T], params.glweRank)
+	for i := 0; i < params.glweRank; i++ {
 		pk[i] = NewGLWECiphertext[T](params)
 	}
 	return LWEPublicKey[T]{Value: pk}
 }
 
 // NewLWEPublicKeyCustom allocates an empty LWEPublicKey with given dimension and polyDegree.
-func NewLWEPublicKeyCustom[T TorusInt](glweDimension, polyDegree int) LWEPublicKey[T] {
-	pk := make([]GLWECiphertext[T], glweDimension)
-	for i := 0; i < glweDimension; i++ {
-		pk[i] = NewGLWECiphertextCustom[T](glweDimension, polyDegree)
+func NewLWEPublicKeyCustom[T TorusInt](glweRank, polyDegree int) LWEPublicKey[T] {
+	pk := make([]GLWECiphertext[T], glweRank)
+	for i := 0; i < glweRank; i++ {
+		pk[i] = NewGLWECiphertextCustom[T](glweRank, polyDegree)
 	}
 	return LWEPublicKey[T]{Value: pk}
 }

@@ -7,13 +7,13 @@ import (
 
 // GLWESecretKey is a GLWE secret key, sampled from uniform binary distribution.
 type GLWESecretKey[T TorusInt] struct {
-	// Value has length GLWEDimension.
+	// Value has length GLWERank.
 	Value []poly.Poly[T]
 }
 
 // NewGLWESecretKey allocates an empty GLWESecretKey.
 func NewGLWESecretKey[T TorusInt](params Parameters[T]) GLWESecretKey[T] {
-	sk := make([]poly.Poly[T], params.glweDimension)
+	sk := make([]poly.Poly[T], params.glweRank)
 	for i := range sk {
 		sk[i] = poly.NewPoly[T](params.polyDegree)
 	}
@@ -21,8 +21,8 @@ func NewGLWESecretKey[T TorusInt](params Parameters[T]) GLWESecretKey[T] {
 }
 
 // NewGLWESecretKeyCustom allocates an empty GLWESecretKey with given dimension and polyDegree.
-func NewGLWESecretKeyCustom[T TorusInt](glweDimension, polyDegree int) GLWESecretKey[T] {
-	sk := make([]poly.Poly[T], glweDimension)
+func NewGLWESecretKeyCustom[T TorusInt](glweRank, polyDegree int) GLWESecretKey[T] {
+	sk := make([]poly.Poly[T], glweRank)
 	for i := range sk {
 		sk[i] = poly.NewPoly[T](polyDegree)
 	}
@@ -53,7 +53,7 @@ func (sk *GLWESecretKey[T]) Clear() {
 }
 
 // ToLWEKey derives a new LWE secret key from the GLWE secret key.
-// Returned LWEKey will be of length LWELargeDimension.
+// Returned LWEKey will be of length GLWEDimension.
 func (sk GLWESecretKey[T]) ToLWEKey() LWESecretKey[T] {
 	lweKey := NewLWESecretKeyCustom[T](len(sk.Value) * sk.Value[0].Degree())
 	sk.ToLWEKeyAssign(lweKey)
@@ -61,36 +61,36 @@ func (sk GLWESecretKey[T]) ToLWEKey() LWESecretKey[T] {
 }
 
 // ToLWEKeyAssign derives a new LWE secret key from the GLWE secret key and writes it to skOut.
-// skOut should have dimension LWELargeDimension.
+// skOut should have dimension GLWEDimension.
 func (sk GLWESecretKey[T]) ToLWEKeyAssign(skOut LWESecretKey[T]) {
-	glweDimension := len(sk.Value)
+	glweRank := len(sk.Value)
 	degree := sk.Value[0].Degree()
 
-	for i := 0; i < glweDimension; i++ {
+	for i := 0; i < glweRank; i++ {
 		vec.CopyAssign(sk.Value[i].Coeffs, skOut.Value[i*degree:(i+1)*degree])
 	}
 }
 
 // GLWEPublicKey is a GLWE public key, derived from the GLWE secret key.
 type GLWEPublicKey[T TorusInt] struct {
-	// Value has length GLWEDimension.
+	// Value has length GLWERank.
 	Value []GLWECiphertext[T]
 }
 
 // NewGLWEPublicKey allocates an empty GLWEPublicKey.
 func NewGLWEPublicKey[T TorusInt](params Parameters[T]) GLWEPublicKey[T] {
-	pk := make([]GLWECiphertext[T], params.glweDimension)
-	for i := 0; i < params.glweDimension; i++ {
+	pk := make([]GLWECiphertext[T], params.glweRank)
+	for i := 0; i < params.glweRank; i++ {
 		pk[i] = NewGLWECiphertext(params)
 	}
 	return GLWEPublicKey[T]{Value: pk}
 }
 
 // NewGLWEPublicKeyCustom allocates an empty GLWEPublicKey with given dimension and polyDegree.
-func NewGLWEPublicKeyCustom[T TorusInt](glweDimension, polyDegree int) GLWEPublicKey[T] {
-	pk := make([]GLWECiphertext[T], glweDimension)
-	for i := 0; i < glweDimension; i++ {
-		pk[i] = NewGLWECiphertextCustom[T](glweDimension, polyDegree)
+func NewGLWEPublicKeyCustom[T TorusInt](glweRank, polyDegree int) GLWEPublicKey[T] {
+	pk := make([]GLWECiphertext[T], glweRank)
+	for i := 0; i < glweRank; i++ {
+		pk[i] = NewGLWECiphertextCustom[T](glweRank, polyDegree)
 	}
 	return GLWEPublicKey[T]{Value: pk}
 }
@@ -153,23 +153,23 @@ func (pt *GLWEPlaintext[T]) Clear() {
 type GLWECiphertext[T TorusInt] struct {
 	// Value is ordered as [body, mask],
 	// since Go doesn't provide an easy way to take last element of slice.
-	// Therefore, value has length GLWEDimension + 1.
+	// Therefore, value has length GLWERank + 1.
 	Value []poly.Poly[T]
 }
 
 // NewGLWECiphertext allocates an empty GLWECiphertext.
 func NewGLWECiphertext[T TorusInt](params Parameters[T]) GLWECiphertext[T] {
-	ct := make([]poly.Poly[T], params.glweDimension+1)
-	for i := 0; i < params.glweDimension+1; i++ {
+	ct := make([]poly.Poly[T], params.glweRank+1)
+	for i := 0; i < params.glweRank+1; i++ {
 		ct[i] = poly.NewPoly[T](params.polyDegree)
 	}
 	return GLWECiphertext[T]{Value: ct}
 }
 
 // NewGLWECiphertextCustom allocates an empty GLWECiphertext with given dimension and polyDegree.
-func NewGLWECiphertextCustom[T TorusInt](glweDimension, polyDegree int) GLWECiphertext[T] {
-	ct := make([]poly.Poly[T], glweDimension+1)
-	for i := 0; i < glweDimension+1; i++ {
+func NewGLWECiphertextCustom[T TorusInt](glweRank, polyDegree int) GLWECiphertext[T] {
+	ct := make([]poly.Poly[T], glweRank+1)
+	for i := 0; i < glweRank+1; i++ {
 		ct[i] = poly.NewPoly[T](polyDegree)
 	}
 	return GLWECiphertext[T]{Value: ct}
@@ -199,7 +199,7 @@ func (ct *GLWECiphertext[T]) Clear() {
 }
 
 // ToLWECiphertext extracts LWE ciphertext of given index from GLWE ciphertext.
-// The output ciphertext will be of length LWELargeDimension + 1,
+// The output ciphertext will be of length GLWEDimension + 1,
 // encrypted with LWELargeKey.
 func (ct GLWECiphertext[T]) ToLWECiphertext(idx int) LWECiphertext[T] {
 	ctOut := NewLWECiphertextCustom[T]((len(ct.Value) - 1) * ct.Value[0].Degree())
@@ -208,7 +208,7 @@ func (ct GLWECiphertext[T]) ToLWECiphertext(idx int) LWECiphertext[T] {
 }
 
 // ToLWECiphertextAssign extracts LWE ciphertext of given index from GLWE ciphertext and writes it to ctOut.
-// The output ciphertext should be of length LWELargeDimension + 1,
+// The output ciphertext should be of length GLWEDimension + 1,
 // and it will be a ciphertext encrypted with LWELargeKey.
 func (ct GLWECiphertext[T]) ToLWECiphertextAssign(idx int, ctOut LWECiphertext[T]) {
 	ctOut.Value[0] = ct.Value[0].Coeffs[idx]
@@ -243,10 +243,10 @@ func NewGLevCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetPara
 }
 
 // NewGLevCiphertextCustom allocates an empty GLevCiphertext with given dimension and polyDegree.
-func NewGLevCiphertextCustom[T TorusInt](glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) GLevCiphertext[T] {
+func NewGLevCiphertextCustom[T TorusInt](glweRank, polyDegree int, gadgetParams GadgetParameters[T]) GLevCiphertext[T] {
 	ct := make([]GLWECiphertext[T], gadgetParams.level)
 	for i := 0; i < gadgetParams.level; i++ {
-		ct[i] = NewGLWECiphertextCustom[T](glweDimension, polyDegree)
+		ct[i] = NewGLWECiphertextCustom[T](glweRank, polyDegree)
 	}
 	return GLevCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
 }
@@ -276,28 +276,28 @@ func (ct *GLevCiphertext[T]) Clear() {
 }
 
 // GGSWCiphertext represents an encrypted GGSW ciphertext,
-// which is a GLWEDimension+1 collection of GLev ciphertexts.
+// which is a GLWERank+1 collection of GLev ciphertexts.
 type GGSWCiphertext[T TorusInt] struct {
 	GadgetParameters GadgetParameters[T]
 
-	// Value has length GLWEDimension + 1.
+	// Value has length GLWERank + 1.
 	Value []GLevCiphertext[T]
 }
 
 // NewGGSWCiphertext allocates an empty GGSW ciphertext.
 func NewGGSWCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetParameters[T]) GGSWCiphertext[T] {
-	ct := make([]GLevCiphertext[T], params.glweDimension+1)
-	for i := 0; i < params.glweDimension+1; i++ {
+	ct := make([]GLevCiphertext[T], params.glweRank+1)
+	for i := 0; i < params.glweRank+1; i++ {
 		ct[i] = NewGLevCiphertext(params, gadgetParams)
 	}
 	return GGSWCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
 }
 
 // NewGGSWCiphertextCustom allocates an empty GGSW ciphertext with given dimension and polyDegree.
-func NewGGSWCiphertextCustom[T TorusInt](glweDimension, polyDegree int, gadgetParams GadgetParameters[T]) GGSWCiphertext[T] {
-	ct := make([]GLevCiphertext[T], glweDimension+1)
-	for i := 0; i < glweDimension+1; i++ {
-		ct[i] = NewGLevCiphertextCustom[T](glweDimension, polyDegree, gadgetParams)
+func NewGGSWCiphertextCustom[T TorusInt](glweRank, polyDegree int, gadgetParams GadgetParameters[T]) GGSWCiphertext[T] {
+	ct := make([]GLevCiphertext[T], glweRank+1)
+	for i := 0; i < glweRank+1; i++ {
+		ct[i] = NewGLevCiphertextCustom[T](glweRank, polyDegree, gadgetParams)
 	}
 	return GGSWCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
 }

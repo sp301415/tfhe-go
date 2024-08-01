@@ -29,22 +29,22 @@ func (e *PublicEncryptor[T]) EncryptGLWEPlaintextAssign(pt GLWEPlaintext[T], ctO
 // EncryptGLWEBody encrypts the value in the body of GLWE ciphertext and overrides it.
 // This avoids the need for most buffers.
 func (e *PublicEncryptor[T]) EncryptGLWEBody(ct GLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.glweDimension; i++ {
+	for i := 0; i < e.Parameters.glweRank; i++ {
 		e.BinarySampler.SampleSliceAssign(e.buffer.auxKey.Value[i].Coeffs)
 	}
 	e.ToFourierGLWESecretKeyAssign(e.buffer.auxKey, e.buffer.auxFourierKey)
 
 	e.FourierEvaluator.PolyMulBinaryAddAssign(e.buffer.auxFourierKey.Value[0], e.PublicKey.GLWEKey.Value[0].Value[0], ct.Value[0])
-	for j := 1; j < e.Parameters.glweDimension+1; j++ {
+	for j := 1; j < e.Parameters.glweRank+1; j++ {
 		e.FourierEvaluator.PolyMulBinaryAddAssign(e.buffer.auxFourierKey.Value[0], e.PublicKey.GLWEKey.Value[0].Value[j], ct.Value[j])
 	}
-	for i := 1; i < e.Parameters.glweDimension; i++ {
-		for j := 0; j < e.Parameters.glweDimension+1; j++ {
+	for i := 1; i < e.Parameters.glweRank; i++ {
+		for j := 0; j < e.Parameters.glweRank+1; j++ {
 			e.FourierEvaluator.PolyMulBinaryAddAssign(e.buffer.auxFourierKey.Value[i], e.PublicKey.GLWEKey.Value[i].Value[j], ct.Value[j])
 		}
 	}
 
-	for j := 0; j < e.Parameters.glweDimension+1; j++ {
+	for j := 0; j < e.Parameters.glweRank+1; j++ {
 		e.GaussianSampler.SampleSliceAddAssign(e.Parameters.GLWEStdDevQ(), ct.Value[j].Coeffs)
 	}
 }

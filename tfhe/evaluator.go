@@ -124,8 +124,8 @@ func newEvaluationBuffer[T TorusInt](params Parameters[T]) evaluationBuffer[T] {
 
 	ctAccFourierDecomposed := make([][][]poly.FourierPoly, params.polyExtendFactor)
 	for i := 0; i < params.polyExtendFactor; i++ {
-		ctAccFourierDecomposed[i] = make([][]poly.FourierPoly, params.glweDimension+1)
-		for j := 0; j < params.glweDimension+1; j++ {
+		ctAccFourierDecomposed[i] = make([][]poly.FourierPoly, params.glweRank+1)
+		for j := 0; j < params.glweRank+1; j++ {
 			ctAccFourierDecomposed[i][j] = make([]poly.FourierPoly, params.bootstrapParameters.level)
 			for k := 0; k < params.bootstrapParameters.level; k++ {
 				ctAccFourierDecomposed[i][j][k] = poly.NewFourierPoly(params.polyDegree)
@@ -149,7 +149,7 @@ func newEvaluationBuffer[T TorusInt](params Parameters[T]) evaluationBuffer[T] {
 		fMono:                  poly.NewFourierPoly(params.polyDegree),
 
 		ctRotate:    NewGLWECiphertext(params),
-		ctExtract:   NewLWECiphertextCustom[T](params.lweLargeDimension),
+		ctExtract:   NewLWECiphertextCustom[T](params.glweDimension),
 		ctKeySwitch: NewLWECiphertextCustom[T](params.lweDimension),
 
 		lut: NewLookUpTable(params),

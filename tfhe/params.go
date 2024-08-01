@@ -195,7 +195,7 @@ const (
 	//	KeySwitch -> BlindRotate -> SampleExtract
 	//
 	// This means that LWE keys and ciphertexts will have size
-	// according to LWELargeDimension.
+	// according to GLWEDimension.
 	// Public key encryption is supported only with this order.
 	OrderKeySwitchBlindRotate BootstrapOrder = iota
 
@@ -218,9 +218,9 @@ const (
 type ParametersLiteral[T TorusInt] struct {
 	// LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
 	LWEDimension int
-	// GLWEDimension is the dimension of GLWE lattice used. Usually this is denoted by k.
-	// Length of GLWE secret key is GLWEDimension, and length of GLWE ciphertext is GLWEDimension+1.
-	GLWEDimension int
+	// GLWERank is the rank of GLWE lattice used. Usually this is denoted by k.
+	// Length of GLWE secret key is GLWERank, and length of GLWE ciphertext is GLWERank+1.
+	GLWERank int
 	// PolyDegree is the degree of polynomials in GLWE entities. Usually this is denoted by N.
 	PolyDegree int
 	// LookUpTableSize is the size of the Lookup Table used in Blind Rotation.
@@ -255,7 +255,7 @@ type ParametersLiteral[T TorusInt] struct {
 	//
 	//	KeySwitch -> BlindRotate -> SampleExtract
 	//
-	// and LWE keys and ciphertexts will have size according to LWELargeDimension.
+	// and LWE keys and ciphertexts will have size according to GLWEDimension.
 	//
 	// Otherwise, if this is set to OrderBlindRotateKeySwitch, the order is:
 	//
@@ -277,9 +277,9 @@ func (p ParametersLiteral[T]) WithLWEDimension(lweDimension int) ParametersLiter
 	return p
 }
 
-// WithGLWEDimension sets the GLWEDimension and returns the new ParametersLiteral.
-func (p ParametersLiteral[T]) WithGLWEDimension(glweDimension int) ParametersLiteral[T] {
-	p.GLWEDimension = glweDimension
+// WithGLWERank sets the GLWERank and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithGLWERank(glweRank int) ParametersLiteral[T] {
+	p.GLWERank = glweRank
 	return p
 }
 
@@ -351,10 +351,10 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 	switch {
 	case p.LWEDimension <= 0:
 		panic("LWEDimension smaller than zero")
-	case p.LWEDimension > p.GLWEDimension*p.PolyDegree:
-		panic("LWEDimension larger than GLWEDimension * PolyDegree")
-	case p.GLWEDimension <= 0:
-		panic("GLWEDimension smaller than zero")
+	case p.LWEDimension > p.GLWERank*p.PolyDegree:
+		panic("LWEDimension larger than GLWEDimension")
+	case p.GLWERank <= 0:
+		panic("GLWERank smaller than zero")
 	case p.LookUpTableSize < p.PolyDegree:
 		panic("LookUpTableSize smaller than PolyDegree")
 	case p.LWEStdDev <= 0:
@@ -379,13 +379,13 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 	scaleLog := num.SizeT[T]() - 1 - messageModulusLog
 
 	return Parameters[T]{
-		lweDimension:      p.LWEDimension,
-		lweLargeDimension: p.GLWEDimension * p.PolyDegree,
-		glweDimension:     p.GLWEDimension,
-		polyDegree:        p.PolyDegree,
-		polyDegreeLog:     num.Log2(p.PolyDegree),
-		lookUpTableSize:   p.LookUpTableSize,
-		polyExtendFactor:  p.LookUpTableSize / p.PolyDegree,
+		lweDimension:     p.LWEDimension,
+		glweDimension:    p.GLWERank * p.PolyDegree,
+		glweRank:         p.GLWERank,
+		polyDegree:       p.PolyDegree,
+		polyDegreeLog:    num.Log2(p.PolyDegree),
+		lookUpTableSize:  p.LookUpTableSize,
+		polyExtendFactor: p.LookUpTableSize / p.PolyDegree,
 
 		lweStdDev:  p.LWEStdDev,
 		glweStdDev: p.GLWEStdDev,
@@ -412,12 +412,11 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 type Parameters[T TorusInt] struct {
 	// LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
 	lweDimension int
-	// LWELargeDimension is the dimension of "large" lattice used.
-	// Equals to the "full" GLWE lattice; which is GLWEDimension * PolyDegree.
-	lweLargeDimension int
-	// GLWEDimension is the dimension of GLWE lattice used. Usually this is denoted by k.
-	// Length of GLWE secret key is GLWEDimension, and length of GLWE ciphertext is GLWEDimension+1.
+	// GLWEDimension is the dimension of GLWE lattice used, which is GLWERank * PolyDegree.
 	glweDimension int
+	// GLWERank is the rank of GLWE lattice used. Usually this is denoted by k.
+	// Length of GLWE secret key is GLWERank, and length of GLWE ciphertext is GLWERank+1.
+	glweRank int
 	// PolyDegree is the degree of polynomials in GLWE entities. Usually this is denoted by N.
 	polyDegree int
 	// PolyDegreeLog equals log(PolyDegree).
@@ -463,12 +462,12 @@ type Parameters[T TorusInt] struct {
 
 // DefaultLWEDimension returns the default dimension for LWE entities.
 // Returns LWEDimension if BootstrapOrder is OrderBlindRotateKeySwitch,
-// and LWELargeDimension otherwise.
+// and GLWEDimension otherwise.
 func (p Parameters[T]) DefaultLWEDimension() int {
 	if p.bootstrapOrder == OrderBlindRotateKeySwitch {
 		return p.lweDimension
 	}
-	return p.lweLargeDimension
+	return p.glweDimension
 }
 
 // LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
@@ -476,16 +475,15 @@ func (p Parameters[T]) LWEDimension() int {
 	return p.lweDimension
 }
 
-// LWELargeDimension is the dimension of "large" lattice used.
-// Equals to the "full" GLWE lattice; which is GLWEDimension * PolyDegree.
-func (p Parameters[T]) LWELargeDimension() int {
-	return p.lweLargeDimension
-}
-
-// GLWEDimension is the dimension of GLWE lattice used. Usually this is denoted by k.
-// Length of GLWE secret key is GLWEDimension, and length of GLWE ciphertext is GLWEDimension+1.
+// GLWEDimension is the dimension of GLWE lattice used, which is GLWERank * PolyDegree.
 func (p Parameters[T]) GLWEDimension() int {
 	return p.glweDimension
+}
+
+// GLWERank is the dimension of GLWE lattice used. Usually this is denoted by k.
+// Length of GLWE secret key is GLWERank, and length of GLWE ciphertext is GLWERank+1.
+func (p Parameters[T]) GLWERank() int {
+	return p.glweRank
 }
 
 // PolyDegree is the degree of polynomials in GLWE entities. Usually this is denoted by N.
@@ -617,7 +615,7 @@ func (p Parameters[T]) IsPublicKeyEncryptable() bool {
 func (p Parameters[T]) Literal() ParametersLiteral[T] {
 	return ParametersLiteral[T]{
 		LWEDimension:    p.lweDimension,
-		GLWEDimension:   p.glweDimension,
+		GLWERank:        p.glweRank,
 		PolyDegree:      p.polyDegree,
 		LookUpTableSize: p.lookUpTableSize,
 
@@ -645,7 +643,7 @@ func (p Parameters[T]) ByteSize() int {
 // The encoded form is as follows:
 //
 //	[ 8] LWEDimension
-//	[ 8] GLWEDimension
+//	[ 8] GLWERank
 //	[ 8] PolyDegree
 //	[ 8] LookUpTableSize
 //	[ 8] LWEStdDev
@@ -659,7 +657,7 @@ func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var buf [8*8 + 2*16 + 1]byte
 
 	binary.BigEndian.PutUint64(buf[0:8], uint64(p.lweDimension))
-	binary.BigEndian.PutUint64(buf[8:16], uint64(p.glweDimension))
+	binary.BigEndian.PutUint64(buf[8:16], uint64(p.glweRank))
 	binary.BigEndian.PutUint64(buf[16:24], uint64(p.polyDegree))
 	binary.BigEndian.PutUint64(buf[24:32], uint64(p.lookUpTableSize))
 	binary.BigEndian.PutUint64(buf[32:40], math.Float64bits(p.lweStdDev))
@@ -695,7 +693,7 @@ func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 
 	lweDimension := binary.BigEndian.Uint64(buf[0:8])
-	glweDimension := binary.BigEndian.Uint64(buf[8:16])
+	glweRank := binary.BigEndian.Uint64(buf[8:16])
 	polyDegree := binary.BigEndian.Uint64(buf[16:24])
 	lookUpTableSize := binary.BigEndian.Uint64(buf[24:32])
 	lweStdDev := math.Float64frombits(binary.BigEndian.Uint64(buf[32:40]))
@@ -716,7 +714,7 @@ func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
 
 	*p = ParametersLiteral[T]{
 		LWEDimension:        int(lweDimension),
-		GLWEDimension:       int(glweDimension),
+		GLWERank:            int(glweRank),
 		PolyDegree:          int(polyDegree),
 		LookUpTableSize:     int(lookUpTableSize),
 		LWEStdDev:           lweStdDev,

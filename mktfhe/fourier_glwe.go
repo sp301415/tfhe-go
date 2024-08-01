@@ -7,23 +7,23 @@ import (
 
 // FourierGLWECiphertext is a multi-key variant of [tfhe.FourierGLWECiphertext].
 type FourierGLWECiphertext[T tfhe.TorusInt] struct {
-	// Value has length GLWEDimension + 1.
+	// Value has length GLWERank + 1.
 	Value []poly.FourierPoly
 }
 
 // NewFourierGLWECiphertext allocates an empty Fourier GLWE ciphertext.
 func NewFourierGLWECiphertext[T tfhe.TorusInt](params Parameters[T]) FourierGLWECiphertext[T] {
-	ct := make([]poly.FourierPoly, params.GLWEDimension()+1)
-	for i := 0; i < params.GLWEDimension()+1; i++ {
+	ct := make([]poly.FourierPoly, params.GLWERank()+1)
+	for i := 0; i < params.GLWERank()+1; i++ {
 		ct[i] = poly.NewFourierPoly(params.PolyDegree())
 	}
 	return FourierGLWECiphertext[T]{Value: ct}
 }
 
 // NewFourierGLWECiphertextCustom allocates an empty Fourier GLWE ciphertext with given dimension and polyDegree
-func NewFourierGLWECiphertextCustom[T tfhe.TorusInt](glweDimension, polyDegree int) FourierGLWECiphertext[T] {
-	ct := make([]poly.FourierPoly, glweDimension+1)
-	for i := 0; i < glweDimension+1; i++ {
+func NewFourierGLWECiphertextCustom[T tfhe.TorusInt](glweRank, polyDegree int) FourierGLWECiphertext[T] {
+	ct := make([]poly.FourierPoly, glweRank+1)
+	for i := 0; i < glweRank+1; i++ {
 		ct[i] = poly.NewFourierPoly(polyDegree)
 	}
 	return FourierGLWECiphertext[T]{Value: ct}
@@ -47,10 +47,10 @@ func (ct *FourierGLWECiphertext[T]) CopyFrom(ctIn FourierGLWECiphertext[T]) {
 
 // CopyFromSingleKey copies values from the single-key ciphertext.
 //
-// Panics if GLWEDimension of ctIn is not 1.
+// Panics if GLWERank of ctIn is not 1.
 func (ct *FourierGLWECiphertext[T]) CopyFromSingleKey(ctIn tfhe.FourierGLWECiphertext[T], idx int) {
 	if len(ctIn.Value) != 2 {
-		panic("GLWEDimension of ctIn must be 1")
+		panic("GLWERank of ctIn must be 1")
 	}
 
 	ct.Clear()
@@ -69,7 +69,7 @@ func (ct *FourierGLWECiphertext[T]) Clear() {
 type FourierUniEncryption[T tfhe.TorusInt] struct {
 	GadgetParameters tfhe.GadgetParameters[T]
 
-	// Value has length 2, which equals to single-key GLWEDimension + 1.
+	// Value has length 2, which equals to single-key GLWERank + 1.
 	// The first element is always encrypted with the CRS as the mask.
 	Value []tfhe.FourierGLevCiphertext[T]
 }

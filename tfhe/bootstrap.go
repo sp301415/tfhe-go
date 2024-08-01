@@ -161,13 +161,13 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 
 	for i := 0; i < b2NIdx; i++ {
 		e.PolyEvaluator.MonomialMulInPlace(e.buffer.ctAcc[i].Value[0], b2NSmall+1)
-		for j := 1; j < e.Parameters.glweDimension+1; j++ {
+		for j := 1; j < e.Parameters.glweRank+1; j++ {
 			e.buffer.ctAcc[i].Value[j].Clear()
 		}
 	}
 	for i := b2NIdx; i < e.Parameters.polyExtendFactor; i++ {
 		e.PolyEvaluator.MonomialMulInPlace(e.buffer.ctAcc[i].Value[0], b2NSmall)
-		for j := 1; j < e.Parameters.glweDimension+1; j++ {
+		for j := 1; j < e.Parameters.glweRank+1; j++ {
 			e.buffer.ctAcc[i].Value[j].Clear()
 		}
 	}
@@ -232,14 +232,14 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 	}
 
 	for j := 0; j < e.Parameters.polyExtendFactor; j++ {
-		for k := 0; k < e.Parameters.glweDimension+1; k++ {
+		for k := 0; k < e.Parameters.glweRank+1; k++ {
 			e.FourierEvaluator.ToPolyAddAssignUnsafe(e.buffer.ctFourierAcc[j].Value[k], e.buffer.ctAcc[j].Value[k])
 		}
 	}
 
 	for i := 1; i < e.Parameters.blockCount-1; i++ {
 		for j := 0; j < e.Parameters.polyExtendFactor; j++ {
-			for k := 0; k < e.Parameters.glweDimension+1; k++ {
+			for k := 0; k < e.Parameters.glweRank+1; k++ {
 				e.DecomposePolyAssign(e.buffer.ctAcc[j].Value[k], e.Parameters.bootstrapParameters, polyDecomposed)
 				for l := 0; l < e.Parameters.bootstrapParameters.level; l++ {
 					e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[l], e.buffer.ctAccFourierDecomposed[j][k][l])
@@ -300,14 +300,14 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 		}
 
 		for j := 0; j < e.Parameters.polyExtendFactor; j++ {
-			for k := 0; k < e.Parameters.glweDimension+1; k++ {
+			for k := 0; k < e.Parameters.glweRank+1; k++ {
 				e.FourierEvaluator.ToPolyAddAssignUnsafe(e.buffer.ctFourierAcc[j].Value[k], e.buffer.ctAcc[j].Value[k])
 			}
 		}
 	}
 
 	for j := 0; j < e.Parameters.polyExtendFactor; j++ {
-		for k := 0; k < e.Parameters.glweDimension+1; k++ {
+		for k := 0; k < e.Parameters.glweRank+1; k++ {
 			e.DecomposePolyAssign(e.buffer.ctAcc[j].Value[k], e.Parameters.bootstrapParameters, polyDecomposed)
 			for l := 0; l < e.Parameters.bootstrapParameters.level; l++ {
 				e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[l], e.buffer.ctAccFourierDecomposed[j][k][l])
@@ -349,7 +349,7 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 		}
 	}
 
-	for k := 0; k < e.Parameters.glweDimension+1; k++ {
+	for k := 0; k < e.Parameters.glweRank+1; k++ {
 		e.FourierEvaluator.ToPolyAddAssignUnsafe(e.buffer.ctFourierAcc[0].Value[k], e.buffer.ctAcc[0].Value[k])
 		ctOut.Value[k].CopyFrom(e.buffer.ctAcc[0].Value[k])
 	}
@@ -362,7 +362,7 @@ func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTab
 
 	vec.CopyAssign(lut.Value, ctOut.Value[0].Coeffs)
 	e.PolyEvaluator.MonomialMulInPlace(ctOut.Value[0], -e.ModSwitch(ct.Value[0]))
-	for i := 1; i < e.Parameters.glweDimension+1; i++ {
+	for i := 1; i < e.Parameters.glweRank+1; i++ {
 		ctOut.Value[i].Clear()
 	}
 
@@ -380,12 +380,12 @@ func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTab
 		e.FourierPolyMulAddFourierGLWEAssign(e.buffer.ctBlockFourierAcc[0], e.buffer.fMono, e.buffer.ctFourierAcc[0])
 	}
 
-	for j := 0; j < e.Parameters.glweDimension+1; j++ {
+	for j := 0; j < e.Parameters.glweRank+1; j++ {
 		e.FourierEvaluator.ToPolyAddAssignUnsafe(e.buffer.ctFourierAcc[0].Value[j], ctOut.Value[j])
 	}
 
 	for i := 1; i < e.Parameters.blockCount; i++ {
-		for j := 0; j < e.Parameters.glweDimension+1; j++ {
+		for j := 0; j < e.Parameters.glweRank+1; j++ {
 			e.DecomposePolyAssign(ctOut.Value[j], e.Parameters.bootstrapParameters, polyDecomposed)
 			for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
 				e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[k], e.buffer.ctAccFourierDecomposed[0][j][k])
@@ -401,7 +401,7 @@ func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTab
 			e.FourierPolyMulAddFourierGLWEAssign(e.buffer.ctBlockFourierAcc[0], e.buffer.fMono, e.buffer.ctFourierAcc[0])
 		}
 
-		for j := 0; j < e.Parameters.glweDimension+1; j++ {
+		for j := 0; j < e.Parameters.glweRank+1; j++ {
 			e.FourierEvaluator.ToPolyAddAssignUnsafe(e.buffer.ctFourierAcc[0].Value[j], ctOut.Value[j])
 		}
 	}
@@ -414,7 +414,7 @@ func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUp
 
 	vec.CopyAssign(lut.Value, ctOut.Value[0].Coeffs)
 	e.PolyEvaluator.MonomialMulInPlace(ctOut.Value[0], -e.ModSwitch(ct.Value[0]))
-	for i := 1; i < e.Parameters.glweDimension+1; i++ {
+	for i := 1; i < e.Parameters.glweRank+1; i++ {
 		ctOut.Value[i].Clear()
 	}
 
@@ -426,12 +426,12 @@ func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUp
 	e.GadgetProductFourierDecomposedFourierAssign(e.EvaluationKey.BootstrapKey.Value[0].Value[0], e.buffer.ctAccFourierDecomposed[0][0], e.buffer.ctFourierAcc[0])
 	e.FourierEvaluator.MonomialSubOneToFourierPolyAssign(-e.ModSwitch(ct.Value[1]), e.buffer.fMono)
 	e.FourierPolyMulFourierGLWEAssign(e.buffer.ctFourierAcc[0], e.buffer.fMono, e.buffer.ctFourierAcc[0])
-	for j := 0; j < e.Parameters.glweDimension+1; j++ {
+	for j := 0; j < e.Parameters.glweRank+1; j++ {
 		e.FourierEvaluator.ToPolyAddAssignUnsafe(e.buffer.ctFourierAcc[0].Value[j], ctOut.Value[j])
 	}
 
 	for i := 1; i < e.Parameters.lweDimension; i++ {
-		for j := 0; j < e.Parameters.glweDimension+1; j++ {
+		for j := 0; j < e.Parameters.glweRank+1; j++ {
 			e.DecomposePolyAssign(ctOut.Value[j], e.Parameters.bootstrapParameters, polyDecomposed)
 			for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
 				e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[k], e.buffer.ctAccFourierDecomposed[0][j][k])
@@ -441,7 +441,7 @@ func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUp
 		e.ExternalProductFourierDecomposedFourierAssign(e.EvaluationKey.BootstrapKey.Value[i], e.buffer.ctAccFourierDecomposed[0], e.buffer.ctFourierAcc[0])
 		e.FourierEvaluator.MonomialSubOneToFourierPolyAssign(-e.ModSwitch(ct.Value[i+1]), e.buffer.fMono)
 		e.FourierPolyMulFourierGLWEAssign(e.buffer.ctFourierAcc[0], e.buffer.fMono, e.buffer.ctFourierAcc[0])
-		for j := 0; j < e.Parameters.glweDimension+1; j++ {
+		for j := 0; j < e.Parameters.glweRank+1; j++ {
 			e.FourierEvaluator.ToPolyAddAssignUnsafe(e.buffer.ctFourierAcc[0].Value[j], ctOut.Value[j])
 		}
 	}
@@ -479,7 +479,7 @@ func (e *Evaluator[T]) KeySwitchAssign(ct LWECiphertext[T], ksk KeySwitchKey[T],
 }
 
 // KeySwitchForBootstrap performs the keyswitching using evaulater's evaluation key.
-// Input ciphertext should be of length LWELargeDimension + 1.
+// Input ciphertext should be of length GLWEDimension + 1.
 // Output ciphertext will be of length LWEDimension + 1.
 func (e *Evaluator[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[T] {
 	ctOut := NewLWECiphertextCustom[T](e.Parameters.lweDimension)
@@ -488,13 +488,13 @@ func (e *Evaluator[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[
 }
 
 // KeySwitchForBootstrapAssign performs the keyswitching using evaulater's evaluation key.
-// Input ciphertext should be of length LWELargeDimension + 1.
+// Input ciphertext should be of length GLWEDimension + 1.
 // Output ciphertext should be of length LWEDimension + 1.
 func (e *Evaluator[T]) KeySwitchForBootstrapAssign(ct, ctOut LWECiphertext[T]) {
 	decomposed := e.buffer.decomposed[:e.Parameters.keyswitchParameters.level]
 
 	vec.CopyAssign(ct.Value[:e.Parameters.lweDimension+1], ctOut.Value)
-	for i, ii := e.Parameters.lweDimension, 0; i < e.Parameters.lweLargeDimension; i, ii = i+1, ii+1 {
+	for i, ii := e.Parameters.lweDimension, 0; i < e.Parameters.glweDimension; i, ii = i+1, ii+1 {
 		e.DecomposeAssign(ct.Value[i+1], e.Parameters.keyswitchParameters, decomposed)
 		for j := 0; j < e.Parameters.keyswitchParameters.level; j++ {
 			e.ScalarMulAddLWEAssign(e.EvaluationKey.KeySwitchKey.Value[ii].Value[j], decomposed[j], ctOut)

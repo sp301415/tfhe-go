@@ -78,11 +78,11 @@ func (evk *EvaluationKey[T]) UnmarshalBinary(data []byte) error {
 // ByteSize returns the size of the key in bytes.
 func (bsk BootstrapKey[T]) ByteSize() int {
 	lweDimension := len(bsk.Value)
-	glweDimension := len(bsk.Value[0].Value) - 1
+	glweRank := len(bsk.Value[0].Value) - 1
 	level := len(bsk.Value[0].Value[0].Value)
 	polyDegree := bsk.Value[0].Value[0].Value[0].Value[0].Degree()
 
-	return 40 + lweDimension*(glweDimension+1)*level*(glweDimension+1)*polyDegree*8
+	return 40 + lweDimension*(glweRank+1)*level*(glweRank+1)*polyDegree*8
 }
 
 // WriteTo implements the [io.WriterTo] interface.
@@ -92,14 +92,14 @@ func (bsk BootstrapKey[T]) ByteSize() int {
 //	[8] Base
 //	[8] Level
 //	[8] LWEDimension
-//	[8] GLWEDimension
+//	[8] GLWERank
 //	[8] PolyDegree
 //	    Value
 func (bsk BootstrapKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 
 	lweDimension := len(bsk.Value)
-	glweDimension := len(bsk.Value[0].Value) - 1
+	glweRank := len(bsk.Value[0].Value) - 1
 	level := len(bsk.Value[0].Value[0].Value)
 	polyDegree := bsk.Value[0].Value[0].Value[0].Value[0].Degree()
 
@@ -107,7 +107,7 @@ func (bsk BootstrapKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	binary.BigEndian.PutUint64(metadta[0:8], uint64(bsk.GadgetParameters.base))
 	binary.BigEndian.PutUint64(metadta[8:16], uint64(level))
 	binary.BigEndian.PutUint64(metadta[16:24], uint64(lweDimension))
-	binary.BigEndian.PutUint64(metadta[24:32], uint64(glweDimension))
+	binary.BigEndian.PutUint64(metadta[24:32], uint64(glweRank))
 	binary.BigEndian.PutUint64(metadta[32:40], uint64(polyDegree))
 	nn, err = w.Write(metadta[:])
 	n += int64(nn)
@@ -156,10 +156,10 @@ func (bsk *BootstrapKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	base := int(binary.BigEndian.Uint64(metadata[0:8]))
 	level := int(binary.BigEndian.Uint64(metadata[8:16]))
 	lweDimension := int(binary.BigEndian.Uint64(metadata[16:24]))
-	glweDimension := int(binary.BigEndian.Uint64(metadata[24:32]))
+	glweRank := int(binary.BigEndian.Uint64(metadata[24:32]))
 	polyDegree := int(binary.BigEndian.Uint64(metadata[32:40]))
 
-	*bsk = NewBootstrapKeyCustom[T](lweDimension, glweDimension, polyDegree, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
+	*bsk = NewBootstrapKeyCustom[T](lweDimension, glweRank, polyDegree, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
 
 	buf := make([]byte, polyDegree*8)
 

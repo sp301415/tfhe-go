@@ -35,7 +35,7 @@ func (e *Encryptor[T]) GenBootstrapKey() BootstrapKey[T] {
 	bsk := NewBootstrapKey(e.Parameters)
 
 	for i := 0; i < e.Parameters.lweDimension; i++ {
-		for j := 0; j < e.Parameters.glweDimension+1; j++ {
+		for j := 0; j < e.Parameters.glweRank+1; j++ {
 			if j == 0 {
 				e.buffer.ptGGSW.Clear()
 				e.buffer.ptGGSW.Coeffs[0] = e.SecretKey.LWEKey.Value[i]
@@ -57,7 +57,7 @@ func (e *Encryptor[T]) GenBootstrapKey() BootstrapKey[T] {
 func (e *Encryptor[T]) GenBootstrapKeyParallel() BootstrapKey[T] {
 	bsk := NewBootstrapKey(e.Parameters)
 
-	workSize := e.Parameters.lweDimension * (e.Parameters.glweDimension + 1)
+	workSize := e.Parameters.lweDimension * (e.Parameters.glweRank + 1)
 	chunkCount := num.Min(runtime.NumCPU(), num.Sqrt(workSize))
 
 	encryptorPool := make([]*Encryptor[T], chunkCount)
@@ -69,7 +69,7 @@ func (e *Encryptor[T]) GenBootstrapKeyParallel() BootstrapKey[T] {
 	go func() {
 		defer close(jobs)
 		for i := 0; i < e.Parameters.lweDimension; i++ {
-			for j := 0; j < e.Parameters.glweDimension+1; j++ {
+			for j := 0; j < e.Parameters.glweRank+1; j++ {
 				jobs <- [2]int{i, j}
 			}
 		}

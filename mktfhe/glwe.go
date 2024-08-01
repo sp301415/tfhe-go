@@ -10,23 +10,23 @@ import (
 // Due to the structure of UniEncryption,
 // all multi-key GLWE ciphertexts are actually RLWE ciphertexts.
 type GLWECiphertext[T tfhe.TorusInt] struct {
-	// Value has length GLWEDimension + 1.
+	// Value has length GLWERank + 1.
 	Value []poly.Poly[T]
 }
 
 // NewGLWECiphertext allocates an empty GLWE ciphertext.
 func NewGLWECiphertext[T tfhe.TorusInt](params Parameters[T]) GLWECiphertext[T] {
-	ct := make([]poly.Poly[T], params.GLWEDimension()+1)
-	for i := 0; i < params.GLWEDimension()+1; i++ {
+	ct := make([]poly.Poly[T], params.GLWERank()+1)
+	for i := 0; i < params.GLWERank()+1; i++ {
 		ct[i] = poly.NewPoly[T](params.PolyDegree())
 	}
 	return GLWECiphertext[T]{Value: ct}
 }
 
 // NewGLWECiphertextCustom allocates an empty GLWE ciphertext with given dimension and partyCount.
-func NewGLWECiphertextCustom[T tfhe.TorusInt](glweDimension, polyDegree int) GLWECiphertext[T] {
-	ct := make([]poly.Poly[T], glweDimension+1)
-	for i := 0; i < glweDimension+1; i++ {
+func NewGLWECiphertextCustom[T tfhe.TorusInt](glweRank, polyDegree int) GLWECiphertext[T] {
+	ct := make([]poly.Poly[T], glweRank+1)
+	for i := 0; i < glweRank+1; i++ {
 		ct[i] = poly.NewPoly[T](polyDegree)
 	}
 	return GLWECiphertext[T]{Value: ct}
@@ -50,10 +50,10 @@ func (ct *GLWECiphertext[T]) CopyFrom(ctIn GLWECiphertext[T]) {
 
 // CopyFromSingleKey copies values from the single-key ciphertext.
 //
-// Panics if GLWEDimension of ctIn is not 1.
+// Panics if GLWERank of ctIn is not 1.
 func (ct *GLWECiphertext[T]) CopyFromSingleKey(ctIn tfhe.GLWECiphertext[T], idx int) {
 	if len(ctIn.Value) != 2 {
-		panic("GLWEDimension of ctIn must be 1")
+		panic("GLWERank of ctIn must be 1")
 	}
 
 	ct.Clear()
@@ -69,7 +69,7 @@ func (ct *GLWECiphertext[T]) Clear() {
 }
 
 // ToLWECiphertext extracts LWE ciphertext of given index from GLWE ciphertext.
-// The output ciphertext will be of length LWELargeDimension + 1,
+// The output ciphertext will be of length GLWEDimension + 1,
 // encrypted with LWELargeKey.
 func (ct GLWECiphertext[T]) ToLWECiphertext(idx int) LWECiphertext[T] {
 	ctOut := NewLWECiphertextCustom[T]((len(ct.Value) - 1) * ct.Value[0].Degree())
@@ -78,7 +78,7 @@ func (ct GLWECiphertext[T]) ToLWECiphertext(idx int) LWECiphertext[T] {
 }
 
 // ToLWECiphertextAssign extracts LWE ciphertext of given index from GLWE ciphertext and writes it to ctOut.
-// The output ciphertext should be of length LWELargeDimension + 1,
+// The output ciphertext should be of length GLWEDimension + 1,
 // and it will be a ciphertext encrypted with LWELargeKey.
 func (ct GLWECiphertext[T]) ToLWECiphertextAssign(idx int, ctOut LWECiphertext[T]) {
 	ctOut.Value[0] = ct.Value[0].Coeffs[idx]
@@ -99,7 +99,7 @@ func (ct GLWECiphertext[T]) ToLWECiphertextAssign(idx int, ctOut LWECiphertext[T
 type UniEncryption[T tfhe.TorusInt] struct {
 	GadgetParameters tfhe.GadgetParameters[T]
 
-	// Value has length 2, which equals to single-key GLWEDimension + 1.
+	// Value has length 2, which equals to single-key GLWERank + 1.
 	// The first element is always encrypted with the CRS as the mask.
 	Value []tfhe.GLevCiphertext[T]
 }

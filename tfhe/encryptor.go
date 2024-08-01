@@ -176,20 +176,20 @@ func (e *Encryptor[T]) GenPublicKey() PublicKey[T] {
 
 	pk := NewPublicKey(e.Parameters)
 
-	for i := 0; i < e.Parameters.glweDimension; i++ {
+	for i := 0; i < e.Parameters.glweRank; i++ {
 		e.EncryptGLWEBody(pk.GLWEKey.Value[i])
 	}
 
 	skRev := NewGLWESecretKey(e.Parameters)
 	fskRev := NewFourierGLWESecretKey(e.Parameters)
-	for i := 0; i < e.Parameters.glweDimension; i++ {
+	for i := 0; i < e.Parameters.glweRank; i++ {
 		vec.ReverseAssign(e.SecretKey.GLWEKey.Value[i].Coeffs, skRev.Value[i].Coeffs)
 	}
 	e.ToFourierGLWESecretKeyAssign(skRev, fskRev)
 
-	for i := 0; i < e.Parameters.glweDimension; i++ {
+	for i := 0; i < e.Parameters.glweRank; i++ {
 		e.GaussianSampler.SampleSliceAssign(e.Parameters.GLWEStdDevQ(), pk.LWEKey.Value[i].Value[0].Coeffs)
-		for j := 1; j < e.Parameters.glweDimension+1; j++ {
+		for j := 1; j < e.Parameters.glweRank+1; j++ {
 			e.UniformSampler.SampleSliceAssign(pk.LWEKey.Value[i].Value[j].Coeffs)
 			e.FourierEvaluator.PolyMulBinarySubAssign(fskRev.Value[j-1], pk.LWEKey.Value[i].Value[j], pk.LWEKey.Value[i].Value[0])
 		}

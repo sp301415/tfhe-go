@@ -9,27 +9,27 @@ import (
 
 // ByteSize returns the size of the key in bytes.
 func (sk FourierGLWESecretKey[T]) ByteSize() int {
-	glweDimension := len(sk.Value)
+	glweRank := len(sk.Value)
 	polyDegree := sk.Value[0].Degree()
 
-	return 16 + glweDimension*polyDegree*8
+	return 16 + glweRank*polyDegree*8
 }
 
 // WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
 //
-//	[8] GLWEDimension
+//	[8] GLWERank
 //	[8] PolyDegree
 //	    Value
 func (sk FourierGLWESecretKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 
-	glweDimension := len(sk.Value)
+	glweRank := len(sk.Value)
 	polyDegree := sk.Value[0].Degree()
 
 	var metadata [16]byte
-	binary.BigEndian.PutUint64(metadata[0:8], uint64(glweDimension))
+	binary.BigEndian.PutUint64(metadata[0:8], uint64(glweRank))
 	binary.BigEndian.PutUint64(metadata[8:16], uint64(polyDegree))
 	nn, err = w.Write(metadata[:])
 	n += int64(nn)
@@ -69,10 +69,10 @@ func (sk *FourierGLWESecretKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 		return
 	}
 
-	glweDimension := int(binary.BigEndian.Uint64(metadata[0:8]))
+	glweRank := int(binary.BigEndian.Uint64(metadata[0:8]))
 	polyDegree := int(binary.BigEndian.Uint64(metadata[8:16]))
 
-	*sk = NewFourierGLWESecretKeyCustom[T](glweDimension, polyDegree)
+	*sk = NewFourierGLWESecretKeyCustom[T](glweRank, polyDegree)
 
 	buf := make([]byte, polyDegree*8)
 
@@ -107,27 +107,27 @@ func (sk *FourierGLWESecretKey[T]) UnmarshalBinary(data []byte) error {
 
 // ByteSize returns the size of the ciphertext in bytes.
 func (ct FourierGLWECiphertext[T]) ByteSize() int {
-	glweDimension := len(ct.Value) - 1
+	glweRank := len(ct.Value) - 1
 	polyDegree := ct.Value[0].Degree()
 
-	return 16 + (glweDimension+1)*polyDegree*8
+	return 16 + (glweRank+1)*polyDegree*8
 }
 
 // WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
 //
-//	[8] GLWEDimension
+//	[8] GLWERank
 //	[8] PolyDegree
 //	    Value
 func (ct FourierGLWECiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 
-	glweDimension := len(ct.Value) - 1
+	glweRank := len(ct.Value) - 1
 	polyDegree := ct.Value[0].Degree()
 
 	var metadata [16]byte
-	binary.BigEndian.PutUint64(metadata[0:8], uint64(glweDimension))
+	binary.BigEndian.PutUint64(metadata[0:8], uint64(glweRank))
 	binary.BigEndian.PutUint64(metadata[8:16], uint64(polyDegree))
 	nn, err = w.Write(metadata[:])
 	n += int64(nn)
@@ -167,10 +167,10 @@ func (ct *FourierGLWECiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 		return
 	}
 
-	glweDimension := int(binary.BigEndian.Uint64(metadata[0:8]))
+	glweRank := int(binary.BigEndian.Uint64(metadata[0:8]))
 	polyDegree := int(binary.BigEndian.Uint64(metadata[8:16]))
 
-	*ct = NewFourierGLWECiphertextCustom[T](glweDimension, polyDegree)
+	*ct = NewFourierGLWECiphertextCustom[T](glweRank, polyDegree)
 
 	buf := make([]byte, polyDegree*8)
 
@@ -206,10 +206,10 @@ func (ct *FourierGLWECiphertext[T]) UnmarshalBinary(data []byte) error {
 // ByteSize returns the size of the ciphertext in bytes.
 func (ct FourierGLevCiphertext[T]) ByteSize() int {
 	level := len(ct.Value)
-	glweDimension := len(ct.Value[0].Value) - 1
+	glweRank := len(ct.Value[0].Value) - 1
 	polyDegree := ct.Value[0].Value[0].Degree()
 
-	return 32 + level*(glweDimension+1)*polyDegree*8
+	return 32 + level*(glweRank+1)*polyDegree*8
 }
 
 // WriteTo implements the [io.WriterTo] interface.
@@ -218,20 +218,20 @@ func (ct FourierGLevCiphertext[T]) ByteSize() int {
 //
 //	[8] Base
 //	[8] Level
-//	[8] GLWEDimension
+//	[8] GLWERank
 //	[8] PolyDegree
 //	    Value
 func (ct FourierGLevCiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 
 	level := len(ct.Value)
-	glweDimension := len(ct.Value[0].Value) - 1
+	glweRank := len(ct.Value[0].Value) - 1
 	polyDegree := ct.Value[0].Value[0].Degree()
 
 	var metadata [32]byte
 	binary.BigEndian.PutUint64(metadata[0:8], uint64(ct.GadgetParameters.base))
 	binary.BigEndian.PutUint64(metadata[8:16], uint64(level))
-	binary.BigEndian.PutUint64(metadata[16:24], uint64(glweDimension))
+	binary.BigEndian.PutUint64(metadata[16:24], uint64(glweRank))
 	binary.BigEndian.PutUint64(metadata[24:32], uint64(polyDegree))
 	nn, err = w.Write(metadata[:])
 	n += int64(nn)
@@ -275,10 +275,10 @@ func (ct *FourierGLevCiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 
 	base := int(binary.BigEndian.Uint64(metadata[0:8]))
 	level := int(binary.BigEndian.Uint64(metadata[8:16]))
-	glweDimension := int(binary.BigEndian.Uint64(metadata[16:24]))
+	glweRank := int(binary.BigEndian.Uint64(metadata[16:24]))
 	polyDegree := int(binary.BigEndian.Uint64(metadata[24:32]))
 
-	*ct = NewFourierGLevCiphertextCustom[T](glweDimension, polyDegree, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
+	*ct = NewFourierGLevCiphertextCustom[T](glweRank, polyDegree, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
 
 	buf := make([]byte, polyDegree*8)
 
@@ -315,11 +315,11 @@ func (ct *FourierGLevCiphertext[T]) UnmarshalBinary(data []byte) error {
 
 // ByteSize returns the size of the ciphertext in bytes.
 func (ct FourierGGSWCiphertext[T]) ByteSize() int {
-	glweDimension := len(ct.Value) - 1
+	glweRank := len(ct.Value) - 1
 	level := len(ct.Value[0].Value)
 	polyDegree := ct.Value[0].Value[0].Value[0].Degree()
 
-	return 32 + (glweDimension+1)*level*(glweDimension+1)*polyDegree*8
+	return 32 + (glweRank+1)*level*(glweRank+1)*polyDegree*8
 }
 
 // WriteTo implements the [io.WriterTo] interface.
@@ -328,20 +328,20 @@ func (ct FourierGGSWCiphertext[T]) ByteSize() int {
 //
 //	[8] Base
 //	[8] Level
-//	[8] GLWEDimension
+//	[8] GLWERank
 //	[8] PolyDegree
 //	    Value
 func (ct FourierGGSWCiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nn int
 
-	glweDimension := len(ct.Value) - 1
+	glweRank := len(ct.Value) - 1
 	level := len(ct.Value[0].Value)
 	polyDegree := ct.Value[0].Value[0].Value[0].Degree()
 
 	var metadata [32]byte
 	binary.BigEndian.PutUint64(metadata[0:8], uint64(ct.GadgetParameters.base))
 	binary.BigEndian.PutUint64(metadata[8:16], uint64(level))
-	binary.BigEndian.PutUint64(metadata[16:24], uint64(glweDimension))
+	binary.BigEndian.PutUint64(metadata[16:24], uint64(glweRank))
 	binary.BigEndian.PutUint64(metadata[24:32], uint64(polyDegree))
 	nn, err = w.Write(metadata[:])
 	n += int64(nn)
@@ -387,10 +387,10 @@ func (ct *FourierGGSWCiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 
 	base := int(binary.BigEndian.Uint64(metadata[0:8]))
 	level := int(binary.BigEndian.Uint64(metadata[8:16]))
-	glweDimension := int(binary.BigEndian.Uint64(metadata[16:24]))
+	glweRank := int(binary.BigEndian.Uint64(metadata[16:24]))
 	polyDegree := int(binary.BigEndian.Uint64(metadata[24:32]))
 
-	*ct = NewFourierGGSWCiphertextCustom[T](glweDimension, polyDegree, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
+	*ct = NewFourierGGSWCiphertextCustom[T](glweRank, polyDegree, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
 
 	buf := make([]byte, polyDegree*8)
 

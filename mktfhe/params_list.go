@@ -7,7 +7,7 @@ var (
 	ParamsBinaryParty2 = ParametersLiteral[uint64]{
 		ParametersLiteral: tfhe.ParametersLiteral[uint64]{
 			LWEDimension:    560,
-			GLWEDimension:   1,
+			GLWERank:        1,
 			PolyDegree:      2048,
 			LookUpTableSize: 2048,
 
@@ -46,7 +46,7 @@ var (
 	ParamsBinaryParty4 = ParametersLiteral[uint64]{
 		ParametersLiteral: tfhe.ParametersLiteral[uint64]{
 			LWEDimension:    560,
-			GLWEDimension:   1,
+			GLWERank:        1,
 			PolyDegree:      2048,
 			LookUpTableSize: 2048,
 
@@ -85,7 +85,7 @@ var (
 	ParamsBinaryParty8 = ParametersLiteral[uint64]{
 		ParametersLiteral: tfhe.ParametersLiteral[uint64]{
 			LWEDimension:    560,
-			GLWEDimension:   1,
+			GLWERank:        1,
 			PolyDegree:      2048,
 			LookUpTableSize: 2048,
 
@@ -124,7 +124,7 @@ var (
 	ParamsBinaryParty16 = ParametersLiteral[uint64]{
 		ParametersLiteral: tfhe.ParametersLiteral[uint64]{
 			LWEDimension:    560,
-			GLWEDimension:   1,
+			GLWERank:        1,
 			PolyDegree:      2048,
 			LookUpTableSize: 2048,
 
@@ -163,7 +163,7 @@ var (
 	ParamsBinaryParty32 = ParametersLiteral[uint64]{
 		ParametersLiteral: tfhe.ParametersLiteral[uint64]{
 			LWEDimension:    560,
-			GLWEDimension:   1,
+			GLWERank:        1,
 			PolyDegree:      2048,
 			LookUpTableSize: 2048,
 
