@@ -40,6 +40,12 @@ func (p ParametersLiteral[T]) WithLWEDimension(lweDimension int) ParametersLiter
 	return p
 }
 
+// WithGLWEPartialDimension sets the GLWEPartialDimension and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithGLWEPartialDimension(glwePartialDimension int) ParametersLiteral[T] {
+	p.GLWEPartialDimension = glwePartialDimension
+	return p
+}
+
 // WithGLWERank sets the GLWERank and returns the new ParametersLiteral.
 func (p ParametersLiteral[T]) WithGLWERank(glweRank int) ParametersLiteral[T] {
 	p.GLWERank = glweRank
@@ -193,6 +199,11 @@ func (p Parameters[T]) SingleKeyDefaultLWEDimension() int {
 // SingleKeyLWEDimension returns the dimension of single-key LWE entities.
 func (p Parameters[T]) SingleKeyLWEDimension() int {
 	return p.Parameters.LWEDimension()
+}
+
+// SingleKeyGLWEPartialDimension returns the dimension of single-key GLWE entities.
+func (p Parameters[T]) SingleKeyGLWEPartialDimension() int {
+	return p.Parameters.GLWEPartialDimension()
 }
 
 // SingleKeyGLWEDimension returns the glwe dimension of single-key LWE entities.

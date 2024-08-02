@@ -218,6 +218,13 @@ const (
 type ParametersLiteral[T TorusInt] struct {
 	// LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
 	LWEDimension int
+	// GLWEPartialDimension is the partial dimension of GLWE lattice used.
+	//
+	// When sampling GLWE secret key, the first GLWEPartialDimension elements are sampled.
+	// The rest of the elements are set to zero,
+	// as explained in https://eprint.iacr.org/2023/979.
+	// Therefore, this must be between LWEDimension and GLWEDimension.
+	GLWEPartialDimension int
 	// GLWERank is the rank of GLWE lattice used. Usually this is denoted by k.
 	// Length of GLWE secret key is GLWERank, and length of GLWE ciphertext is GLWERank+1.
 	GLWERank int
@@ -274,6 +281,12 @@ type ParametersLiteral[T TorusInt] struct {
 // WithLWEDimension sets the LWEDimension and returns the new ParametersLiteral.
 func (p ParametersLiteral[T]) WithLWEDimension(lweDimension int) ParametersLiteral[T] {
 	p.LWEDimension = lweDimension
+	return p
+}
+
+// WithGLWEPartialDimension sets the GLWEPartialDimension and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithGLWEPartialDimension(glwePartialDimension int) ParametersLiteral[T] {
+	p.GLWEPartialDimension = glwePartialDimension
 	return p
 }
 
@@ -353,6 +366,10 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("LWEDimension smaller than zero")
 	case p.LWEDimension > p.GLWERank*p.PolyDegree:
 		panic("LWEDimension larger than GLWEDimension")
+	case p.GLWEPartialDimension < p.LWEDimension:
+		panic("GLWEPartialDimension smaller than LWEDimension")
+	case p.GLWEPartialDimension > p.GLWERank*p.PolyDegree:
+		panic("GLWEPartialDimension larger than GLWEDimension")
 	case p.GLWERank <= 0:
 		panic("GLWERank smaller than zero")
 	case p.LookUpTableSize < p.PolyDegree:
@@ -379,13 +396,14 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 	scaleLog := num.SizeT[T]() - 1 - messageModulusLog
 
 	return Parameters[T]{
-		lweDimension:     p.LWEDimension,
-		glweDimension:    p.GLWERank * p.PolyDegree,
-		glweRank:         p.GLWERank,
-		polyDegree:       p.PolyDegree,
-		polyDegreeLog:    num.Log2(p.PolyDegree),
-		lookUpTableSize:  p.LookUpTableSize,
-		polyExtendFactor: p.LookUpTableSize / p.PolyDegree,
+		lweDimension:         p.LWEDimension,
+		glwePartialDimension: p.GLWEPartialDimension,
+		glweDimension:        p.GLWERank * p.PolyDegree,
+		glweRank:             p.GLWERank,
+		polyDegree:           p.PolyDegree,
+		polyDegreeLog:        num.Log2(p.PolyDegree),
+		lookUpTableSize:      p.LookUpTableSize,
+		polyExtendFactor:     p.LookUpTableSize / p.PolyDegree,
 
 		lweStdDev:  p.LWEStdDev,
 		glweStdDev: p.GLWEStdDev,
@@ -412,6 +430,10 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 type Parameters[T TorusInt] struct {
 	// LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
 	lweDimension int
+	// GLWEPartialDimension is the partial dimension of GLWE lattice used.
+	// When sampling GLWE secret key, the first GLWEPartialDimension elements are sampled.
+	// The rest of the elements are set to zero.
+	glwePartialDimension int
 	// GLWEDimension is the dimension of GLWE lattice used, which is GLWERank * PolyDegree.
 	glweDimension int
 	// GLWERank is the rank of GLWE lattice used. Usually this is denoted by k.
@@ -473,6 +495,11 @@ func (p Parameters[T]) DefaultLWEDimension() int {
 // LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
 func (p Parameters[T]) LWEDimension() int {
 	return p.lweDimension
+}
+
+// GLWEPartialDimension is the partial dimension of GLWE lattice used.
+func (p Parameters[T]) GLWEPartialDimension() int {
+	return p.glwePartialDimension
 }
 
 // GLWEDimension is the dimension of GLWE lattice used, which is GLWERank * PolyDegree.
@@ -614,10 +641,11 @@ func (p Parameters[T]) IsPublicKeyEncryptable() bool {
 // Literal returns a ParametersLiteral from this Parameters.
 func (p Parameters[T]) Literal() ParametersLiteral[T] {
 	return ParametersLiteral[T]{
-		LWEDimension:    p.lweDimension,
-		GLWERank:        p.glweRank,
-		PolyDegree:      p.polyDegree,
-		LookUpTableSize: p.lookUpTableSize,
+		LWEDimension:         p.lweDimension,
+		GLWEPartialDimension: p.glwePartialDimension,
+		GLWERank:             p.glweRank,
+		PolyDegree:           p.polyDegree,
+		LookUpTableSize:      p.lookUpTableSize,
 
 		LWEStdDev:  p.lweStdDev,
 		GLWEStdDev: p.glweStdDev,
@@ -635,7 +663,7 @@ func (p Parameters[T]) Literal() ParametersLiteral[T] {
 
 // ByteSize returns the byte size of the parameters.
 func (p Parameters[T]) ByteSize() int {
-	return 8*8 + 2*16 + 1
+	return 8*9 + 2*16 + 1
 }
 
 // WriteTo implements the [io.WriterTo] interface.
@@ -643,6 +671,7 @@ func (p Parameters[T]) ByteSize() int {
 // The encoded form is as follows:
 //
 //	[ 8] LWEDimension
+//	[ 8] GLWEPartialDimension
 //	[ 8] GLWERank
 //	[ 8] PolyDegree
 //	[ 8] LookUpTableSize
@@ -654,21 +683,22 @@ func (p Parameters[T]) ByteSize() int {
 //	[16] KeySwitchParameters
 //	[ 1] BootstrapOrder
 func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
-	var buf [8*8 + 2*16 + 1]byte
+	var buf [8*9 + 2*16 + 1]byte
 
 	binary.BigEndian.PutUint64(buf[0:8], uint64(p.lweDimension))
-	binary.BigEndian.PutUint64(buf[8:16], uint64(p.glweRank))
-	binary.BigEndian.PutUint64(buf[16:24], uint64(p.polyDegree))
-	binary.BigEndian.PutUint64(buf[24:32], uint64(p.lookUpTableSize))
-	binary.BigEndian.PutUint64(buf[32:40], math.Float64bits(p.lweStdDev))
-	binary.BigEndian.PutUint64(buf[40:48], math.Float64bits(p.glweStdDev))
-	binary.BigEndian.PutUint64(buf[48:56], uint64(p.blockSize))
-	binary.BigEndian.PutUint64(buf[56:64], uint64(p.messageModulus))
-	binary.BigEndian.PutUint64(buf[64:72], uint64(p.bootstrapParameters.Base()))
-	binary.BigEndian.PutUint64(buf[72:80], uint64(p.bootstrapParameters.Level()))
-	binary.BigEndian.PutUint64(buf[80:88], uint64(p.keyswitchParameters.Base()))
-	binary.BigEndian.PutUint64(buf[88:96], uint64(p.keyswitchParameters.Level()))
-	buf[96] = byte(p.bootstrapOrder)
+	binary.BigEndian.PutUint64(buf[8:16], uint64(p.glwePartialDimension))
+	binary.BigEndian.PutUint64(buf[16:24], uint64(p.glweRank))
+	binary.BigEndian.PutUint64(buf[24:32], uint64(p.polyDegree))
+	binary.BigEndian.PutUint64(buf[32:40], uint64(p.lookUpTableSize))
+	binary.BigEndian.PutUint64(buf[40:48], math.Float64bits(p.lweStdDev))
+	binary.BigEndian.PutUint64(buf[48:56], math.Float64bits(p.glweStdDev))
+	binary.BigEndian.PutUint64(buf[56:64], uint64(p.blockSize))
+	binary.BigEndian.PutUint64(buf[64:72], uint64(p.messageModulus))
+	binary.BigEndian.PutUint64(buf[72:80], uint64(p.bootstrapParameters.Base()))
+	binary.BigEndian.PutUint64(buf[80:88], uint64(p.bootstrapParameters.Level()))
+	binary.BigEndian.PutUint64(buf[88:96], uint64(p.keyswitchParameters.Base()))
+	binary.BigEndian.PutUint64(buf[96:104], uint64(p.keyswitchParameters.Level()))
+	buf[104] = byte(p.bootstrapOrder)
 
 	nn, err := w.Write(buf[:])
 	n += int64(nn)
@@ -685,7 +715,7 @@ func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
 
 // ReadFrom implements the [io.ReaderFrom] interface.
 func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
-	var buf [8*8 + 2*16 + 1]byte
+	var buf [8*9 + 2*16 + 1]byte
 	nn, err := io.ReadFull(r, buf[:])
 	n += int64(nn)
 	if err != nil {
@@ -693,37 +723,39 @@ func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 
 	lweDimension := binary.BigEndian.Uint64(buf[0:8])
-	glweRank := binary.BigEndian.Uint64(buf[8:16])
-	polyDegree := binary.BigEndian.Uint64(buf[16:24])
-	lookUpTableSize := binary.BigEndian.Uint64(buf[24:32])
-	lweStdDev := math.Float64frombits(binary.BigEndian.Uint64(buf[32:40]))
-	glweStdDev := math.Float64frombits(binary.BigEndian.Uint64(buf[40:48]))
-	blockSize := binary.BigEndian.Uint64(buf[48:56])
-	messageModulus := binary.BigEndian.Uint64(buf[56:64])
+	glwePartialDimension := binary.BigEndian.Uint64(buf[8:16])
+	glweRank := binary.BigEndian.Uint64(buf[16:24])
+	polyDegree := binary.BigEndian.Uint64(buf[24:32])
+	lookUpTableSize := binary.BigEndian.Uint64(buf[32:40])
+	lweStdDev := math.Float64frombits(binary.BigEndian.Uint64(buf[40:48]))
+	glweStdDev := math.Float64frombits(binary.BigEndian.Uint64(buf[48:56]))
+	blockSize := binary.BigEndian.Uint64(buf[56:64])
+	messageModulus := binary.BigEndian.Uint64(buf[64:72])
 
 	bootstrapParameters := GadgetParametersLiteral[T]{
-		Base:  T(binary.BigEndian.Uint64(buf[64:72])),
-		Level: int(binary.BigEndian.Uint64(buf[72:80])),
+		Base:  T(binary.BigEndian.Uint64(buf[72:80])),
+		Level: int(binary.BigEndian.Uint64(buf[80:88])),
 	}
 	keyswitchParameters := GadgetParametersLiteral[T]{
-		Base:  T(binary.BigEndian.Uint64(buf[80:88])),
-		Level: int(binary.BigEndian.Uint64(buf[88:96])),
+		Base:  T(binary.BigEndian.Uint64(buf[88:96])),
+		Level: int(binary.BigEndian.Uint64(buf[96:104])),
 	}
 
-	bootstrapOrder := BootstrapOrder(buf[96])
+	bootstrapOrder := BootstrapOrder(buf[104])
 
 	*p = ParametersLiteral[T]{
-		LWEDimension:        int(lweDimension),
-		GLWERank:            int(glweRank),
-		PolyDegree:          int(polyDegree),
-		LookUpTableSize:     int(lookUpTableSize),
-		LWEStdDev:           lweStdDev,
-		GLWEStdDev:          glweStdDev,
-		BlockSize:           int(blockSize),
-		MessageModulus:      T(messageModulus),
-		BootstrapParameters: bootstrapParameters,
-		KeySwitchParameters: keyswitchParameters,
-		BootstrapOrder:      bootstrapOrder,
+		LWEDimension:         int(lweDimension),
+		GLWEPartialDimension: int(glwePartialDimension),
+		GLWERank:             int(glweRank),
+		PolyDegree:           int(polyDegree),
+		LookUpTableSize:      int(lookUpTableSize),
+		LWEStdDev:            lweStdDev,
+		GLWEStdDev:           glweStdDev,
+		BlockSize:            int(blockSize),
+		MessageModulus:       T(messageModulus),
+		BootstrapParameters:  bootstrapParameters,
+		KeySwitchParameters:  keyswitchParameters,
+		BootstrapOrder:       bootstrapOrder,
 	}.Compile()
 
 	return

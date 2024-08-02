@@ -145,8 +145,8 @@ All benchmarks were measured on a machine equipped with Intel Xeon Platinum 8268
 
 |Operation|TFHE-go|TFHE-rs (v0.7.1)|
 |---------|-------|-------|
-|Gate Bootstrapping|9.21ms|15.03ms|
-|Programmable Bootstrapping (6 bits)|21.58ms|111.33ms|
+|Gate Bootstrapping|9.03ms|15.03ms|
+|Programmable Bootstrapping (6 bits)|20.41ms|111.33ms|
 
 You can use the standard go test tool to reproduce benchmarks:
 ```
@@ -184,5 +184,6 @@ TFHE-go logo is designed by [@mlgng2010](https://www.instagram.com/mlgng2010/), 
 - MOSFHET: Optimized Software for FHE over the Torus (https://eprint.iacr.org/2022/515)
 - Faster TFHE Bootstrapping with Block Binary Keys (https://eprint.iacr.org/2023/958)
 - Discretization Error Reduction for Torus Fully Homomorphic Encryption (https://eprint.iacr.org/2023/402)
+- Faster Secret Keys for (T)FHE (https://eprint.iacr.org/2023/979)
 - TFHE Public-Key Encryption Revisited (https://eprint.iacr.org/2023/603)
 - Towards Practical Multi-key TFHE: Parallelizable, Key-Compatible, Quasi-linear Complexity (https://eprint.iacr.org/2022/1460)

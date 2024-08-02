@@ -118,7 +118,7 @@ func NewKeySwitchKey[T TorusInt](inputDimension, outputDimension int, gadgetPara
 
 // NewKeySwitchKeyForBootstrap allocates an empty KeySwitchingKey for bootstrapping.
 func NewKeySwitchKeyForBootstrap[T TorusInt](params Parameters[T]) KeySwitchKey[T] {
-	return NewKeySwitchKey[T](params.glweDimension-params.lweDimension, params.lweDimension, params.keyswitchParameters)
+	return NewKeySwitchKey[T](params.glwePartialDimension-params.lweDimension, params.lweDimension, params.keyswitchParameters)
 }
 
 // NewKeySwitchKeyForBootstrapCustom allocates an empty KeySwitchingKey with custom parameters.
