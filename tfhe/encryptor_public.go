@@ -64,7 +64,7 @@ func NewPublicEncryptor[T TorusInt](params Parameters[T], pk PublicKey[T]) *Publ
 	}
 
 	return &PublicEncryptor[T]{
-		Encoder:         NewEncoder[T](params),
+		Encoder:         NewEncoder(params),
 		GLWETransformer: NewGLWETransformer(params),
 
 		Parameters: params,
@@ -85,11 +85,11 @@ func NewPublicEncryptor[T TorusInt](params Parameters[T], pk PublicKey[T]) *Publ
 // newPublicEncryptionBuffer allocates a new publicEncryptionBuffer.
 func newPublicEncryptionBuffer[T TorusInt](params Parameters[T]) publicEncryptionBuffer[T] {
 	return publicEncryptionBuffer[T]{
-		ptGLWE: NewGLWEPlaintext[T](params),
-		ctGLWE: NewGLWECiphertext[T](params),
+		ptGLWE: NewGLWEPlaintext(params),
+		ctGLWE: NewGLWECiphertext(params),
 
-		auxKey:        NewGLWESecretKey[T](params),
-		auxFourierKey: NewFourierGLWESecretKey[T](params),
+		auxKey:        NewGLWESecretKey(params),
+		auxFourierKey: NewFourierGLWESecretKey(params),
 	}
 }
 

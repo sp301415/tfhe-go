@@ -441,6 +441,7 @@ func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUp
 		e.ExternalProductFourierDecomposedFourierAssign(e.EvaluationKey.BootstrapKey.Value[i], e.buffer.ctAccFourierDecomposed[0], e.buffer.ctFourierAcc[0])
 		e.FourierEvaluator.MonomialSubOneToFourierPolyAssign(-e.ModSwitch(ct.Value[i+1]), e.buffer.fMono)
 		e.FourierPolyMulFourierGLWEAssign(e.buffer.ctFourierAcc[0], e.buffer.fMono, e.buffer.ctFourierAcc[0])
+
 		for j := 0; j < e.Parameters.glweRank+1; j++ {
 			e.FourierEvaluator.ToPolyAddAssignUnsafe(e.buffer.ctFourierAcc[0].Value[j], ctOut.Value[j])
 		}

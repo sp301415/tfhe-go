@@ -54,7 +54,7 @@ func NewLWEPublicKey[T TorusInt](params Parameters[T]) LWEPublicKey[T] {
 
 	pk := make([]GLWECiphertext[T], params.glweRank)
 	for i := 0; i < params.glweRank; i++ {
-		pk[i] = NewGLWECiphertext[T](params)
+		pk[i] = NewGLWECiphertext(params)
 	}
 	return LWEPublicKey[T]{Value: pk}
 }

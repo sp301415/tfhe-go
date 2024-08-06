@@ -16,7 +16,7 @@ type BinaryEncoder[T TorusInt] struct {
 func NewBinaryEncoder[T TorusInt](params Parameters[T]) *BinaryEncoder[T] {
 	return &BinaryEncoder[T]{
 		Parameters:  params,
-		BaseEncoder: NewEncoder[T](params),
+		BaseEncoder: NewEncoder(params),
 	}
 }
 

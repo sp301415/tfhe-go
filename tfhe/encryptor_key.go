@@ -127,8 +127,8 @@ func NewPublicKey[T TorusInt](params Parameters[T]) PublicKey[T] {
 	}
 
 	return PublicKey[T]{
-		LWEKey:  NewLWEPublicKey[T](params),
-		GLWEKey: NewGLWEPublicKey[T](params),
+		LWEKey:  NewLWEPublicKey(params),
+		GLWEKey: NewGLWEPublicKey(params),
 	}
 }
 
