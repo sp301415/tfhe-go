@@ -220,10 +220,11 @@ type ParametersLiteral[T TorusInt] struct {
 	LWEDimension int
 	// GLWEPartialDimension is the partial dimension of GLWE lattice used.
 	//
-	// When sampling GLWE secret key, the first GLWEPartialDimension elements are sampled.
-	// The rest of the elements are set to zero,
+	// When sampling GLWE secret key, only the first GLWEPartialDimension elements are sampled,
 	// as explained in https://eprint.iacr.org/2023/979.
 	// Therefore, this must be between LWEDimension and GLWEDimension.
+	//
+	// If zero, then it is set to GLWEDimension = GLWERank * PolyDegree.
 	GLWEPartialDimension int
 	// GLWERank is the rank of GLWE lattice used. Usually this is denoted by k.
 	// Length of GLWE secret key is GLWERank, and length of GLWE ciphertext is GLWERank+1.
@@ -233,9 +234,10 @@ type ParametersLiteral[T TorusInt] struct {
 	// LookUpTableSize is the size of the Lookup Table used in Blind Rotation.
 	//
 	// In case of Extended Bootstrapping, this may differ from PolyDegree as explained in https://eprint.iacr.org/2023/402.
-	// In particular, it may not be a power of two.
-	// However, it must be a multiple of PolyDegree.
+	// Therefore, it must be a multiple of PolyDegree.
 	// To use the original TFHE bootstrapping, set this to PolyDegree.
+	//
+	// If zero, then it is set to PolyDegree.
 	LookUpTableSize int
 
 	// LWEStdDev is the normalized standard deviation used for gaussian error sampling in LWE encryption.
@@ -247,6 +249,8 @@ type ParametersLiteral[T TorusInt] struct {
 	//
 	// This is used in Block Binary Key distribution, as explained in https://eprint.iacr.org/2023/958.
 	// To use the original TFHE bootstrapping, set this to 1.
+	//
+	// If zero, then it is set to 1.
 	BlockSize int
 
 	// MessageModulus is the modulus of the encoded message.
@@ -275,6 +279,8 @@ type ParametersLiteral[T TorusInt] struct {
 	// but it allows to use smaller parameters which will result in faster computation.
 	//
 	// Moreover, public key encryption is supported only with OrderKeySwitchBlindRotate.
+	//
+	// If zero, then it is set to OrderKeySwitchBlindRotate.
 	BootstrapOrder BootstrapOrder
 }
 
@@ -361,6 +367,15 @@ func (p ParametersLiteral[T]) WithBootstrapOrder(bootstrapOrder BootstrapOrder) 
 // Unless you are a cryptographic expert, DO NOT set parameters by yourself;
 // always use the default parameters provided.
 func (p ParametersLiteral[T]) Compile() Parameters[T] {
+	switch {
+	case p.GLWEPartialDimension == 0:
+		p.GLWEPartialDimension = p.GLWERank * p.PolyDegree
+	case p.LookUpTableSize == 0:
+		p.LookUpTableSize = p.PolyDegree
+	case p.BlockSize == 0:
+		p.BlockSize = 1
+	}
+
 	switch {
 	case p.LWEDimension <= 0:
 		panic("LWEDimension smaller than zero")
