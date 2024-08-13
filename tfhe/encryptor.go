@@ -51,11 +51,6 @@ type encryptionBuffer[T TorusInt] struct {
 	ctGLWE GLWECiphertext[T]
 	// ptGGSW holds GLWEKey * Pt in GGSW encryption.
 	ptGGSW poly.Poly[T]
-
-	// pSplit is a buffer for split polynomial in mulGLWEKey.
-	pSplit poly.Poly[T]
-	// fpSplit is a buffer for split fourier polynomial in mulGLWEKey.
-	fpSplit poly.FourierPoly
 }
 
 // NewEncryptor returns a initialized Encryptor with given parameters.
@@ -111,9 +106,6 @@ func newEncryptionBuffer[T TorusInt](params Parameters[T]) encryptionBuffer[T] {
 		ptGLWE: NewGLWEPlaintext(params),
 		ctGLWE: NewGLWECiphertext(params),
 		ptGGSW: poly.NewPoly[T](params.polyDegree),
-
-		pSplit:  poly.NewPoly[T](params.polyDegree),
-		fpSplit: poly.NewFourierPoly(params.polyDegree),
 	}
 }
 
