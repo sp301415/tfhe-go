@@ -367,12 +367,13 @@ func (p ParametersLiteral[T]) WithBootstrapOrder(bootstrapOrder BootstrapOrder) 
 // Unless you are a cryptographic expert, DO NOT set parameters by yourself;
 // always use the default parameters provided.
 func (p ParametersLiteral[T]) Compile() Parameters[T] {
-	switch {
-	case p.GLWEPartialDimension == 0:
+	if p.GLWEPartialDimension == 0 {
 		p.GLWEPartialDimension = p.GLWERank * p.PolyDegree
-	case p.LookUpTableSize == 0:
+	}
+	if p.LookUpTableSize == 0 {
 		p.LookUpTableSize = p.PolyDegree
-	case p.BlockSize == 0:
+	}
+	if p.BlockSize == 0 {
 		p.BlockSize = 1
 	}
 

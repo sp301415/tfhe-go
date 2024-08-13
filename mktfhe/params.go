@@ -140,7 +140,7 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("PartyCount smaller than zero")
 	case p.GLWERank != 1:
 		panic("Multi-Key TFHE only supports GLWE dimension 1")
-	case p.LookUpTableSize != p.PolyDegree:
+	case p.LookUpTableSize != 0 && p.LookUpTableSize != p.PolyDegree:
 		panic("Multi-Key TFHE only supports LookUpTableSize equal to PolyDegree")
 	}
 

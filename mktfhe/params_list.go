@@ -6,11 +6,9 @@ var (
 	// ParamsBinaryParty2 is a parameter set for binary TFHE with 2 parties.
 	ParamsBinaryParty2 = ParametersLiteral[uint64]{
 		ParametersLiteral: tfhe.ParametersLiteral[uint64]{
-			LWEDimension:         560,
-			GLWEPartialDimension: 2048,
-			GLWERank:             1,
-			PolyDegree:           2048,
-			LookUpTableSize:      2048,
+			LWEDimension: 560,
+			GLWERank:     1,
+			PolyDegree:   2048,
 
 			LWEStdDev:  0.0000305,
 			GLWEStdDev: 0.00000000000000000463,
@@ -46,11 +44,9 @@ var (
 	// ParamsBinaryParty4 is a parameter set for binary TFHE with 4 parties.
 	ParamsBinaryParty4 = ParametersLiteral[uint64]{
 		ParametersLiteral: tfhe.ParametersLiteral[uint64]{
-			LWEDimension:         560,
-			GLWEPartialDimension: 2048,
-			GLWERank:             1,
-			PolyDegree:           2048,
-			LookUpTableSize:      2048,
+			LWEDimension: 560,
+			GLWERank:     1,
+			PolyDegree:   2048,
 
 			LWEStdDev:  0.0000305,
 			GLWEStdDev: 0.00000000000000000463,
@@ -86,11 +82,9 @@ var (
 	// ParamsBinaryParty8 is a parameter set for binary TFHE with 8 parties.
 	ParamsBinaryParty8 = ParametersLiteral[uint64]{
 		ParametersLiteral: tfhe.ParametersLiteral[uint64]{
-			LWEDimension:         560,
-			GLWEPartialDimension: 2048,
-			GLWERank:             1,
-			PolyDegree:           2048,
-			LookUpTableSize:      2048,
+			LWEDimension: 560,
+			GLWERank:     1,
+			PolyDegree:   2048,
 
 			LWEStdDev:  0.0000305,
 			GLWEStdDev: 0.00000000000000000463,
@@ -126,11 +120,9 @@ var (
 	// ParamsBinaryParty16 is a parameter set for binary TFHE with 16 parties.
 	ParamsBinaryParty16 = ParametersLiteral[uint64]{
 		ParametersLiteral: tfhe.ParametersLiteral[uint64]{
-			LWEDimension:         560,
-			GLWEPartialDimension: 2048,
-			GLWERank:             1,
-			PolyDegree:           2048,
-			LookUpTableSize:      2048,
+			LWEDimension: 560,
+			GLWERank:     1,
+			PolyDegree:   2048,
 
 			LWEStdDev:  0.0000305,
 			GLWEStdDev: 0.00000000000000000463,
@@ -166,11 +158,9 @@ var (
 	// ParamsBinaryParty32 is a parameter set for binary TFHE with 32 parties.
 	ParamsBinaryParty32 = ParametersLiteral[uint64]{
 		ParametersLiteral: tfhe.ParametersLiteral[uint64]{
-			LWEDimension:         560,
-			GLWEPartialDimension: 2048,
-			GLWERank:             1,
-			PolyDegree:           2048,
-			LookUpTableSize:      2048,
+			LWEDimension: 560,
+			GLWERank:     1,
+			PolyDegree:   2048,
 
 			LWEStdDev:  0.0000305,
 			GLWEStdDev: 0.00000000000000000463,

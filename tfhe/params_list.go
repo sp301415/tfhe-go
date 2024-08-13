@@ -58,16 +58,12 @@ var (
 
 	// ParamsBinaryOriginal is a parameter set from the original C++ TFHE library.
 	ParamsBinaryOriginal = ParametersLiteral[uint32]{
-		LWEDimension:         630,
-		GLWEPartialDimension: 1024,
-		GLWERank:             1,
-		PolyDegree:           1024,
-		LookUpTableSize:      1024,
+		LWEDimension: 630,
+		GLWERank:     1,
+		PolyDegree:   1024,
 
 		LWEStdDev:  0.000030517578125,
 		GLWEStdDev: 0.0000000298023223876953125,
-
-		BlockSize: 1,
 
 		MessageModulus: 1 << 1,
 
