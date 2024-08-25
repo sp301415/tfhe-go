@@ -40,6 +40,8 @@ func (p GadgetParametersLiteral[T]) WithLevel(level int) GadgetParametersLiteral
 // If there is any invalid parameter in the literal, it panics.
 func (p GadgetParametersLiteral[T]) Compile() GadgetParameters[T] {
 	switch {
+	case p.Base < 2:
+		panic("Base smaller than two")
 	case !num.IsPowerOfTwo(p.Base):
 		panic("Base not power of two")
 	case p.Level <= 0:

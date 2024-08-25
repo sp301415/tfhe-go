@@ -107,7 +107,6 @@ TEXT ·decomposePolyAssignUint64AVX2(SB), NOSPLIT, $0-72
 	VPSUBQ Y0, Y10, Y13 // baseMask = base - 1
 	VPSRLQ $1, Y10, Y14 // baseHalf = base / 2
 	VPSUBQ Y0, Y11, Y15 // baseLog - 1
-	VPSUBQ Y0, Y12, Y9  // lastBaseQLog - 1
 
 	XORQ SI, SI
 	JMP  N_loop_end
