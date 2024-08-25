@@ -17,8 +17,8 @@ var (
 		MessageModulus: 1 << 1,
 
 		BootstrapParameters: GadgetParametersLiteral[uint32]{
-			Base:  1 << 8,
-			Level: 4,
+			Base:  1 << 6,
+			Level: 3,
 		},
 		KeySwitchParameters: GadgetParametersLiteral[uint32]{
 			Base:  1 << 3,

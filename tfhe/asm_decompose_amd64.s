@@ -24,7 +24,6 @@ TEXT ·decomposePolyAssignUint32AVX2(SB), NOSPLIT, $0-64
 	VPSUBD Y0, Y10, Y13 // baseMask = base - 1
 	VPSRLD $1, Y10, Y14 // baseHalf = base / 2
 	VPSUBD Y0, Y11, Y15 // baseLog - 1
-	VPSUBD Y0, Y12, Y9  // lastBaseQLog - 1
 
 	XORQ SI, SI
 	JMP  N_loop_end
@@ -33,17 +32,20 @@ N_loop:
 	// x := p[i]
 	VMOVDQU (AX)(SI*4), Y1
 
-	// c := (x >> lsbl) + ((x >> (lsbl - 1)) & 1)
-	// x >> (lsbl - 1)
-	VPSRLVD Y9, Y1, Y3
-
+	// c := (x >> lsbl) + ((x << 1) >> lsbl) & 1)
 	// c := x >> lsbl
-	VPSRLD $1, Y3, Y2
+	VPSRLVD Y12, Y1, Y2
 
-	// (x >> (lsbl - 1) & 1)
+	// x << 1
+	VPSLLD $1, Y1, Y3
+
+	// (x << 1) >> lsbl
+	VPSRLVD Y12, Y3, Y3
+
+	// ((x << 1) >> lsbl) & 1
 	VANDPD Y3, Y0, Y3
 
-	// c := (x >> lsbl) + (x >> (lsbl - 1) & 1)
+	// c := (x >> lsbl) + ((x << 1) >> lsbl) & 1)
 	VPADDD Y2, Y3, Y1
 
 	MOVQ DX, DI
@@ -114,17 +116,20 @@ N_loop:
 	// x := p[i]
 	VMOVDQU (AX)(SI*8), Y1
 
-	// c := (x >> lsbl) + ((x >> (lsbl - 1)) & 1)
-	// x >> (lsbl - 1)
-	VPSRLVQ Y9, Y1, Y3
-
+	// c := (x >> lsbl) + ((x << 1) >> lsbl) & 1)
 	// c := x >> lsbl
-	VPSRLQ $1, Y3, Y2
+	VPSRLVQ Y12, Y1, Y2
 
-	// (x >> (lsbl - 1) & 1)
+	// x << 1
+	VPSLLQ $1, Y1, Y3
+
+	// (x << 1) >> lsbl
+	VPSRLVQ Y12, Y3, Y3
+
+	// ((x << 1) >> lsbl) & 1
 	VANDPD Y3, Y0, Y3
 
-	// c := (x >> lsbl) + (x >> (lsbl - 1) & 1)
+	// c := (x >> lsbl) + ((x << 1) >> lsbl) & 1)
 	VPADDQ Y2, Y3, Y1
 
 	MOVQ DX, DI

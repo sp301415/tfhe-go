@@ -44,7 +44,7 @@ func (p GadgetParametersLiteral[T]) Compile() GadgetParameters[T] {
 		panic("Base not power of two")
 	case p.Level <= 0:
 		panic("Level smaller than zero")
-	case num.SizeT[T]() <= num.Log2(p.Base)*p.Level:
+	case num.SizeT[T]() < num.Log2(p.Base)*p.Level:
 		panic("Base * Level larger than Q")
 	}
 

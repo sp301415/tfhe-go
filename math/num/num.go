@@ -110,9 +110,9 @@ func IsSigned[T Real]() bool {
 }
 
 // IsPowerOfTwo returns whether x is a power of two.
-// If x < 0, it always returns false.
+// If x <= 0, it always returns false.
 func IsPowerOfTwo[T Integer](x T) bool {
-	return (x == 0) || ((x > 0) && (x&(x-1)) == 0)
+	return (x > 0) && (x&(x-1)) == 0
 }
 
 // Log2 returns floor(log2(x)). Panics if x <= 0.
@@ -131,9 +131,10 @@ func DivRound[T Integer](x, y T) T {
 
 // DivRoundBits is a bit-optimzed version of RoundRatio: it returns round(x/2^bits).
 //
-// If bits <= 0, it panics.
+// It only produces correct results for 0 <= bits < sizeT.
+// If bits < 0, it panics.
 func DivRoundBits[T Integer](x T, bits int) T {
-	return (x >> bits) + ((x >> (bits - 1)) & 1)
+	return (x >> bits) + ((x<<1)>>bits)&1
 }
 
 // Min returns the smaller value between x and y.
