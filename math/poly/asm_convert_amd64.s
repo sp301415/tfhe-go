@@ -118,8 +118,9 @@ loop_body:
 	VROUNDPD $0, Y0, Y1
 	VSUBPD   Y1, Y0, Y1
 	VMULPD   Y1, Y10, Y1
+	VROUNDPD $0, Y1, Y2
 
-	VMOVUPD Y1, (AX)(SI*8)
+	VMOVUPD Y2, (AX)(SI*8)
 
 	ADDQ $4, SI
 
