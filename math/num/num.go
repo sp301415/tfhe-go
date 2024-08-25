@@ -124,15 +124,15 @@ func Log2[T Integer](x T) int {
 	return int(bits.Len64(uint64(x))) - 1
 }
 
-// RoundRatio returns round(x/y).
-func RoundRatio[T Integer](x, y T) T {
+// DivRound returns round(x/y).
+func DivRound[T Integer](x, y T) T {
 	return T(math.Round(float64(x) / float64(y)))
 }
 
-// RoundRatioBits is a bit-optimzed version of RoundRatio: it returns round(x/2^bits).
+// DivRoundBits is a bit-optimzed version of RoundRatio: it returns round(x/2^bits).
 //
 // If bits <= 0, it panics.
-func RoundRatioBits[T Integer](x T, bits int) T {
+func DivRoundBits[T Integer](x T, bits int) T {
 	return (x >> bits) + ((x >> (bits - 1)) & 1)
 }
 

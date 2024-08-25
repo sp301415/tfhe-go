@@ -45,7 +45,7 @@ func (e *Encoder[T]) EncodeLWECustom(message int, messageModulus, scale T) LWEPl
 // DecodeLWE decodes LWE plaintext to integer message.
 // Parameter's MessageModulus and Scale are used.
 func (e *Encoder[T]) DecodeLWE(pt LWEPlaintext[T]) int {
-	return int(num.RoundRatioBits(pt.Value, e.Parameters.scaleLog) % e.Parameters.messageModulus)
+	return int(num.DivRoundBits(pt.Value, e.Parameters.scaleLog) % e.Parameters.messageModulus)
 }
 
 // DecodeLWECustom decodes LWE plaintext to integer message
@@ -53,7 +53,7 @@ func (e *Encoder[T]) DecodeLWE(pt LWEPlaintext[T]) int {
 //
 // If MessageModulus = 0, then it is automatically set to round(Q / scale).
 func (e *Encoder[T]) DecodeLWECustom(pt LWEPlaintext[T], messageModulus, scale T) int {
-	decoded := num.RoundRatio(pt.Value, scale)
+	decoded := num.DivRound(pt.Value, scale)
 	if messageModulus == 0 {
 		messageModulus = T(math.Round(math.Exp2(float64(e.Parameters.logQ)) / float64(scale)))
 	}
@@ -131,7 +131,7 @@ func (e *Encoder[T]) DecodeGLWE(pt GLWEPlaintext[T]) []int {
 func (e *Encoder[T]) DecodeGLWEAssign(pt GLWEPlaintext[T], messagesOut []int) {
 	length := num.Min(e.Parameters.polyDegree, len(messagesOut))
 	for i := 0; i < length; i++ {
-		messagesOut[i] = int((num.RoundRatioBits(pt.Value.Coeffs[i], e.Parameters.scaleLog) % e.Parameters.messageModulus))
+		messagesOut[i] = int((num.DivRoundBits(pt.Value.Coeffs[i], e.Parameters.scaleLog) % e.Parameters.messageModulus))
 	}
 }
 
@@ -155,7 +155,7 @@ func (e *Encoder[T]) DecodeGLWECustom(pt GLWEPlaintext[T], messageModulus, scale
 func (e *Encoder[T]) DecodeGLWECustomAssign(pt GLWEPlaintext[T], messageModulus, scale T, messagesOut []int) {
 	length := num.Min(e.Parameters.polyDegree, len(messagesOut))
 	for i := 0; i < length; i++ {
-		decoded := num.RoundRatio(pt.Value.Coeffs[i], scale)
+		decoded := num.DivRound(pt.Value.Coeffs[i], scale)
 		if messageModulus == 0 {
 			messageModulus = T(math.Round(math.Exp2(float64(e.Parameters.logQ)) / float64(scale)))
 		}

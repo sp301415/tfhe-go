@@ -77,7 +77,7 @@ func (e *Encryptor[T]) EncryptLevPlaintextAssign(pt LWEPlaintext[T], ctOut LevCi
 // DecryptLev decrypts Lev ciphertext to integer message.
 func (e *Encryptor[T]) DecryptLev(ct LevCiphertext[T]) int {
 	pt := e.DecryptLevPlaintext(ct)
-	return int(num.RoundRatioBits(pt.Value, ct.GadgetParameters.LastBaseQLog()) % e.Parameters.messageModulus)
+	return int(num.DivRoundBits(pt.Value, ct.GadgetParameters.LastBaseQLog()) % e.Parameters.messageModulus)
 }
 
 // DecryptLevPlaintext decrypts Lev ciphertext to LWE plaintext.
