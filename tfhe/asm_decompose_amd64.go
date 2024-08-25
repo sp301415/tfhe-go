@@ -41,7 +41,7 @@ func decomposePolyAssign[T TorusInt](p poly.Poly[T], gadgetParams GadgetParamete
 
 	lastBaseQLog := gadgetParams.LastBaseQLog()
 	for i := 0; i < p.Degree(); i++ {
-		c := num.RoundRatioBits(p.Coeffs[i], lastBaseQLog)
+		c := num.DivRoundBits(p.Coeffs[i], lastBaseQLog)
 		for j := gadgetParams.level - 1; j >= 1; j-- {
 			decomposedOut[j].Coeffs[i] = c & (gadgetParams.base - 1)
 			c >>= gadgetParams.baseLog
