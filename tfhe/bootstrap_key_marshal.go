@@ -294,7 +294,7 @@ func (ksk *KeySwitchKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	inputDimension := int(binary.BigEndian.Uint64(metadata[16:24]))
 	outputDimension := int(binary.BigEndian.Uint64(metadata[24:32]))
 
-	*ksk = NewKeySwitchKey[T](inputDimension, outputDimension, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
+	*ksk = NewKeySwitchKeyCustom[T](inputDimension, outputDimension, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
 
 	var z T
 	switch any(z).(type) {

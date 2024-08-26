@@ -20,10 +20,10 @@ func NewEvaluationKey[T TorusInt](params Parameters[T]) EvaluationKey[T] {
 }
 
 // NewEvaluationKeyCustom allocates an empty EvaluationKey with custom parameters.
-func NewEvaluationKeyCustom[T TorusInt](lweDimension, glweRank, polyDegree int, bootstrapParams, keyswitchParams GadgetParameters[T]) EvaluationKey[T] {
+func NewEvaluationKeyCustom[T TorusInt](lweDimension, glweRank, polyDegree, glwePartialDimension int, bootstrapParams, keyswitchParams GadgetParameters[T]) EvaluationKey[T] {
 	return EvaluationKey[T]{
 		BootstrapKey: NewBootstrapKeyCustom(lweDimension, glweRank, polyDegree, bootstrapParams),
-		KeySwitchKey: NewKeySwitchKeyForBootstrapCustom(lweDimension, glweRank, polyDegree, keyswitchParams),
+		KeySwitchKey: NewKeySwitchKeyForBootstrapCustom(lweDimension, glwePartialDimension, keyswitchParams),
 	}
 }
 
@@ -108,7 +108,16 @@ type KeySwitchKey[T TorusInt] struct {
 }
 
 // NewKeySwitchKey allocates an empty KeySwitchingKey.
-func NewKeySwitchKey[T TorusInt](inputDimension, outputDimension int, gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
+func NewKeySwitchKey[T TorusInt](params Parameters[T], inputDimension int, gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
+	ksk := make([]LevCiphertext[T], inputDimension)
+	for i := 0; i < inputDimension; i++ {
+		ksk[i] = NewLevCiphertext(params, gadgetParams)
+	}
+	return KeySwitchKey[T]{Value: ksk, GadgetParameters: gadgetParams}
+}
+
+// NewKeySwitchKeyCustom allocates an empty KeySwitchingKey with custom parameters.
+func NewKeySwitchKeyCustom[T TorusInt](inputDimension, outputDimension int, gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
 	ksk := make([]LevCiphertext[T], inputDimension)
 	for i := 0; i < inputDimension; i++ {
 		ksk[i] = NewLevCiphertextCustom(outputDimension, gadgetParams)
@@ -118,22 +127,17 @@ func NewKeySwitchKey[T TorusInt](inputDimension, outputDimension int, gadgetPara
 
 // NewKeySwitchKeyForBootstrap allocates an empty KeySwitchingKey for bootstrapping.
 func NewKeySwitchKeyForBootstrap[T TorusInt](params Parameters[T]) KeySwitchKey[T] {
-	return NewKeySwitchKey(params.glwePartialDimension-params.lweDimension, params.lweDimension, params.keyswitchParameters)
+	return NewKeySwitchKeyCustom(params.glwePartialDimension-params.lweDimension, params.lweDimension, params.keyswitchParameters)
 }
 
 // NewKeySwitchKeyForBootstrapCustom allocates an empty KeySwitchingKey with custom parameters.
-func NewKeySwitchKeyForBootstrapCustom[T TorusInt](lweDimension, glweRank, polyDegree int, gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
-	return NewKeySwitchKey(glweRank*polyDegree-lweDimension, lweDimension, gadgetParams)
+func NewKeySwitchKeyForBootstrapCustom[T TorusInt](lweDimension, glwePartialDimension int, gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
+	return NewKeySwitchKeyCustom(glwePartialDimension-lweDimension, lweDimension, gadgetParams)
 }
 
 // InputLWEDimension returns the input LWEDimension of this key.
 func (ksk KeySwitchKey[T]) InputLWEDimension() int {
 	return len(ksk.Value)
-}
-
-// OutputLWEDimension returns the output LWEDimension of this key.
-func (ksk KeySwitchKey[T]) OutputLWEDimension() int {
-	return len(ksk.Value[0].Value[0].Value) - 1
 }
 
 // Copy returns a copy of the key.

@@ -449,17 +449,15 @@ func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUp
 }
 
 // KeySwitch switches key of ct.
-// Input ciphertext should be of length ksk.InputLWEDimension + 1,
-// and output ciphertext will be of length ksk.OutputLWEDimension + 1.
+// Input ciphertext should be of length ksk.InputLWEDimension + 1.
 func (e *Evaluator[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchKey[T]) LWECiphertext[T] {
-	ctOut := NewLWECiphertextCustom[T](ksk.OutputLWEDimension())
+	ctOut := NewLWECiphertext(e.Parameters)
 	e.KeySwitchAssign(ct, ksk, ctOut)
 	return ctOut
 }
 
 // KeySwitchAssign switches key of ct and writes it to ctOut.
-// Input ciphertext should be of length ksk.InputLWEDimension + 1,
-// and output ciphertext should be of length ksk.OutputLWEDimension + 1.
+// Input ciphertext should be of length ksk.InputLWEDimension + 1.
 func (e *Evaluator[T]) KeySwitchAssign(ct LWECiphertext[T], ksk KeySwitchKey[T], ctOut LWECiphertext[T]) {
 	decomposed := e.decomposedBuffer(ksk.GadgetParameters)
 
