@@ -31,6 +31,34 @@ func (e *GLWETransformer[T]) ShallowCopy() *GLWETransformer[T] {
 	}
 }
 
+// ToFourierGLWESecretKey transforms GLWE secret key to Fourier GLWE secret key.
+func (e *GLWETransformer[T]) ToFourierGLWESecretKey(sk tfhe.GLWESecretKey[T]) tfhe.FourierGLWESecretKey[T] {
+	skOut := tfhe.NewFourierGLWESecretKeyCustom[T](e.Parameters.SingleKeyGLWERank(), e.Parameters.PolyDegree())
+	e.ToFourierGLWESecretKeyAssign(sk, skOut)
+	return skOut
+}
+
+// ToFourierGLWESecretKeyAssign transforms GLWE secret key to Fourier GLWE secret key and writes it to skOut.
+func (e *GLWETransformer[T]) ToFourierGLWESecretKeyAssign(skIn tfhe.GLWESecretKey[T], skOut tfhe.FourierGLWESecretKey[T]) {
+	for i := 0; i < e.Parameters.SingleKeyGLWERank(); i++ {
+		e.FourierEvaluator.ToFourierPolyAssign(skIn.Value[i], skOut.Value[i])
+	}
+}
+
+// ToGLWESecretKey transforms Fourier GLWE secret key to GLWE secret key.
+func (e *GLWETransformer[T]) ToGLWESecretKey(sk tfhe.FourierGLWESecretKey[T]) tfhe.GLWESecretKey[T] {
+	skOut := tfhe.NewGLWESecretKeyCustom[T](e.Parameters.SingleKeyGLWERank(), e.Parameters.PolyDegree())
+	e.ToGLWESecretKeyAssign(sk, skOut)
+	return skOut
+}
+
+// ToGLWESecretKeyAssign transforms Fourier GLWE secret key to GLWE secret key and writes it to skOut.
+func (e *GLWETransformer[T]) ToGLWESecretKeyAssign(skIn tfhe.FourierGLWESecretKey[T], skOut tfhe.GLWESecretKey[T]) {
+	for i := 0; i < e.Parameters.SingleKeyGLWERank(); i++ {
+		e.FourierEvaluator.ToPolyAssign(skIn.Value[i], skOut.Value[i])
+	}
+}
+
 // ToFourierGLWECiphertext transforms GLWE ciphertext to Fourier GLWE ciphertext.
 func (e *GLWETransformer[T]) ToFourierGLWECiphertext(ct GLWECiphertext[T]) FourierGLWECiphertext[T] {
 	ctOut := NewFourierGLWECiphertextCustom[T](e.Parameters.GLWERank(), e.Parameters.PolyDegree())
