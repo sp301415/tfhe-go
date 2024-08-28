@@ -8,7 +8,7 @@ import (
 	"github.com/sp301415/tfhe-go/math/vec"
 )
 
-// FourierEvaluator computes polynomial algorithms over the Fourier domain.
+// FourierEvaluator computes polynomial algorithms over the fourier domain.
 //
 // Operations usually take two forms: for example,
 //   - Add(fp0, fp1) adds fp0, fp1, allocates a new polynomial to store the result and returns it.

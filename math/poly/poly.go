@@ -8,7 +8,8 @@ import (
 	"github.com/sp301415/tfhe-go/math/vec"
 )
 
-// Poly represents the polynomial modulo X^N + 1. N should be power of two.
+// Poly is a polynomial modulo X^N + 1 over the coefficient domain.
+// N should be power of two.
 type Poly[T num.Integer] struct {
 	Coeffs []T
 }
@@ -63,7 +64,8 @@ func (p Poly[T]) Equals(p0 Poly[T]) bool {
 	return vec.Equals(p.Coeffs, p0.Coeffs)
 }
 
-// FourierPoly is a polynomial in the fourier domain.
+// FourierPoly is a polynomial modulo X^N + 1 over the fourier domain.
+// N should be power of two.
 type FourierPoly struct {
 	// Coeffs is represented as float-4 complex vector
 	// for efficient computation.
