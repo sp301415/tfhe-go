@@ -51,3 +51,32 @@ func (d *Decomposer[T]) DecomposePoly(p poly.Poly[T], gadgetParams GadgetParamet
 func (d *Decomposer[T]) DecomposePolyAssign(p poly.Poly[T], gadgetParams GadgetParameters[T], decomposedOut []poly.Poly[T]) {
 	decomposePolyAssign(p, gadgetParams, decomposedOut)
 }
+
+// Recompose recomposes decomposed with respect to gadgetParams.
+func (d *Decomposer[T]) Recompose(decomposed []T, gadgetParams GadgetParameters[T]) T {
+	var x T
+	for i := 0; i < gadgetParams.level; i++ {
+		x <<= gadgetParams.baseLog
+		x += decomposed[i]
+	}
+	return x << gadgetParams.LastBaseQLog()
+}
+
+// RecomposePoly recomposes decomposed with respect to gadgetParams.
+func (d *Decomposer[T]) RecomposePoly(decomposed []poly.Poly[T], gadgetParams GadgetParameters[T]) poly.Poly[T] {
+	pOut := poly.NewPoly[T](decomposed[0].Degree())
+	d.RecomposePolyAssign(decomposed, gadgetParams, pOut)
+	return pOut
+}
+
+// RecomposePolyAssign recomposes decomposed with respect to gadgetParams and writes it to pOut.
+func (d *Decomposer[T]) RecomposePolyAssign(decomposed []poly.Poly[T], gadgetParams GadgetParameters[T], pOut poly.Poly[T]) {
+	for i := 0; i < pOut.Degree(); i++ {
+		pOut.Coeffs[i] = 0
+		for j := 0; j < gadgetParams.level; j++ {
+			pOut.Coeffs[i] <<= gadgetParams.baseLog
+			pOut.Coeffs[i] += decomposed[j].Coeffs[i]
+		}
+		pOut.Coeffs[i] <<= gadgetParams.LastBaseQLog()
+	}
+}
