@@ -16,7 +16,7 @@ const (
 	MaxDegree = 1 << 30
 )
 
-// Evaluator calculates polynomial algorithms.
+// Evaluator computes polynomial algorithms over the coefficient domain.
 //
 // Operations usually take two forms: for example,
 //   - Add(p0, p1) adds p0, p1, allocates a new polynomial to store the result and returns it.

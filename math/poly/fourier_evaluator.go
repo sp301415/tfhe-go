@@ -8,12 +8,11 @@ import (
 	"github.com/sp301415/tfhe-go/math/vec"
 )
 
-// FourierEvaluator calculates algorithms related to FFT,
-// most notably the polynomial multiplication.
+// FourierEvaluator computes polynomial algorithms over the Fourier domain.
 //
 // Operations usually take two forms: for example,
 //   - Add(fp0, fp1) adds fp0, fp1, allocates a new polynomial to store the result and returns it.
-//   - AddAssign(fp0, fp1, fpOut) adds fp0, fp1 and writes the result to pre-allocated pOut without returning.
+//   - AddAssign(fp0, fp1, fpOut) adds fp0, fp1 and writes the result to pre-allocated fpOut without returning.
 //
 // Note that in most cases, fp0, fp1, and fpOut can overlap.
 // However, for operations that cannot, InPlace methods are implemented separately.
