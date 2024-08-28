@@ -70,7 +70,7 @@ func NewBootstrapKey[T TorusInt](params Parameters[T]) BootstrapKey[T] {
 func NewBootstrapKeyCustom[T TorusInt](lweDimension, glweRank, polyDegree int, gadgetParams GadgetParameters[T]) BootstrapKey[T] {
 	bsk := make([]FourierGGSWCiphertext[T], lweDimension)
 	for i := 0; i < lweDimension; i++ {
-		bsk[i] = NewFourierGGSWCiphertextCustom[T](glweRank, polyDegree, gadgetParams)
+		bsk[i] = NewFourierGGSWCiphertextCustom(glweRank, polyDegree, gadgetParams)
 	}
 	return BootstrapKey[T]{Value: bsk, GadgetParameters: gadgetParams}
 }

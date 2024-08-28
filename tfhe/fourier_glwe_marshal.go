@@ -278,7 +278,7 @@ func (ct *FourierGLevCiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	glweRank := int(binary.BigEndian.Uint64(metadata[16:24]))
 	polyDegree := int(binary.BigEndian.Uint64(metadata[24:32]))
 
-	*ct = NewFourierGLevCiphertextCustom[T](glweRank, polyDegree, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
+	*ct = NewFourierGLevCiphertextCustom(glweRank, polyDegree, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
 
 	buf := make([]byte, polyDegree*8)
 
@@ -390,7 +390,7 @@ func (ct *FourierGGSWCiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	glweRank := int(binary.BigEndian.Uint64(metadata[16:24]))
 	polyDegree := int(binary.BigEndian.Uint64(metadata[24:32]))
 
-	*ct = NewFourierGGSWCiphertextCustom[T](glweRank, polyDegree, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
+	*ct = NewFourierGGSWCiphertextCustom(glweRank, polyDegree, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
 
 	buf := make([]byte, polyDegree*8)
 

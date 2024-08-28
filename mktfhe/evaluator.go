@@ -11,7 +11,7 @@ type Evaluator[T tfhe.TorusInt] struct {
 	// Encoder is an embedded Encoder for this Evaluator.
 	*tfhe.Encoder[T]
 	// GLWETansformer is an embedded GLWETransformer for this Evaluator.
-	*tfhe.GLWETransformer[T]
+	*GLWETransformer[T]
 	// BaseSingleKeyEvaluator is a single-key Evaluator for this Evaluator.
 	// This is always guaranteed to be a working, non-nil evaluator without a key.
 	BaseSingleKeyEvaluator *tfhe.Evaluator[T]
@@ -94,7 +94,7 @@ func NewEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationK
 
 	return &Evaluator[T]{
 		Encoder:                tfhe.NewEncoder(params.Parameters),
-		GLWETransformer:        tfhe.NewGLWETransformer(params.Parameters),
+		GLWETransformer:        NewGLWETransformer(params),
 		BaseSingleKeyEvaluator: tfhe.NewEvaluator(params.Parameters, tfhe.EvaluationKey[T]{}),
 		SingleKeyEvaluators:    singleEvals,
 

@@ -159,7 +159,7 @@ func (bsk *BootstrapKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	glweRank := int(binary.BigEndian.Uint64(metadata[24:32]))
 	polyDegree := int(binary.BigEndian.Uint64(metadata[32:40]))
 
-	*bsk = NewBootstrapKeyCustom[T](lweDimension, glweRank, polyDegree, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
+	*bsk = NewBootstrapKeyCustom(lweDimension, glweRank, polyDegree, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
 
 	buf := make([]byte, polyDegree*8)
 
@@ -294,7 +294,7 @@ func (ksk *KeySwitchKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	inputDimension := int(binary.BigEndian.Uint64(metadata[16:24]))
 	outputDimension := int(binary.BigEndian.Uint64(metadata[24:32]))
 
-	*ksk = NewKeySwitchKeyCustom[T](inputDimension, outputDimension, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
+	*ksk = NewKeySwitchKeyCustom(inputDimension, outputDimension, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
 
 	var z T
 	switch any(z).(type) {

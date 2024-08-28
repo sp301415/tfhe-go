@@ -61,7 +61,7 @@ func (e *GLWETransformer[T]) ToGLWECiphertextAssign(ctIn FourierGLWECiphertext[T
 
 // ToFourierUniEncryption transforms UniEncryption to Fourier UniEncryption.
 func (e *GLWETransformer[T]) ToFourierUniEncryption(ct UniEncryption[T]) FourierUniEncryption[T] {
-	ctOut := NewFourierUniEncryptionCustom[T](e.Parameters.PolyDegree(), ct.GadgetParameters)
+	ctOut := NewFourierUniEncryptionCustom(e.Parameters.PolyDegree(), ct.GadgetParameters)
 	e.ToFourierUniEncryptionAssign(ct, ctOut)
 	return ctOut
 }
@@ -79,7 +79,7 @@ func (e *GLWETransformer[T]) ToFourierUniEncryptionAssign(ctIn UniEncryption[T],
 
 // ToUniEncryption transforms Fourier UniEncryption to UniEncryption.
 func (e *GLWETransformer[T]) ToUniEncryption(ct FourierUniEncryption[T]) UniEncryption[T] {
-	ctOut := NewUniEncryptionCustom[T](e.Parameters.PolyDegree(), ct.GadgetParameters)
+	ctOut := NewUniEncryptionCustom(e.Parameters.PolyDegree(), ct.GadgetParameters)
 	e.ToUniEncryptionAssign(ct, ctOut)
 	return ctOut
 }

@@ -179,7 +179,7 @@ func (ct *FourierUniEncryption[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	level := int(binary.BigEndian.Uint64(metadata[8:16]))
 	polyDegree := int(binary.BigEndian.Uint64(metadata[16:24]))
 
-	*ct = NewFourierUniEncryptionCustom[T](polyDegree, tfhe.GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
+	*ct = NewFourierUniEncryptionCustom(polyDegree, tfhe.GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
 
 	buf := make([]byte, polyDegree*8)
 

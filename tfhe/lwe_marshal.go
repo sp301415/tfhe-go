@@ -561,7 +561,7 @@ func (ct *LevCiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	level := int(binary.BigEndian.Uint64(metadata[8:16]))
 	lweDimension := int(binary.BigEndian.Uint64(metadata[16:24]))
 
-	*ct = NewLevCiphertextCustom[T](lweDimension, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
+	*ct = NewLevCiphertextCustom(lweDimension, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
 
 	var z T
 	switch any(z).(type) {
@@ -704,7 +704,7 @@ func (ct *GSWCiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	level := int(binary.BigEndian.Uint64(metadata[8:16]))
 	lweDimension := int(binary.BigEndian.Uint64(metadata[16:24]))
 
-	*ct = NewGSWCiphertextCustom[T](lweDimension, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
+	*ct = NewGSWCiphertextCustom(lweDimension, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
 
 	var z T
 	switch any(z).(type) {

@@ -240,7 +240,7 @@ func (ct *UniEncryption[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	level := int(binary.BigEndian.Uint64(metadata[8:16]))
 	polyDegree := int(binary.BigEndian.Uint64(metadata[16:24]))
 
-	*ct = NewUniEncryptionCustom[T](polyDegree, tfhe.GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
+	*ct = NewUniEncryptionCustom(polyDegree, tfhe.GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
 
 	var z T
 	switch any(z).(type) {

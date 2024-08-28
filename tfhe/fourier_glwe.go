@@ -169,7 +169,7 @@ func NewFourierGGSWCiphertext[T TorusInt](params Parameters[T], gadgetParams Gad
 func NewFourierGGSWCiphertextCustom[T TorusInt](glweRank, polyDegree int, gadgetParams GadgetParameters[T]) FourierGGSWCiphertext[T] {
 	ct := make([]FourierGLevCiphertext[T], glweRank+1)
 	for i := 0; i < glweRank+1; i++ {
-		ct[i] = NewFourierGLevCiphertextCustom[T](glweRank, polyDegree, gadgetParams)
+		ct[i] = NewFourierGLevCiphertextCustom(glweRank, polyDegree, gadgetParams)
 	}
 	return FourierGGSWCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
 }

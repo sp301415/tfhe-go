@@ -641,7 +641,7 @@ func (ct *GLevCiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	glweRank := int(binary.BigEndian.Uint64(metadata[16:24]))
 	polyDegree := int(binary.BigEndian.Uint64(metadata[24:32]))
 
-	*ct = NewGLevCiphertextCustom[T](glweRank, polyDegree, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
+	*ct = NewGLevCiphertextCustom(glweRank, polyDegree, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
 
 	var z T
 	switch any(z).(type) {
@@ -797,7 +797,7 @@ func (ct *GGSWCiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	glweRank := int(binary.BigEndian.Uint64(metadata[16:24]))
 	polyDegree := int(binary.BigEndian.Uint64(metadata[24:32]))
 
-	*ct = NewGGSWCiphertextCustom[T](glweRank, polyDegree, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
+	*ct = NewGGSWCiphertextCustom(glweRank, polyDegree, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
 
 	var z T
 	switch any(z).(type) {

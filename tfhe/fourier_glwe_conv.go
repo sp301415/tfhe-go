@@ -106,7 +106,7 @@ func (e *GLWETransformer[T]) ToFourierGLevCiphertextAssign(ctIn GLevCiphertext[T
 
 // ToGLevCiphertext transforms Fourier GLev ciphertext to GLev ciphertext.
 func (e *GLWETransformer[T]) ToGLevCiphertext(ct FourierGLevCiphertext[T]) GLevCiphertext[T] {
-	ctOut := NewGLevCiphertextCustom[T](e.Parameters.glweRank, e.Parameters.polyDegree, ct.GadgetParameters)
+	ctOut := NewGLevCiphertextCustom(e.Parameters.glweRank, e.Parameters.polyDegree, ct.GadgetParameters)
 	e.ToGLevCiphertextAssign(ct, ctOut)
 	return ctOut
 }
@@ -120,7 +120,7 @@ func (e *GLWETransformer[T]) ToGLevCiphertextAssign(ctIn FourierGLevCiphertext[T
 
 // ToFourierGGSWCiphertext transforms GGSW ciphertext to Fourier GGSW ciphertext.
 func (e *GLWETransformer[T]) ToFourierGGSWCiphertext(ct GGSWCiphertext[T]) FourierGGSWCiphertext[T] {
-	ctOut := NewFourierGGSWCiphertextCustom[T](e.Parameters.glweRank, e.Parameters.polyDegree, ct.GadgetParameters)
+	ctOut := NewFourierGGSWCiphertextCustom(e.Parameters.glweRank, e.Parameters.polyDegree, ct.GadgetParameters)
 	e.ToFourierGGSWCiphertextAssign(ct, ctOut)
 	return ctOut
 }
@@ -134,7 +134,7 @@ func (e *GLWETransformer[T]) ToFourierGGSWCiphertextAssign(ctIn GGSWCiphertext[T
 
 // ToGGSWCiphertext transforms Fourier GGSW ciphertext to GGSW ciphertext.
 func (e *GLWETransformer[T]) ToGGSWCiphertext(ct FourierGGSWCiphertext[T]) GGSWCiphertext[T] {
-	ctOut := NewGGSWCiphertextCustom[T](e.Parameters.glweRank, e.Parameters.polyDegree, ct.GadgetParameters)
+	ctOut := NewGGSWCiphertextCustom(e.Parameters.glweRank, e.Parameters.polyDegree, ct.GadgetParameters)
 	e.ToGGSWCiphertextAssign(ct, ctOut)
 	return ctOut
 }

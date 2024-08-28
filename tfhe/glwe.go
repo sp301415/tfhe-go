@@ -297,7 +297,7 @@ func NewGGSWCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetPara
 func NewGGSWCiphertextCustom[T TorusInt](glweRank, polyDegree int, gadgetParams GadgetParameters[T]) GGSWCiphertext[T] {
 	ct := make([]GLevCiphertext[T], glweRank+1)
 	for i := 0; i < glweRank+1; i++ {
-		ct[i] = NewGLevCiphertextCustom[T](glweRank, polyDegree, gadgetParams)
+		ct[i] = NewGLevCiphertextCustom(glweRank, polyDegree, gadgetParams)
 	}
 	return GGSWCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
 }

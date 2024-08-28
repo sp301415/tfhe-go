@@ -225,7 +225,7 @@ func NewGSWCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetParam
 func NewGSWCiphertextCustom[T TorusInt](lweDimension int, gadgetParams GadgetParameters[T]) GSWCiphertext[T] {
 	ct := make([]LevCiphertext[T], lweDimension+1)
 	for i := 0; i < lweDimension+1; i++ {
-		ct[i] = NewLevCiphertextCustom[T](lweDimension, gadgetParams)
+		ct[i] = NewLevCiphertextCustom(lweDimension, gadgetParams)
 	}
 	return GSWCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
 }
