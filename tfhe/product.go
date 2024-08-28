@@ -13,8 +13,13 @@ func (e *Evaluator[T]) GadgetProduct(ctFourierGLev FourierGLevCiphertext[T], p p
 
 // GadgetProductAssign computes the gadget product between p and ctFourierGLev and writes it to ctGLWEOut.
 func (e *Evaluator[T]) GadgetProductAssign(ctFourierGLev FourierGLevCiphertext[T], p poly.Poly[T], ctGLWEOut GLWECiphertext[T]) {
+	polyDecomposed := e.polyDecomposedBuffer(ctFourierGLev.GadgetParameters)
 	polyFourierDecomposed := e.polyFourierDecomposedBuffer(ctFourierGLev.GadgetParameters)
-	e.FourierDecomposePolyAssign(p, ctFourierGLev.GadgetParameters, polyFourierDecomposed)
+
+	e.DecomposePolyAssign(p, ctFourierGLev.GadgetParameters, polyDecomposed)
+	for i := 0; i < ctFourierGLev.GadgetParameters.level; i++ {
+		e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[i], polyFourierDecomposed[i])
+	}
 
 	e.FourierPolyMulFourierGLWEAssign(ctFourierGLev.Value[0], polyFourierDecomposed[0], e.buffer.ctFourierProd)
 	for i := 1; i < ctFourierGLev.GadgetParameters.level; i++ {
@@ -28,8 +33,13 @@ func (e *Evaluator[T]) GadgetProductAssign(ctFourierGLev FourierGLevCiphertext[T
 
 // GadgetProductAddAssign computes the gadget product between p and ctFourierGLev and adds it to ctGLWEOut.
 func (e *Evaluator[T]) GadgetProductAddAssign(ctFourierGLev FourierGLevCiphertext[T], p poly.Poly[T], ctGLWEOut GLWECiphertext[T]) {
+	polyDecomposed := e.polyDecomposedBuffer(ctFourierGLev.GadgetParameters)
 	polyFourierDecomposed := e.polyFourierDecomposedBuffer(ctFourierGLev.GadgetParameters)
-	e.FourierDecomposePolyAssign(p, ctFourierGLev.GadgetParameters, polyFourierDecomposed)
+
+	e.DecomposePolyAssign(p, ctFourierGLev.GadgetParameters, polyDecomposed)
+	for i := 0; i < ctFourierGLev.GadgetParameters.level; i++ {
+		e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[i], polyFourierDecomposed[i])
+	}
 
 	e.FourierPolyMulFourierGLWEAssign(ctFourierGLev.Value[0], polyFourierDecomposed[0], e.buffer.ctFourierProd)
 	for i := 1; i < ctFourierGLev.GadgetParameters.level; i++ {
@@ -43,8 +53,13 @@ func (e *Evaluator[T]) GadgetProductAddAssign(ctFourierGLev FourierGLevCiphertex
 
 // GadgetProductSubAssign computes the gadget product between p and ctFourierGLev and subtracts it from ctGLWEOut.
 func (e *Evaluator[T]) GadgetProductSubAssign(ctFourierGLev FourierGLevCiphertext[T], p poly.Poly[T], ctGLWEOut GLWECiphertext[T]) {
+	polyDecomposed := e.polyDecomposedBuffer(ctFourierGLev.GadgetParameters)
 	polyFourierDecomposed := e.polyFourierDecomposedBuffer(ctFourierGLev.GadgetParameters)
-	e.FourierDecomposePolyAssign(p, ctFourierGLev.GadgetParameters, polyFourierDecomposed)
+
+	e.DecomposePolyAssign(p, ctFourierGLev.GadgetParameters, polyDecomposed)
+	for i := 0; i < ctFourierGLev.GadgetParameters.level; i++ {
+		e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[i], polyFourierDecomposed[i])
+	}
 
 	e.FourierPolyMulFourierGLWEAssign(ctFourierGLev.Value[0], polyFourierDecomposed[0], e.buffer.ctFourierProd)
 	for i := 1; i < ctFourierGLev.GadgetParameters.level; i++ {
