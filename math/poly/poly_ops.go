@@ -234,3 +234,60 @@ func (e *Evaluator[T]) MonomialMulSubAssign(p0 Poly[T], d int, pOut Poly[T]) {
 		}
 	}
 }
+
+// Permute returns p0(X^d).
+func (e *Evaluator[T]) Permute(p0 Poly[T], d int) Poly[T] {
+	pOut := e.NewPoly()
+	e.PermuteAssign(p0, d, pOut)
+	return pOut
+}
+
+// PermuteAssign computes pOut = p0(X^d).
+//
+// p0 and pOut should not overlap. For inplace permutation,
+// use [*Evaluator.PermuteInPlace].
+func (e *Evaluator[T]) PermuteAssign(p0 Poly[T], d int, pOut Poly[T]) {
+	pOut.Clear()
+	for i := 0; i < e.degree; i++ {
+		j := (d * i) & (2*e.degree - 1)
+		if j < e.degree {
+			pOut.Coeffs[j] += p0.Coeffs[i]
+		} else {
+			pOut.Coeffs[j-e.degree] -= p0.Coeffs[i]
+		}
+	}
+}
+
+// PermuteInPlace computes p0 = p0(X^d).
+func (e *Evaluator[T]) PermuteInPlace(p0 Poly[T], d int) {
+	e.PermuteAssign(p0, d, e.buffer.pOut)
+	p0.CopyFrom(e.buffer.pOut)
+}
+
+// PermuteAddAssign computes pOut += p0(X^d).
+//
+// p0 and pOut should not overlap.
+func (e *Evaluator[T]) PermuteAddAssign(p0 Poly[T], d int, pOut Poly[T]) {
+	for i := 0; i < e.degree; i++ {
+		j := (d * i) & (2*e.degree - 1)
+		if j < e.degree {
+			pOut.Coeffs[j] += p0.Coeffs[i]
+		} else {
+			pOut.Coeffs[j-e.degree] -= p0.Coeffs[i]
+		}
+	}
+}
+
+// PermuteSubAssign computes pOut -= p0(X^d).
+//
+// p0 and pOut should not overlap.
+func (e *Evaluator[T]) PermuteSubAssign(p0 Poly[T], d int, pOut Poly[T]) {
+	for i := 0; i < e.degree; i++ {
+		j := (d * i) & (2*e.degree - 1)
+		if j < e.degree {
+			pOut.Coeffs[j] -= p0.Coeffs[i]
+		} else {
+			pOut.Coeffs[j-e.degree] += p0.Coeffs[i]
+		}
+	}
+}

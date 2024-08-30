@@ -141,7 +141,8 @@ func (e *Evaluator[T]) MonomialMulGLWE(ct0 GLWECiphertext[T], d int) GLWECiphert
 
 // MonomialMulGLWEAssign computes ctOut = X^d * ct0.
 //
-// ct0 and ctOut should not overlap.
+// ct0 and ctOut should not overlap. For inplace multiplication,
+// use [*Evaluator.MonomialMulGLWEInPlace].
 func (e *Evaluator[T]) MonomialMulGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweRank+1; i++ {
 		e.PolyEvaluator.MonomialMulAssign(ct0.Value[i], d, ctOut.Value[i])
@@ -170,5 +171,47 @@ func (e *Evaluator[T]) MonomialMulAddGLWEAssign(ct0 GLWECiphertext[T], d int, ct
 func (e *Evaluator[T]) MonomialMulSubGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweRank+1; i++ {
 		e.PolyEvaluator.MonomialMulSubAssign(ct0.Value[i], d, ctOut.Value[i])
+	}
+}
+
+// PermuteGLWE returns ctOut = ct0(X^d).
+func (e *Evaluator[T]) PermuteGLWE(ct0 GLWECiphertext[T], d int) GLWECiphertext[T] {
+	ctOut := NewGLWECiphertext(e.Parameters)
+	e.PermuteGLWEAssign(ct0, d, ctOut)
+	return ctOut
+}
+
+// PermuteGLWEAssign computes ctOut = ct0(X^d).
+//
+// ct0 and ctOut should not overlap. For inplace permutation,
+// use [*Evaluator.PermuteGLWEInPlace].
+func (e *Evaluator[T]) PermuteGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweRank+1; i++ {
+		e.PolyEvaluator.PermuteAssign(ct0.Value[i], d, ctOut.Value[i])
+	}
+}
+
+// PermuteGLWEInPlace computes ct0 = ct0(X^d).
+func (e *Evaluator[T]) PermuteGLWEInPlace(ct0 GLWECiphertext[T], d int) {
+	for i := 0; i < e.Parameters.glweRank+1; i++ {
+		e.PolyEvaluator.PermuteInPlace(ct0.Value[i], d)
+	}
+}
+
+// PermuteAddGLWEAssign computes ctOut += ct0(X^d).
+//
+// ct0 and ctOut should not overlap.
+func (e *Evaluator[T]) PermuteAddGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweRank+1; i++ {
+		e.PolyEvaluator.PermuteAddAssign(ct0.Value[i], d, ctOut.Value[i])
+	}
+}
+
+// PermuteSubGLWEAssign computes ctOut -= ct0(X^d).
+//
+// ct0 and ctOut should not overlap.
+func (e *Evaluator[T]) PermuteSubGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweRank+1; i++ {
+		e.PolyEvaluator.PermuteSubAssign(ct0.Value[i], d, ctOut.Value[i])
 	}
 }

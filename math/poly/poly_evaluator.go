@@ -37,7 +37,7 @@ type Evaluator[T num.Integer] struct {
 
 // evaluationBuffer contains buffer values for Evaluator.
 type evaluationBuffer[T num.Integer] struct {
-	// pOut holds the intermediate polynomial in MulAdd or MulSub type operations.
+	// pOut holds the intermediate polynomial in MulAdd/MulSub and Permute type operations.
 	pOut Poly[T]
 }
 
