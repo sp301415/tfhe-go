@@ -94,7 +94,7 @@ func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut tfhe.LookUpTab
 				e.SingleKeyEvaluators[i].BlindRotateAssign(e.buffer.ctRotateInputs[i], e.buffer.gadgetLUTs[j], e.buffer.ctAccs[i])
 				e.SingleKeyEvaluators[i].ToFourierGLWECiphertextAssign(e.buffer.ctAccs[i], e.buffer.ctFourierAccs[i].Value[j])
 			}
-			e.ExternalProductAssign(i, e.buffer.ctFourierAccs[i], ctOut, ctOut)
+			e.ExternalProductGLWEAssign(i, e.buffer.ctFourierAccs[i], ctOut, ctOut)
 		}
 	}
 }
@@ -132,7 +132,7 @@ func (e *Evaluator[T]) BlindRotateParallelAssign(ct LWECiphertext[T], lut tfhe.L
 
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			e.ExternalProductAssign(i, e.buffer.ctFourierAccs[i], ctOut, ctOut)
+			e.ExternalProductGLWEAssign(i, e.buffer.ctFourierAccs[i], ctOut, ctOut)
 		}
 	}
 }

@@ -83,7 +83,7 @@ func TestEvaluator(t *testing.T) {
 		mul := 1
 		ctMul := enc[0].FourierUniEncrypt([]int{mul}, params.RelinKeyParameters())
 
-		ctOut := eval.HybridProduct(0, ctMul, ct)
+		ctOut := eval.HybridProductGLWE(0, ctMul, ct)
 
 		for i, m := range messages {
 			assert.Equal(t, (mul*m)%int(params.MessageModulus()), dec.DecryptGLWE(ctOut)[i])
@@ -96,7 +96,7 @@ func TestEvaluator(t *testing.T) {
 		mul := 1
 		ctMul := enc[0].SingleKeyEncryptor.EncryptFourierGLev([]int{mul}, params.AccumulatorParameters())
 
-		ctOut := eval.ExternalProduct(0, ctMul, ct)
+		ctOut := eval.ExternalProductGLWE(0, ctMul, ct)
 
 		for i, m := range messages {
 			assert.Equal(t, (mul*m)%int(params.MessageModulus()), dec.DecryptGLWE(ctOut)[i])

@@ -118,7 +118,7 @@ func TestEvaluator(t *testing.T) {
 		mul := 2
 		ctMul := enc.EncryptFourierGGSW([]int{mul}, params.KeySwitchParameters())
 
-		ctOut := eval.ExternalProduct(ctMul, ct)
+		ctOut := eval.ExternalProductGLWE(ctMul, ct)
 
 		for i, m := range messages {
 			assert.Equal(t, mul*m, enc.DecryptGLWE(ctOut)[i])

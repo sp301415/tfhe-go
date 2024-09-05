@@ -4,15 +4,15 @@ import (
 	"github.com/sp301415/tfhe-go/tfhe"
 )
 
-// HybridProduct returns the hybrid product between ctFourierUniEnc and ctGLWE.
-func (e *Evaluator[T]) HybridProduct(idx int, ctFourierUniEnc FourierUniEncryption[T], ctGLWE GLWECiphertext[T]) GLWECiphertext[T] {
+// HybridProductGLWE returns the hybrid product between ctFourierUniEnc and ctGLWE.
+func (e *Evaluator[T]) HybridProductGLWE(idx int, ctFourierUniEnc FourierUniEncryption[T], ctGLWE GLWECiphertext[T]) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
-	e.HybridProductAssign(idx, ctFourierUniEnc, ctGLWE, ctOut)
+	e.HybridProductGLWEAssign(idx, ctFourierUniEnc, ctGLWE, ctOut)
 	return ctOut
 }
 
-// HybridProductAssign computes the hybrid product between ctFourierUniEnc and ctGLWE and writes it to ctGLWEOut.
-func (e *Evaluator[T]) HybridProductAssign(idx int, ctFourierUniEnc FourierUniEncryption[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
+// HybridProductGLWEAssign computes the hybrid product between ctFourierUniEnc and ctGLWE and writes it to ctGLWEOut.
+func (e *Evaluator[T]) HybridProductGLWEAssign(idx int, ctFourierUniEnc FourierUniEncryption[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
 	polyDecomposed := e.polyDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
@@ -71,7 +71,7 @@ func (e *Evaluator[T]) HybridProductAssign(idx int, ctFourierUniEnc FourierUniEn
 }
 
 // HybridProductAssign computes the hybrid product between ctFourierUniEnc and ctGLWE and adds it to ctGLWEOut.
-func (e *Evaluator[T]) HybridProductAddAssign(idx int, ctFourierUniEnc FourierUniEncryption[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
+func (e *Evaluator[T]) HybridProductAddGLWEAssign(idx int, ctFourierUniEnc FourierUniEncryption[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
 	polyDecomposed := e.polyDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
@@ -127,8 +127,8 @@ func (e *Evaluator[T]) HybridProductAddAssign(idx int, ctFourierUniEnc FourierUn
 	}
 }
 
-// HybridProductSubAssign computes the hybrid product between ctFourierUniEnc and ctGLWE and subtracts it from ctGLWEOut.
-func (e *Evaluator[T]) HybridProductSubAssign(idx int, ctFourierUniEnc FourierUniEncryption[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
+// HybridProductSubGLWEAssign computes the hybrid product between ctFourierUniEnc and ctGLWE and subtracts it from ctGLWEOut.
+func (e *Evaluator[T]) HybridProductSubGLWEAssign(idx int, ctFourierUniEnc FourierUniEncryption[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
 	polyDecomposed := e.polyDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
@@ -184,27 +184,27 @@ func (e *Evaluator[T]) HybridProductSubAssign(idx int, ctFourierUniEnc FourierUn
 	}
 }
 
-// ExternalProduct returns the external product between ctFourierGLev and ctGLWE.
-func (e *Evaluator[T]) ExternalProduct(idx int, ctFourierGLev tfhe.FourierGLevCiphertext[T], ctGLWE GLWECiphertext[T]) GLWECiphertext[T] {
+// ExternalProductGLWE returns the external product between ctFourierGLev and ctGLWE.
+func (e *Evaluator[T]) ExternalProductGLWE(idx int, ctFourierGLev tfhe.FourierGLevCiphertext[T], ctGLWE GLWECiphertext[T]) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Parameters)
-	e.ExternalProductAssign(idx, ctFourierGLev, ctGLWE, ctOut)
+	e.ExternalProductGLWEAssign(idx, ctFourierGLev, ctGLWE, ctOut)
 	return ctOut
 }
 
-// ExternalProductAssign computes the external product between ctFourierGLev and ctGLWE and writes it to ctGLWEOut.
-func (e *Evaluator[T]) ExternalProductAssign(idx int, ctFourierGLev tfhe.FourierGLevCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
+// ExternalProductGLWEAssign computes the external product between ctFourierGLev and ctGLWE and writes it to ctGLWEOut.
+func (e *Evaluator[T]) ExternalProductGLWEAssign(idx int, ctFourierGLev tfhe.FourierGLevCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
-	eIdx.GadgetProductAssign(ctFourierGLev, ctGLWE.Value[0], e.buffer.ctRelinTransposed[0])
+	eIdx.GadgetProductAssignGLWE(ctFourierGLev, ctGLWE.Value[0], e.buffer.ctRelinTransposed[0])
 	e.buffer.ctRelin.Value[0].CopyFrom(e.buffer.ctRelinTransposed[0].Value[1])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.GadgetProductAssign(ctFourierGLev, ctGLWE.Value[i+1], e.buffer.ctRelinTransposed[i+1])
+			eIdx.GadgetProductAssignGLWE(ctFourierGLev, ctGLWE.Value[i+1], e.buffer.ctRelinTransposed[i+1])
 			e.buffer.ctRelin.Value[i+1].CopyFrom(e.buffer.ctRelinTransposed[i+1].Value[1])
 		}
 	}
 
-	e.HybridProductAssign(idx, e.EvaluationKeys[idx].RelinKey, e.buffer.ctRelin, ctGLWEOut)
+	e.HybridProductGLWEAssign(idx, e.EvaluationKeys[idx].RelinKey, e.buffer.ctRelin, ctGLWEOut)
 
 	eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[0], e.buffer.ctRelinTransposed[0].Value[0], ctGLWEOut.Value[0])
 	for i, ok := range e.PartyBitMap {
@@ -214,20 +214,20 @@ func (e *Evaluator[T]) ExternalProductAssign(idx int, ctFourierGLev tfhe.Fourier
 	}
 }
 
-// ExternalProductAddAssign computes the external product between ctFourierGLev and ctGLWE and adds it to ctGLWEOut.
-func (e *Evaluator[T]) ExternalProductAddAssign(idx int, ctFourierGLev tfhe.FourierGLevCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
+// ExternalProductAddGLWEAssign computes the external product between ctFourierGLev and ctGLWE and adds it to ctGLWEOut.
+func (e *Evaluator[T]) ExternalProductAddGLWEAssign(idx int, ctFourierGLev tfhe.FourierGLevCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
-	eIdx.GadgetProductAssign(ctFourierGLev, ctGLWE.Value[0], e.buffer.ctRelinTransposed[0])
+	eIdx.GadgetProductAssignGLWE(ctFourierGLev, ctGLWE.Value[0], e.buffer.ctRelinTransposed[0])
 	e.buffer.ctRelin.Value[0].CopyFrom(e.buffer.ctRelinTransposed[0].Value[1])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.GadgetProductAssign(ctFourierGLev, ctGLWE.Value[i+1], e.buffer.ctRelinTransposed[i+1])
+			eIdx.GadgetProductAssignGLWE(ctFourierGLev, ctGLWE.Value[i+1], e.buffer.ctRelinTransposed[i+1])
 			e.buffer.ctRelin.Value[i+1].CopyFrom(e.buffer.ctRelinTransposed[i+1].Value[1])
 		}
 	}
 
-	e.HybridProductAddAssign(idx, e.EvaluationKeys[idx].RelinKey, e.buffer.ctRelin, ctGLWEOut)
+	e.HybridProductAddGLWEAssign(idx, e.EvaluationKeys[idx].RelinKey, e.buffer.ctRelin, ctGLWEOut)
 
 	eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[0], e.buffer.ctRelinTransposed[0].Value[0], ctGLWEOut.Value[0])
 	for i, ok := range e.PartyBitMap {
@@ -237,20 +237,20 @@ func (e *Evaluator[T]) ExternalProductAddAssign(idx int, ctFourierGLev tfhe.Four
 	}
 }
 
-// ExternalProductSubAssign computes the external product between ctFourierGLev and ctGLWE and subtracts it from ctGLWEOut.
-func (e *Evaluator[T]) ExternalProductSubAssign(idx int, ctFourierGLev tfhe.FourierGLevCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
+// ExternalProductSubGLWEAssign computes the external product between ctFourierGLev and ctGLWE and subtracts it from ctGLWEOut.
+func (e *Evaluator[T]) ExternalProductSubGLWEAssign(idx int, ctFourierGLev tfhe.FourierGLevCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
-	eIdx.GadgetProductAssign(ctFourierGLev, ctGLWE.Value[0], e.buffer.ctRelinTransposed[0])
+	eIdx.GadgetProductAssignGLWE(ctFourierGLev, ctGLWE.Value[0], e.buffer.ctRelinTransposed[0])
 	e.buffer.ctRelin.Value[0].CopyFrom(e.buffer.ctRelinTransposed[0].Value[1])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.GadgetProductAssign(ctFourierGLev, ctGLWE.Value[i+1], e.buffer.ctRelinTransposed[i+1])
+			eIdx.GadgetProductAssignGLWE(ctFourierGLev, ctGLWE.Value[i+1], e.buffer.ctRelinTransposed[i+1])
 			e.buffer.ctRelin.Value[i+1].CopyFrom(e.buffer.ctRelinTransposed[i+1].Value[1])
 		}
 	}
 
-	e.HybridProductSubAssign(idx, e.EvaluationKeys[idx].RelinKey, e.buffer.ctRelin, ctGLWEOut)
+	e.HybridProductSubGLWEAssign(idx, e.EvaluationKeys[idx].RelinKey, e.buffer.ctRelin, ctGLWEOut)
 
 	eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[0], e.buffer.ctRelinTransposed[0].Value[0], ctGLWEOut.Value[0])
 	for i, ok := range e.PartyBitMap {
