@@ -12,8 +12,7 @@ type Evaluator[T tfhe.TorusInt] struct {
 	*tfhe.Encoder[T]
 	// GLWETansformer is an embedded GLWETransformer for this Evaluator.
 	*GLWETransformer[T]
-	// Decomposer is an embedded Decomposer for this Evaluator.
-	*tfhe.Decomposer[T]
+
 	// BaseSingleKeyEvaluator is a single-key Evaluator for this Evaluator.
 	// This is always guaranteed to be a working, non-nil evaluator without a key.
 	BaseSingleKeyEvaluator *tfhe.Evaluator[T]
@@ -21,7 +20,9 @@ type Evaluator[T tfhe.TorusInt] struct {
 	// If an evaluation key does not exist for given index, it is nil.
 	SingleKeyEvaluators []*tfhe.Evaluator[T]
 
-	// PolyEvaluator is the PolyEvaluator for this Evaluator.
+	// Decomposer is a Decomposer for this Evaluator.
+	Decomposer *tfhe.Decomposer[T]
+	// PolyEvaluator is a PolyEvaluator for this Evaluator.
 	PolyEvaluator *poly.Evaluator[T]
 
 	// Parameters is the parameters for this Evaluator.
@@ -97,11 +98,11 @@ func NewEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationK
 	return &Evaluator[T]{
 		Encoder:         tfhe.NewEncoder(params.Parameters),
 		GLWETransformer: NewGLWETransformer(params),
-		Decomposer:      decomposer,
 
 		BaseSingleKeyEvaluator: tfhe.NewEvaluator(params.Parameters, tfhe.EvaluationKey[T]{}),
 		SingleKeyEvaluators:    singleEvals,
 
+		Decomposer:    decomposer,
 		PolyEvaluator: poly.NewEvaluator[T](params.PolyDegree()),
 
 		Parameters: params,
@@ -184,11 +185,11 @@ func (e *Evaluator[T]) ShallowCopy() *Evaluator[T] {
 	return &Evaluator[T]{
 		Encoder:         e.Encoder,
 		GLWETransformer: e.GLWETransformer.ShallowCopy(),
-		Decomposer:      e.Decomposer.ShallowCopy(),
 
 		BaseSingleKeyEvaluator: e.BaseSingleKeyEvaluator.ShallowCopy(),
 		SingleKeyEvaluators:    singleEvals,
 
+		Decomposer:    e.Decomposer.ShallowCopy(),
 		PolyEvaluator: e.PolyEvaluator.ShallowCopy(),
 
 		Parameters:  e.Parameters,

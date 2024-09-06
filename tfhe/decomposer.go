@@ -11,7 +11,7 @@ import (
 // Decomposer is not safe for concurrent use.
 // Use [*Decomposer.ShallowCopy] to get a safe copy.
 type Decomposer[T TorusInt] struct {
-	// PolyEvaluator is the PolyEvaluator for this Decomposer.
+	// PolyEvaluator is a PolyEvaluator for this Decomposer.
 	PolyEvaluator *poly.Evaluator[T]
 
 	// buffer is the buffer values for this Decomposer.

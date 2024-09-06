@@ -16,13 +16,13 @@ type Evaluator[T TorusInt] struct {
 	*Encoder[T]
 	// GLWETransformer is an embedded GLWETransformer for this Evaluator.
 	*GLWETransformer[T]
-	// Decomposer is an embedded Decomposer for this Evaluator.
-	*Decomposer[T]
 
 	// Parameters is the parameters for this Evaluator.
 	Parameters Parameters[T]
 
-	// PolyEvaluator is the PolyEvaluator for this Evaluator.
+	// Decomposer is an Decomposer for this Evaluator.
+	Decomposer *Decomposer[T]
+	// PolyEvaluator is a PolyEvaluator for this Evaluator.
 	PolyEvaluator *poly.Evaluator[T]
 
 	// EvaluationKey is the evaluation key for this Evaluator.
@@ -82,10 +82,10 @@ func NewEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *Evalu
 	return &Evaluator[T]{
 		Encoder:         NewEncoder(params),
 		GLWETransformer: NewGLWETransformer(params),
-		Decomposer:      decomposer,
 
 		Parameters: params,
 
+		Decomposer:    decomposer,
 		PolyEvaluator: poly.NewEvaluator[T](params.polyDegree),
 
 		EvaluationKey: evk,
@@ -150,10 +150,10 @@ func (e *Evaluator[T]) ShallowCopy() *Evaluator[T] {
 	return &Evaluator[T]{
 		Encoder:         e.Encoder,
 		GLWETransformer: e.GLWETransformer.ShallowCopy(),
-		Decomposer:      e.Decomposer.ShallowCopy(),
 
 		Parameters: e.Parameters,
 
+		Decomposer:    e.Decomposer.ShallowCopy(),
 		PolyEvaluator: e.PolyEvaluator.ShallowCopy(),
 
 		EvaluationKey: e.EvaluationKey,

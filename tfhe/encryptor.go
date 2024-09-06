@@ -27,7 +27,7 @@ type Encryptor[T TorusInt] struct {
 	// GaussainSampler is used for sampling noise in LWE and GLWE encryption.
 	GaussianSampler *csprng.GaussianSampler[T]
 
-	// PolyEvaluator is the PolyEvaluator for this Encryptor.
+	// PolyEvaluator is a PolyEvaluator for this Encryptor.
 	PolyEvaluator *poly.Evaluator[T]
 
 	// SecretKey is the LWE and GLWE key for this Encryptor.

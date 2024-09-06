@@ -160,7 +160,7 @@ func (e *Evaluator[T]) KeySwitchForBootstrapAssign(ct, ctOut LWECiphertext[T]) {
 		if ok {
 			vec.CopyAssign(ctMask, ctOutMask)
 			for j, jj := e.Parameters.SingleKeyLWEDimension(), 0; j < e.Parameters.SingleKeyGLWEPartialDimension(); j, jj = j+1, jj+1 {
-				e.SingleKeyEvaluators[i].DecomposeScalarAssign(ctMask[j], e.Parameters.KeySwitchParameters(), scalarDecomposed)
+				e.SingleKeyEvaluators[i].Decomposer.DecomposeScalarAssign(ctMask[j], e.Parameters.KeySwitchParameters(), scalarDecomposed)
 				for k := 0; k < e.Parameters.KeySwitchParameters().Level(); k++ {
 					vec.ScalarMulAddAssign(e.EvaluationKeys[i].KeySwitchKey.Value[jj].Value[k].Value[1:], scalarDecomposed[k], ctOutMask)
 					ctOut.Value[0] += scalarDecomposed[k] * e.EvaluationKeys[i].KeySwitchKey.Value[jj].Value[k].Value[0]
