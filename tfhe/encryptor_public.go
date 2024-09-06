@@ -31,8 +31,6 @@ type PublicEncryptor[T TorusInt] struct {
 
 	// PolyEvaluator holds the PolyEvaluator for this PublicEncryptor.
 	PolyEvaluator *poly.Evaluator[T]
-	// FourierEvaluator holds the FourierEvaluator for this PublicEncryptor.
-	FourierEvaluator *poly.FourierEvaluator[T]
 
 	// PublicKey holds the public key for this PublicEncryptor.
 	PublicKey PublicKey[T]
@@ -73,8 +71,7 @@ func NewPublicEncryptor[T TorusInt](params Parameters[T], pk PublicKey[T]) *Publ
 		BinarySampler:   csprng.NewBinarySampler[T](),
 		GaussianSampler: csprng.NewGaussianSampler[T](),
 
-		PolyEvaluator:    poly.NewEvaluator[T](params.polyDegree),
-		FourierEvaluator: poly.NewFourierEvaluator[T](params.polyDegree),
+		PolyEvaluator: poly.NewEvaluator[T](params.polyDegree),
 
 		PublicKey: pk,
 
@@ -105,8 +102,7 @@ func (e *PublicEncryptor[T]) ShallowCopy() *PublicEncryptor[T] {
 		BinarySampler:   csprng.NewBinarySampler[T](),
 		GaussianSampler: csprng.NewGaussianSampler[T](),
 
-		PolyEvaluator:    e.PolyEvaluator.ShallowCopy(),
-		FourierEvaluator: e.FourierEvaluator.ShallowCopy(),
+		PolyEvaluator: e.PolyEvaluator.ShallowCopy(),
 
 		PublicKey: e.PublicKey,
 

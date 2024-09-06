@@ -62,36 +62,32 @@ func (e *Evaluator[T]) ScalarMulSubAssign(p0 Poly[T], c T, pOut Poly[T]) {
 	vec.ScalarMulSubAssign(p0.Coeffs, c, pOut.Coeffs)
 }
 
-// Mul returns p0 * p1.
-func (e *Evaluator[T]) Mul(p0, p1 Poly[T]) Poly[T] {
-	if e.degree <= karatsubaRecurseThreshold {
-		return e.mulNaive(p0, p1)
-	}
-
+// FourierMul returns p0 * fp.
+func (e *Evaluator[T]) FourierMul(p0 Poly[T], fp FourierPoly) Poly[T] {
 	pOut := e.NewPoly()
-	e.mulKaratsubaAssign(p0, p1, pOut)
+	e.FourierMulAssign(p0, fp, pOut)
 	return pOut
 }
 
-// MulAssign computes pOut = p0 * p1.
-func (e *Evaluator[T]) MulAssign(p0, p1, pOut Poly[T]) {
-	if e.degree <= karatsubaRecurseThreshold {
-		e.mulNaiveAssign(p0, p1, pOut)
-	} else {
-		e.mulKaratsubaAssign(p0, p1, pOut)
-	}
+// FourierMulAssign computes pOut = p0 * fp.
+func (e *Evaluator[T]) FourierMulAssign(p0 Poly[T], fp FourierPoly, pOut Poly[T]) {
+	e.ToFourierPolyAssign(p0, e.buffer.fpMul)
+	e.MulFourierAssign(e.buffer.fpMul, fp, e.buffer.fpMul)
+	e.ToPolyAssignUnsafe(e.buffer.fpMul, pOut)
 }
 
-// MulAddAssign computes pOut += p0 * p1.
-func (e *Evaluator[T]) MulAddAssign(p0, p1, pOut Poly[T]) {
-	e.MulAssign(p0, p1, e.buffer.pOut)
-	e.AddAssign(pOut, e.buffer.pOut, pOut)
+// FourierMulAddAssign computes pOut += p0 * fp.
+func (e *Evaluator[T]) FourierMulAddAssign(p0 Poly[T], fp FourierPoly, pOut Poly[T]) {
+	e.ToFourierPolyAssign(p0, e.buffer.fpMul)
+	e.MulFourierAssign(e.buffer.fpMul, fp, e.buffer.fpMul)
+	e.ToPolyAddAssignUnsafe(e.buffer.fpMul, pOut)
 }
 
-// MulSubAssign computes pOut -= p0 * p1.
-func (e *Evaluator[T]) MulSubAssign(p0, p1, pOut Poly[T]) {
-	e.MulAssign(p0, p1, e.buffer.pOut)
-	e.SubAssign(pOut, e.buffer.pOut, pOut)
+// FourierMulSubAssign computes pOut -= p0 * fp.
+func (e *Evaluator[T]) FourierMulSubAssign(p0 Poly[T], fp FourierPoly, pOut Poly[T]) {
+	e.ToFourierPolyAssign(p0, e.buffer.fpMul)
+	e.MulFourierAssign(e.buffer.fpMul, fp, e.buffer.fpMul)
+	e.ToPolySubAssignUnsafe(e.buffer.fpMul, pOut)
 }
 
 // MonomialMul returns X^d * p0.

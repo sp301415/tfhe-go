@@ -24,8 +24,6 @@ type Evaluator[T TorusInt] struct {
 
 	// PolyEvaluator holds the PolyEvaluator for this Evaluator.
 	PolyEvaluator *poly.Evaluator[T]
-	// FourierEvaluator holds the FourierEvaluator for this Evaluator.
-	FourierEvaluator *poly.FourierEvaluator[T]
 
 	// EvaluationKey holds the evaluation key for this Evaluator.
 	EvaluationKey EvaluationKey[T]
@@ -52,8 +50,8 @@ type evaluationBuffer[T TorusInt] struct {
 	// Use [*Evaluator.polyFourierDecomposedBuffer] to get appropriate length of buffer.
 	polyFourierDecomposed []poly.FourierPoly
 
-	// fpOut holds the fourier transformed polynomial for multiplications.
-	fpOut poly.FourierPoly
+	// fpMul holds the fourier transformed polynomial for multiplications.
+	fpMul poly.FourierPoly
 	// ctFourierProd holds the fourier transformed ctGLWEOut in ExternalProductFourier.
 	ctFourierProd FourierGLWECiphertext[T]
 	// ctCMux holds ct1 - ct0 in CMux.
@@ -96,8 +94,7 @@ func NewEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *Evalu
 
 		Parameters: params,
 
-		PolyEvaluator:    poly.NewEvaluator[T](params.polyDegree),
-		FourierEvaluator: poly.NewFourierEvaluator[T](params.polyDegree),
+		PolyEvaluator: poly.NewEvaluator[T](params.polyDegree),
 
 		EvaluationKey: evk,
 
@@ -141,7 +138,7 @@ func newEvaluationBuffer[T TorusInt](params Parameters[T]) evaluationBuffer[T] {
 		polyDecomposed:        polyDecomposed,
 		polyFourierDecomposed: polyFourierDecomposed,
 
-		fpOut:         poly.NewFourierPoly(params.polyDegree),
+		fpMul:         poly.NewFourierPoly(params.polyDegree),
 		ctFourierProd: NewFourierGLWECiphertext(params),
 		ctCMux:        NewGLWECiphertext(params),
 
@@ -169,8 +166,7 @@ func (e *Evaluator[T]) ShallowCopy() *Evaluator[T] {
 
 		Parameters: e.Parameters,
 
-		PolyEvaluator:    e.PolyEvaluator.ShallowCopy(),
-		FourierEvaluator: e.FourierEvaluator.ShallowCopy(),
+		PolyEvaluator: e.PolyEvaluator.ShallowCopy(),
 
 		EvaluationKey: e.EvaluationKey,
 
@@ -220,7 +216,7 @@ func (e *Evaluator[T]) polyFourierDecomposedBuffer(gadgetParams GadgetParameters
 	oldLen := len(e.buffer.polyFourierDecomposed)
 	e.buffer.polyFourierDecomposed = append(e.buffer.polyFourierDecomposed, make([]poly.FourierPoly, gadgetParams.level-oldLen)...)
 	for i := oldLen; i < gadgetParams.level; i++ {
-		e.buffer.polyFourierDecomposed[i] = e.FourierEvaluator.NewFourierPoly()
+		e.buffer.polyFourierDecomposed[i] = e.PolyEvaluator.NewFourierPoly()
 	}
 	return e.buffer.polyFourierDecomposed
 }

@@ -109,10 +109,10 @@ func (e *Encryptor[T]) EncryptGSWPlaintext(pt LWEPlaintext[T], gadgetParams Gadg
 func (e *Encryptor[T]) EncryptGSWPlaintextAssign(pt LWEPlaintext[T], ctOut GSWCiphertext[T]) {
 	e.EncryptLevPlaintextAssign(pt, ctOut.Value[0])
 
-	for i := 1; i < e.Parameters.DefaultLWEDimension()+1; i++ {
+	for i := 0; i < e.Parameters.DefaultLWEDimension(); i++ {
 		for j := 0; j < ctOut.GadgetParameters.level; j++ {
-			ctOut.Value[i].Value[j].Value[0] = e.DefaultLWESecretKey().Value[i-1] * pt.Value << ctOut.GadgetParameters.BaseQLog(j)
-			e.EncryptLWEBody(ctOut.Value[i].Value[j])
+			ctOut.Value[i+1].Value[j].Value[0] = e.DefaultLWESecretKey().Value[i] * pt.Value << ctOut.GadgetParameters.BaseQLog(j)
+			e.EncryptLWEBody(ctOut.Value[i+1].Value[j])
 		}
 	}
 }

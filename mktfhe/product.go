@@ -20,50 +20,50 @@ func (e *Evaluator[T]) HybridProductGLWEAssign(idx int, ctFourierUniEnc FourierU
 
 	e.DecomposePolyAssign(ctGLWE.Value[0], ctFourierUniEnc.GadgetParameters, polyDecomposed)
 	for i := 0; i < ctFourierUniEnc.GadgetParameters.Level(); i++ {
-		e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[i], polyFourierDecomposed[i])
+		e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[i], polyFourierDecomposed[i])
 	}
 
-	eIdx.FourierEvaluator.MulAssign(ctFourierUniEnc.Value[0].Value[0].Value[0], polyFourierDecomposed[0], e.buffer.ctFourierProd.Value[0])
+	eIdx.PolyEvaluator.MulFourierAssign(ctFourierUniEnc.Value[0].Value[0].Value[0], polyFourierDecomposed[0], e.buffer.ctFourierProd.Value[0])
 	for j := 1; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[0])
+		eIdx.PolyEvaluator.MulAddFourierAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[0])
 	}
 
-	eIdx.FourierEvaluator.MulAssign(e.EvaluationKeys[idx].CRSPublicKey.Value[0].Value[1], polyFourierDecomposed[0], e.buffer.ctFourierProdSingle)
+	eIdx.PolyEvaluator.MulFourierAssign(e.EvaluationKeys[idx].CRSPublicKey.Value[0].Value[1], polyFourierDecomposed[0], e.buffer.ctFourierProdSingle)
 	for j := 1; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-		eIdx.FourierEvaluator.MulAddAssign(e.EvaluationKeys[idx].CRSPublicKey.Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProdSingle)
+		eIdx.PolyEvaluator.MulAddFourierAssign(e.EvaluationKeys[idx].CRSPublicKey.Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProdSingle)
 	}
-	eIdx.FourierEvaluator.NegAssign(e.buffer.ctFourierProdSingle, e.buffer.ctFourierProdSingle)
+	eIdx.PolyEvaluator.NegFourierAssign(e.buffer.ctFourierProdSingle, e.buffer.ctFourierProdSingle)
 
 	for i, ok := range e.PartyBitMap {
 		if ok {
 			e.DecomposePolyAssign(ctGLWE.Value[i+1], ctFourierUniEnc.GadgetParameters, polyDecomposed)
 			for i := 0; i < ctFourierUniEnc.GadgetParameters.Level(); i++ {
-				e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[i], polyFourierDecomposed[i])
+				e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[i], polyFourierDecomposed[i])
 			}
 
-			eIdx.FourierEvaluator.MulAssign(ctFourierUniEnc.Value[0].Value[0].Value[0], polyFourierDecomposed[0], e.buffer.ctFourierProd.Value[i+1])
+			eIdx.PolyEvaluator.MulFourierAssign(ctFourierUniEnc.Value[0].Value[0].Value[0], polyFourierDecomposed[0], e.buffer.ctFourierProd.Value[i+1])
 			for j := 1; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-				eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[i+1])
+				eIdx.PolyEvaluator.MulAddFourierAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[i+1])
 			}
 
 			for j := 0; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-				eIdx.FourierEvaluator.MulAddAssign(e.EvaluationKeys[i].CRSPublicKey.Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProdSingle)
+				eIdx.PolyEvaluator.MulAddFourierAssign(e.EvaluationKeys[i].CRSPublicKey.Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProdSingle)
 			}
 		}
 	}
 
-	eIdx.FourierEvaluator.ToPolyAssignUnsafe(e.buffer.ctFourierProdSingle, e.buffer.ctProdSingle)
+	eIdx.PolyEvaluator.ToPolyAssignUnsafe(e.buffer.ctFourierProdSingle, e.buffer.ctProdSingle)
 	e.DecomposePolyAssign(e.buffer.ctProdSingle, ctFourierUniEnc.GadgetParameters, polyDecomposed)
 	for j := 0; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-		e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[j], polyFourierDecomposed[j])
-		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[1].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[0])
-		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[1].Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[1+idx])
+		e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[j], polyFourierDecomposed[j])
+		eIdx.PolyEvaluator.MulAddFourierAssign(ctFourierUniEnc.Value[1].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[0])
+		eIdx.PolyEvaluator.MulAddFourierAssign(ctFourierUniEnc.Value[1].Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[1+idx])
 	}
 
-	eIdx.FourierEvaluator.ToPolyAssignUnsafe(e.buffer.ctFourierProd.Value[0], ctGLWEOut.Value[0])
+	eIdx.PolyEvaluator.ToPolyAssignUnsafe(e.buffer.ctFourierProd.Value[0], ctGLWEOut.Value[0])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.FourierEvaluator.ToPolyAssignUnsafe(e.buffer.ctFourierProd.Value[i+1], ctGLWEOut.Value[i+1])
+			eIdx.PolyEvaluator.ToPolyAssignUnsafe(e.buffer.ctFourierProd.Value[i+1], ctGLWEOut.Value[i+1])
 		} else {
 			ctGLWEOut.Value[i+1].Clear()
 		}
@@ -79,50 +79,50 @@ func (e *Evaluator[T]) HybridProductAddGLWEAssign(idx int, ctFourierUniEnc Fouri
 
 	e.DecomposePolyAssign(ctGLWE.Value[0], ctFourierUniEnc.GadgetParameters, polyDecomposed)
 	for i := 0; i < ctFourierUniEnc.GadgetParameters.Level(); i++ {
-		e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[i], polyFourierDecomposed[i])
+		e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[i], polyFourierDecomposed[i])
 	}
 
-	eIdx.FourierEvaluator.MulAssign(ctFourierUniEnc.Value[0].Value[0].Value[0], polyFourierDecomposed[0], e.buffer.ctFourierProd.Value[0])
+	eIdx.PolyEvaluator.MulFourierAssign(ctFourierUniEnc.Value[0].Value[0].Value[0], polyFourierDecomposed[0], e.buffer.ctFourierProd.Value[0])
 	for j := 1; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[0])
+		eIdx.PolyEvaluator.MulAddFourierAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[0])
 	}
 
-	eIdx.FourierEvaluator.MulAssign(e.EvaluationKeys[idx].CRSPublicKey.Value[0].Value[1], polyFourierDecomposed[0], e.buffer.ctFourierProdSingle)
+	eIdx.PolyEvaluator.MulFourierAssign(e.EvaluationKeys[idx].CRSPublicKey.Value[0].Value[1], polyFourierDecomposed[0], e.buffer.ctFourierProdSingle)
 	for j := 1; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-		eIdx.FourierEvaluator.MulAddAssign(e.EvaluationKeys[idx].CRSPublicKey.Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProdSingle)
+		eIdx.PolyEvaluator.MulAddFourierAssign(e.EvaluationKeys[idx].CRSPublicKey.Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProdSingle)
 	}
-	eIdx.FourierEvaluator.NegAssign(e.buffer.ctFourierProdSingle, e.buffer.ctFourierProdSingle)
+	eIdx.PolyEvaluator.NegFourierAssign(e.buffer.ctFourierProdSingle, e.buffer.ctFourierProdSingle)
 
 	for i, ok := range e.PartyBitMap {
 		if ok {
 			e.DecomposePolyAssign(ctGLWE.Value[i+1], ctFourierUniEnc.GadgetParameters, polyDecomposed)
 			for i := 0; i < ctFourierUniEnc.GadgetParameters.Level(); i++ {
-				e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[i], polyFourierDecomposed[i])
+				e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[i], polyFourierDecomposed[i])
 			}
 
-			eIdx.FourierEvaluator.MulAssign(ctFourierUniEnc.Value[0].Value[0].Value[0], polyFourierDecomposed[0], e.buffer.ctFourierProd.Value[i+1])
+			eIdx.PolyEvaluator.MulFourierAssign(ctFourierUniEnc.Value[0].Value[0].Value[0], polyFourierDecomposed[0], e.buffer.ctFourierProd.Value[i+1])
 			for j := 1; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-				eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[i+1])
+				eIdx.PolyEvaluator.MulAddFourierAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[i+1])
 			}
 
 			for j := 0; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-				eIdx.FourierEvaluator.MulAddAssign(e.EvaluationKeys[i].CRSPublicKey.Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProdSingle)
+				eIdx.PolyEvaluator.MulAddFourierAssign(e.EvaluationKeys[i].CRSPublicKey.Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProdSingle)
 			}
 		}
 	}
 
-	eIdx.FourierEvaluator.ToPolyAssignUnsafe(e.buffer.ctFourierProdSingle, e.buffer.ctProdSingle)
+	eIdx.PolyEvaluator.ToPolyAssignUnsafe(e.buffer.ctFourierProdSingle, e.buffer.ctProdSingle)
 	e.DecomposePolyAssign(e.buffer.ctProdSingle, ctFourierUniEnc.GadgetParameters, polyDecomposed)
 	for j := 0; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-		e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[j], polyFourierDecomposed[j])
-		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[1].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[0])
-		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[1].Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[1+idx])
+		e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[j], polyFourierDecomposed[j])
+		eIdx.PolyEvaluator.MulAddFourierAssign(ctFourierUniEnc.Value[1].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[0])
+		eIdx.PolyEvaluator.MulAddFourierAssign(ctFourierUniEnc.Value[1].Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[1+idx])
 	}
 
-	eIdx.FourierEvaluator.ToPolyAddAssignUnsafe(e.buffer.ctFourierProd.Value[0], ctGLWEOut.Value[0])
+	eIdx.PolyEvaluator.ToPolyAddAssignUnsafe(e.buffer.ctFourierProd.Value[0], ctGLWEOut.Value[0])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.FourierEvaluator.ToPolyAddAssignUnsafe(e.buffer.ctFourierProd.Value[i+1], ctGLWEOut.Value[i+1])
+			eIdx.PolyEvaluator.ToPolyAddAssignUnsafe(e.buffer.ctFourierProd.Value[i+1], ctGLWEOut.Value[i+1])
 		}
 	}
 }
@@ -136,50 +136,50 @@ func (e *Evaluator[T]) HybridProductSubGLWEAssign(idx int, ctFourierUniEnc Fouri
 
 	e.DecomposePolyAssign(ctGLWE.Value[0], ctFourierUniEnc.GadgetParameters, polyDecomposed)
 	for i := 0; i < ctFourierUniEnc.GadgetParameters.Level(); i++ {
-		e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[i], polyFourierDecomposed[i])
+		e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[i], polyFourierDecomposed[i])
 	}
 
-	eIdx.FourierEvaluator.MulAssign(ctFourierUniEnc.Value[0].Value[0].Value[0], polyFourierDecomposed[0], e.buffer.ctFourierProd.Value[0])
+	eIdx.PolyEvaluator.MulFourierAssign(ctFourierUniEnc.Value[0].Value[0].Value[0], polyFourierDecomposed[0], e.buffer.ctFourierProd.Value[0])
 	for j := 1; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[0])
+		eIdx.PolyEvaluator.MulAddFourierAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[0])
 	}
 
-	eIdx.FourierEvaluator.MulAssign(e.EvaluationKeys[idx].CRSPublicKey.Value[0].Value[1], polyFourierDecomposed[0], e.buffer.ctFourierProdSingle)
+	eIdx.PolyEvaluator.MulFourierAssign(e.EvaluationKeys[idx].CRSPublicKey.Value[0].Value[1], polyFourierDecomposed[0], e.buffer.ctFourierProdSingle)
 	for j := 1; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-		eIdx.FourierEvaluator.MulAddAssign(e.EvaluationKeys[idx].CRSPublicKey.Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProdSingle)
+		eIdx.PolyEvaluator.MulAddFourierAssign(e.EvaluationKeys[idx].CRSPublicKey.Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProdSingle)
 	}
-	eIdx.FourierEvaluator.NegAssign(e.buffer.ctFourierProdSingle, e.buffer.ctFourierProdSingle)
+	eIdx.PolyEvaluator.NegFourierAssign(e.buffer.ctFourierProdSingle, e.buffer.ctFourierProdSingle)
 
 	for i, ok := range e.PartyBitMap {
 		if ok {
 			e.DecomposePolyAssign(ctGLWE.Value[i+1], ctFourierUniEnc.GadgetParameters, polyDecomposed)
 			for i := 0; i < ctFourierUniEnc.GadgetParameters.Level(); i++ {
-				e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[i], polyFourierDecomposed[i])
+				e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[i], polyFourierDecomposed[i])
 			}
 
-			eIdx.FourierEvaluator.MulAssign(ctFourierUniEnc.Value[0].Value[0].Value[0], polyFourierDecomposed[0], e.buffer.ctFourierProd.Value[i+1])
+			eIdx.PolyEvaluator.MulFourierAssign(ctFourierUniEnc.Value[0].Value[0].Value[0], polyFourierDecomposed[0], e.buffer.ctFourierProd.Value[i+1])
 			for j := 1; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-				eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[i+1])
+				eIdx.PolyEvaluator.MulAddFourierAssign(ctFourierUniEnc.Value[0].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[i+1])
 			}
 
 			for j := 0; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-				eIdx.FourierEvaluator.MulAddAssign(e.EvaluationKeys[i].CRSPublicKey.Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProdSingle)
+				eIdx.PolyEvaluator.MulAddFourierAssign(e.EvaluationKeys[i].CRSPublicKey.Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProdSingle)
 			}
 		}
 	}
 
-	eIdx.FourierEvaluator.ToPolyAssignUnsafe(e.buffer.ctFourierProdSingle, e.buffer.ctProdSingle)
+	eIdx.PolyEvaluator.ToPolyAssignUnsafe(e.buffer.ctFourierProdSingle, e.buffer.ctProdSingle)
 	e.DecomposePolyAssign(e.buffer.ctProdSingle, ctFourierUniEnc.GadgetParameters, polyDecomposed)
 	for j := 0; j < ctFourierUniEnc.GadgetParameters.Level(); j++ {
-		e.FourierEvaluator.ToFourierPolyAssign(polyDecomposed[j], polyFourierDecomposed[j])
-		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[1].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[0])
-		eIdx.FourierEvaluator.MulAddAssign(ctFourierUniEnc.Value[1].Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[1+idx])
+		e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[j], polyFourierDecomposed[j])
+		eIdx.PolyEvaluator.MulAddFourierAssign(ctFourierUniEnc.Value[1].Value[j].Value[0], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[0])
+		eIdx.PolyEvaluator.MulAddFourierAssign(ctFourierUniEnc.Value[1].Value[j].Value[1], polyFourierDecomposed[j], e.buffer.ctFourierProd.Value[1+idx])
 	}
 
-	eIdx.FourierEvaluator.ToPolySubAssignUnsafe(e.buffer.ctFourierProd.Value[0], ctGLWEOut.Value[0])
+	eIdx.PolyEvaluator.ToPolySubAssignUnsafe(e.buffer.ctFourierProd.Value[0], ctGLWEOut.Value[0])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.FourierEvaluator.ToPolySubAssignUnsafe(e.buffer.ctFourierProd.Value[i+1], ctGLWEOut.Value[i+1])
+			eIdx.PolyEvaluator.ToPolySubAssignUnsafe(e.buffer.ctFourierProd.Value[i+1], ctGLWEOut.Value[i+1])
 		}
 	}
 }

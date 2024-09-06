@@ -2,17 +2,6 @@
 
 package poly
 
-import (
-	"math"
-)
-
-// roundCmplxAssign computes vOut = round(v0).
-func roundCmplxAssign(v0, vOut []float64) {
-	for i := range vOut {
-		vOut[i] = math.Round(v0[i])
-	}
-}
-
 // addCmplxAssign computes vOut = v0 + v1.
 func addCmplxAssign(v0, v1, vOut []float64) {
 	for i := range vOut {

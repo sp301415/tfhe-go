@@ -29,8 +29,6 @@ type Encryptor[T TorusInt] struct {
 
 	// PolyEvaluator holds the PolyEvaluator for this Encryptor.
 	PolyEvaluator *poly.Evaluator[T]
-	// FourierEvaluator holds the FourierEvaluator for this Encryptor.
-	FourierEvaluator *poly.FourierEvaluator[T]
 
 	// SecretKey holds the LWE and GLWE key for this Encryptor.
 	//
@@ -67,8 +65,7 @@ func NewEncryptor[T TorusInt](params Parameters[T]) *Encryptor[T] {
 		BinarySampler:   csprng.NewBinarySampler[T](),
 		GaussianSampler: csprng.NewGaussianSampler[T](),
 
-		PolyEvaluator:    poly.NewEvaluator[T](params.polyDegree),
-		FourierEvaluator: poly.NewFourierEvaluator[T](params.polyDegree),
+		PolyEvaluator: poly.NewEvaluator[T](params.polyDegree),
 
 		buffer: newEncryptionBuffer(params),
 	}
@@ -91,8 +88,7 @@ func NewEncryptorWithKey[T TorusInt](params Parameters[T], sk SecretKey[T]) *Enc
 		BinarySampler:   csprng.NewBinarySampler[T](),
 		GaussianSampler: csprng.NewGaussianSampler[T](),
 
-		PolyEvaluator:    poly.NewEvaluator[T](params.polyDegree),
-		FourierEvaluator: poly.NewFourierEvaluator[T](params.polyDegree),
+		PolyEvaluator: poly.NewEvaluator[T](params.polyDegree),
 
 		SecretKey: sk,
 
@@ -124,8 +120,7 @@ func (e *Encryptor[T]) ShallowCopy() *Encryptor[T] {
 
 		SecretKey: e.SecretKey,
 
-		PolyEvaluator:    e.PolyEvaluator.ShallowCopy(),
-		FourierEvaluator: e.FourierEvaluator.ShallowCopy(),
+		PolyEvaluator: e.PolyEvaluator.ShallowCopy(),
 
 		buffer: newEncryptionBuffer(e.Parameters),
 	}
@@ -183,7 +178,7 @@ func (e *Encryptor[T]) GenPublicKey() PublicKey[T] {
 		e.GaussianSampler.SampleSliceAssign(e.Parameters.GLWEStdDevQ(), pk.LWEKey.Value[i].Value[0].Coeffs)
 		for j := 1; j < e.Parameters.glweRank+1; j++ {
 			e.UniformSampler.SampleSliceAssign(pk.LWEKey.Value[i].Value[j].Coeffs)
-			e.FourierEvaluator.PolyMulBinarySubAssign(fskRev.Value[j-1], pk.LWEKey.Value[i].Value[j], pk.LWEKey.Value[i].Value[0])
+			e.Evaluator.BinaryFourierMulSubAssign(pk.LWEKey.Value[i].Value[j], fskRev.Value[j-1], pk.LWEKey.Value[i].Value[0])
 		}
 	}
 

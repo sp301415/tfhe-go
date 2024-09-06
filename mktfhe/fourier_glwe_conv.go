@@ -10,15 +10,15 @@ type GLWETransformer[T tfhe.TorusInt] struct {
 	// Parameters holds parameters for this GLWETransformer.
 	Parameters Parameters[T]
 
-	// FourierEvaluator is a FourierEvaluator for this GLWETransformer.
-	FourierEvaluator *poly.FourierEvaluator[T]
+	// PolyEvaluator is a PolyEvaluator for this GLWETransformer.
+	PolyEvaluator *poly.Evaluator[T]
 }
 
 // NewGLWETransformer allocates an empty GLWE transformer with given parameters.
 func NewGLWETransformer[T tfhe.TorusInt](params Parameters[T]) *GLWETransformer[T] {
 	return &GLWETransformer[T]{
-		Parameters:       params,
-		FourierEvaluator: poly.NewFourierEvaluator[T](params.PolyDegree()),
+		Parameters:    params,
+		PolyEvaluator: poly.NewEvaluator[T](params.PolyDegree()),
 	}
 }
 
@@ -26,8 +26,8 @@ func NewGLWETransformer[T tfhe.TorusInt](params Parameters[T]) *GLWETransformer[
 // Returned GLWE transformer is safe for concurrent use.
 func (e *GLWETransformer[T]) ShallowCopy() *GLWETransformer[T] {
 	return &GLWETransformer[T]{
-		Parameters:       e.Parameters,
-		FourierEvaluator: e.FourierEvaluator.ShallowCopy(),
+		Parameters:    e.Parameters,
+		PolyEvaluator: e.PolyEvaluator.ShallowCopy(),
 	}
 }
 
@@ -41,7 +41,7 @@ func (e *GLWETransformer[T]) ToFourierGLWESecretKey(sk tfhe.GLWESecretKey[T]) tf
 // ToFourierGLWESecretKeyAssign transforms GLWE secret key to Fourier GLWE secret key and writes it to skOut.
 func (e *GLWETransformer[T]) ToFourierGLWESecretKeyAssign(skIn tfhe.GLWESecretKey[T], skOut tfhe.FourierGLWESecretKey[T]) {
 	for i := 0; i < e.Parameters.SingleKeyGLWERank(); i++ {
-		e.FourierEvaluator.ToFourierPolyAssign(skIn.Value[i], skOut.Value[i])
+		e.PolyEvaluator.ToFourierPolyAssign(skIn.Value[i], skOut.Value[i])
 	}
 }
 
@@ -55,7 +55,7 @@ func (e *GLWETransformer[T]) ToGLWESecretKey(sk tfhe.FourierGLWESecretKey[T]) tf
 // ToGLWESecretKeyAssign transforms Fourier GLWE secret key to GLWE secret key and writes it to skOut.
 func (e *GLWETransformer[T]) ToGLWESecretKeyAssign(skIn tfhe.FourierGLWESecretKey[T], skOut tfhe.GLWESecretKey[T]) {
 	for i := 0; i < e.Parameters.SingleKeyGLWERank(); i++ {
-		e.FourierEvaluator.ToPolyAssign(skIn.Value[i], skOut.Value[i])
+		e.PolyEvaluator.ToPolyAssign(skIn.Value[i], skOut.Value[i])
 	}
 }
 
@@ -69,7 +69,7 @@ func (e *GLWETransformer[T]) ToFourierGLWECiphertext(ct GLWECiphertext[T]) Fouri
 // ToFourierGLWECiphertextAssign transforms GLWE ciphertext to Fourier GLWE ciphertext and writes it to ctOut.
 func (e *GLWETransformer[T]) ToFourierGLWECiphertextAssign(ctIn GLWECiphertext[T], ctOut FourierGLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
-		e.FourierEvaluator.ToFourierPolyAssign(ctIn.Value[i], ctOut.Value[i])
+		e.PolyEvaluator.ToFourierPolyAssign(ctIn.Value[i], ctOut.Value[i])
 	}
 }
 
@@ -83,7 +83,7 @@ func (e *GLWETransformer[T]) ToGLWECiphertext(ct FourierGLWECiphertext[T]) GLWEC
 // ToGLWECiphertextAssign transforms Fourier GLWE ciphertext to GLWE ciphertext and writes it to ctOut.
 func (e *GLWETransformer[T]) ToGLWECiphertextAssign(ctIn FourierGLWECiphertext[T], ctOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
-		e.FourierEvaluator.ToPolyAssign(ctIn.Value[i], ctOut.Value[i])
+		e.PolyEvaluator.ToPolyAssign(ctIn.Value[i], ctOut.Value[i])
 	}
 }
 
@@ -97,11 +97,11 @@ func (e *GLWETransformer[T]) ToFourierUniEncryption(ct UniEncryption[T]) Fourier
 // ToFourierUniEncryptionAssign transforms UniEncryption to Fourier UniEncryption and writes it to ctOut.
 func (e *GLWETransformer[T]) ToFourierUniEncryptionAssign(ctIn UniEncryption[T], ctOut FourierUniEncryption[T]) {
 	for j := 0; j < ctIn.GadgetParameters.Level(); j++ {
-		e.FourierEvaluator.ToFourierPolyAssign(ctIn.Value[0].Value[j].Value[0], ctOut.Value[0].Value[j].Value[0])
-		e.FourierEvaluator.ToFourierPolyAssign(ctIn.Value[0].Value[j].Value[1], ctOut.Value[0].Value[j].Value[1])
+		e.PolyEvaluator.ToFourierPolyAssign(ctIn.Value[0].Value[j].Value[0], ctOut.Value[0].Value[j].Value[0])
+		e.PolyEvaluator.ToFourierPolyAssign(ctIn.Value[0].Value[j].Value[1], ctOut.Value[0].Value[j].Value[1])
 
-		e.FourierEvaluator.ToFourierPolyAssign(ctIn.Value[1].Value[j].Value[0], ctOut.Value[1].Value[j].Value[0])
-		e.FourierEvaluator.ToFourierPolyAssign(ctIn.Value[1].Value[j].Value[1], ctOut.Value[1].Value[j].Value[1])
+		e.PolyEvaluator.ToFourierPolyAssign(ctIn.Value[1].Value[j].Value[0], ctOut.Value[1].Value[j].Value[0])
+		e.PolyEvaluator.ToFourierPolyAssign(ctIn.Value[1].Value[j].Value[1], ctOut.Value[1].Value[j].Value[1])
 	}
 }
 
@@ -115,10 +115,10 @@ func (e *GLWETransformer[T]) ToUniEncryption(ct FourierUniEncryption[T]) UniEncr
 // ToUniEncryptionAssign transforms Fourier UniEncryption to UniEncryption and writes it to ctOut.
 func (e *GLWETransformer[T]) ToUniEncryptionAssign(ctIn FourierUniEncryption[T], ctOut UniEncryption[T]) {
 	for j := 0; j < ctIn.GadgetParameters.Level(); j++ {
-		e.FourierEvaluator.ToPolyAssign(ctIn.Value[0].Value[j].Value[0], ctOut.Value[0].Value[j].Value[0])
-		e.FourierEvaluator.ToPolyAssign(ctIn.Value[0].Value[j].Value[1], ctOut.Value[0].Value[j].Value[1])
+		e.PolyEvaluator.ToPolyAssign(ctIn.Value[0].Value[j].Value[0], ctOut.Value[0].Value[j].Value[0])
+		e.PolyEvaluator.ToPolyAssign(ctIn.Value[0].Value[j].Value[1], ctOut.Value[0].Value[j].Value[1])
 
-		e.FourierEvaluator.ToPolyAssign(ctIn.Value[1].Value[j].Value[0], ctOut.Value[1].Value[j].Value[0])
-		e.FourierEvaluator.ToPolyAssign(ctIn.Value[1].Value[j].Value[1], ctOut.Value[1].Value[j].Value[1])
+		e.PolyEvaluator.ToPolyAssign(ctIn.Value[1].Value[j].Value[0], ctOut.Value[1].Value[j].Value[0])
+		e.PolyEvaluator.ToPolyAssign(ctIn.Value[1].Value[j].Value[1], ctOut.Value[1].Value[j].Value[1])
 	}
 }
