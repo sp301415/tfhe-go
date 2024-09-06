@@ -37,19 +37,6 @@ type Evaluator[T TorusInt] struct {
 
 // evaluationBuffer contains buffer values for Evaluator.
 type evaluationBuffer[T TorusInt] struct {
-	// decomposed is the decomposed scalar.
-	// Initially has length keyswitchParameters.level.
-	// Use [*Evaluator.decomposedBuffer] to get appropriate length of buffer.
-	decomposed []T
-	// polyDecomposed is the decomposed polynomial.
-	// Initially has length bootstrapParameters.level.
-	// Use [*Evaluator.polyDecomposedBuffer] to get appropriate length of buffer.
-	polyDecomposed []poly.Poly[T]
-	// polyFourierDecomposed is the decomposed polynomial in Fourier domain.
-	// Initially has length bootstrapParameters.level.
-	// Use [*Evaluator.polyFourierDecomposedBuffer] to get appropriate length of buffer.
-	polyFourierDecomposed []poly.FourierPoly
-
 	// fpMul is the fourier transformed polynomial for multiplications.
 	fpMul poly.FourierPoly
 	// ctFourierProd is the fourier transformed ctGLWEOut in ExternalProductFourier.
@@ -87,10 +74,15 @@ type evaluationBuffer[T TorusInt] struct {
 // NewEvaluator allocates an empty Evaluator based on parameters.
 // This does not copy evaluation keys, since they may be large.
 func NewEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *Evaluator[T] {
+	decomposer := NewDecomposer[T](params.polyDegree)
+	decomposer.ScalarDecomposedBuffer(params.keyswitchParameters)
+	decomposer.PolyDecomposedBuffer(params.bootstrapParameters)
+	decomposer.PolyFourierDecomposedBuffer(params.bootstrapParameters)
+
 	return &Evaluator[T]{
 		Encoder:         NewEncoder(params),
 		GLWETransformer: NewGLWETransformer(params),
-		Decomposer:      NewDecomposer[T](params.polyDegree),
+		Decomposer:      decomposer,
 
 		Parameters: params,
 
@@ -134,10 +126,6 @@ func newEvaluationBuffer[T TorusInt](params Parameters[T]) evaluationBuffer[T] {
 	}
 
 	return evaluationBuffer[T]{
-		decomposed:            make([]T, params.keyswitchParameters.level),
-		polyDecomposed:        polyDecomposed,
-		polyFourierDecomposed: polyFourierDecomposed,
-
 		fpMul:         poly.NewFourierPoly(params.polyDegree),
 		ctFourierProd: NewFourierGLWECiphertext(params),
 		ctCMux:        NewGLWECiphertext(params),
@@ -162,7 +150,7 @@ func (e *Evaluator[T]) ShallowCopy() *Evaluator[T] {
 	return &Evaluator[T]{
 		Encoder:         e.Encoder,
 		GLWETransformer: e.GLWETransformer.ShallowCopy(),
-		Decomposer:      e.Decomposer,
+		Decomposer:      e.Decomposer.ShallowCopy(),
 
 		Parameters: e.Parameters,
 
@@ -174,49 +162,4 @@ func (e *Evaluator[T]) ShallowCopy() *Evaluator[T] {
 
 		buffer: newEvaluationBuffer(e.Parameters),
 	}
-}
-
-// decomposedBuffer returns the decomposed buffer of Evaluator.
-// if len(decomposed) >= Level, it returns the subslice of the buffer.
-// otherwise, it extends the buffer of the Evaluator and returns it.
-func (e *Evaluator[T]) decomposedBuffer(gadgetParams GadgetParameters[T]) []T {
-	if len(e.buffer.decomposed) >= gadgetParams.level {
-		return e.buffer.decomposed[:gadgetParams.level]
-	}
-
-	oldLen := len(e.buffer.decomposed)
-	e.buffer.decomposed = append(e.buffer.decomposed, make([]T, gadgetParams.level-oldLen)...)
-	return e.buffer.decomposed
-}
-
-// polyDecomposedBuffer returns the polyDecomposed buffer of Evaluator.
-// if len(polyDecomposed) >= Level, it returns the subslice of the buffer.
-// otherwise, it extends the buffer of the Evaluator and returns it.
-func (e *Evaluator[T]) polyDecomposedBuffer(gadgetParams GadgetParameters[T]) []poly.Poly[T] {
-	if len(e.buffer.polyDecomposed) >= gadgetParams.level {
-		return e.buffer.polyDecomposed[:gadgetParams.level]
-	}
-
-	oldLen := len(e.buffer.polyDecomposed)
-	e.buffer.polyDecomposed = append(e.buffer.polyDecomposed, make([]poly.Poly[T], gadgetParams.level-oldLen)...)
-	for i := oldLen; i < gadgetParams.level; i++ {
-		e.buffer.polyDecomposed[i] = e.PolyEvaluator.NewPoly()
-	}
-	return e.buffer.polyDecomposed
-}
-
-// polyFourierDecomposedBuffer returns the fourierPolyDecomposed buffer of Evaluator.
-// if len(fourierPolyDecomposed) >= Level, it returns the subslice of the buffer.
-// otherwise, it extends the buffer of the Evaluator and returns it.
-func (e *Evaluator[T]) polyFourierDecomposedBuffer(gadgetParams GadgetParameters[T]) []poly.FourierPoly {
-	if len(e.buffer.polyFourierDecomposed) >= gadgetParams.level {
-		return e.buffer.polyFourierDecomposed[:gadgetParams.level]
-	}
-
-	oldLen := len(e.buffer.polyFourierDecomposed)
-	e.buffer.polyFourierDecomposed = append(e.buffer.polyFourierDecomposed, make([]poly.FourierPoly, gadgetParams.level-oldLen)...)
-	for i := oldLen; i < gadgetParams.level; i++ {
-		e.buffer.polyFourierDecomposed[i] = e.PolyEvaluator.NewFourierPoly()
-	}
-	return e.buffer.polyFourierDecomposed
 }

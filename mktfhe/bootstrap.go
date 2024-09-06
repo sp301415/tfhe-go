@@ -150,7 +150,7 @@ func (e *Evaluator[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[
 // Input ciphertext should be of length GLWEDimension + 1.
 // Output ciphertext should be of length LWEDimension + 1.
 func (e *Evaluator[T]) KeySwitchForBootstrapAssign(ct, ctOut LWECiphertext[T]) {
-	decomposed := e.buffer.decomposed[:e.Parameters.KeySwitchParameters().Level()]
+	scalarDecomposed := e.Decomposer.ScalarDecomposedBuffer(e.Parameters.KeySwitchParameters())
 
 	ctOut.Value[0] = ct.Value[0]
 
@@ -160,10 +160,10 @@ func (e *Evaluator[T]) KeySwitchForBootstrapAssign(ct, ctOut LWECiphertext[T]) {
 		if ok {
 			vec.CopyAssign(ctMask, ctOutMask)
 			for j, jj := e.Parameters.SingleKeyLWEDimension(), 0; j < e.Parameters.SingleKeyGLWEPartialDimension(); j, jj = j+1, jj+1 {
-				e.SingleKeyEvaluators[i].DecomposeAssign(ctMask[j], e.Parameters.KeySwitchParameters(), decomposed)
+				e.SingleKeyEvaluators[i].DecomposeScalarAssign(ctMask[j], e.Parameters.KeySwitchParameters(), scalarDecomposed)
 				for k := 0; k < e.Parameters.KeySwitchParameters().Level(); k++ {
-					vec.ScalarMulAddAssign(e.EvaluationKeys[i].KeySwitchKey.Value[jj].Value[k].Value[1:], decomposed[k], ctOutMask)
-					ctOut.Value[0] += decomposed[k] * e.EvaluationKeys[i].KeySwitchKey.Value[jj].Value[k].Value[0]
+					vec.ScalarMulAddAssign(e.EvaluationKeys[i].KeySwitchKey.Value[jj].Value[k].Value[1:], scalarDecomposed[k], ctOutMask)
+					ctOut.Value[0] += scalarDecomposed[k] * e.EvaluationKeys[i].KeySwitchKey.Value[jj].Value[k].Value[0]
 				}
 			}
 		} else {

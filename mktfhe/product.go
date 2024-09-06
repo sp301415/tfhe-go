@@ -15,8 +15,8 @@ func (e *Evaluator[T]) HybridProductGLWE(idx int, ctFourierUniEnc FourierUniEncr
 func (e *Evaluator[T]) HybridProductGLWEAssign(idx int, ctFourierUniEnc FourierUniEncryption[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
-	polyDecomposed := e.polyDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
-	polyFourierDecomposed := e.polyFourierDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
+	polyDecomposed := e.PolyDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
+	polyFourierDecomposed := e.PolyFourierDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
 
 	e.DecomposePolyAssign(ctGLWE.Value[0], ctFourierUniEnc.GadgetParameters, polyDecomposed)
 	for i := 0; i < ctFourierUniEnc.GadgetParameters.Level(); i++ {
@@ -74,8 +74,8 @@ func (e *Evaluator[T]) HybridProductGLWEAssign(idx int, ctFourierUniEnc FourierU
 func (e *Evaluator[T]) HybridProductAddGLWEAssign(idx int, ctFourierUniEnc FourierUniEncryption[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
-	polyDecomposed := e.polyDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
-	polyFourierDecomposed := e.polyFourierDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
+	polyDecomposed := e.PolyDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
+	polyFourierDecomposed := e.PolyFourierDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
 
 	e.DecomposePolyAssign(ctGLWE.Value[0], ctFourierUniEnc.GadgetParameters, polyDecomposed)
 	for i := 0; i < ctFourierUniEnc.GadgetParameters.Level(); i++ {
@@ -131,8 +131,8 @@ func (e *Evaluator[T]) HybridProductAddGLWEAssign(idx int, ctFourierUniEnc Fouri
 func (e *Evaluator[T]) HybridProductSubGLWEAssign(idx int, ctFourierUniEnc FourierUniEncryption[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
-	polyDecomposed := e.polyDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
-	polyFourierDecomposed := e.polyFourierDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
+	polyDecomposed := e.PolyDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
+	polyFourierDecomposed := e.PolyFourierDecomposedBuffer(ctFourierUniEnc.GadgetParameters)
 
 	e.DecomposePolyAssign(ctGLWE.Value[0], ctFourierUniEnc.GadgetParameters, polyDecomposed)
 	for i := 0; i < ctFourierUniEnc.GadgetParameters.Level(); i++ {
