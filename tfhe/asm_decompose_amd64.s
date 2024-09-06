@@ -14,8 +14,8 @@ TEXT ·decomposePolyAssignUint32AVX2(SB), NOSPLIT, $0-64
 
 	// VET: go vet complains about VBROADCASTD on uint32 values.
 	// See https://github.com/golang/go/issues/47625.
-	VPBROADCASTD base+24(FP), Y10              // base
-	VPBROADCASTD baseLog+28(FP), Y11           // baseLog
+	VPBROADCASTD base+24(FP), Y10         // base
+	VPBROADCASTD baseLog+28(FP), Y11      // baseLog
 	VPBROADCASTD lastBaseQLog+32(FP), Y12 // lastBaseQLog
 
 	// Create (1, 1, 1, ..., 1)
@@ -97,8 +97,8 @@ TEXT ·decomposePolyAssignUint64AVX2(SB), NOSPLIT, $0-72
 	MOVQ p_len+8(FP), CX              // N
 	MOVQ decomposedOut_len+56(FP), DX // level
 
-	VPBROADCASTQ base+24(FP), Y10              // base
-	VPBROADCASTQ baseLog+32(FP), Y11           // baseLog
+	VPBROADCASTQ base+24(FP), Y10         // base
+	VPBROADCASTQ baseLog+32(FP), Y11      // baseLog
 	VPBROADCASTQ lastBaseQLog+40(FP), Y12 // lastBaseQLog
 
 	// Create (1, 1, 1, ..., 1)
