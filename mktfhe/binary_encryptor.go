@@ -8,7 +8,7 @@ import (
 type BinaryEncryptor[T tfhe.TorusInt] struct {
 	// BinaryEncoder is an embedded encoder for this BinaryEncryptor.
 	*tfhe.BinaryEncoder[T]
-	// Parameters holds the parameters for this BinaryEncryptor.
+	// Parameters is the parameters for this BinaryEncryptor.
 	Parameters Parameters[T]
 	// BaseEncryptor is a generic Encryptor for this BinaryEncryptor.
 	BaseEncryptor *Encryptor[T]

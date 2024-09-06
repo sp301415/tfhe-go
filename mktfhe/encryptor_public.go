@@ -28,14 +28,14 @@ type PublicEncryptor[T tfhe.TorusInt] struct {
 
 // publicEncryptionBuffer is a buffer for public encryption.
 type publicEncryptionBuffer[T tfhe.TorusInt] struct {
-	// ptGLWE holds the GLWE plaintext.
+	// ptGLWE is the GLWE plaintext.
 	ptGLWE tfhe.GLWEPlaintext[T]
-	// ctGLWE holds the GLWE ciphertext.
+	// ctGLWE is the GLWE ciphertext.
 	ctGLWE GLWECiphertext[T]
 
-	// ctLWESingle holds the single-key LWE ciphertext.
+	// ctLWESingle is the single-key LWE ciphertext.
 	ctLWESingle tfhe.LWECiphertext[T]
-	// ctGLWESingle holds the single-key GLWE ciphertext.
+	// ctGLWESingle is the single-key GLWE ciphertext.
 	ctGLWESingle tfhe.GLWECiphertext[T]
 }
 

@@ -39,18 +39,18 @@ type Evaluator[T num.Integer] struct {
 	// qInv is a float64 value of 1/Q.
 	qInv float64
 
-	// tw holds the twiddle factors for fourier transform.
+	// tw is the twiddle factors for fourier transform.
 	// This is stored as "long" form, so that access to the factors are contiguous.
 	// Unlike other complex128 slices, tw is in natural representation.
 	tw []complex128
-	// twInv holds the twiddle factors for inverse fourier transform.
+	// twInv is the twiddle factors for inverse fourier transform.
 	// This is stored as "long" form, so that access to the factors are contiguous.
 	// Unlike other complex128 slices, twInv is in natural representation.
 	twInv []complex128
-	// twMono holds the twiddle factors for monomial fourier transform.
+	// twMono is the twiddle factors for monomial fourier transform.
 	// Unlike other complex128 slices, twMono is in natural representation.
 	twMono []complex128
-	// twMonoIdx holds the precomputed bit-reversed index for monomial fourier transform.
+	// twMonoIdx is the precomputed bit-reversed index for monomial fourier transform.
 	// Equivalent to BitReverse([-1, 3, 7, ..., 2N-1]).
 	twMonoIdx []int
 
@@ -78,32 +78,32 @@ type Evaluator[T num.Integer] struct {
 	//	- If sizeT = 64, splitCountBinary = 3.
 	splitCountBinary int
 
-	// buffer holds the buffer values for this Evaluator.
+	// buffer is the buffer values for this Evaluator.
 	buffer evaluationBuffer[T]
 }
 
 // evaluationBuffer contains buffer values for Evaluator.
 type evaluationBuffer[T num.Integer] struct {
-	// pOut holds the intermediate output polynomial for InPlace operations.
+	// pOut is the intermediate output polynomial for InPlace operations.
 	pOut Poly[T]
 
-	// fp holds the FFT value of p.
+	// fp is the FFT value of p.
 	fp FourierPoly
-	// fpInv holds the InvFFT value of fp.
+	// fpInv is the InvFFT value of fp.
 	fpInv FourierPoly
 
-	// fpMul holds the FFT value of p in multiplication.
+	// fpMul is the FFT value of p in multiplication.
 	fpMul FourierPoly
 
-	// p0Split holds the split value of p0 in [*Evaluator.Mul].
+	// p0Split is the split value of p0 in [*Evaluator.Mul].
 	p0Split []Poly[T]
-	// p1Split holds the split value of p1 in [*Evaluator.Mul].
+	// p1Split is the split value of p1 in [*Evaluator.Mul].
 	p1Split []Poly[T]
-	// fp0Split holds the fourier transformed p0Split.
+	// fp0Split is the fourier transformed p0Split.
 	fp0Split []FourierPoly
-	// fp1Split holds the fourier transformed p1Split.
+	// fp1Split is the fourier transformed p1Split.
 	fp1Split []FourierPoly
-	// fpOutSplit holds the fourier transformed pOutSplit.
+	// fpOutSplit is the fourier transformed pOutSplit.
 	fpOutSplit []FourierPoly
 }
 

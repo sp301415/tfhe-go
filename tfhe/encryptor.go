@@ -17,7 +17,7 @@ type Encryptor[T TorusInt] struct {
 	// GLWETransformer is an embedded GLWETransformer for this Encryptor.
 	*GLWETransformer[T]
 
-	// Parameters holds the parameters for this Encryptor.
+	// Parameters is the parameters for this Encryptor.
 	Parameters Parameters[T]
 
 	// UniformSampler is used for sampling the mask of encryptions.
@@ -27,27 +27,27 @@ type Encryptor[T TorusInt] struct {
 	// GaussainSampler is used for sampling noise in LWE and GLWE encryption.
 	GaussianSampler *csprng.GaussianSampler[T]
 
-	// PolyEvaluator holds the PolyEvaluator for this Encryptor.
+	// PolyEvaluator is the PolyEvaluator for this Encryptor.
 	PolyEvaluator *poly.Evaluator[T]
 
-	// SecretKey holds the LWE and GLWE key for this Encryptor.
+	// SecretKey is the LWE and GLWE key for this Encryptor.
 	//
 	// The LWE key used for LWE ciphertexts is determined by
 	// BootstrapOrder.
 	// For encrypting/decrypting LWE ciphertexts, use [*Encryptor DefaultLWEKey].
 	SecretKey SecretKey[T]
 
-	// buffer holds the buffer values for this Encryptor.
+	// buffer is the buffer values for this Encryptor.
 	buffer encryptionBuffer[T]
 }
 
 // encryptionBuffer contains buffer values for Encryptor.
 type encryptionBuffer[T TorusInt] struct {
-	// ptGLWE holds the GLWE plaintext for GLWE encryption / decryptions.
+	// ptGLWE is the GLWE plaintext for GLWE encryption / decryptions.
 	ptGLWE GLWEPlaintext[T]
-	// ctGLWE holds standard GLWE Ciphertext for Fourier encryption / decryptions.
+	// ctGLWE is the standard GLWE Ciphertext for Fourier encryption / decryptions.
 	ctGLWE GLWECiphertext[T]
-	// ptGGSW holds GLWEKey * Pt in GGSW encryption.
+	// ptGGSW is GLWEKey * Pt in GGSW encryption.
 	ptGGSW poly.Poly[T]
 }
 

@@ -7,7 +7,7 @@ import (
 	"github.com/sp301415/tfhe-go/math/vec"
 )
 
-// LookUpTable is a polynomial that holds the lookup table
+// LookUpTable is a polynomial that is the lookup table
 // for function evaluations during programmable bootstrapping.
 type LookUpTable[T TorusInt] struct {
 	Value []T

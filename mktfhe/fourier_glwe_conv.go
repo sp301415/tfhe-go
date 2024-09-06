@@ -7,7 +7,7 @@ import (
 
 // GLWETransformer is a multi-key variant of [tfhe.GLWETransformer].
 type GLWETransformer[T tfhe.TorusInt] struct {
-	// Parameters holds parameters for this GLWETransformer.
+	// Parameters is the parameters for this GLWETransformer.
 	Parameters Parameters[T]
 
 	// PolyEvaluator is a PolyEvaluator for this GLWETransformer.

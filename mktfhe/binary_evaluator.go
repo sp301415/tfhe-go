@@ -9,11 +9,11 @@ import (
 type BinaryEvaluator[T tfhe.TorusInt] struct {
 	// BinaryEncoder is an embedded encoder for this BinaryEvaluator.
 	*tfhe.BinaryEncoder[T]
-	// Parameters holds the parameters for this BinaryEvaluator.
+	// Parameters is the parameters for this BinaryEvaluator.
 	Parameters Parameters[T]
 	// BaseEvaluator is a generic Evalutor for this BinaryEvaluator.
 	BaseEvaluator *Evaluator[T]
-	// signLUT holds a LUT for sign function.
+	// signLUT is a LUT for sign function.
 	signLUT tfhe.LookUpTable[T]
 }
 

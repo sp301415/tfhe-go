@@ -40,14 +40,14 @@ type Decryptor[T tfhe.TorusInt] struct {
 
 // decryptionBuffer is a buffer for decryption.
 type decryptionBuffer[T tfhe.TorusInt] struct {
-	// ptGLWE holds the GLWE plaintext.
+	// ptGLWE is the GLWE plaintext.
 	ptGLWE tfhe.GLWEPlaintext[T]
-	// ctGLWE holds the GLWE ciphertext.
+	// ctGLWE is the GLWE ciphertext.
 	ctGLWE GLWECiphertext[T]
 
-	// ctLWESingle holds the LWE ciphertext.
+	// ctLWESingle is the LWE ciphertext.
 	ctLWESingle tfhe.LWECiphertext[T]
-	// ctGLWESingle holds the GLWE ciphertext.
+	// ctGLWESingle is the GLWE ciphertext.
 	ctGLWESingle tfhe.GLWECiphertext[T]
 }
 

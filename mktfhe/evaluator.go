@@ -21,6 +21,9 @@ type Evaluator[T tfhe.TorusInt] struct {
 	// If an evaluation key does not exist for given index, it is nil.
 	SingleKeyEvaluators []*tfhe.Evaluator[T]
 
+	// PolyEvaluator is a PolyEvaluator for this Evaluator.
+	PolyEvaluator *poly.Evaluator[T]
+
 	// Parameters is the parameters for this Evaluator.
 	Parameters Parameters[T]
 
@@ -39,47 +42,47 @@ type Evaluator[T tfhe.TorusInt] struct {
 
 // evaluationBuffer is a buffer for evaluation.
 type evaluationBuffer[T tfhe.TorusInt] struct {
-	// decomposed holds the decomposed scalar.
+	// decomposed is the decomposed scalar.
 	// Has length keyswitchParameters.level.
 	decomposed []T
-	// polyDecomposed holds the decomposed polynomial.
+	// polyDecomposed is the decomposed polynomial.
 	// Initially has length relinKeyParameters.level.
 	// Use [*Evaluator.polyDecomposedBuffer] to get appropriate length of buffer.
 	polyDecomposed []poly.Poly[T]
-	// polyFourierDecomposed holds the decomposed polynomial in Fourier domain.
+	// polyFourierDecomposed is the decomposed polynomial in Fourier domain.
 	// Initially has length relinKeyParameters.level.
 	// Use [*Evaluator.polyFourierDecomposedBuffer] to get appropriate length of buffer.
 	polyFourierDecomposed []poly.FourierPoly
 
-	// ctProd holds the intermediate value in Hybrid Product.
+	// ctProd is the intermediate value in Hybrid Product.
 	ctProd GLWECiphertext[T]
-	// ctFourierProd holds the fourier transformed ctHybrid in Hybrid Product.
+	// ctFourierProd is the fourier transformed ctHybrid in Hybrid Product.
 	ctFourierProd FourierGLWECiphertext[T]
 
-	// ctProdSingle holds the intermediate single-key ciphertext in Hybrid Product.
+	// ctProdSingle is the intermediate single-key ciphertext in Hybrid Product.
 	ctProdSingle poly.Poly[T]
-	// ctFourierProdSingle holds the fourier transformed ctHybridSingle in Hybrid Product.
+	// ctFourierProdSingle is the fourier transformed ctHybridSingle in Hybrid Product.
 	ctFourierProdSingle poly.FourierPoly
 
-	// ctRelin holds the intermediate value in Generalized External Product.
+	// ctRelin is the intermediate value in Generalized External Product.
 	ctRelin GLWECiphertext[T]
 	// ctRelinTransposed is a transposed version of ctRelin.
 	ctRelinTransposed []tfhe.GLWECiphertext[T]
 
-	// ctRotateInputs holds the input of the Blind Rotation to each single evaluator.
+	// ctRotateInputs is the input of the Blind Rotation to each single evaluator.
 	ctRotateInputs []tfhe.LWECiphertext[T]
-	// gadgetLUTs holds the gadget LUT for the Blind Rotation.
+	// gadgetLUTs is the gadget LUT for the Blind Rotation.
 	gadgetLUTs []tfhe.LookUpTable[T]
-	// ctAccs holds the output of the accumulator of a single-key Blind Rotation.
+	// ctAccs is the output of the accumulator of a single-key Blind Rotation.
 	ctAccs []tfhe.GLWECiphertext[T]
-	// ctFourierAccs holds the fourier transformed ctAccs.
+	// ctFourierAccs is the fourier transformed ctAccs.
 	ctFourierAccs []tfhe.FourierGLevCiphertext[T]
 
-	// ctRotate holds the blind rotated GLWE ciphertext for bootstrapping.
+	// ctRotate is the blind rotated GLWE ciphertext for bootstrapping.
 	ctRotate GLWECiphertext[T]
-	// ctExtract holds the extracted LWE ciphertext after Blind Rotation.
+	// ctExtract is the extracted LWE ciphertext after Blind Rotation.
 	ctExtract LWECiphertext[T]
-	// ctKeySwitch holds LWEDimension sized ciphertext from keyswitching.
+	// ctKeySwitch is the LWEDimension sized ciphertext from keyswitching.
 	ctKeySwitch LWECiphertext[T]
 
 	// lut is an empty lut, used for BlindRotateFunc.

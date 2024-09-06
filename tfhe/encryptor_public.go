@@ -19,7 +19,7 @@ type PublicEncryptor[T TorusInt] struct {
 	// GLWETransformer is an embedded GLWETransformer for this PublicEncryptor.
 	*GLWETransformer[T]
 
-	// Parameters holds the parameters for this PublicEncryptor.
+	// Parameters is the parameters for this PublicEncryptor.
 	Parameters Parameters[T]
 
 	// UniformSampler is used for sampling the mask of encryptions.
@@ -29,27 +29,27 @@ type PublicEncryptor[T TorusInt] struct {
 	// GaussianSampler is used for sampling noise in LWE and GLWE encryption.
 	GaussianSampler *csprng.GaussianSampler[T]
 
-	// PolyEvaluator holds the PolyEvaluator for this PublicEncryptor.
+	// PolyEvaluator is the PolyEvaluator for this PublicEncryptor.
 	PolyEvaluator *poly.Evaluator[T]
 
-	// PublicKey holds the public key for this PublicEncryptor.
+	// PublicKey is the public key for this PublicEncryptor.
 	PublicKey PublicKey[T]
 
-	// buffer holds the buffer values for this PublicEncryptor.
+	// buffer is the buffer values for this PublicEncryptor.
 	buffer publicEncryptionBuffer[T]
 }
 
 // publicEncryptionBuffer contains buffer values for PublicEncryptor.
 type publicEncryptionBuffer[T TorusInt] struct {
-	// ptGLWE holds the GLWE plaintext for GLWE encryption / decryptions.
+	// ptGLWE is the GLWE plaintext for GLWE encryption / decryptions.
 	ptGLWE GLWEPlaintext[T]
-	// ctGLWE holds standard GLWE Ciphertext for Fourier encryption / decryptions.
+	// ctGLWE is the standard GLWE Ciphertext for Fourier encryption / decryptions.
 	ctGLWE GLWECiphertext[T]
 
-	// auxKey holds the auxiliary key for encryption.
+	// auxKey is the auxiliary key for encryption.
 	// This must be sampled fresh for each encryption.
 	auxKey GLWESecretKey[T]
-	// auxFourierKey holds the fourier transform of auxKey.
+	// auxFourierKey is the fourier transform of auxKey.
 	auxFourierKey FourierGLWESecretKey[T]
 }
 

@@ -33,19 +33,19 @@ type Encryptor[T tfhe.TorusInt] struct {
 
 // encryptionBuffer is a buffer for encryption.
 type encryptionBuffer[T tfhe.TorusInt] struct {
-	// ptGLWE holds the GLWE plaintext.
+	// ptGLWE is the GLWE plaintext.
 	ptGLWE tfhe.GLWEPlaintext[T]
-	// ctGLWE holds the GLWE ciphertext.
+	// ctGLWE is the GLWE ciphertext.
 	ctGLWE GLWECiphertext[T]
 
-	// auxKey holds the auxiliary key for uniencryption.
+	// auxKey is the auxiliary key for uniencryption.
 	auxKey tfhe.GLWESecretKey[T]
-	// auxFourierKey holds the fourier transform of auxKey.
+	// auxFourierKey is the fourier transform of auxKey.
 	auxFourierKey tfhe.FourierGLWESecretKey[T]
 
-	// ctLWESingle holds the single-key LWE ciphertext.
+	// ctLWESingle is the single-key LWE ciphertext.
 	ctLWESingle tfhe.LWECiphertext[T]
-	// ctGLWESingle holds the single-key GLWE ciphertext.
+	// ctGLWESingle is the single-key GLWE ciphertext.
 	ctGLWESingle tfhe.GLWECiphertext[T]
 }
 

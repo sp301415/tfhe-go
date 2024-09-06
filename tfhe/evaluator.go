@@ -19,65 +19,65 @@ type Evaluator[T TorusInt] struct {
 	// Decomposer is an embedded Decomposer for this Evaluator.
 	*Decomposer[T]
 
-	// Parameters holds the parameters for this Evaluator.
+	// Parameters is the parameters for this Evaluator.
 	Parameters Parameters[T]
 
-	// PolyEvaluator holds the PolyEvaluator for this Evaluator.
+	// PolyEvaluator is the PolyEvaluator for this Evaluator.
 	PolyEvaluator *poly.Evaluator[T]
 
-	// EvaluationKey holds the evaluation key for this Evaluator.
+	// EvaluationKey is the evaluation key for this Evaluator.
 	EvaluationKey EvaluationKey[T]
 
 	// modSwitchConstant is a constant for modulus switching.
 	modSwitchConstant float64
 
-	// buffer holds the buffer values for this Evaluator.
+	// buffer is the buffer values for this Evaluator.
 	buffer evaluationBuffer[T]
 }
 
 // evaluationBuffer contains buffer values for Evaluator.
 type evaluationBuffer[T TorusInt] struct {
-	// decomposed holds the decomposed scalar.
+	// decomposed is the decomposed scalar.
 	// Initially has length keyswitchParameters.level.
 	// Use [*Evaluator.decomposedBuffer] to get appropriate length of buffer.
 	decomposed []T
-	// polyDecomposed holds the decomposed polynomial.
+	// polyDecomposed is the decomposed polynomial.
 	// Initially has length bootstrapParameters.level.
 	// Use [*Evaluator.polyDecomposedBuffer] to get appropriate length of buffer.
 	polyDecomposed []poly.Poly[T]
-	// polyFourierDecomposed holds the decomposed polynomial in Fourier domain.
+	// polyFourierDecomposed is the decomposed polynomial in Fourier domain.
 	// Initially has length bootstrapParameters.level.
 	// Use [*Evaluator.polyFourierDecomposedBuffer] to get appropriate length of buffer.
 	polyFourierDecomposed []poly.FourierPoly
 
-	// fpMul holds the fourier transformed polynomial for multiplications.
+	// fpMul is the fourier transformed polynomial for multiplications.
 	fpMul poly.FourierPoly
-	// ctFourierProd holds the fourier transformed ctGLWEOut in ExternalProductFourier.
+	// ctFourierProd is the fourier transformed ctGLWEOut in ExternalProductFourier.
 	ctFourierProd FourierGLWECiphertext[T]
-	// ctCMux holds ct1 - ct0 in CMux.
+	// ctCMux is ct1 - ct0 in CMux.
 	ctCMux GLWECiphertext[T]
 
-	// ctAcc holds the accumulator in BlindRotateExtended.
+	// ctAcc is the accumulator in BlindRotateExtended.
 	// This has length PolyExtendFactor.
 	ctAcc []GLWECiphertext[T]
-	// ctFourierAcc holds the fourier transformed accumulator in Blind Rotation.
+	// ctFourierAcc is the fourier transformed accumulator in Blind Rotation.
 	// In case of BlindRotateBlock and BlindRotateOriginal, only the first element is used.
 	// This has length PolyExtendFactor.
 	ctFourierAcc []FourierGLWECiphertext[T]
-	// ctBlockFourierAcc holds the auxiliary accumulator in BlindRotateBlock and BlindRotateExtended.
+	// ctBlockFourierAcc is the auxiliary accumulator in BlindRotateBlock and BlindRotateExtended.
 	ctBlockFourierAcc []FourierGLWECiphertext[T]
-	// ctAccFourierDecomposed holds the decomposed ctAcc in Blind Rotation.
+	// ctAccFourierDecomposed is the decomposed ctAcc in Blind Rotation.
 	// In case of BlindRotateBlock and BlindRotateOriginal, only the first element is used.
 	// This has length PolyExpandFactor.
 	ctAccFourierDecomposed [][][]poly.FourierPoly
-	// fMono holds the fourier transformed monomial in Blind Rotation.
+	// fMono is the fourier transformed monomial in Blind Rotation.
 	fMono poly.FourierPoly
 
-	// ctRotate holds the blind rotated GLWE ciphertext for bootstrapping.
+	// ctRotate is the blind rotated GLWE ciphertext for bootstrapping.
 	ctRotate GLWECiphertext[T]
-	// ctExtract holds the extracted LWE ciphertext after Blind Rotation.
+	// ctExtract is the extracted LWE ciphertext after Blind Rotation.
 	ctExtract LWECiphertext[T]
-	// ctKeySwitch holds LWEDimension sized ciphertext from keyswitching.
+	// ctKeySwitch is the LWEDimension sized ciphertext from keyswitching.
 	ctKeySwitch LWECiphertext[T]
 
 	// lut is an empty lut, used for BlindRotateFunc.

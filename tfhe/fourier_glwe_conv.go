@@ -10,7 +10,7 @@ import "github.com/sp301415/tfhe-go/math/poly"
 // GLWETransformer is not safe for concurrent use.
 // Use [*GLWETransformer.ShallowCopy] to get a safe copy.
 type GLWETransformer[T TorusInt] struct {
-	// Parameters holds parameters for this GLWETransformer.
+	// Parameters is the parameters for this GLWETransformer.
 	Parameters Parameters[T]
 
 	// Evaluator is a Evaluator for this GLWETransformer.

@@ -9,7 +9,10 @@ import (
 // according to the gadget parameters.
 //
 // Decomposer is safe for concurrent use.
-type Decomposer[T TorusInt] struct{}
+type Decomposer[T TorusInt] struct {
+	// PolyEvaluator is the PolyEvaluator for this Decomposer.
+	PolyEvaluator *poly.Evaluator[T]
+}
 
 // NewDecomposer creates a new Decomposer.
 func NewDecomposer[T TorusInt](N int) *Decomposer[T] {
