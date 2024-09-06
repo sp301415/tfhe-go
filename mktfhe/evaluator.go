@@ -101,7 +101,7 @@ func NewEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationK
 	return &Evaluator[T]{
 		Encoder:                tfhe.NewEncoder(params.Parameters),
 		GLWETransformer:        NewGLWETransformer(params),
-		Decomposer:             tfhe.NewDecomposer[T](),
+		Decomposer:             tfhe.NewDecomposer[T](params.PolyDegree()),
 		BaseSingleKeyEvaluator: tfhe.NewEvaluator(params.Parameters, tfhe.EvaluationKey[T]{}),
 		SingleKeyEvaluators:    singleEvals,
 

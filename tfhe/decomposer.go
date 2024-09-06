@@ -12,7 +12,7 @@ import (
 type Decomposer[T TorusInt] struct{}
 
 // NewDecomposer creates a new Decomposer.
-func NewDecomposer[T TorusInt]() *Decomposer[T] {
+func NewDecomposer[T TorusInt](N int) *Decomposer[T] {
 	return &Decomposer[T]{}
 }
 
