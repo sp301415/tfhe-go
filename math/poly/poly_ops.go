@@ -71,23 +71,23 @@ func (e *Evaluator[T]) FourierMul(p0 Poly[T], fp FourierPoly) Poly[T] {
 
 // FourierMulAssign computes pOut = p0 * fp.
 func (e *Evaluator[T]) FourierMulAssign(p0 Poly[T], fp FourierPoly, pOut Poly[T]) {
-	e.ToFourierPolyAssign(p0, e.buffer.fpMul)
-	e.MulFourierAssign(e.buffer.fpMul, fp, e.buffer.fpMul)
-	e.ToPolyAssignUnsafe(e.buffer.fpMul, pOut)
+	e.ToFourierPolyAssign(p0, e.buffer.fp)
+	e.MulFourierAssign(e.buffer.fp, fp, e.buffer.fp)
+	e.ToPolyAssignUnsafe(e.buffer.fp, pOut)
 }
 
 // FourierMulAddAssign computes pOut += p0 * fp.
 func (e *Evaluator[T]) FourierMulAddAssign(p0 Poly[T], fp FourierPoly, pOut Poly[T]) {
-	e.ToFourierPolyAssign(p0, e.buffer.fpMul)
-	e.MulFourierAssign(e.buffer.fpMul, fp, e.buffer.fpMul)
-	e.ToPolyAddAssignUnsafe(e.buffer.fpMul, pOut)
+	e.ToFourierPolyAssign(p0, e.buffer.fp)
+	e.MulFourierAssign(e.buffer.fp, fp, e.buffer.fp)
+	e.ToPolyAddAssignUnsafe(e.buffer.fp, pOut)
 }
 
 // FourierMulSubAssign computes pOut -= p0 * fp.
 func (e *Evaluator[T]) FourierMulSubAssign(p0 Poly[T], fp FourierPoly, pOut Poly[T]) {
-	e.ToFourierPolyAssign(p0, e.buffer.fpMul)
-	e.MulFourierAssign(e.buffer.fpMul, fp, e.buffer.fpMul)
-	e.ToPolySubAssignUnsafe(e.buffer.fpMul, pOut)
+	e.ToFourierPolyAssign(p0, e.buffer.fp)
+	e.MulFourierAssign(e.buffer.fp, fp, e.buffer.fp)
+	e.ToPolySubAssignUnsafe(e.buffer.fp, pOut)
 }
 
 // MonomialMul returns X^d * p0.

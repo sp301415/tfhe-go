@@ -24,24 +24,29 @@ func (e *Evaluator[T]) MulAssign(p0, p1, pOut Poly[T]) {
 		for i := 0; i < e.splitCount; i++ {
 			var splitLow T = 1 << (i * int(e.splitBits))
 			for j := 0; j < e.degree; j++ {
-				e.buffer.p0Split[i].Coeffs[j] = (p0.Coeffs[j] / splitLow) % splitChunk
-				e.buffer.p1Split[i].Coeffs[j] = (p1.Coeffs[j] / splitLow) % splitChunk
+				e.buffer.pSplit.Coeffs[j] = (p0.Coeffs[j] / splitLow) % splitChunk
 			}
+			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fp0Split[i])
+
+			for j := 0; j < e.degree; j++ {
+				e.buffer.pSplit.Coeffs[j] = (p1.Coeffs[j] / splitLow) % splitChunk
+			}
+			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fp1Split[i])
 		}
 	} else {
 		var splitMask T = 1<<e.splitBits - 1
 		for i := 0; i < e.splitCount; i++ {
 			splitLowBits := i * int(e.splitBits)
 			for j := 0; j < e.degree; j++ {
-				e.buffer.p0Split[i].Coeffs[j] = (p0.Coeffs[j] >> splitLowBits) & splitMask
-				e.buffer.p1Split[i].Coeffs[j] = (p1.Coeffs[j] >> splitLowBits) & splitMask
+				e.buffer.pSplit.Coeffs[j] = (p0.Coeffs[j] >> splitLowBits) & splitMask
 			}
-		}
-	}
+			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fp0Split[i])
 
-	for i := 0; i < e.splitCount; i++ {
-		e.ToFourierPolyAssign(e.buffer.p0Split[i], e.buffer.fp0Split[i])
-		e.ToFourierPolyAssign(e.buffer.p1Split[i], e.buffer.fp1Split[i])
+			for j := 0; j < e.degree; j++ {
+				e.buffer.pSplit.Coeffs[j] = (p1.Coeffs[j] >> splitLowBits) & splitMask
+			}
+			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fp1Split[i])
+		}
 	}
 
 	for j := 0; j < e.splitCount; j++ {
@@ -55,10 +60,10 @@ func (e *Evaluator[T]) MulAssign(p0, p1, pOut Poly[T]) {
 
 	e.ToPolyAssignUnsafe(e.buffer.fpOutSplit[0], pOut)
 	for i := 1; i < e.splitCount; i++ {
-		e.ToPolyAssignUnsafe(e.buffer.fpOutSplit[i], e.buffer.p0Split[i])
+		e.ToPolyAssignUnsafe(e.buffer.fpOutSplit[i], e.buffer.pSplit)
 		splitLowBits := i * int(e.splitBits)
 		for j := 0; j < e.degree; j++ {
-			pOut.Coeffs[j] += e.buffer.p0Split[i].Coeffs[j] << splitLowBits
+			pOut.Coeffs[j] += e.buffer.pSplit.Coeffs[j] << splitLowBits
 		}
 	}
 }
@@ -78,24 +83,29 @@ func (e *Evaluator[T]) MulAddAssign(p0, p1, pOut Poly[T]) {
 		for i := 0; i < e.splitCount; i++ {
 			var splitLow T = 1 << (i * int(e.splitBits))
 			for j := 0; j < e.degree; j++ {
-				e.buffer.p0Split[i].Coeffs[j] = (p0.Coeffs[j] / splitLow) % splitChunk
-				e.buffer.p1Split[i].Coeffs[j] = (p1.Coeffs[j] / splitLow) % splitChunk
+				e.buffer.pSplit.Coeffs[j] = (p0.Coeffs[j] / splitLow) % splitChunk
 			}
+			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fp0Split[i])
+
+			for j := 0; j < e.degree; j++ {
+				e.buffer.pSplit.Coeffs[j] = (p1.Coeffs[j] / splitLow) % splitChunk
+			}
+			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fp1Split[i])
 		}
 	} else {
 		var splitMask T = 1<<e.splitBits - 1
 		for i := 0; i < e.splitCount; i++ {
 			splitLowBits := i * int(e.splitBits)
 			for j := 0; j < e.degree; j++ {
-				e.buffer.p0Split[i].Coeffs[j] = (p0.Coeffs[j] >> splitLowBits) & splitMask
-				e.buffer.p1Split[i].Coeffs[j] = (p1.Coeffs[j] >> splitLowBits) & splitMask
+				e.buffer.pSplit.Coeffs[j] = (p0.Coeffs[j] >> splitLowBits) & splitMask
 			}
-		}
-	}
+			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fp0Split[i])
 
-	for i := 0; i < e.splitCount; i++ {
-		e.ToFourierPolyAssign(e.buffer.p0Split[i], e.buffer.fp0Split[i])
-		e.ToFourierPolyAssign(e.buffer.p1Split[i], e.buffer.fp1Split[i])
+			for j := 0; j < e.degree; j++ {
+				e.buffer.pSplit.Coeffs[j] = (p1.Coeffs[j] >> splitLowBits) & splitMask
+			}
+			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fp1Split[i])
+		}
 	}
 
 	for j := 0; j < e.splitCount; j++ {
@@ -109,10 +119,10 @@ func (e *Evaluator[T]) MulAddAssign(p0, p1, pOut Poly[T]) {
 
 	e.ToPolyAddAssignUnsafe(e.buffer.fpOutSplit[0], pOut)
 	for i := 1; i < e.splitCount; i++ {
-		e.ToPolyAssignUnsafe(e.buffer.fpOutSplit[i], e.buffer.p0Split[i])
+		e.ToPolyAssignUnsafe(e.buffer.fpOutSplit[i], e.buffer.pSplit)
 		splitLowBits := i * int(e.splitBits)
 		for j := 0; j < e.degree; j++ {
-			pOut.Coeffs[j] += e.buffer.p0Split[i].Coeffs[j] << splitLowBits
+			pOut.Coeffs[j] += e.buffer.pSplit.Coeffs[j] << splitLowBits
 		}
 	}
 }
@@ -132,24 +142,29 @@ func (e *Evaluator[T]) MulSubAssign(p0, p1, pOut Poly[T]) {
 		for i := 0; i < e.splitCount; i++ {
 			var splitLow T = 1 << (i * int(e.splitBits))
 			for j := 0; j < e.degree; j++ {
-				e.buffer.p0Split[i].Coeffs[j] = (p0.Coeffs[j] / splitLow) % splitChunk
-				e.buffer.p1Split[i].Coeffs[j] = (p1.Coeffs[j] / splitLow) % splitChunk
+				e.buffer.pSplit.Coeffs[j] = (p0.Coeffs[j] / splitLow) % splitChunk
 			}
+			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fp0Split[i])
+
+			for j := 0; j < e.degree; j++ {
+				e.buffer.pSplit.Coeffs[j] = (p1.Coeffs[j] / splitLow) % splitChunk
+			}
+			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fp1Split[i])
 		}
 	} else {
 		var splitMask T = 1<<e.splitBits - 1
 		for i := 0; i < e.splitCount; i++ {
 			splitLowBits := i * int(e.splitBits)
 			for j := 0; j < e.degree; j++ {
-				e.buffer.p0Split[i].Coeffs[j] = (p0.Coeffs[j] >> splitLowBits) & splitMask
-				e.buffer.p1Split[i].Coeffs[j] = (p1.Coeffs[j] >> splitLowBits) & splitMask
+				e.buffer.pSplit.Coeffs[j] = (p0.Coeffs[j] >> splitLowBits) & splitMask
 			}
-		}
-	}
+			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fp0Split[i])
 
-	for i := 0; i < e.splitCount; i++ {
-		e.ToFourierPolyAssign(e.buffer.p0Split[i], e.buffer.fp0Split[i])
-		e.ToFourierPolyAssign(e.buffer.p1Split[i], e.buffer.fp1Split[i])
+			for j := 0; j < e.degree; j++ {
+				e.buffer.pSplit.Coeffs[j] = (p1.Coeffs[j] >> splitLowBits) & splitMask
+			}
+			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fp1Split[i])
+		}
 	}
 
 	for j := 0; j < e.splitCount; j++ {
@@ -163,10 +178,10 @@ func (e *Evaluator[T]) MulSubAssign(p0, p1, pOut Poly[T]) {
 
 	e.ToPolySubAssignUnsafe(e.buffer.fpOutSplit[0], pOut)
 	for i := 1; i < e.splitCount; i++ {
-		e.ToPolyAssignUnsafe(e.buffer.fpOutSplit[i], e.buffer.p0Split[i])
+		e.ToPolyAssignUnsafe(e.buffer.fpOutSplit[i], e.buffer.pSplit)
 		splitLowBits := i * int(e.splitBits)
 		for j := 0; j < e.degree; j++ {
-			pOut.Coeffs[j] -= e.buffer.p0Split[i].Coeffs[j] << splitLowBits
+			pOut.Coeffs[j] -= e.buffer.pSplit.Coeffs[j] << splitLowBits
 		}
 	}
 }
@@ -194,30 +209,29 @@ func (e *Evaluator[T]) BinaryFourierMulAssign(p0 Poly[T], bfp FourierPoly, pOut 
 		for i := 0; i < e.splitCountBinary; i++ {
 			var splitLow T = 1 << (i * int(e.splitBitsBinary))
 			for j := 0; j < e.degree; j++ {
-				e.buffer.p0Split[i].Coeffs[j] = (p0.Coeffs[j] / splitLow) % splitChunk
+				e.buffer.pSplit.Coeffs[j] = (p0.Coeffs[j] / splitLow) % splitChunk
 			}
+			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fp0Split[i])
+			e.MulFourierAssign(e.buffer.fp0Split[i], bfp, e.buffer.fpOutSplit[i])
 		}
 	} else {
 		var splitMask T = 1<<e.splitBitsBinary - 1
 		for i := 0; i < e.splitCountBinary; i++ {
 			splitLowBits := i * int(e.splitBitsBinary)
 			for j := 0; j < e.degree; j++ {
-				e.buffer.p0Split[i].Coeffs[j] = (p0.Coeffs[j] >> splitLowBits) & splitMask
+				e.buffer.pSplit.Coeffs[j] = (p0.Coeffs[j] >> splitLowBits) & splitMask
 			}
+			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fp0Split[i])
+			e.MulFourierAssign(e.buffer.fp0Split[i], bfp, e.buffer.fpOutSplit[i])
 		}
-	}
-
-	for i := 0; i < e.splitCountBinary; i++ {
-		e.ToFourierPolyAssign(e.buffer.p0Split[i], e.buffer.fp0Split[i])
-		e.MulFourierAssign(e.buffer.fp0Split[i], bfp, e.buffer.fpOutSplit[i])
 	}
 
 	e.ToPolyAssignUnsafe(e.buffer.fpOutSplit[0], pOut)
 	for i := 1; i < e.splitCountBinary; i++ {
-		e.ToPolyAssignUnsafe(e.buffer.fpOutSplit[i], e.buffer.p0Split[i])
+		e.ToPolyAssignUnsafe(e.buffer.fpOutSplit[i], e.buffer.pSplit)
 		splitLowBits := i * int(e.splitBitsBinary)
 		for j := 0; j < e.degree; j++ {
-			pOut.Coeffs[j] += e.buffer.p0Split[i].Coeffs[j] << splitLowBits
+			pOut.Coeffs[j] += e.buffer.pSplit.Coeffs[j] << splitLowBits
 		}
 	}
 }
@@ -237,30 +251,29 @@ func (e *Evaluator[T]) BinaryFourierMulAddAssign(p0 Poly[T], bfp FourierPoly, pO
 		for i := 0; i < e.splitCountBinary; i++ {
 			var splitLow T = 1 << (i * int(e.splitBitsBinary))
 			for j := 0; j < e.degree; j++ {
-				e.buffer.p0Split[i].Coeffs[j] = (p0.Coeffs[j] / splitLow) % splitChunk
+				e.buffer.pSplit.Coeffs[j] = (p0.Coeffs[j] / splitLow) % splitChunk
 			}
+			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fp0Split[i])
+			e.MulFourierAssign(e.buffer.fp0Split[i], bfp, e.buffer.fpOutSplit[i])
 		}
 	} else {
 		var splitMask T = 1<<e.splitBitsBinary - 1
 		for i := 0; i < e.splitCountBinary; i++ {
 			splitLowBits := i * int(e.splitBitsBinary)
 			for j := 0; j < e.degree; j++ {
-				e.buffer.p0Split[i].Coeffs[j] = (p0.Coeffs[j] >> splitLowBits) & splitMask
+				e.buffer.pSplit.Coeffs[j] = (p0.Coeffs[j] >> splitLowBits) & splitMask
 			}
+			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fp0Split[i])
+			e.MulFourierAssign(e.buffer.fp0Split[i], bfp, e.buffer.fpOutSplit[i])
 		}
-	}
-
-	for i := 0; i < e.splitCountBinary; i++ {
-		e.ToFourierPolyAssign(e.buffer.p0Split[i], e.buffer.fp0Split[i])
-		e.MulFourierAssign(e.buffer.fp0Split[i], bfp, e.buffer.fpOutSplit[i])
 	}
 
 	e.ToPolyAddAssignUnsafe(e.buffer.fpOutSplit[0], pOut)
 	for i := 1; i < e.splitCountBinary; i++ {
-		e.ToPolyAssignUnsafe(e.buffer.fpOutSplit[i], e.buffer.p0Split[i])
+		e.ToPolyAssignUnsafe(e.buffer.fpOutSplit[i], e.buffer.pSplit)
 		splitLowBits := i * int(e.splitBitsBinary)
 		for j := 0; j < e.degree; j++ {
-			pOut.Coeffs[j] += e.buffer.p0Split[i].Coeffs[j] << splitLowBits
+			pOut.Coeffs[j] += e.buffer.pSplit.Coeffs[j] << splitLowBits
 		}
 	}
 }
@@ -280,30 +293,29 @@ func (e *Evaluator[T]) BinaryFourierMulSubAssign(p0 Poly[T], bfp FourierPoly, pO
 		for i := 0; i < e.splitCountBinary; i++ {
 			var splitLow T = 1 << (i * int(e.splitBitsBinary))
 			for j := 0; j < e.degree; j++ {
-				e.buffer.p0Split[i].Coeffs[j] = (p0.Coeffs[j] / splitLow) % splitChunk
+				e.buffer.pSplit.Coeffs[j] = (p0.Coeffs[j] / splitLow) % splitChunk
 			}
+			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fp0Split[i])
+			e.MulFourierAssign(e.buffer.fp0Split[i], bfp, e.buffer.fpOutSplit[i])
 		}
 	} else {
 		var splitMask T = 1<<e.splitBitsBinary - 1
 		for i := 0; i < e.splitCountBinary; i++ {
 			splitLowBits := i * int(e.splitBitsBinary)
 			for j := 0; j < e.degree; j++ {
-				e.buffer.p0Split[i].Coeffs[j] = (p0.Coeffs[j] >> splitLowBits) & splitMask
+				e.buffer.pSplit.Coeffs[j] = (p0.Coeffs[j] >> splitLowBits) & splitMask
 			}
+			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fp0Split[i])
+			e.MulFourierAssign(e.buffer.fp0Split[i], bfp, e.buffer.fpOutSplit[i])
 		}
-	}
-
-	for i := 0; i < e.splitCountBinary; i++ {
-		e.ToFourierPolyAssign(e.buffer.p0Split[i], e.buffer.fp0Split[i])
-		e.MulFourierAssign(e.buffer.fp0Split[i], bfp, e.buffer.fpOutSplit[i])
 	}
 
 	e.ToPolySubAssignUnsafe(e.buffer.fpOutSplit[0], pOut)
 	for i := 1; i < e.splitCountBinary; i++ {
-		e.ToPolyAssignUnsafe(e.buffer.fpOutSplit[i], e.buffer.p0Split[i])
+		e.ToPolyAssignUnsafe(e.buffer.fpOutSplit[i], e.buffer.pSplit)
 		splitLowBits := i * int(e.splitBitsBinary)
 		for j := 0; j < e.degree; j++ {
-			pOut.Coeffs[j] -= e.buffer.p0Split[i].Coeffs[j] << splitLowBits
+			pOut.Coeffs[j] -= e.buffer.pSplit.Coeffs[j] << splitLowBits
 		}
 	}
 }

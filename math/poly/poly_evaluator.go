@@ -92,13 +92,8 @@ type evaluationBuffer[T num.Integer] struct {
 	// fpInv is the InvFFT value of fp.
 	fpInv FourierPoly
 
-	// fpMul is the FFT value of p in multiplication.
-	fpMul FourierPoly
-
-	// p0Split is the split value of p0 in [*Evaluator.Mul].
-	p0Split []Poly[T]
-	// p1Split is the split value of p1 in [*Evaluator.Mul].
-	p1Split []Poly[T]
+	// pSplit is the split value of p0, p1 in [*Evaluator.Mul].
+	pSplit Poly[T]
 	// fp0Split is the fourier transformed p0Split.
 	fp0Split []FourierPoly
 	// fp1Split is the fourier transformed p1Split.
@@ -240,13 +235,6 @@ func genSplitParametersBinary[T num.Integer]() (splitBitsBinary T, splitCountBin
 func newFourierBuffer[T num.Integer](N int) evaluationBuffer[T] {
 	_, splitCount := genSplitParameters[T]()
 
-	p0Split := make([]Poly[T], splitCount)
-	p1Split := make([]Poly[T], splitCount)
-	for i := 0; i < splitCount; i++ {
-		p0Split[i] = NewPoly[T](N)
-		p1Split[i] = NewPoly[T](N)
-	}
-
 	fp0Split := make([]FourierPoly, splitCount)
 	fp1Split := make([]FourierPoly, splitCount)
 	fpOutSplit := make([]FourierPoly, splitCount)
@@ -262,10 +250,7 @@ func newFourierBuffer[T num.Integer](N int) evaluationBuffer[T] {
 		fp:    NewFourierPoly(N),
 		fpInv: NewFourierPoly(N),
 
-		fpMul: NewFourierPoly(N),
-
-		p0Split:    p0Split,
-		p1Split:    p1Split,
+		pSplit:     NewPoly[T](N),
 		fp0Split:   fp0Split,
 		fp1Split:   fp1Split,
 		fpOutSplit: fpOutSplit,
