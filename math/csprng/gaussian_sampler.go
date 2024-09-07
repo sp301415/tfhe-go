@@ -115,7 +115,7 @@ func (s *GaussianSampler[T]) SamplePolyAddAssign(stdDev float64, pOut poly.Poly[
 	}
 
 	for i := range pOut.Coeffs {
-		pOut.Coeffs[i] = T(int64(math.Round(s.normFloat64() * stdDev)))
+		pOut.Coeffs[i] += T(int64(math.Round(s.normFloat64() * stdDev)))
 	}
 }
 
@@ -129,7 +129,7 @@ func (s *GaussianSampler[T]) SamplePolySubAssign(stdDev float64, pOut poly.Poly[
 	}
 
 	for i := range pOut.Coeffs {
-		pOut.Coeffs[i] = T(int64(math.Round(s.normFloat64() * stdDev)))
+		pOut.Coeffs[i] -= T(int64(math.Round(s.normFloat64() * stdDev)))
 	}
 }
 
