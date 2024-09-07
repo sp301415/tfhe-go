@@ -33,7 +33,7 @@ func (e *Encryptor[T]) FourierUniEncryptPlaintext(pt tfhe.GLWEPlaintext[T], gadg
 
 // FourierUniEncryptPlaintextAssign encrypts GLWE plaintext to FourierUniEncryption and writes it to ctOut.
 func (e *Encryptor[T]) FourierUniEncryptPlaintextAssign(pt tfhe.GLWEPlaintext[T], ctOut FourierUniEncryption[T]) {
-	e.SingleKeyEncryptor.BinarySampler.SampleSliceAssign(e.buffer.auxKey.Value[0].Coeffs)
+	e.SingleKeyEncryptor.BinarySampler.SamplePolyAssign(e.buffer.auxKey.Value[0])
 	e.SingleKeyEncryptor.ToFourierGLWESecretKeyAssign(e.buffer.auxKey, e.buffer.auxFourierKey)
 
 	for i := 0; i < ctOut.GadgetParameters.Level(); i++ {
@@ -41,7 +41,7 @@ func (e *Encryptor[T]) FourierUniEncryptPlaintextAssign(pt tfhe.GLWEPlaintext[T]
 		e.SingleKeyEncryptor.PolyEvaluator.ScalarMulAssign(pt.Value, ctOut.GadgetParameters.BaseQ(i), e.buffer.ctGLWESingle.Value[0])
 
 		e.SingleKeyEncryptor.Evaluator.BinaryFourierMulAddAssign(e.buffer.ctGLWESingle.Value[1], e.buffer.auxFourierKey.Value[0], e.buffer.ctGLWESingle.Value[0])
-		e.SingleKeyEncryptor.GaussianSampler.SampleSliceAddAssign(e.Parameters.GLWEStdDevQ(), e.buffer.ctGLWESingle.Value[0].Coeffs)
+		e.SingleKeyEncryptor.GaussianSampler.SamplePolyAddAssign(e.Parameters.GLWEStdDevQ(), e.buffer.ctGLWESingle.Value[0])
 
 		e.SingleKeyEncryptor.ToFourierGLWECiphertextAssign(e.buffer.ctGLWESingle, ctOut.Value[0].Value[i])
 	}

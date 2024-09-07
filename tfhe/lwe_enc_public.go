@@ -32,7 +32,7 @@ func (e *PublicEncryptor[T]) EncryptLWEPlaintextAssign(pt LWEPlaintext[T], ctOut
 // This avoids the need for most buffers.
 func (e *PublicEncryptor[T]) EncryptLWEBody(ct LWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweRank; i++ {
-		e.BinarySampler.SampleSliceAssign(e.buffer.auxKey.Value[i].Coeffs)
+		e.BinarySampler.SamplePolyAssign(e.buffer.auxKey.Value[i])
 		ct.Value[0] += vec.Dot(e.buffer.auxKey.Value[i].Coeffs, e.PublicKey.LWEKey.Value[i].Value[0].Coeffs)
 	}
 	ct.Value[0] += e.GaussianSampler.Sample(e.Parameters.GLWEStdDevQ())
@@ -54,6 +54,6 @@ func (e *PublicEncryptor[T]) EncryptLWEBody(ct LWECiphertext[T]) {
 	}
 
 	for j := 0; j < e.Parameters.glweRank; j++ {
-		e.GaussianSampler.SampleSliceAddAssign(e.Parameters.GLWEStdDevQ(), ctGLWE[j].Coeffs)
+		e.GaussianSampler.SamplePolyAddAssign(e.Parameters.GLWEStdDevQ(), ctGLWE[j])
 	}
 }

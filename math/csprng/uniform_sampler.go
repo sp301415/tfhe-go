@@ -1,20 +1,28 @@
 package csprng
 
 import (
-	"bufio"
 	"crypto/rand"
 
 	"github.com/sp301415/tfhe-go/math/num"
+	"github.com/sp301415/tfhe-go/math/poly"
 	"golang.org/x/crypto/blake2b"
 )
 
 // UniformSampler samples values from uniform distribution.
 // This uses blake2b as a underlying prng.
 type UniformSampler[T num.Integer] struct {
-	prng *bufio.Reader
+	prng blake2b.XOF
 
-	maxT T
-	buf  []byte
+	// The length of the buffer is decided heuristically:
+	//
+	//  - If SizeT <=16, len(buf) = ByteSizeT * 512
+	//  - If SizeT = 32, BufferSize = 4 bytes * 1024 = 4096
+	//  - If SizeT = 64, BufferSize = 8 bytes * 2048 = 16384
+	buf []byte
+	ptr int
+
+	byteSizeT int
+	maxT      T
 }
 
 // NewUniformSampler allocates an empty UniformSampler.
@@ -41,42 +49,61 @@ func NewUniformSamplerWithSeed[T num.Integer](seed []byte) *UniformSampler[T] {
 		panic(err)
 	}
 
-	return &UniformSampler[T]{
-		prng: bufio.NewReader(prng),
+	byteSizeT := num.ByteSizeT[T]()
+	bufSize := 0
+	switch byteSizeT {
+	case 1, 2:
+		bufSize = byteSizeT * 512
+	case 4:
+		bufSize = byteSizeT * 1024
+	case 8:
+		bufSize = byteSizeT * 2048
+	}
 
-		maxT: T(num.MaxT[T]()),
-		buf:  make([]byte, num.ByteSizeT[T]()),
+	return &UniformSampler[T]{
+		prng: prng,
+
+		buf: make([]byte, bufSize),
+		ptr: 0,
+
+		byteSizeT: byteSizeT,
+		maxT:      T(num.MaxT[T]()),
 	}
 }
 
 // Sample uniformly samples a random integer of type T.
 func (s *UniformSampler[T]) Sample() T {
-	if _, err := s.prng.Read(s.buf); err != nil {
-		panic(err)
+	if s.ptr == len(s.buf) {
+		if _, err := s.prng.Read(s.buf); err != nil {
+			panic(err)
+		}
+		s.ptr = 0
 	}
 
 	var res T
-	switch len(s.buf) {
-	case 1:
-		res = T(uint64(s.buf[0]))
-	case 2:
-		res = T(uint64(s.buf[0]))
-		res |= T(uint64(s.buf[1]) << 8)
-	case 4:
-		res = T(uint64(s.buf[0]))
-		res |= T(uint64(s.buf[1]) << 8)
-		res |= T(uint64(s.buf[2]) << 16)
-		res |= T(uint64(s.buf[3]) << 24)
+	switch s.byteSizeT {
 	case 8:
-		res = T(uint64(s.buf[0]))
-		res |= T(uint64(s.buf[1]) << 8)
-		res |= T(uint64(s.buf[2]) << 16)
-		res |= T(uint64(s.buf[3]) << 24)
-		res |= T(uint64(s.buf[4]) << 32)
-		res |= T(uint64(s.buf[5]) << 40)
-		res |= T(uint64(s.buf[6]) << 48)
-		res |= T(uint64(s.buf[7]) << 56)
+		res = T(uint64(s.buf[s.ptr+0]))
+	case 16:
+		res = T(uint64(s.buf[s.ptr+0]))
+		res |= T(uint64(s.buf[s.ptr+1]) << 8)
+	case 32:
+		res = T(uint64(s.buf[s.ptr+0]))
+		res |= T(uint64(s.buf[s.ptr+1]) << 8)
+		res |= T(uint64(s.buf[s.ptr+2]) << 16)
+		res |= T(uint64(s.buf[s.ptr+3]) << 24)
+	case 64:
+		res = T(uint64(s.buf[s.ptr+0]))
+		res |= T(uint64(s.buf[s.ptr+1]) << 8)
+		res |= T(uint64(s.buf[s.ptr+2]) << 16)
+		res |= T(uint64(s.buf[s.ptr+3]) << 24)
+		res |= T(uint64(s.buf[s.ptr+4]) << 32)
+		res |= T(uint64(s.buf[s.ptr+5]) << 40)
+		res |= T(uint64(s.buf[s.ptr+6]) << 48)
+		res |= T(uint64(s.buf[s.ptr+7]) << 56)
 	}
+	s.ptr += s.byteSizeT
+
 	return res
 }
 
@@ -91,9 +118,14 @@ func (s *UniformSampler[T]) SampleN(N T) T {
 	}
 }
 
-// SampleSliceAssign samples *Uniform values to v.
-func (s *UniformSampler[T]) SampleSliceAssign(v []T) {
-	for i := range v {
-		v[i] = s.Sample()
+// SampleSliceAssign samples uniform values to vOut.
+func (s *UniformSampler[T]) SampleSliceAssign(vOut []T) {
+	for i := range vOut {
+		vOut[i] = s.Sample()
 	}
+}
+
+// SamplePolyAssign samples uniform values to p.
+func (s *UniformSampler[T]) SamplePolyAssign(pOut poly.Poly[T]) {
+	s.SampleSliceAssign(pOut.Coeffs)
 }

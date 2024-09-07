@@ -35,11 +35,11 @@ func (e *Encryptor[T]) EncryptGLWEPlaintextAssign(pt GLWEPlaintext[T], ctOut GLW
 // This avoids the need for most buffers.
 func (e *Encryptor[T]) EncryptGLWEBody(ct GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweRank; i++ {
-		e.UniformSampler.SampleSliceAssign(ct.Value[i+1].Coeffs)
+		e.UniformSampler.SamplePolyAssign(ct.Value[i+1])
 		e.Evaluator.BinaryFourierMulSubAssign(ct.Value[i+1], e.SecretKey.FourierGLWEKey.Value[i], ct.Value[0])
 	}
 
-	e.GaussianSampler.SampleSliceAddAssign(e.Parameters.GLWEStdDevQ(), ct.Value[0].Coeffs)
+	e.GaussianSampler.SamplePolyAddAssign(e.Parameters.GLWEStdDevQ(), ct.Value[0])
 }
 
 // DecryptGLWE decrypts and decodes GLWE ciphertext to integer message.

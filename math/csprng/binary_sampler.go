@@ -2,6 +2,7 @@ package csprng
 
 import (
 	"github.com/sp301415/tfhe-go/math/num"
+	"github.com/sp301415/tfhe-go/math/poly"
 	"github.com/sp301415/tfhe-go/math/vec"
 )
 
@@ -33,30 +34,40 @@ func (s *BinarySampler[T]) Sample() T {
 	return T(s.baseSampler.Sample() & 1)
 }
 
-// SampleSliceAssign samples uniform binary values to v.
-func (s *BinarySampler[T]) SampleSliceAssign(v []T) {
+// SampleSliceAssign samples uniform binary values to vOut.
+func (s *BinarySampler[T]) SampleSliceAssign(vOut []T) {
 	var buf uint64
-	for i := 0; i < len(v); i++ {
+	for i := 0; i < len(vOut); i++ {
 		if i&63 == 0 {
 			buf = s.baseSampler.Sample()
 		}
-		v[i] = T(buf & 1)
+		vOut[i] = T(buf & 1)
 		buf >>= 1
 	}
 }
 
-// SampleBlockSliceAssign samples block binary values to v.
-func (s *BinarySampler[T]) SampleBlockSliceAssign(blockSize int, v []T) {
-	if len(v)%blockSize != 0 {
+// SamplePolyAssign samples uniform binary values to pOut.
+func (s *BinarySampler[T]) SamplePolyAssign(pOut poly.Poly[T]) {
+	s.SampleSliceAssign(pOut.Coeffs)
+}
+
+// SampleBlockSliceAssign samples block binary values to vOut.
+func (s *BinarySampler[T]) SampleBlockSliceAssign(blockSize int, vOut []T) {
+	if len(vOut)%blockSize != 0 {
 		panic("length not multiple of blocksize")
 	}
 
-	for i := 0; i < len(v); i += blockSize {
-		vec.Fill(v[i:i+blockSize], 0)
+	for i := 0; i < len(vOut); i += blockSize {
+		vec.Fill(vOut[i:i+blockSize], 0)
 		offset := int(s.baseSampler.SampleN(uint64(blockSize) + 1))
 		if offset == blockSize {
 			continue
 		}
-		v[i+offset] = 1
+		vOut[i+offset] = 1
 	}
+}
+
+// SampleBlockPolyAssign samples block binary values to pOut.
+func (s *BinarySampler[T]) SampleBlockPolyAssign(blockSize int, pOut poly.Poly[T]) {
+	s.SampleBlockSliceAssign(blockSize, pOut.Coeffs)
 }

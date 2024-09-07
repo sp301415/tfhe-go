@@ -33,7 +33,7 @@ func (e *Encryptor[T]) UniEncryptPlaintext(pt tfhe.GLWEPlaintext[T], gadgetParam
 
 // UniEncryptPlaintextAssign encrypts GLWE plaintext to UniEncryption and writes it to ctOut.
 func (e *Encryptor[T]) UniEncryptPlaintextAssign(pt tfhe.GLWEPlaintext[T], ctOut UniEncryption[T]) {
-	e.SingleKeyEncryptor.BinarySampler.SampleSliceAssign(e.buffer.auxKey.Value[0].Coeffs)
+	e.SingleKeyEncryptor.BinarySampler.SamplePolyAssign(e.buffer.auxKey.Value[0])
 	e.SingleKeyEncryptor.ToFourierGLWESecretKeyAssign(e.buffer.auxKey, e.buffer.auxFourierKey)
 
 	for i := 0; i < ctOut.GadgetParameters.Level(); i++ {
@@ -41,7 +41,7 @@ func (e *Encryptor[T]) UniEncryptPlaintextAssign(pt tfhe.GLWEPlaintext[T], ctOut
 		e.SingleKeyEncryptor.PolyEvaluator.ScalarMulAssign(pt.Value, ctOut.GadgetParameters.BaseQ(i), ctOut.Value[0].Value[i].Value[0])
 
 		e.SingleKeyEncryptor.Evaluator.BinaryFourierMulAddAssign(ctOut.Value[0].Value[i].Value[1], e.buffer.auxFourierKey.Value[0], ctOut.Value[0].Value[i].Value[0])
-		e.SingleKeyEncryptor.GaussianSampler.SampleSliceAddAssign(e.Parameters.GLWEStdDevQ(), ctOut.Value[0].Value[i].Value[0].Coeffs)
+		e.SingleKeyEncryptor.GaussianSampler.SamplePolyAddAssign(e.Parameters.GLWEStdDevQ(), ctOut.Value[0].Value[i].Value[0])
 	}
 
 	for i := 0; i < ctOut.GadgetParameters.Level(); i++ {

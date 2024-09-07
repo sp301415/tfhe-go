@@ -59,7 +59,7 @@ func NewEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte
 	crs := make([]poly.Poly[T], params.relinKeyParameters.Level())
 	for i := 0; i < params.relinKeyParameters.Level(); i++ {
 		crs[i] = poly.NewPoly[T](params.PolyDegree())
-		s.SampleSliceAssign(crs[i].Coeffs)
+		s.SamplePolyAssign(crs[i])
 	}
 
 	enc := tfhe.NewEncryptor(params.Parameters)
@@ -92,7 +92,7 @@ func NewEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed
 	crs := make([]poly.Poly[T], params.relinKeyParameters.Level())
 	for i := 0; i < params.relinKeyParameters.Level(); i++ {
 		crs[i] = poly.NewPoly[T](params.PolyDegree())
-		s.SampleSliceAssign(crs[i].Coeffs)
+		s.SamplePolyAssign(crs[i])
 	}
 
 	return &Encryptor[T]{

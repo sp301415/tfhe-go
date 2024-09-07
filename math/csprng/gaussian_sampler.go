@@ -4,6 +4,7 @@ import (
 	"math"
 
 	"github.com/sp301415/tfhe-go/math/num"
+	"github.com/sp301415/tfhe-go/math/poly"
 )
 
 // GaussianSampler samples from Rounded Gaussian Distribution, centered around zero.
@@ -87,18 +88,48 @@ func (s *GaussianSampler[T]) Sample(stdDev float64) T {
 //
 // Panics when stdDev < 0.
 func (s *GaussianSampler[T]) SampleSliceAssign(stdDev float64, vOut []T) {
+	if stdDev < 0 {
+		panic("standard deviation not positive")
+	}
+
 	for i := range vOut {
-		vOut[i] = s.Sample(stdDev)
+		vOut[i] = T(int64(math.Round(s.normFloat64() * stdDev)))
 	}
 }
 
-// SampleSliceAddAssign samples rounded gaussian values
-// with standard deviation |stdDev|, and adds to vOut.
+// SamplePolyAssign samples rounded gaussian values
+// with standard deviation stdDev, and writes it to pOut.
 //
 // Panics when stdDev < 0.
-func (s *GaussianSampler[T]) SampleSliceAddAssign(stdDev float64, vOut []T) {
-	for i := range vOut {
-		vOut[i] += s.Sample(stdDev)
+func (s *GaussianSampler[T]) SamplePolyAssign(stdDev float64, pOut poly.Poly[T]) {
+	s.SampleSliceAssign(stdDev, pOut.Coeffs)
+}
+
+// SamplePolyAddAssign samples rounded gaussian values
+// with standard deviation stdDev, and adds to pOut.
+//
+// Panics when stdDev < 0.
+func (s *GaussianSampler[T]) SamplePolyAddAssign(stdDev float64, pOut poly.Poly[T]) {
+	if stdDev < 0 {
+		panic("standard deviation not positive")
+	}
+
+	for i := range pOut.Coeffs {
+		pOut.Coeffs[i] = T(int64(math.Round(s.normFloat64() * stdDev)))
+	}
+}
+
+// SamplePolySubAssign samples rounded gaussian values
+// with standard deviation stdDev, and subtracts from pOut.
+//
+// Panics when stdDev < 0.
+func (s *GaussianSampler[T]) SamplePolySubAssign(stdDev float64, pOut poly.Poly[T]) {
+	if stdDev < 0 {
+		panic("standard deviation not positive")
+	}
+
+	for i := range pOut.Coeffs {
+		pOut.Coeffs[i] = T(int64(math.Round(s.normFloat64() * stdDev)))
 	}
 }
 

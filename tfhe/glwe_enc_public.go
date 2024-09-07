@@ -30,7 +30,7 @@ func (e *PublicEncryptor[T]) EncryptGLWEPlaintextAssign(pt GLWEPlaintext[T], ctO
 // This avoids the need for most buffers.
 func (e *PublicEncryptor[T]) EncryptGLWEBody(ct GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.glweRank; i++ {
-		e.BinarySampler.SampleSliceAssign(e.buffer.auxKey.Value[i].Coeffs)
+		e.BinarySampler.SamplePolyAssign(e.buffer.auxKey.Value[i])
 	}
 	e.ToFourierGLWESecretKeyAssign(e.buffer.auxKey, e.buffer.auxFourierKey)
 
@@ -45,6 +45,6 @@ func (e *PublicEncryptor[T]) EncryptGLWEBody(ct GLWECiphertext[T]) {
 	}
 
 	for j := 0; j < e.Parameters.glweRank+1; j++ {
-		e.GaussianSampler.SampleSliceAddAssign(e.Parameters.GLWEStdDevQ(), ct.Value[j].Coeffs)
+		e.GaussianSampler.SamplePolyAddAssign(e.Parameters.GLWEStdDevQ(), ct.Value[j])
 	}
 }
