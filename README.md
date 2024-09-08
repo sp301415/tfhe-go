@@ -179,6 +179,7 @@ TFHE-go logo is designed by [@mlgng2010](https://www.instagram.com/mlgng2010/), 
 - Guide to Fully Homomorphic Encryption over the Discretized Torus (https://eprint.iacr.org/2021/1402)
 - An Improved Ziggurat Method to Generate Normal Random Samples (https://www.doornik.com/research/ziggurat.pdf)
 - GLITCH: A Discrete Gaussian Testing Suite For Lattice-Based Cryptography (https://eprint.iacr.org/2017/438)
+- Isochronous Gaussian Sampling: From Inception to Implementation (https://eprint.iacr.org/2019/1411)
 - Speeding up the Number Theoretic Transform for Faster Ideal Lattice-Based Cryptography (https://eprint.iacr.org/2016/504)
 - Fast and Error-Free Negacyclic Integer Convolution using Extended Fourier Transform (https://eprint.iacr.org/2021/480)
 - Parameter Optimization & Larger Precision for (T)FHE (https://eprint.iacr.org/2022/704)
