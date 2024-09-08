@@ -64,7 +64,7 @@ func NewUniformSamplerWithSeed[T num.Integer](seed []byte) *UniformSampler[T] {
 		prng: prng,
 
 		buf: make([]byte, bufSize),
-		ptr: 0,
+		ptr: bufSize,
 
 		byteSizeT: byteSizeT,
 		maxT:      T(num.MaxT[T]()),
@@ -82,17 +82,17 @@ func (s *UniformSampler[T]) Sample() T {
 
 	var res T
 	switch s.byteSizeT {
-	case 8:
+	case 1:
 		res = T(uint64(s.buf[s.ptr+0]))
-	case 16:
+	case 2:
 		res = T(uint64(s.buf[s.ptr+0]))
 		res |= T(uint64(s.buf[s.ptr+1]) << 8)
-	case 32:
+	case 4:
 		res = T(uint64(s.buf[s.ptr+0]))
 		res |= T(uint64(s.buf[s.ptr+1]) << 8)
 		res |= T(uint64(s.buf[s.ptr+2]) << 16)
 		res |= T(uint64(s.buf[s.ptr+3]) << 24)
-	case 64:
+	case 8:
 		res = T(uint64(s.buf[s.ptr+0]))
 		res |= T(uint64(s.buf[s.ptr+1]) << 8)
 		res |= T(uint64(s.buf[s.ptr+2]) << 16)
