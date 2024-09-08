@@ -8,17 +8,14 @@ import (
 	"golang.org/x/crypto/blake2b"
 )
 
+const bufSize = 8192
+
 // UniformSampler samples values from uniform distribution.
 // This uses blake2b as a underlying prng.
 type UniformSampler[T num.Integer] struct {
 	prng blake2b.XOF
 
-	// The length of the buffer is decided heuristically:
-	//
-	//  - If SizeT <=16, len(buf) = ByteSizeT * 512
-	//  - If SizeT = 32, BufferSize = 4 bytes * 1024 = 4096
-	//  - If SizeT = 64, BufferSize = 8 bytes * 2048 = 16384
-	buf []byte
+	buf [bufSize]byte
 	ptr int
 
 	byteSizeT int
@@ -49,24 +46,13 @@ func NewUniformSamplerWithSeed[T num.Integer](seed []byte) *UniformSampler[T] {
 		panic(err)
 	}
 
-	byteSizeT := num.ByteSizeT[T]()
-	bufSize := 0
-	switch byteSizeT {
-	case 1, 2:
-		bufSize = byteSizeT * 512
-	case 4:
-		bufSize = byteSizeT * 1024
-	case 8:
-		bufSize = byteSizeT * 2048
-	}
-
 	return &UniformSampler[T]{
 		prng: prng,
 
-		buf: make([]byte, bufSize),
+		buf: [bufSize]byte{},
 		ptr: bufSize,
 
-		byteSizeT: byteSizeT,
+		byteSizeT: num.ByteSizeT[T](),
 		maxT:      T(num.MaxT[T]()),
 	}
 }
@@ -74,7 +60,7 @@ func NewUniformSamplerWithSeed[T num.Integer](seed []byte) *UniformSampler[T] {
 // Sample uniformly samples a random integer of type T.
 func (s *UniformSampler[T]) Sample() T {
 	if s.ptr == len(s.buf) {
-		if _, err := s.prng.Read(s.buf); err != nil {
+		if _, err := s.prng.Read(s.buf[:]); err != nil {
 			panic(err)
 		}
 		s.ptr = 0

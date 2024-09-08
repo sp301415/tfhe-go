@@ -18,6 +18,10 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
 
+      - name: Test math/csprng
+        run: |
+          go test ./math/csprng -timeout=0 -count=1
+
       - name: Test math/poly
         run: |
           go test ./math/poly -timeout=0 -count=1
