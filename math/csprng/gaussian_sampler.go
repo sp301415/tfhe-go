@@ -32,7 +32,10 @@ func NewGaussianSamplerWithSeed[T num.Integer](seed []byte, stdDev float64) *Gau
 
 // uniformFloat samples float32 (as float64) from uniform distribution in [0, 1).
 func (s *GaussianSampler[T]) uniformFloat() float64 {
-	return float64(float32(s.baseSampler.Sample()>>9) * (1.0 / (1 << 23)))
+	u := s.baseSampler.Sample() >> (32 - scaleBits) // 0 <= u < 2^23
+	u += scale                                      // 2^23 <= u < 2^24
+	uf := float32(u) * scaleInv                     // 1 <= uf < 2
+	return float64(uf - 1)
 }
 
 // normFloat samples float64 from normal distribution.
@@ -174,10 +177,16 @@ for i := 126; i >= 1; i-- {
 }
 */
 
+const (
+	rn        = 3.442619855899
+	rnInv     = 1 / rn
+	scaleBits = 23
+	scale     = 1 << scaleBits
+	scaleInv  = 1.0 / scale
+)
+
 var (
-	rn    = 3.442619855899
-	rnInv = 1 / rn
-	kn    = [128]uint32{
+	kn = [128]uint32{
 		0xed5a44, 0x0, 0xc01e36, 0xd9c88f,
 		0xe4b68d, 0xeac00a, 0xee9243, 0xf1344b,
 		0xf3208b, 0xf4979c, 0xf5bec5, 0xf6ad05,
