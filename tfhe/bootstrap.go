@@ -493,7 +493,7 @@ func (e *Evaluator[T]) KeySwitchForBootstrapAssign(ct, ctOut LWECiphertext[T]) {
 	scalarDecomposed := e.Decomposer.buffer.scalarDecomposed[:e.Parameters.keyswitchParameters.level]
 
 	vec.CopyAssign(ct.Value[:e.Parameters.lweDimension+1], ctOut.Value)
-	for i, ii := e.Parameters.lweDimension, 0; i < e.Parameters.glwePartialDimension; i, ii = i+1, ii+1 {
+	for i, ii := e.Parameters.lweDimension, 0; i < e.Parameters.glweDimension; i, ii = i+1, ii+1 {
 		e.Decomposer.DecomposeScalarAssign(ct.Value[i+1], e.Parameters.keyswitchParameters, scalarDecomposed)
 		for j := 0; j < e.Parameters.keyswitchParameters.level; j++ {
 			e.ScalarMulAddLWEAssign(e.EvaluationKey.KeySwitchKey.Value[ii].Value[j], scalarDecomposed[j], ctOut)

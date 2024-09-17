@@ -22,9 +22,9 @@ func NewEvaluationKey[T tfhe.TorusInt](params Parameters[T]) EvaluationKey[T] {
 }
 
 // NewEvaluationKeyCustom allocates an empty EvaluationKey with custom parameters.
-func NewEvaluationKeyCustom[T tfhe.TorusInt](lweDimension, polyDegree, glwePartialDimension int, bootstrapParams, keyswitchParams, relinParams tfhe.GadgetParameters[T]) EvaluationKey[T] {
+func NewEvaluationKeyCustom[T tfhe.TorusInt](lweDimension, polyDegree int, bootstrapParams, keyswitchParams, relinParams tfhe.GadgetParameters[T]) EvaluationKey[T] {
 	return EvaluationKey[T]{
-		EvaluationKey: tfhe.NewEvaluationKeyCustom(lweDimension, 1, polyDegree, glwePartialDimension, bootstrapParams, keyswitchParams),
+		EvaluationKey: tfhe.NewEvaluationKeyCustom(lweDimension, 1, polyDegree, bootstrapParams, keyswitchParams),
 		CRSPublicKey:  tfhe.NewFourierGLevCiphertextCustom(1, polyDegree, relinParams),
 		RelinKey:      NewFourierUniEncryptionCustom(polyDegree, relinParams),
 	}

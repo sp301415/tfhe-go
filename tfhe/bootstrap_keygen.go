@@ -166,7 +166,7 @@ func (e *Encryptor[T]) GenKeySwitchKeyParallel(skIn LWESecretKey[T], gadgetParam
 // This can take a long time.
 // Use [*Encryptor.GenKeySwitchKeyForBootstrapParallel] for better key generation performance.
 func (e *Encryptor[T]) GenKeySwitchKeyForBootstrap() KeySwitchKey[T] {
-	skIn := LWESecretKey[T]{Value: e.SecretKey.LWELargeKey.Value[e.Parameters.lweDimension:e.Parameters.glwePartialDimension]}
+	skIn := LWESecretKey[T]{Value: e.SecretKey.LWELargeKey.Value[e.Parameters.lweDimension:]}
 	ksk := NewKeySwitchKeyForBootstrap(e.Parameters)
 
 	for i := 0; i < ksk.InputLWEDimension(); i++ {
@@ -185,7 +185,7 @@ func (e *Encryptor[T]) GenKeySwitchKeyForBootstrap() KeySwitchKey[T] {
 // GenKeySwitchKeyForBootstrapParallel samples a new keyswitch key LWELargeKey -> LWEKey in parallel,
 // used for bootstrapping.
 func (e *Encryptor[T]) GenKeySwitchKeyForBootstrapParallel() KeySwitchKey[T] {
-	skIn := LWESecretKey[T]{Value: e.SecretKey.LWELargeKey.Value[e.Parameters.lweDimension:e.Parameters.glwePartialDimension]}
+	skIn := LWESecretKey[T]{Value: e.SecretKey.LWELargeKey.Value[e.Parameters.lweDimension:]}
 	ksk := NewKeySwitchKeyForBootstrap(e.Parameters)
 
 	workSize := ksk.InputLWEDimension() * e.Parameters.keyswitchParameters.level
