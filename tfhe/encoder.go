@@ -27,7 +27,7 @@ func NewEncoder[T TorusInt](params Parameters[T]) *Encoder[T] {
 // EncodeLWE encodes integer message to LWE plaintext.
 // Parameter's MessageModulus and Scale are used.
 func (e *Encoder[T]) EncodeLWE(message int) LWEPlaintext[T] {
-	return LWEPlaintext[T]{Value: (T(message) % e.Parameters.messageModulus) * e.Parameters.scale}
+	return e.EncodeLWECustom(message, e.Parameters.messageModulus, e.Parameters.scale)
 }
 
 // EncodeLWECustom encodes integer message to LWE plaintext
@@ -45,7 +45,7 @@ func (e *Encoder[T]) EncodeLWECustom(message int, messageModulus, scale T) LWEPl
 // DecodeLWE decodes LWE plaintext to integer message.
 // Parameter's MessageModulus and Scale are used.
 func (e *Encoder[T]) DecodeLWE(pt LWEPlaintext[T]) int {
-	return int(num.DivRound(pt.Value, e.Parameters.scale) % e.Parameters.messageModulus)
+	return e.DecodeLWECustom(pt, e.Parameters.messageModulus, e.Parameters.scale)
 }
 
 // DecodeLWECustom decodes LWE plaintext to integer message
@@ -77,11 +77,7 @@ func (e *Encoder[T]) EncodeGLWE(messages []int) GLWEPlaintext[T] {
 //   - If len(messages) < PolyDegree, the leftovers are padded with zero.
 //   - If len(messages) > PolyDegree, the leftovers are discarded.
 func (e *Encoder[T]) EncodeGLWEAssign(messages []int, pt GLWEPlaintext[T]) {
-	length := num.Min(e.Parameters.polyDegree, len(messages))
-	for i := 0; i < length; i++ {
-		pt.Value.Coeffs[i] = (T(messages[i]) % e.Parameters.messageModulus) * e.Parameters.scale
-	}
-	vec.Fill(pt.Value.Coeffs[length:], 0)
+	e.EncodeGLWECustomAssign(messages, e.Parameters.messageModulus, e.Parameters.scale, pt)
 }
 
 // EncodeGLWECustom encodes integer message to GLWE plaintext
@@ -129,10 +125,7 @@ func (e *Encoder[T]) DecodeGLWE(pt GLWEPlaintext[T]) []int {
 //   - If len(messagesOut) < PolyDegree, the leftovers are discarded.
 //   - If len(messagesOut) > PolyDegree, only the first PolyDegree elements are written.
 func (e *Encoder[T]) DecodeGLWEAssign(pt GLWEPlaintext[T], messagesOut []int) {
-	length := num.Min(e.Parameters.polyDegree, len(messagesOut))
-	for i := 0; i < length; i++ {
-		messagesOut[i] = int((num.DivRound(pt.Value.Coeffs[i], e.Parameters.scale) % e.Parameters.messageModulus))
-	}
+	e.DecodeGLWECustomAssign(pt, e.Parameters.messageModulus, e.Parameters.scale, messagesOut)
 }
 
 // DecodeGLWECustom decodes GLWE plaintext to integer message
