@@ -30,19 +30,19 @@ func BenchmarkOps(b *testing.B) {
 
 		b.Run(fmt.Sprintf("op=N=%v/Add", N), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				pev.AddAssign(p0, p1, pOut)
+				pev.AddPolyAssign(p0, p1, pOut)
 			}
 		})
 
 		b.Run(fmt.Sprintf("op=N=%v/Sub", N), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				pev.SubAssign(p0, p1, pOut)
+				pev.SubPolyAssign(p0, p1, pOut)
 			}
 		})
 
 		b.Run(fmt.Sprintf("op=N=%v/Mul", N), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				pev.MulAssign(p0, p1, pOut)
+				pev.MulPolyAssign(p0, p1, pOut)
 			}
 		})
 	}

@@ -2,15 +2,15 @@ package poly
 
 import "github.com/sp301415/tfhe-go/math/num"
 
-// Mul returns p0 * p1.
-func (e *Evaluator[T]) Mul(p0, p1 Poly[T]) Poly[T] {
+// MulPoly returns p0 * p1.
+func (e *Evaluator[T]) MulPoly(p0, p1 Poly[T]) Poly[T] {
 	pOut := e.NewPoly()
-	e.MulAssign(p0, p1, pOut)
+	e.MulPolyAssign(p0, p1, pOut)
 	return pOut
 }
 
-// MulAssign computes pOut = p0 * p1.
-func (e *Evaluator[T]) MulAssign(p0, p1, pOut Poly[T]) {
+// MulPolyAssign computes pOut = p0 * p1.
+func (e *Evaluator[T]) MulPolyAssign(p0, p1, pOut Poly[T]) {
 	if e.splitCount == 1 {
 		e.ToFourierPolyAssign(p0, e.buffer.fp0Split[0])
 		e.ToFourierPolyAssign(p1, e.buffer.fp1Split[0])
@@ -68,8 +68,8 @@ func (e *Evaluator[T]) MulAssign(p0, p1, pOut Poly[T]) {
 	}
 }
 
-// MulAddAssign computes pOut += p0 * p1.
-func (e *Evaluator[T]) MulAddAssign(p0, p1, pOut Poly[T]) {
+// MulAddPolyAssign computes pOut += p0 * p1.
+func (e *Evaluator[T]) MulAddPolyAssign(p0, p1, pOut Poly[T]) {
 	if e.splitCount == 1 {
 		e.ToFourierPolyAssign(p0, e.buffer.fp0Split[0])
 		e.ToFourierPolyAssign(p1, e.buffer.fp1Split[0])
@@ -127,8 +127,8 @@ func (e *Evaluator[T]) MulAddAssign(p0, p1, pOut Poly[T]) {
 	}
 }
 
-// MulSubAssign computes pOut -= p0 * p1.
-func (e *Evaluator[T]) MulSubAssign(p0, p1, pOut Poly[T]) {
+// MulSubPolyAssign computes pOut -= p0 * p1.
+func (e *Evaluator[T]) MulSubPolyAssign(p0, p1, pOut Poly[T]) {
 	if e.splitCount == 1 {
 		e.ToFourierPolyAssign(p0, e.buffer.fp0Split[0])
 		e.ToFourierPolyAssign(p1, e.buffer.fp1Split[0])
@@ -186,17 +186,17 @@ func (e *Evaluator[T]) MulSubAssign(p0, p1, pOut Poly[T]) {
 	}
 }
 
-// BinaryFourierMul returns p0 * bfp, under the assumption that bfp is a binary polynomial.
-// This is faster than [*Evaluator.Mul], and the result is exact unlike [*Evaluator.FourierMul].
-func (e *Evaluator[T]) BinaryFourierMul(p0 Poly[T], bfp FourierPoly) Poly[T] {
+// BinaryFourierMulPoly returns p0 * bfp, under the assumption that bfp is a binary polynomial.
+// This is faster than [*Evaluator.MulPoly], and the result is exact unlike [*Evaluator.FourierMulPoly].
+func (e *Evaluator[T]) BinaryFourierMulPoly(p0 Poly[T], bfp FourierPoly) Poly[T] {
 	pOut := e.NewPoly()
-	e.BinaryFourierMulAssign(p0, bfp, pOut)
+	e.BinaryFourierMulPolyAssign(p0, bfp, pOut)
 	return pOut
 }
 
-// BinaryFourierMulAssign computes pOut = p0 * bfp, under the assumption that bfp is a binary polynomial.
-// This is faster than [*Evaluator.MulAssign], and the result is exact unlike [*Evaluator.FourierMulAssign].
-func (e *Evaluator[T]) BinaryFourierMulAssign(p0 Poly[T], bfp FourierPoly, pOut Poly[T]) {
+// BinaryFourierMulPolyAssign computes pOut = p0 * bfp, under the assumption that bfp is a binary polynomial.
+// This is faster than [*Evaluator.MulPolyAssign], and the result is exact unlike [*Evaluator.FourierMulPolyAssign].
+func (e *Evaluator[T]) BinaryFourierMulPolyAssign(p0 Poly[T], bfp FourierPoly, pOut Poly[T]) {
 	if e.splitCountBinary == 1 {
 		e.ToFourierPolyAssign(p0, e.buffer.fp0Split[0])
 		e.MulFourierAssign(e.buffer.fp0Split[0], bfp, e.buffer.fpOutSplit[0])
@@ -236,9 +236,9 @@ func (e *Evaluator[T]) BinaryFourierMulAssign(p0 Poly[T], bfp FourierPoly, pOut 
 	}
 }
 
-// BinaryFourierMulAddAssign computes pOut += p0 * bfp, under the assumption that bfp is a binary polynomial.
-// This is faster than [*Evaluator.MulAddAssign], and the result is exact unlike [*Evaluator.FourierMulAddAssign].
-func (e *Evaluator[T]) BinaryFourierMulAddAssign(p0 Poly[T], bfp FourierPoly, pOut Poly[T]) {
+// BinaryFourierMulAddPolyAssign computes pOut += p0 * bfp, under the assumption that bfp is a binary polynomial.
+// This is faster than [*Evaluator.MulAddPolyAssign], and the result is exact unlike [*Evaluator.FourierMulAddPolyAssign].
+func (e *Evaluator[T]) BinaryFourierMulAddPolyAssign(p0 Poly[T], bfp FourierPoly, pOut Poly[T]) {
 	if e.splitCountBinary == 1 {
 		e.ToFourierPolyAssign(p0, e.buffer.fp0Split[0])
 		e.MulFourierAssign(e.buffer.fp0Split[0], bfp, e.buffer.fpOutSplit[0])
@@ -278,9 +278,9 @@ func (e *Evaluator[T]) BinaryFourierMulAddAssign(p0 Poly[T], bfp FourierPoly, pO
 	}
 }
 
-// BinaryFourierMulSubAssign computes pOut -= p0 * bfp, under the assumption that bfp is a binary polynomial.
-// This is faster than [*Evaluator.MulSubAssign], and the result is exact unlike [*Evaluator.FourierMulSubAssign].
-func (e *Evaluator[T]) BinaryFourierMulSubAssign(p0 Poly[T], bfp FourierPoly, pOut Poly[T]) {
+// BinaryFourierMulSubPolyAssign computes pOut -= p0 * bfp, under the assumption that bfp is a binary polynomial.
+// This is faster than [*Evaluator.MulSubPolyAssign], and the result is exact unlike [*Evaluator.FourierMulSubPolyAssign].
+func (e *Evaluator[T]) BinaryFourierMulSubPolyAssign(p0 Poly[T], bfp FourierPoly, pOut Poly[T]) {
 	if e.splitCountBinary == 1 {
 		e.ToFourierPolyAssign(p0, e.buffer.fp0Split[0])
 		e.MulFourierAssign(e.buffer.fp0Split[0], bfp, e.buffer.fpOutSplit[0])

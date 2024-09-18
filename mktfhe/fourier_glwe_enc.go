@@ -38,16 +38,16 @@ func (e *Encryptor[T]) FourierUniEncryptPlaintextAssign(pt tfhe.GLWEPlaintext[T]
 
 	for i := 0; i < ctOut.GadgetParameters.Level(); i++ {
 		e.buffer.ctGLWESingle.Value[1].CopyFrom(e.CRS[i])
-		e.SingleKeyEncryptor.PolyEvaluator.ScalarMulAssign(pt.Value, ctOut.GadgetParameters.BaseQ(i), e.buffer.ctGLWESingle.Value[0])
+		e.SingleKeyEncryptor.PolyEvaluator.ScalarMulPolyAssign(pt.Value, ctOut.GadgetParameters.BaseQ(i), e.buffer.ctGLWESingle.Value[0])
 
-		e.SingleKeyEncryptor.PolyEvaluator.BinaryFourierMulAddAssign(e.buffer.ctGLWESingle.Value[1], e.buffer.auxFourierKey.Value[0], e.buffer.ctGLWESingle.Value[0])
+		e.SingleKeyEncryptor.PolyEvaluator.BinaryFourierMulAddPolyAssign(e.buffer.ctGLWESingle.Value[1], e.buffer.auxFourierKey.Value[0], e.buffer.ctGLWESingle.Value[0])
 		e.SingleKeyEncryptor.GaussianSampler.SamplePolyAddAssign(e.Parameters.GLWEStdDevQ(), e.buffer.ctGLWESingle.Value[0])
 
 		e.SingleKeyEncryptor.ToFourierGLWECiphertextAssign(e.buffer.ctGLWESingle, ctOut.Value[0].Value[i])
 	}
 
 	for i := 0; i < ctOut.GadgetParameters.Level(); i++ {
-		e.SingleKeyEncryptor.PolyEvaluator.ScalarMulAssign(e.buffer.auxKey.Value[0], ctOut.GadgetParameters.BaseQ(i), e.buffer.ctGLWESingle.Value[0])
+		e.SingleKeyEncryptor.PolyEvaluator.ScalarMulPolyAssign(e.buffer.auxKey.Value[0], ctOut.GadgetParameters.BaseQ(i), e.buffer.ctGLWESingle.Value[0])
 		e.SingleKeyEncryptor.EncryptGLWEBody(e.buffer.ctGLWESingle)
 		e.SingleKeyEncryptor.ToFourierGLWECiphertextAssign(e.buffer.ctGLWESingle, ctOut.Value[1].Value[i])
 	}
@@ -87,5 +87,5 @@ func (e *Encryptor[T]) FourierUniDecryptPlaintextAssign(ct FourierUniEncryption[
 
 	e.SingleKeyEncryptor.ToGLWECiphertextAssign(ct.Value[0].Value[ct.GadgetParameters.Level()-1], e.buffer.ctGLWESingle)
 	ptOut.Value.CopyFrom(e.buffer.ctGLWESingle.Value[0])
-	e.SingleKeyEncryptor.PolyEvaluator.BinaryFourierMulSubAssign(e.buffer.ctGLWESingle.Value[1], e.buffer.auxFourierKey.Value[0], ptOut.Value)
+	e.SingleKeyEncryptor.PolyEvaluator.BinaryFourierMulSubPolyAssign(e.buffer.ctGLWESingle.Value[1], e.buffer.auxFourierKey.Value[0], ptOut.Value)
 }

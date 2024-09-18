@@ -206,10 +206,10 @@ func (e *Evaluator[T]) ExternalProductGLWEAssign(idx int, ctFourierGLev tfhe.Fou
 
 	e.HybridProductGLWEAssign(idx, e.EvaluationKeys[idx].RelinKey, e.buffer.ctRelin, ctGLWEOut)
 
-	eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[0], e.buffer.ctRelinTransposed[0].Value[0], ctGLWEOut.Value[0])
+	eIdx.PolyEvaluator.AddPolyAssign(ctGLWEOut.Value[0], e.buffer.ctRelinTransposed[0].Value[0], ctGLWEOut.Value[0])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[i+1], e.buffer.ctRelinTransposed[i+1].Value[0], ctGLWEOut.Value[i+1])
+			eIdx.PolyEvaluator.AddPolyAssign(ctGLWEOut.Value[i+1], e.buffer.ctRelinTransposed[i+1].Value[0], ctGLWEOut.Value[i+1])
 		}
 	}
 }
@@ -229,10 +229,10 @@ func (e *Evaluator[T]) ExternalProductAddGLWEAssign(idx int, ctFourierGLev tfhe.
 
 	e.HybridProductAddGLWEAssign(idx, e.EvaluationKeys[idx].RelinKey, e.buffer.ctRelin, ctGLWEOut)
 
-	eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[0], e.buffer.ctRelinTransposed[0].Value[0], ctGLWEOut.Value[0])
+	eIdx.PolyEvaluator.AddPolyAssign(ctGLWEOut.Value[0], e.buffer.ctRelinTransposed[0].Value[0], ctGLWEOut.Value[0])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[i+1], e.buffer.ctRelinTransposed[i+1].Value[0], ctGLWEOut.Value[i+1])
+			eIdx.PolyEvaluator.AddPolyAssign(ctGLWEOut.Value[i+1], e.buffer.ctRelinTransposed[i+1].Value[0], ctGLWEOut.Value[i+1])
 		}
 	}
 }
@@ -252,10 +252,10 @@ func (e *Evaluator[T]) ExternalProductSubGLWEAssign(idx int, ctFourierGLev tfhe.
 
 	e.HybridProductSubGLWEAssign(idx, e.EvaluationKeys[idx].RelinKey, e.buffer.ctRelin, ctGLWEOut)
 
-	eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[0], e.buffer.ctRelinTransposed[0].Value[0], ctGLWEOut.Value[0])
+	eIdx.PolyEvaluator.AddPolyAssign(ctGLWEOut.Value[0], e.buffer.ctRelinTransposed[0].Value[0], ctGLWEOut.Value[0])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.PolyEvaluator.AddAssign(ctGLWEOut.Value[i+1], e.buffer.ctRelinTransposed[i+1].Value[0], ctGLWEOut.Value[i+1])
+			eIdx.PolyEvaluator.AddPolyAssign(ctGLWEOut.Value[i+1], e.buffer.ctRelinTransposed[i+1].Value[0], ctGLWEOut.Value[i+1])
 		}
 	}
 }

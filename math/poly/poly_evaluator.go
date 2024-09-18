@@ -201,7 +201,7 @@ func genTwiddleFactors(N int) (tw, twInv []complex128) {
 	return tw, twInv
 }
 
-// genSplitParameters generates splitBits and splitCount for [*Evaluator.Mul].
+// genSplitParameters generates splitBits and splitCount for [*Evaluator.MulPoly].
 func genSplitParameters[T num.Integer]() (splitBits T, splitCount int) {
 	switch num.SizeT[T]() {
 	case 8:
@@ -216,7 +216,7 @@ func genSplitParameters[T num.Integer]() (splitBits T, splitCount int) {
 	return 0, 0
 }
 
-// genSplitParametersBinary generates splitBitsBinary and splitCountBinary for [*Evaluator.BinaryFourierMul].
+// genSplitParametersBinary generates splitBitsBinary and splitCountBinary for [*Evaluator.BinaryFourierMulPoly].
 func genSplitParametersBinary[T num.Integer]() (splitBitsBinary T, splitCountBinary int) {
 	switch num.SizeT[T]() {
 	case 8:

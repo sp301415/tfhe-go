@@ -49,7 +49,7 @@ func (e *PublicEncryptor[T]) EncryptLWEBody(ct LWECiphertext[T]) {
 
 	for i := 0; i < e.Parameters.glweRank; i++ {
 		for j := 0; j < e.Parameters.glweRank; j++ {
-			e.PolyEvaluator.BinaryFourierMulAddAssign(e.PublicKey.LWEKey.Value[i].Value[j+1], e.buffer.auxFourierKey.Value[i], ctGLWE[j])
+			e.PolyEvaluator.BinaryFourierMulAddPolyAssign(e.PublicKey.LWEKey.Value[i].Value[j+1], e.buffer.auxFourierKey.Value[i], ctGLWE[j])
 		}
 	}
 

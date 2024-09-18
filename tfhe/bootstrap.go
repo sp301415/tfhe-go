@@ -160,13 +160,13 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 	}
 
 	for i := 0; i < b2NIdx; i++ {
-		e.PolyEvaluator.MonomialMulInPlace(e.buffer.ctAcc[i].Value[0], b2NSmall+1)
+		e.PolyEvaluator.MonomialMulPolyInPlace(e.buffer.ctAcc[i].Value[0], b2NSmall+1)
 		for j := 1; j < e.Parameters.glweRank+1; j++ {
 			e.buffer.ctAcc[i].Value[j].Clear()
 		}
 	}
 	for i := b2NIdx; i < e.Parameters.polyExtendFactor; i++ {
-		e.PolyEvaluator.MonomialMulInPlace(e.buffer.ctAcc[i].Value[0], b2NSmall)
+		e.PolyEvaluator.MonomialMulPolyInPlace(e.buffer.ctAcc[i].Value[0], b2NSmall)
 		for j := 1; j < e.Parameters.glweRank+1; j++ {
 			e.buffer.ctAcc[i].Value[j].Clear()
 		}
@@ -361,7 +361,7 @@ func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTab
 	polyDecomposed := e.Decomposer.buffer.polyDecomposed[:e.Parameters.bootstrapParameters.level]
 
 	vec.CopyAssign(lut.Value, ctOut.Value[0].Coeffs)
-	e.PolyEvaluator.MonomialMulInPlace(ctOut.Value[0], -e.ModSwitch(ct.Value[0]))
+	e.PolyEvaluator.MonomialMulPolyInPlace(ctOut.Value[0], -e.ModSwitch(ct.Value[0]))
 	for i := 1; i < e.Parameters.glweRank+1; i++ {
 		ctOut.Value[i].Clear()
 	}
@@ -413,7 +413,7 @@ func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUp
 	polyDecomposed := e.Decomposer.buffer.polyDecomposed[:e.Parameters.bootstrapParameters.level]
 
 	vec.CopyAssign(lut.Value, ctOut.Value[0].Coeffs)
-	e.PolyEvaluator.MonomialMulInPlace(ctOut.Value[0], -e.ModSwitch(ct.Value[0]))
+	e.PolyEvaluator.MonomialMulPolyInPlace(ctOut.Value[0], -e.ModSwitch(ct.Value[0]))
 	for i := 1; i < e.Parameters.glweRank+1; i++ {
 		ctOut.Value[i].Clear()
 	}

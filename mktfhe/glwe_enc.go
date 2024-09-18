@@ -38,14 +38,14 @@ func (e *Encryptor[T]) UniEncryptPlaintextAssign(pt tfhe.GLWEPlaintext[T], ctOut
 
 	for i := 0; i < ctOut.GadgetParameters.Level(); i++ {
 		ctOut.Value[0].Value[i].Value[1].CopyFrom(e.CRS[i])
-		e.SingleKeyEncryptor.PolyEvaluator.ScalarMulAssign(pt.Value, ctOut.GadgetParameters.BaseQ(i), ctOut.Value[0].Value[i].Value[0])
+		e.SingleKeyEncryptor.PolyEvaluator.ScalarMulPolyAssign(pt.Value, ctOut.GadgetParameters.BaseQ(i), ctOut.Value[0].Value[i].Value[0])
 
-		e.SingleKeyEncryptor.PolyEvaluator.BinaryFourierMulAddAssign(ctOut.Value[0].Value[i].Value[1], e.buffer.auxFourierKey.Value[0], ctOut.Value[0].Value[i].Value[0])
+		e.SingleKeyEncryptor.PolyEvaluator.BinaryFourierMulAddPolyAssign(ctOut.Value[0].Value[i].Value[1], e.buffer.auxFourierKey.Value[0], ctOut.Value[0].Value[i].Value[0])
 		e.SingleKeyEncryptor.GaussianSampler.SamplePolyAddAssign(e.Parameters.GLWEStdDevQ(), ctOut.Value[0].Value[i].Value[0])
 	}
 
 	for i := 0; i < ctOut.GadgetParameters.Level(); i++ {
-		e.SingleKeyEncryptor.PolyEvaluator.ScalarMulAssign(e.buffer.auxKey.Value[0], ctOut.GadgetParameters.BaseQ(i), ctOut.Value[1].Value[i].Value[0])
+		e.SingleKeyEncryptor.PolyEvaluator.ScalarMulPolyAssign(e.buffer.auxKey.Value[0], ctOut.GadgetParameters.BaseQ(i), ctOut.Value[1].Value[i].Value[0])
 		e.SingleKeyEncryptor.EncryptGLWEBody(ctOut.Value[1].Value[i])
 	}
 }
@@ -83,5 +83,5 @@ func (e *Encryptor[T]) UniDecryptPlaintextAssign(ct UniEncryption[T], ptOut tfhe
 	e.SingleKeyEncryptor.ToFourierGLWESecretKeyAssign(e.buffer.auxKey, e.buffer.auxFourierKey)
 
 	ptOut.Value.CopyFrom(ct.Value[0].Value[ct.GadgetParameters.Level()-1].Value[0])
-	e.SingleKeyEncryptor.PolyEvaluator.BinaryFourierMulSubAssign(ct.Value[0].Value[ct.GadgetParameters.Level()-1].Value[1], e.buffer.auxFourierKey.Value[0], ptOut.Value)
+	e.SingleKeyEncryptor.PolyEvaluator.BinaryFourierMulSubPolyAssign(ct.Value[0].Value[ct.GadgetParameters.Level()-1].Value[1], e.buffer.auxFourierKey.Value[0], ptOut.Value)
 }

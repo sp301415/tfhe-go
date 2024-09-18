@@ -4,104 +4,104 @@ import (
 	"github.com/sp301415/tfhe-go/math/vec"
 )
 
-// Add returns p0 + p1.
-func (e *Evaluator[T]) Add(p0, p1 Poly[T]) Poly[T] {
+// AddPoly returns p0 + p1.
+func (e *Evaluator[T]) AddPoly(p0, p1 Poly[T]) Poly[T] {
 	pOut := e.NewPoly()
-	e.AddAssign(p0, p1, pOut)
+	e.AddPolyAssign(p0, p1, pOut)
 	return pOut
 }
 
-// AddAssign computes pOut = p0 + p1.
-func (e *Evaluator[T]) AddAssign(p0, p1, pOut Poly[T]) {
+// AddPolyAssign computes pOut = p0 + p1.
+func (e *Evaluator[T]) AddPolyAssign(p0, p1, pOut Poly[T]) {
 	vec.AddAssign(p0.Coeffs, p1.Coeffs, pOut.Coeffs)
 }
 
-// Sub returns p0 - p1.
-func (e *Evaluator[T]) Sub(p0, p1 Poly[T]) Poly[T] {
+// SubPoly returns p0 - p1.
+func (e *Evaluator[T]) SubPoly(p0, p1 Poly[T]) Poly[T] {
 	pOut := e.NewPoly()
-	e.SubAssign(p0, p1, pOut)
+	e.SubPolyAssign(p0, p1, pOut)
 	return pOut
 }
 
-// SubAssign computes pOut = p0 - p1.
-func (e *Evaluator[T]) SubAssign(p0, p1, pOut Poly[T]) {
+// SubPolyAssign computes pOut = p0 - p1.
+func (e *Evaluator[T]) SubPolyAssign(p0, p1, pOut Poly[T]) {
 	vec.SubAssign(p0.Coeffs, p1.Coeffs, pOut.Coeffs)
 }
 
-// Neg returns pOut = -p0.
-func (e *Evaluator[T]) Neg(p0 Poly[T]) Poly[T] {
+// NegPoly returns pOut = -p0.
+func (e *Evaluator[T]) NegPoly(p0 Poly[T]) Poly[T] {
 	pOut := e.NewPoly()
-	e.NegAssign(p0, pOut)
+	e.NegPolyAssign(p0, pOut)
 	return pOut
 }
 
-// NegAssign computes pOut = -p0.
-func (e *Evaluator[T]) NegAssign(p0, pOut Poly[T]) {
+// NegPolyAssign computes pOut = -p0.
+func (e *Evaluator[T]) NegPolyAssign(p0, pOut Poly[T]) {
 	vec.NegAssign(p0.Coeffs, pOut.Coeffs)
 }
 
-// ScalarMul returns c * p0.
-func (e *Evaluator[T]) ScalarMul(p0 Poly[T], c T) Poly[T] {
+// ScalarMulPoly returns c * p0.
+func (e *Evaluator[T]) ScalarMulPoly(p0 Poly[T], c T) Poly[T] {
 	pOut := e.NewPoly()
-	e.ScalarMulAssign(p0, c, pOut)
+	e.ScalarMulPolyAssign(p0, c, pOut)
 	return pOut
 }
 
-// ScalarMulAssign computes pOut = c * p0.
-func (e *Evaluator[T]) ScalarMulAssign(p0 Poly[T], c T, pOut Poly[T]) {
+// ScalarMulPolyAssign computes pOut = c * p0.
+func (e *Evaluator[T]) ScalarMulPolyAssign(p0 Poly[T], c T, pOut Poly[T]) {
 	vec.ScalarMulAssign(p0.Coeffs, c, pOut.Coeffs)
 }
 
-// ScalarMulAddAssign computes pOut += c * p0.
-func (e *Evaluator[T]) ScalarMulAddAssign(p0 Poly[T], c T, pOut Poly[T]) {
+// ScalarMulAddPolyAssign computes pOut += c * p0.
+func (e *Evaluator[T]) ScalarMulAddPolyAssign(p0 Poly[T], c T, pOut Poly[T]) {
 	vec.ScalarMulAddAssign(p0.Coeffs, c, pOut.Coeffs)
 }
 
-// ScalarMulSubAssign computes pOut -= c * p0.
-func (e *Evaluator[T]) ScalarMulSubAssign(p0 Poly[T], c T, pOut Poly[T]) {
+// ScalarMulSubPolyAssign computes pOut -= c * p0.
+func (e *Evaluator[T]) ScalarMulSubPolyAssign(p0 Poly[T], c T, pOut Poly[T]) {
 	vec.ScalarMulSubAssign(p0.Coeffs, c, pOut.Coeffs)
 }
 
-// FourierMul returns p0 * fp.
-func (e *Evaluator[T]) FourierMul(p0 Poly[T], fp FourierPoly) Poly[T] {
+// FourierMulPoly returns p0 * fp.
+func (e *Evaluator[T]) FourierMulPoly(p0 Poly[T], fp FourierPoly) Poly[T] {
 	pOut := e.NewPoly()
-	e.FourierMulAssign(p0, fp, pOut)
+	e.FourierMulPolyAssign(p0, fp, pOut)
 	return pOut
 }
 
-// FourierMulAssign computes pOut = p0 * fp.
-func (e *Evaluator[T]) FourierMulAssign(p0 Poly[T], fp FourierPoly, pOut Poly[T]) {
+// FourierMulPolyAssign computes pOut = p0 * fp.
+func (e *Evaluator[T]) FourierMulPolyAssign(p0 Poly[T], fp FourierPoly, pOut Poly[T]) {
 	e.ToFourierPolyAssign(p0, e.buffer.fp)
 	e.MulFourierAssign(e.buffer.fp, fp, e.buffer.fp)
 	e.ToPolyAssignUnsafe(e.buffer.fp, pOut)
 }
 
-// FourierMulAddAssign computes pOut += p0 * fp.
-func (e *Evaluator[T]) FourierMulAddAssign(p0 Poly[T], fp FourierPoly, pOut Poly[T]) {
+// FourierMulAddPolyAssign computes pOut += p0 * fp.
+func (e *Evaluator[T]) FourierMulAddPolyAssign(p0 Poly[T], fp FourierPoly, pOut Poly[T]) {
 	e.ToFourierPolyAssign(p0, e.buffer.fp)
 	e.MulFourierAssign(e.buffer.fp, fp, e.buffer.fp)
 	e.ToPolyAddAssignUnsafe(e.buffer.fp, pOut)
 }
 
-// FourierMulSubAssign computes pOut -= p0 * fp.
-func (e *Evaluator[T]) FourierMulSubAssign(p0 Poly[T], fp FourierPoly, pOut Poly[T]) {
+// FourierMulSubPolyAssign computes pOut -= p0 * fp.
+func (e *Evaluator[T]) FourierMulSubPolyAssign(p0 Poly[T], fp FourierPoly, pOut Poly[T]) {
 	e.ToFourierPolyAssign(p0, e.buffer.fp)
 	e.MulFourierAssign(e.buffer.fp, fp, e.buffer.fp)
 	e.ToPolySubAssignUnsafe(e.buffer.fp, pOut)
 }
 
-// MonomialMul returns X^d * p0.
-func (e *Evaluator[T]) MonomialMul(p0 Poly[T], d int) Poly[T] {
+// MonomialMulPoly returns X^d * p0.
+func (e *Evaluator[T]) MonomialMulPoly(p0 Poly[T], d int) Poly[T] {
 	pOut := e.NewPoly()
-	e.MonomialMulAssign(p0, d, pOut)
+	e.MonomialMulPolyAssign(p0, d, pOut)
 	return pOut
 }
 
-// MonomialMulAssign computes pOut = X^d * p0.
+// MonomialMulPolyAssign computes pOut = X^d * p0.
 //
 // p0 and pOut should not overlap. For inplace multiplication,
-// use [*Evaluator.MonomialMulInPlace].
-func (e *Evaluator[T]) MonomialMulAssign(p0 Poly[T], d int, pOut Poly[T]) {
+// use [*Evaluator.MonomialMulPolyInPlace].
+func (e *Evaluator[T]) MonomialMulPolyAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	switch k := d & (2*e.degree - 1); {
 	case e.degree <= k:
 		for i, ii := 0, -k+2*e.degree; ii < e.degree; i, ii = i+1, ii+1 {
@@ -134,8 +134,8 @@ func (e *Evaluator[T]) MonomialMulAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	}
 }
 
-// MonomialMulInPlace computes p0 = X^d * p0.
-func (e *Evaluator[T]) MonomialMulInPlace(p0 Poly[T], d int) {
+// MonomialMulPolyInPlace computes p0 = X^d * p0.
+func (e *Evaluator[T]) MonomialMulPolyInPlace(p0 Poly[T], d int) {
 	kk := d & (e.degree - 1)
 	vec.RotateInPlace(p0.Coeffs, kk)
 
@@ -159,10 +159,10 @@ func (e *Evaluator[T]) MonomialMulInPlace(p0 Poly[T], d int) {
 	}
 }
 
-// MonomialMulAddAssign computes pOut += X^d * p0.
+// MonomialMulAddPolyAssign computes pOut += X^d * p0.
 //
 // p0 and pOut should not overlap.
-func (e *Evaluator[T]) MonomialMulAddAssign(p0 Poly[T], d int, pOut Poly[T]) {
+func (e *Evaluator[T]) MonomialMulAddPolyAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	switch k := d & (2*e.degree - 1); {
 	case e.degree <= k:
 		for i, ii := 0, -k+2*e.degree; ii < e.degree; i, ii = i+1, ii+1 {
@@ -195,10 +195,10 @@ func (e *Evaluator[T]) MonomialMulAddAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	}
 }
 
-// MonomialMulSubAssign computes pOut -= X^d * p0.
+// MonomialMulSubPolyAssign computes pOut -= X^d * p0.
 //
 // p0 and pOut should not overlap.
-func (e *Evaluator[T]) MonomialMulSubAssign(p0 Poly[T], d int, pOut Poly[T]) {
+func (e *Evaluator[T]) MonomialMulSubPolyAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	switch k := d & (2*e.degree - 1); {
 	case e.degree <= k:
 		for i, ii := 0, -k+2*e.degree; ii < e.degree; i, ii = i+1, ii+1 {
@@ -231,18 +231,18 @@ func (e *Evaluator[T]) MonomialMulSubAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	}
 }
 
-// Permute returns p0(X^d).
-func (e *Evaluator[T]) Permute(p0 Poly[T], d int) Poly[T] {
+// PermutePoly returns p0(X^d).
+func (e *Evaluator[T]) PermutePoly(p0 Poly[T], d int) Poly[T] {
 	pOut := e.NewPoly()
-	e.PermuteAssign(p0, d, pOut)
+	e.PermutePolyAssign(p0, d, pOut)
 	return pOut
 }
 
-// PermuteAssign computes pOut = p0(X^d).
+// PermutePolyAssign computes pOut = p0(X^d).
 //
 // p0 and pOut should not overlap. For inplace permutation,
-// use [*Evaluator.PermuteInPlace].
-func (e *Evaluator[T]) PermuteAssign(p0 Poly[T], d int, pOut Poly[T]) {
+// use [*Evaluator.PermutePolyInPlace].
+func (e *Evaluator[T]) PermutePolyAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	pOut.Clear()
 	for i := 0; i < e.degree; i++ {
 		j := (d * i) & (2*e.degree - 1)
@@ -254,16 +254,16 @@ func (e *Evaluator[T]) PermuteAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	}
 }
 
-// PermuteInPlace computes p0 = p0(X^d).
-func (e *Evaluator[T]) PermuteInPlace(p0 Poly[T], d int) {
-	e.PermuteAssign(p0, d, e.buffer.pOut)
+// PermutePolyInPlace computes p0 = p0(X^d).
+func (e *Evaluator[T]) PermutePolyInPlace(p0 Poly[T], d int) {
+	e.PermutePolyAssign(p0, d, e.buffer.pOut)
 	p0.CopyFrom(e.buffer.pOut)
 }
 
-// PermuteAddAssign computes pOut += p0(X^d).
+// PermuteAddPolyAssign computes pOut += p0(X^d).
 //
 // p0 and pOut should not overlap.
-func (e *Evaluator[T]) PermuteAddAssign(p0 Poly[T], d int, pOut Poly[T]) {
+func (e *Evaluator[T]) PermuteAddPolyAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	for i := 0; i < e.degree; i++ {
 		j := (d * i) & (2*e.degree - 1)
 		if j < e.degree {
@@ -274,10 +274,10 @@ func (e *Evaluator[T]) PermuteAddAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	}
 }
 
-// PermuteSubAssign computes pOut -= p0(X^d).
+// PermuteSubPolyAssign computes pOut -= p0(X^d).
 //
 // p0 and pOut should not overlap.
-func (e *Evaluator[T]) PermuteSubAssign(p0 Poly[T], d int, pOut Poly[T]) {
+func (e *Evaluator[T]) PermuteSubPolyAssign(p0 Poly[T], d int, pOut Poly[T]) {
 	for i := 0; i < e.degree; i++ {
 		j := (d * i) & (2*e.degree - 1)
 		if j < e.degree {
