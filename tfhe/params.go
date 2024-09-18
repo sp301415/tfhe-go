@@ -383,14 +383,9 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("LookUpTableSize not multiple of PolyDegree")
 	case !num.IsPowerOfTwo(p.PolyDegree):
 		panic("PolyDegree not power of two")
-	case !num.IsPowerOfTwo(p.MessageModulus):
-		panic("MessageModulus not power of two")
 	case !(p.BootstrapOrder == OrderKeySwitchBlindRotate || p.BootstrapOrder == OrderBlindRotateKeySwitch):
 		panic("BootstrapOrder not valid")
 	}
-
-	messageModulusLog := num.Log2(p.MessageModulus)
-	scaleLog := num.SizeT[T]() - 1 - messageModulusLog
 
 	return Parameters[T]{
 		lweDimension:     p.LWEDimension,
@@ -407,10 +402,8 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		blockSize:  p.BlockSize,
 		blockCount: p.LWEDimension / p.BlockSize,
 
-		messageModulus:    p.MessageModulus,
-		messageModulusLog: messageModulusLog,
-		scale:             1 << scaleLog,
-		scaleLog:          scaleLog,
+		messageModulus: p.MessageModulus,
+		scale:          num.DivRound(1<<(num.SizeT[T]()-1), p.MessageModulus),
 
 		logQ:   num.SizeT[T](),
 		floatQ: math.Exp2(float64(num.SizeT[T]())),
@@ -452,13 +445,9 @@ type Parameters[T TorusInt] struct {
 
 	// MessageModulus is the modulus of the encoded message.
 	messageModulus T
-	// MessageModulusLog equals log(MessageModulus).
-	messageModulusLog int
 	// Scale is the scaling factor used for message encoding.
 	// The lower log(Scale) bits are reserved for errors.
 	scale T
-	// ScaleLog equals log(Scale).
-	scaleLog int
 
 	// logQ is the value of log(Q), where Q is the modulus of the ciphertext.
 	logQ int
@@ -583,19 +572,9 @@ func (p Parameters[T]) Scale() T {
 	return p.scale
 }
 
-// ScaleLog equals log(Scale).
-func (p Parameters[T]) ScaleLog() int {
-	return p.scaleLog
-}
-
 // MessageModulus is the modulus of the encoded message.
 func (p Parameters[T]) MessageModulus() T {
 	return p.messageModulus
-}
-
-// MessageModulusLog equals log(MessageModulus).
-func (p Parameters[T]) MessageModulusLog() int {
-	return p.messageModulusLog
 }
 
 // LogQ is the value of log(Q), where Q is the modulus of the ciphertext.

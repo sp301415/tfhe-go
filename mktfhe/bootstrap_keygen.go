@@ -60,7 +60,7 @@ func (e *Encryptor[T]) GenCRSPublicKey() tfhe.FourierGLevCiphertext[T] {
 		e.buffer.ctGLWESingle.Value[1].CopyFrom(e.CRS[i])
 
 		e.SingleKeyEncryptor.GaussianSampler.SamplePolyAssign(e.Parameters.GLWEStdDevQ(), e.buffer.ctGLWESingle.Value[0])
-		e.SingleKeyEncryptor.Evaluator.BinaryFourierMulSubAssign(e.buffer.ctGLWESingle.Value[1], e.SecretKey.FourierGLWEKey.Value[0], e.buffer.ctGLWESingle.Value[0])
+		e.SingleKeyEncryptor.PolyEvaluator.BinaryFourierMulSubAssign(e.buffer.ctGLWESingle.Value[1], e.SecretKey.FourierGLWEKey.Value[0], e.buffer.ctGLWESingle.Value[0])
 
 		e.SingleKeyEncryptor.ToFourierGLWECiphertextAssign(e.buffer.ctGLWESingle, pk.Value[i])
 	}

@@ -382,7 +382,7 @@ func BenchmarkEvaluationKeyGen(b *testing.B) {
 		params := params.Compile()
 		enc := tfhe.NewEncryptor(params)
 
-		b.Run(fmt.Sprintf("prec=%v", params.MessageModulusLog()), func(b *testing.B) {
+		b.Run(fmt.Sprintf("prec=%v", num.Log2(params.MessageModulus())), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				enc.GenEvaluationKeyParallel()
 			}
@@ -400,7 +400,7 @@ func BenchmarkProgrammableBootstrap(b *testing.B) {
 		ctOut := ct.Copy()
 		lut := eval.GenLookUpTable(func(x int) int { return 2*x + 1 })
 
-		b.Run(fmt.Sprintf("prec=%v", params.MessageModulusLog()), func(b *testing.B) {
+		b.Run(fmt.Sprintf("prec=%v", num.Log2(params.MessageModulus())), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				eval.BootstrapLUTAssign(ct, lut, ctOut)
 			}

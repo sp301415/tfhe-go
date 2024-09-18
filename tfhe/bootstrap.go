@@ -44,16 +44,16 @@ func (e *Evaluator[T]) GenLookUpTable(f func(int) int) LookUpTable[T] {
 // GenLookUpTableAssign generates a lookup table based on function f and writes it to lutOut.
 // Input and output of f is cut by MessageModulus.
 func (e *Evaluator[T]) GenLookUpTableAssign(f func(int) int, lutOut LookUpTable[T]) {
-	for x := 0; x < 1<<e.Parameters.messageModulusLog; x++ {
-		start := num.DivRoundBits(x*e.Parameters.lookUpTableSize, e.Parameters.messageModulusLog)
-		end := num.DivRoundBits((x+1)*e.Parameters.lookUpTableSize, e.Parameters.messageModulusLog)
+	for x := 0; x < int(e.Parameters.messageModulus); x++ {
+		start := num.DivRound(x*e.Parameters.lookUpTableSize, int(e.Parameters.messageModulus))
+		end := num.DivRound((x+1)*e.Parameters.lookUpTableSize, int(e.Parameters.messageModulus))
 		y := e.EncodeLWE(f(x)).Value
 		for xx := start; xx < end; xx++ {
 			lutOut.Value[xx] = y
 		}
 	}
 
-	offset := num.DivRoundBits(e.Parameters.lookUpTableSize, e.Parameters.messageModulusLog+1)
+	offset := num.DivRound(e.Parameters.lookUpTableSize, int(2*e.Parameters.messageModulus))
 	vec.RotateInPlace(lutOut.Value, -offset)
 	for i := e.Parameters.lookUpTableSize - offset; i < e.Parameters.lookUpTableSize; i++ {
 		lutOut.Value[i] = -lutOut.Value[i]
@@ -71,16 +71,16 @@ func (e *Evaluator[T]) GenLookUpTableFull(f func(int) T) LookUpTable[T] {
 // GenLookUpTableFullAssign generates a lookup table based on function f and writes it to lutOut.
 // Output of f is encoded as-is.
 func (e *Evaluator[T]) GenLookUpTableFullAssign(f func(int) T, lutOut LookUpTable[T]) {
-	for x := 0; x < 1<<e.Parameters.messageModulusLog; x++ {
-		start := num.DivRoundBits(x*e.Parameters.lookUpTableSize, e.Parameters.messageModulusLog)
-		end := num.DivRoundBits((x+1)*e.Parameters.lookUpTableSize, e.Parameters.messageModulusLog)
+	for x := 0; x < int(e.Parameters.messageModulus); x++ {
+		start := num.DivRound(x*e.Parameters.lookUpTableSize, int(e.Parameters.messageModulus))
+		end := num.DivRound((x+1)*e.Parameters.lookUpTableSize, int(e.Parameters.messageModulus))
 		y := f(x)
 		for xx := start; xx < end; xx++ {
 			lutOut.Value[xx] = y
 		}
 	}
 
-	offset := num.DivRoundBits(e.Parameters.lookUpTableSize, e.Parameters.messageModulusLog+1)
+	offset := num.DivRound(e.Parameters.lookUpTableSize, int(2*e.Parameters.messageModulus))
 	vec.RotateInPlace(lutOut.Value, -offset)
 	for i := e.Parameters.lookUpTableSize - offset; i < e.Parameters.lookUpTableSize; i++ {
 		lutOut.Value[i] = -lutOut.Value[i]

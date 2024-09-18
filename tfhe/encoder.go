@@ -27,7 +27,7 @@ func NewEncoder[T TorusInt](params Parameters[T]) *Encoder[T] {
 // EncodeLWE encodes integer message to LWE plaintext.
 // Parameter's MessageModulus and Scale are used.
 func (e *Encoder[T]) EncodeLWE(message int) LWEPlaintext[T] {
-	return LWEPlaintext[T]{Value: (T(message) % e.Parameters.messageModulus) << e.Parameters.scaleLog}
+	return LWEPlaintext[T]{Value: (T(message) % e.Parameters.messageModulus) * e.Parameters.scale}
 }
 
 // EncodeLWECustom encodes integer message to LWE plaintext
@@ -45,7 +45,7 @@ func (e *Encoder[T]) EncodeLWECustom(message int, messageModulus, scale T) LWEPl
 // DecodeLWE decodes LWE plaintext to integer message.
 // Parameter's MessageModulus and Scale are used.
 func (e *Encoder[T]) DecodeLWE(pt LWEPlaintext[T]) int {
-	return int(num.DivRoundBits(pt.Value, e.Parameters.scaleLog) % e.Parameters.messageModulus)
+	return int(num.DivRound(pt.Value, e.Parameters.scale) % e.Parameters.messageModulus)
 }
 
 // DecodeLWECustom decodes LWE plaintext to integer message
@@ -79,7 +79,7 @@ func (e *Encoder[T]) EncodeGLWE(messages []int) GLWEPlaintext[T] {
 func (e *Encoder[T]) EncodeGLWEAssign(messages []int, pt GLWEPlaintext[T]) {
 	length := num.Min(e.Parameters.polyDegree, len(messages))
 	for i := 0; i < length; i++ {
-		pt.Value.Coeffs[i] = (T(messages[i]) % e.Parameters.messageModulus) << e.Parameters.scaleLog
+		pt.Value.Coeffs[i] = (T(messages[i]) % e.Parameters.messageModulus) * e.Parameters.scale
 	}
 	vec.Fill(pt.Value.Coeffs[length:], 0)
 }
@@ -131,7 +131,7 @@ func (e *Encoder[T]) DecodeGLWE(pt GLWEPlaintext[T]) []int {
 func (e *Encoder[T]) DecodeGLWEAssign(pt GLWEPlaintext[T], messagesOut []int) {
 	length := num.Min(e.Parameters.polyDegree, len(messagesOut))
 	for i := 0; i < length; i++ {
-		messagesOut[i] = int((num.DivRoundBits(pt.Value.Coeffs[i], e.Parameters.scaleLog) % e.Parameters.messageModulus))
+		messagesOut[i] = int((num.DivRound(pt.Value.Coeffs[i], e.Parameters.scale) % e.Parameters.messageModulus))
 	}
 }
 
