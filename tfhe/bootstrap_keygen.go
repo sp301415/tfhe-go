@@ -103,69 +103,12 @@ func (e *Encryptor[T]) GenBootstrapKeyParallel() BootstrapKey[T] {
 	return bsk
 }
 
-// GenKeySwitchKey samples a new keyswitch key skIn -> LWEKey.
-//
-// This can take a long time.
-// Use [*Encryptor.GenKeySwitchKeyParallel] for better key generation performance.
-func (e *Encryptor[T]) GenKeySwitchKey(skIn LWESecretKey[T], gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
-	ksk := NewKeySwitchKey(e.Parameters, len(skIn.Value), gadgetParams)
-
-	for i := 0; i < ksk.InputLWEDimension(); i++ {
-		for j := 0; j < gadgetParams.level; j++ {
-			ksk.Value[i].Value[j].Value[0] = skIn.Value[i] << gadgetParams.BaseQLog(j)
-			e.EncryptLWEBody(ksk.Value[i].Value[j])
-		}
-	}
-
-	return ksk
-}
-
-// GenKeySwitchKeyParallel samples a new keyswitch key skIn -> LWEKey in parallel.
-func (e *Encryptor[T]) GenKeySwitchKeyParallel(skIn LWESecretKey[T], gadgetParams GadgetParameters[T]) KeySwitchKey[T] {
-	ksk := NewKeySwitchKey(e.Parameters, len(skIn.Value), gadgetParams)
-
-	workSize := ksk.InputLWEDimension() * gadgetParams.level
-	chunkCount := num.Min(runtime.NumCPU(), num.Sqrt(workSize))
-
-	encryptorPool := make([]*Encryptor[T], chunkCount)
-	for i := range encryptorPool {
-		encryptorPool[i] = e.ShallowCopy()
-	}
-
-	jobs := make(chan [2]int)
-	go func() {
-		defer close(jobs)
-		for i := 0; i < ksk.InputLWEDimension(); i++ {
-			for j := 0; j < gadgetParams.level; j++ {
-				jobs <- [2]int{i, j}
-			}
-		}
-	}()
-
-	var wg sync.WaitGroup
-	wg.Add(chunkCount)
-	for i := 0; i < chunkCount; i++ {
-		go func(i int) {
-			eIdx := encryptorPool[i]
-			for jobs := range jobs {
-				i, j := jobs[0], jobs[1]
-				ksk.Value[i].Value[j].Value[0] = skIn.Value[i] << gadgetParams.BaseQLog(j)
-				eIdx.EncryptLWEBody(ksk.Value[i].Value[j])
-			}
-			wg.Done()
-		}(i)
-	}
-	wg.Wait()
-
-	return ksk
-}
-
 // GenKeySwitchKeyForBootstrap samples a new keyswitch key LWELargeKey -> LWEKey,
 // used for bootstrapping.
 //
 // This can take a long time.
 // Use [*Encryptor.GenKeySwitchKeyForBootstrapParallel] for better key generation performance.
-func (e *Encryptor[T]) GenKeySwitchKeyForBootstrap() KeySwitchKey[T] {
+func (e *Encryptor[T]) GenKeySwitchKeyForBootstrap() LWEKeySwitchKey[T] {
 	skIn := LWESecretKey[T]{Value: e.SecretKey.LWELargeKey.Value[e.Parameters.lweDimension:]}
 	ksk := NewKeySwitchKeyForBootstrap(e.Parameters)
 
@@ -184,7 +127,7 @@ func (e *Encryptor[T]) GenKeySwitchKeyForBootstrap() KeySwitchKey[T] {
 
 // GenKeySwitchKeyForBootstrapParallel samples a new keyswitch key LWELargeKey -> LWEKey in parallel,
 // used for bootstrapping.
-func (e *Encryptor[T]) GenKeySwitchKeyForBootstrapParallel() KeySwitchKey[T] {
+func (e *Encryptor[T]) GenKeySwitchKeyForBootstrapParallel() LWEKeySwitchKey[T] {
 	skIn := LWESecretKey[T]{Value: e.SecretKey.LWELargeKey.Value[e.Parameters.lweDimension:]}
 	ksk := NewKeySwitchKeyForBootstrap(e.Parameters)
 

@@ -25,31 +25,18 @@ func (e *Encryptor[T]) GenEvaluationKeyParallel() EvaluationKey[T] {
 	}
 }
 
-// GenKeySwitchKey samples a new keyswitch key skIn -> LWEKey.
-//
-// This can take a long time.
-// Use [*Encryptor.GenKeySwitchKeyParallel] for better key generation performance.
-func (e *Encryptor[T]) GenKeySwitchKey(skIn tfhe.LWESecretKey[T], gadgetParams tfhe.GadgetParameters[T]) tfhe.KeySwitchKey[T] {
-	return e.SingleKeyEncryptor.GenKeySwitchKey(skIn, gadgetParams)
-}
-
-// GenKeySwitchKeyParallel samples a new keyswitch key skIn -> LWEKey in parallel.
-func (e *Encryptor[T]) GenKeySwitchKeyParallel(skIn tfhe.LWESecretKey[T], gadgetParams tfhe.GadgetParameters[T]) tfhe.KeySwitchKey[T] {
-	return e.SingleKeyEncryptor.GenKeySwitchKeyParallel(skIn, gadgetParams)
-}
-
 // GenKeySwitchKeyForBootstrap samples a new keyswitch key LWELargeKey -> LWEKey,
 // used for bootstrapping.
 //
 // This can take a long time.
 // Use [*Encryptor.GenKeySwitchKeyForBootstrapParallel] for better key generation performance.
-func (e *Encryptor[T]) GenKeySwitchKeyForBootstrap() tfhe.KeySwitchKey[T] {
+func (e *Encryptor[T]) GenKeySwitchKeyForBootstrap() tfhe.LWEKeySwitchKey[T] {
 	return e.SingleKeyEncryptor.GenKeySwitchKeyForBootstrap()
 }
 
 // GenKeySwitchKeyForBootstrapParallel samples a new keyswitch key LWELargeKey -> LWEKey in parallel,
 // used for bootstrapping.
-func (e *Encryptor[T]) GenKeySwitchKeyForBootstrapParallel() tfhe.KeySwitchKey[T] {
+func (e *Encryptor[T]) GenKeySwitchKeyForBootstrapParallel() tfhe.LWEKeySwitchKey[T] {
 	return e.SingleKeyEncryptor.GenKeySwitchKeyForBootstrapParallel()
 }
 

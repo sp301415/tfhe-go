@@ -29,8 +29,8 @@ func (e *Evaluator[T]) BootstrapLUT(ct LWECiphertext[T], lut LookUpTable[T]) LWE
 func (e *Evaluator[T]) BootstrapLUTAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut LWECiphertext[T]) {
 	switch e.Parameters.bootstrapOrder {
 	case OrderKeySwitchBlindRotate:
-		e.KeySwitchForBootstrapAssign(ct, e.buffer.ctKeySwitch)
-		e.BlindRotateAssign(e.buffer.ctKeySwitch, lut, e.buffer.ctRotate)
+		e.KeySwitchForBootstrapAssign(ct, e.buffer.ctKeySwitchBootstrap)
+		e.BlindRotateAssign(e.buffer.ctKeySwitchBootstrap, lut, e.buffer.ctRotate)
 		e.buffer.ctRotate.ToLWECiphertextAssign(0, ctOut)
 	case OrderBlindRotateKeySwitch:
 		e.BlindRotateAssign(ct, lut, e.buffer.ctRotate)
@@ -365,35 +365,6 @@ func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUp
 			e.PolyEvaluator.ToPolyAddAssignUnsafe(e.buffer.ctFourierAcc[0].Value[j], ctOut.Value[j])
 		}
 	}
-}
-
-// KeySwitch switches key of ct.
-// Input ciphertext should be of length ksk.InputLWEDimension + 1.
-func (e *Evaluator[T]) KeySwitch(ct LWECiphertext[T], ksk KeySwitchKey[T]) LWECiphertext[T] {
-	ctOut := NewLWECiphertext(e.Parameters)
-	e.KeySwitchAssign(ct, ksk, ctOut)
-	return ctOut
-}
-
-// KeySwitchAssign switches key of ct and writes it to ctOut.
-// Input ciphertext should be of length ksk.InputLWEDimension + 1.
-func (e *Evaluator[T]) KeySwitchAssign(ct LWECiphertext[T], ksk KeySwitchKey[T], ctOut LWECiphertext[T]) {
-	scalarDecomposed := e.Decomposer.ScalarDecomposedBuffer(ksk.GadgetParameters)
-
-	e.Decomposer.DecomposeScalarAssign(ct.Value[1], ksk.GadgetParameters, scalarDecomposed)
-	e.ScalarMulLWEAssign(ksk.Value[0].Value[0], scalarDecomposed[0], ctOut)
-	for j := 1; j < ksk.GadgetParameters.level; j++ {
-		e.ScalarMulAddLWEAssign(ksk.Value[0].Value[j], scalarDecomposed[j], ctOut)
-	}
-
-	for i := 1; i < ksk.InputLWEDimension(); i++ {
-		e.Decomposer.DecomposeScalarAssign(ct.Value[i+1], ksk.GadgetParameters, scalarDecomposed)
-		for j := 0; j < ksk.GadgetParameters.level; j++ {
-			e.ScalarMulAddLWEAssign(ksk.Value[i].Value[j], scalarDecomposed[j], ctOut)
-		}
-	}
-
-	ctOut.Value[0] += ct.Value[0]
 }
 
 // KeySwitchForBootstrap performs the keyswitching using evaulater's evaluation key.

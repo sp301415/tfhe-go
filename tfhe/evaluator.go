@@ -39,8 +39,11 @@ type Evaluator[T TorusInt] struct {
 type evaluationBuffer[T TorusInt] struct {
 	// fpMul is the fourier transformed polynomial for multiplications.
 	fpMul poly.FourierPoly
-	// ctFourierProd is the fourier transformed ctGLWEOut in ExternalProductFourier.
-	ctFourierProd FourierGLWECiphertext[T]
+
+	// ctProdLWE is the LWE ciphertext buffer for ExternalProductLWE and KeySwitchLWE.
+	ctProdLWE LWECiphertext[T]
+	// ctProdFourierGLWE is the fourier transformed ctGLWEOut in ExternalProductGLWE and KeySwitchGLWE.
+	ctProdFourierGLWE FourierGLWECiphertext[T]
 	// ctCMux is ct1 - ct0 in CMux.
 	ctCMux GLWECiphertext[T]
 
@@ -64,8 +67,8 @@ type evaluationBuffer[T TorusInt] struct {
 	ctRotate GLWECiphertext[T]
 	// ctExtract is the extracted LWE ciphertext after Blind Rotation.
 	ctExtract LWECiphertext[T]
-	// ctKeySwitch is the LWEDimension sized ciphertext from keyswitching.
-	ctKeySwitch LWECiphertext[T]
+	// ctKeySwitchBootstrap is the LWEDimension sized ciphertext from keyswitching for bootstrapping.
+	ctKeySwitchBootstrap LWECiphertext[T]
 
 	// lut is an empty lut, used for BlindRotateFunc.
 	lut LookUpTable[T]
@@ -126,9 +129,11 @@ func newEvaluationBuffer[T TorusInt](params Parameters[T]) evaluationBuffer[T] {
 	}
 
 	return evaluationBuffer[T]{
-		fpMul:         poly.NewFourierPoly(params.polyDegree),
-		ctFourierProd: NewFourierGLWECiphertext(params),
-		ctCMux:        NewGLWECiphertext(params),
+		fpMul: poly.NewFourierPoly(params.polyDegree),
+
+		ctProdLWE:         NewLWECiphertext(params),
+		ctProdFourierGLWE: NewFourierGLWECiphertext(params),
+		ctCMux:            NewGLWECiphertext(params),
 
 		ctAcc:                  ctAcc,
 		ctFourierAcc:           ctFourierAcc,
@@ -136,9 +141,9 @@ func newEvaluationBuffer[T TorusInt](params Parameters[T]) evaluationBuffer[T] {
 		ctAccFourierDecomposed: ctAccFourierDecomposed,
 		fMono:                  poly.NewFourierPoly(params.polyDegree),
 
-		ctRotate:    NewGLWECiphertext(params),
-		ctExtract:   NewLWECiphertextCustom[T](params.glweDimension),
-		ctKeySwitch: NewLWECiphertextCustom[T](params.lweDimension),
+		ctRotate:             NewGLWECiphertext(params),
+		ctExtract:            NewLWECiphertextCustom[T](params.glweDimension),
+		ctKeySwitchBootstrap: NewLWECiphertextCustom[T](params.lweDimension),
 
 		lut: NewLookUpTable(params),
 	}
