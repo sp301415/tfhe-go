@@ -62,31 +62,31 @@ func (e *Evaluator[T]) ScalarMulSubPolyAssign(p0 Poly[T], c T, pOut Poly[T]) {
 	vec.ScalarMulSubAssign(p0.Coeffs, c, pOut.Coeffs)
 }
 
-// FourierMulPoly returns p0 * fp.
-func (e *Evaluator[T]) FourierMulPoly(p0 Poly[T], fp FourierPoly) Poly[T] {
+// FourierPolyMulPoly returns p0 * fp.
+func (e *Evaluator[T]) FourierPolyMulPoly(p0 Poly[T], fp FourierPoly) Poly[T] {
 	pOut := e.NewPoly()
-	e.FourierMulPolyAssign(p0, fp, pOut)
+	e.FourierPolyMulPolyAssign(p0, fp, pOut)
 	return pOut
 }
 
-// FourierMulPolyAssign computes pOut = p0 * fp.
-func (e *Evaluator[T]) FourierMulPolyAssign(p0 Poly[T], fp FourierPoly, pOut Poly[T]) {
+// FourierPolyMulPolyAssign computes pOut = p0 * fp.
+func (e *Evaluator[T]) FourierPolyMulPolyAssign(p0 Poly[T], fp FourierPoly, pOut Poly[T]) {
 	e.ToFourierPolyAssign(p0, e.buffer.fp)
-	e.MulFourierAssign(e.buffer.fp, fp, e.buffer.fp)
+	e.MulFourierPolyAssign(e.buffer.fp, fp, e.buffer.fp)
 	e.ToPolyAssignUnsafe(e.buffer.fp, pOut)
 }
 
-// FourierMulAddPolyAssign computes pOut += p0 * fp.
-func (e *Evaluator[T]) FourierMulAddPolyAssign(p0 Poly[T], fp FourierPoly, pOut Poly[T]) {
+// FourierPolyMulAddPolyAssign computes pOut += p0 * fp.
+func (e *Evaluator[T]) FourierPolyMulAddPolyAssign(p0 Poly[T], fp FourierPoly, pOut Poly[T]) {
 	e.ToFourierPolyAssign(p0, e.buffer.fp)
-	e.MulFourierAssign(e.buffer.fp, fp, e.buffer.fp)
+	e.MulFourierPolyAssign(e.buffer.fp, fp, e.buffer.fp)
 	e.ToPolyAddAssignUnsafe(e.buffer.fp, pOut)
 }
 
-// FourierMulSubPolyAssign computes pOut -= p0 * fp.
-func (e *Evaluator[T]) FourierMulSubPolyAssign(p0 Poly[T], fp FourierPoly, pOut Poly[T]) {
+// FourierPolyMulSubPolyAssign computes pOut -= p0 * fp.
+func (e *Evaluator[T]) FourierPolyMulSubPolyAssign(p0 Poly[T], fp FourierPoly, pOut Poly[T]) {
 	e.ToFourierPolyAssign(p0, e.buffer.fp)
-	e.MulFourierAssign(e.buffer.fp, fp, e.buffer.fp)
+	e.MulFourierPolyAssign(e.buffer.fp, fp, e.buffer.fp)
 	e.ToPolySubAssignUnsafe(e.buffer.fp, pOut)
 }
 

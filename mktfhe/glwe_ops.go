@@ -143,21 +143,21 @@ func (e *Evaluator[T]) FourierPolyMulGLWE(ct0 GLWECiphertext[T], fp poly.Fourier
 // FourierPolyMulGLWEAssign computes ctOut = fp * ct0.
 func (e *Evaluator[T]) FourierPolyMulGLWEAssign(ct0 GLWECiphertext[T], fp poly.FourierPoly, ctOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
-		e.PolyEvaluator.FourierMulPolyAssign(ct0.Value[i], fp, ctOut.Value[i])
+		e.PolyEvaluator.FourierPolyMulPolyAssign(ct0.Value[i], fp, ctOut.Value[i])
 	}
 }
 
 // FourierPolyMulAddGLWEAssign computes ctOut += fp * ct0.
 func (e *Evaluator[T]) FourierPolyMulAddGLWEAssign(ct0 GLWECiphertext[T], fp poly.FourierPoly, ctOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
-		e.PolyEvaluator.FourierMulAddPolyAssign(ct0.Value[i], fp, ctOut.Value[i])
+		e.PolyEvaluator.FourierPolyMulAddPolyAssign(ct0.Value[i], fp, ctOut.Value[i])
 	}
 }
 
 // FourierPolyMulSubGLWEAssign computes ctOut -= fp * ct0.
 func (e *Evaluator[T]) FourierPolyMulSubGLWEAssign(ct0 GLWECiphertext[T], fp poly.FourierPoly, ctOut GLWECiphertext[T]) {
 	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
-		e.PolyEvaluator.FourierMulSubPolyAssign(ct0.Value[i], fp, ctOut.Value[i])
+		e.PolyEvaluator.FourierPolyMulSubPolyAssign(ct0.Value[i], fp, ctOut.Value[i])
 	}
 }
 

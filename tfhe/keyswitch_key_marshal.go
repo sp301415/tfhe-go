@@ -186,49 +186,49 @@ func (ksk *LWEKeySwitchKey[T]) UnmarshalBinary(data []byte) error {
 }
 
 // ByteSize returns the size of the key in bytes.
-func (gksk GLWEKeySwitchKey[T]) ByteSize() int {
-	inputRank := len(gksk.Value)
-	level := len(gksk.Value[0].Value)
-	outputRank := len(gksk.Value[0].Value[0].Value) - 1
-	polyDegree := gksk.Value[0].Value[0].Value[0].Degree()
+func (ksk GLWEKeySwitchKey[T]) ByteSize() int {
+	inputRank := len(ksk.Value)
+	level := len(ksk.Value[0].Value)
+	outputRank := len(ksk.Value[0].Value[0].Value) - 1
+	polyDegree := ksk.Value[0].Value[0].Value[0].Degree()
 
 	return 40 + inputRank*level*(outputRank+1)*polyDegree*8
 }
 
 // headerWriteTo writes the header.
-func (gksk GLWEKeySwitchKey[T]) headerWriteTo(w io.Writer) (n int64, err error) {
+func (ksk GLWEKeySwitchKey[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int
 	var buf [8]byte
 
-	base := gksk.GadgetParameters.base
+	base := ksk.GadgetParameters.base
 	binary.BigEndian.PutUint64(buf[:], uint64(base))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
 	}
 	n += int64(nWrite)
 
-	level := gksk.GadgetParameters.level
+	level := ksk.GadgetParameters.level
 	binary.BigEndian.PutUint64(buf[:], uint64(level))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
 	}
 	n += int64(nWrite)
 
-	inputRank := len(gksk.Value)
+	inputRank := len(ksk.Value)
 	binary.BigEndian.PutUint64(buf[:], uint64(inputRank))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
 	}
 	n += int64(nWrite)
 
-	outputRank := len(gksk.Value[0].Value[0].Value) - 1
+	outputRank := len(ksk.Value[0].Value[0].Value) - 1
 	binary.BigEndian.PutUint64(buf[:], uint64(outputRank))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
 	}
 	n += int64(nWrite)
 
-	polyDegree := gksk.Value[0].Value[0].Value[0].Degree()
+	polyDegree := ksk.Value[0].Value[0].Value[0].Degree()
 	binary.BigEndian.PutUint64(buf[:], uint64(polyDegree))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
@@ -239,16 +239,16 @@ func (gksk GLWEKeySwitchKey[T]) headerWriteTo(w io.Writer) (n int64, err error) 
 }
 
 // valueWriteTo writes the value.
-func (gksk GLWEKeySwitchKey[T]) valueWriteTo(w io.Writer) (n int64, err error) {
+func (ksk GLWEKeySwitchKey[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
 
-	outputRank := len(gksk.Value[0].Value[0].Value) - 1
-	buf := make([]byte, (outputRank+1)*gksk.Value[0].Value[0].Value[0].Degree()*8)
+	polyDegree := ksk.Value[0].Value[0].Value[0].Degree()
+	buf := make([]byte, polyDegree*8)
 
-	for i := range gksk.Value {
-		for j := range gksk.Value[i].Value {
-			for k := range gksk.Value[i].Value[j].Value {
-				if nWrite, err = floatVecWriteToBuffered(gksk.Value[i].Value[j].Value[k].Coeffs, buf, w); err != nil {
+	for i := range ksk.Value {
+		for j := range ksk.Value[i].Value {
+			for k := range ksk.Value[i].Value[j].Value {
+				if nWrite, err = floatVecWriteToBuffered(ksk.Value[i].Value[j].Value[k].Coeffs, buf, w); err != nil {
 					return n + nWrite, err
 				}
 				n += nWrite
@@ -269,20 +269,20 @@ func (gksk GLWEKeySwitchKey[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 //	[8] OutputRank
 //	[8] PolyDegree
 //	    Value
-func (gksk GLWEKeySwitchKey[T]) WriteTo(w io.Writer) (n int64, err error) {
+func (ksk GLWEKeySwitchKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
 
-	if nWrite, err = gksk.headerWriteTo(w); err != nil {
+	if nWrite, err = ksk.headerWriteTo(w); err != nil {
 		return n + nWrite, err
 	}
 	n += nWrite
 
-	if nWrite, err = gksk.valueWriteTo(w); err != nil {
+	if nWrite, err = ksk.valueWriteTo(w); err != nil {
 		return n + nWrite, err
 	}
 	n += nWrite
 
-	if n < int64(gksk.ByteSize()) {
+	if n < int64(ksk.ByteSize()) {
 		return n, io.ErrShortWrite
 	}
 
@@ -290,7 +290,7 @@ func (gksk GLWEKeySwitchKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // headerReadFrom reads the header, and initializes the value.
-func (gksk *GLWEKeySwitchKey[T]) headerReadFrom(r io.Reader) (n int64, err error) {
+func (ksk *GLWEKeySwitchKey[T]) headerReadFrom(r io.Reader) (n int64, err error) {
 	var nRead int
 	var buf [8]byte
 
@@ -324,22 +324,22 @@ func (gksk *GLWEKeySwitchKey[T]) headerReadFrom(r io.Reader) (n int64, err error
 	n += int64(nRead)
 	polyDegree := int(binary.BigEndian.Uint64(buf[:]))
 
-	*gksk = NewGLWEKeySwitchKeyCustom(inputRank, outputRank, polyDegree, GadgetParametersLiteral[T]{Base: base, Level: level}.Compile())
+	*ksk = NewGLWEKeySwitchKeyCustom(inputRank, outputRank, polyDegree, GadgetParametersLiteral[T]{Base: base, Level: level}.Compile())
 
 	return
 }
 
 // valueReadFrom reads the value.
-func (gksk *GLWEKeySwitchKey[T]) valueReadFrom(r io.Reader) (n int64, err error) {
+func (ksk *GLWEKeySwitchKey[T]) valueReadFrom(r io.Reader) (n int64, err error) {
 	var nRead int64
 
-	outputRank := len(gksk.Value[0].Value[0].Value) - 1
-	buf := make([]byte, (outputRank+1)*gksk.Value[0].Value[0].Value[0].Degree()*8)
+	polyDegree := ksk.Value[0].Value[0].Value[0].Degree()
+	buf := make([]byte, polyDegree*8)
 
-	for i := range gksk.Value {
-		for j := range gksk.Value[i].Value {
-			for k := range gksk.Value[i].Value[j].Value {
-				if nRead, err = floatVecReadFromBuffered(gksk.Value[i].Value[j].Value[k].Coeffs, buf, r); err != nil {
+	for i := range ksk.Value {
+		for j := range ksk.Value[i].Value {
+			for k := range ksk.Value[i].Value[j].Value {
+				if nRead, err = floatVecReadFromBuffered(ksk.Value[i].Value[j].Value[k].Coeffs, buf, r); err != nil {
 					return n + nRead, err
 				}
 				n += nRead
@@ -351,15 +351,15 @@ func (gksk *GLWEKeySwitchKey[T]) valueReadFrom(r io.Reader) (n int64, err error)
 }
 
 // ReadFrom implements the [io.ReaderFrom] interface.
-func (gksk *GLWEKeySwitchKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
+func (ksk *GLWEKeySwitchKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	var nRead int64
 
-	if nRead, err = gksk.headerReadFrom(r); err != nil {
+	if nRead, err = ksk.headerReadFrom(r); err != nil {
 		return n + nRead, err
 	}
 	n += nRead
 
-	if nRead, err = gksk.valueReadFrom(r); err != nil {
+	if nRead, err = ksk.valueReadFrom(r); err != nil {
 		return n + nRead, err
 	}
 	n += nRead

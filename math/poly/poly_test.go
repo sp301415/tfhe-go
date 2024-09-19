@@ -65,19 +65,19 @@ func BenchmarkFourierOps(b *testing.B) {
 
 		b.Run(fmt.Sprintf("N=%v/op=Add", N), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				pev.AddFourierAssign(fp0, fp1, fpOut)
+				pev.AddFourierPolyAssign(fp0, fp1, fpOut)
 			}
 		})
 
 		b.Run(fmt.Sprintf("N=%v/op=Sub", N), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				pev.SubFourierAssign(fp0, fp1, fpOut)
+				pev.SubFourierPolyAssign(fp0, fp1, fpOut)
 			}
 		})
 
 		b.Run(fmt.Sprintf("N=%v/op=Mul", N), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				pev.MulFourierAssign(fp0, fp1, fpOut)
+				pev.MulFourierPolyAssign(fp0, fp1, fpOut)
 			}
 		})
 	}

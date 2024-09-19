@@ -139,6 +139,27 @@ func TestEvaluator(t *testing.T) {
 		}
 	})
 
+	t.Run("KeySwitch", func(t *testing.T) {
+		kskGLWEParams := tfhe.GadgetParametersLiteral[uint64]{
+			Base:  1 << 12,
+			Level: 3,
+		}.Compile()
+
+		encOut := tfhe.NewEncryptor(params)
+
+		ctLWEIn := enc.EncryptLWE(messages[0])
+		ctGLWEIn := enc.EncryptGLWE(messages)
+
+		kskLWE := encOut.GenLWEKeySwitchKey(enc.DefaultLWESecretKey(), params.KeySwitchParameters())
+		kskGLWE := encOut.GenGLWEKeySwitchKey(enc.SecretKey.GLWEKey, kskGLWEParams)
+
+		ctLWEOut := eval.KeySwitchLWE(ctLWEIn, kskLWE)
+		ctGLWEOut := eval.KeySwitchGLWE(ctGLWEIn, kskGLWE)
+
+		assert.Equal(t, messages[0], encOut.DecryptLWE(ctLWEOut))
+		assert.Equal(t, messages, encOut.DecryptGLWE(ctGLWEOut)[:len(messages)])
+	})
+
 	t.Run("BootstrapOriginalFunc", func(t *testing.T) {
 		f := func(x int) int { return 2 * x }
 
@@ -374,6 +395,21 @@ func TestMarshal(t *testing.T) {
 		assert.NoError(t, err)
 
 		assert.Equal(t, evkIn, evkOut)
+	})
+
+	t.Run("GLWEKeySwitchKey", func(t *testing.T) {
+		var kskIn, kskOut tfhe.GLWEKeySwitchKey[uint64]
+
+		kskIn = enc.GenGLWEKeySwitchKey(enc.SecretKey.GLWEKey, params.KeySwitchParameters())
+		n, err = kskIn.WriteTo(&buf)
+		assert.Equal(t, int(n), kskIn.ByteSize())
+		assert.NoError(t, err)
+
+		n, err = kskOut.ReadFrom(&buf)
+		assert.Equal(t, int(n), kskIn.ByteSize())
+		assert.NoError(t, err)
+
+		assert.Equal(t, kskIn, kskOut)
 	})
 }
 

@@ -178,7 +178,7 @@ func (e *Encryptor[T]) GenPublicKey() PublicKey[T] {
 		e.GaussianSampler.SamplePolyAssign(e.Parameters.GLWEStdDevQ(), pk.LWEKey.Value[i].Value[0])
 		for j := 1; j < e.Parameters.glweRank+1; j++ {
 			e.UniformSampler.SamplePolyAssign(pk.LWEKey.Value[i].Value[j])
-			e.PolyEvaluator.BinaryFourierMulSubPolyAssign(pk.LWEKey.Value[i].Value[j], fskRev.Value[j-1], pk.LWEKey.Value[i].Value[0])
+			e.PolyEvaluator.BinaryFourierPolyMulSubPolyAssign(pk.LWEKey.Value[i].Value[j], fskRev.Value[j-1], pk.LWEKey.Value[i].Value[0])
 		}
 	}
 
