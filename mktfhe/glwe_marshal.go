@@ -17,6 +17,45 @@ func (ct GLWECiphertext[T]) ByteSize() int {
 	return 16 + (glweRank+1)*polyDegree*num.ByteSizeT[T]()
 }
 
+// headerWriteTo writes the header.
+func (ct GLWECiphertext[T]) headerWriteTo(w io.Writer) (n int64, err error) {
+	var nWrite int
+	var buf [8]byte
+
+	glweRank := len(ct.Value) - 1
+	binary.BigEndian.PutUint64(buf[:], uint64(glweRank))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	polyDegree := ct.Value[0].Degree()
+	binary.BigEndian.PutUint64(buf[:], uint64(polyDegree))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	return
+}
+
+// valueWriteTo writes the value.
+func (ct GLWECiphertext[T]) valueWriteTo(w io.Writer) (n int64, err error) {
+	var nWrite int64
+
+	polyDegree := ct.Value[0].Degree()
+	buf := make([]byte, polyDegree*num.ByteSizeT[T]())
+
+	for _, p := range ct.Value {
+		if nWrite, err = vecWriteToBuffered(p.Coeffs, buf, w); err != nil {
+			return n + nWrite, err
+		}
+		n += nWrite
+	}
+
+	return
+}
+
 // WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
@@ -25,52 +64,17 @@ func (ct GLWECiphertext[T]) ByteSize() int {
 //	[8] PolyDegree
 //	    Value
 func (ct GLWECiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
-	var nn int
+	var nWrite int64
 
-	glweRank := len(ct.Value) - 1
-	polyDegree := ct.Value[0].Degree()
-
-	var metadata [16]byte
-	binary.BigEndian.PutUint64(metadata[0:8], uint64(glweRank))
-	binary.BigEndian.PutUint64(metadata[8:16], uint64(polyDegree))
-	nn, err = w.Write(metadata[:])
-	n += int64(nn)
-	if err != nil {
-		return
+	if nWrite, err = ct.headerWriteTo(w); err != nil {
+		return n + nWrite, err
 	}
+	n += nWrite
 
-	var z T
-	switch any(z).(type) {
-	case uint32:
-		buf := make([]byte, polyDegree*4)
-
-		for _, p := range ct.Value {
-			for i := range p.Coeffs {
-				binary.BigEndian.PutUint32(buf[i*4:(i+1)*4], uint32(p.Coeffs[i]))
-			}
-
-			nn, err = w.Write(buf)
-			n += int64(nn)
-			if err != nil {
-				return
-			}
-		}
-
-	case uint64:
-		buf := make([]byte, polyDegree*8)
-
-		for _, p := range ct.Value {
-			for i := range p.Coeffs {
-				binary.BigEndian.PutUint64(buf[i*8:(i+1)*8], uint64(p.Coeffs[i]))
-			}
-
-			nn, err = w.Write(buf)
-			n += int64(nn)
-			if err != nil {
-				return
-			}
-		}
+	if nWrite, err = ct.valueWriteTo(w); err != nil {
+		return n + nWrite, err
 	}
+	n += nWrite
 
 	if n < int64(ct.ByteSize()) {
 		return n, io.ErrShortWrite
@@ -79,54 +83,58 @@ func (ct GLWECiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	return
 }
 
-// ReadFrom implements the [io.ReaderFrom] interface.
-func (ct *GLWECiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
-	var nn int
+// headerReadFrom reads the header, and initializes the value.
+func (ct *GLWECiphertext[T]) headerReadFrom(r io.Reader) (n int64, err error) {
+	var nRead int
+	var buf [8]byte
 
-	var metadata [16]byte
-	nn, err = io.ReadFull(r, metadata[:])
-	n += int64(nn)
-	if err != nil {
-		return
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
 	}
+	n += int64(nRead)
+	glweRank := int(binary.BigEndian.Uint64(buf[:]))
 
-	glweRank := int(binary.BigEndian.Uint64(metadata[0:8]))
-	polyDegree := int(binary.BigEndian.Uint64(metadata[8:16]))
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	polyDegree := int(binary.BigEndian.Uint64(buf[:]))
 
 	*ct = NewGLWECiphertextCustom[T](glweRank, polyDegree)
 
-	var z T
-	switch any(z).(type) {
-	case uint32:
-		buf := make([]byte, polyDegree*4)
+	return
+}
 
-		for _, p := range ct.Value {
-			nn, err = io.ReadFull(r, buf)
-			n += int64(nn)
-			if err != nil {
-				return
-			}
+// valueReadFrom reads the value.
+func (ct *GLWECiphertext[T]) valueReadFrom(r io.Reader) (n int64, err error) {
+	var nRead int64
 
-			for i := range p.Coeffs {
-				p.Coeffs[i] = T(binary.BigEndian.Uint32(buf[i*4 : (i+1)*4]))
-			}
+	polyDegree := ct.Value[0].Degree()
+	buf := make([]byte, polyDegree*num.ByteSizeT[T]())
+
+	for _, p := range ct.Value {
+		if nRead, err = vecReadFromBuffered(p.Coeffs, buf, r); err != nil {
+			return n + nRead, err
 		}
-
-	case uint64:
-		buf := make([]byte, polyDegree*8)
-
-		for _, p := range ct.Value {
-			nn, err = io.ReadFull(r, buf)
-			n += int64(nn)
-			if err != nil {
-				return
-			}
-
-			for i := range p.Coeffs {
-				p.Coeffs[i] = T(binary.BigEndian.Uint64(buf[i*8 : (i+1)*8]))
-			}
-		}
+		n += nRead
 	}
+
+	return
+}
+
+// ReadFrom implements the [io.ReaderFrom] interface.
+func (ct *GLWECiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
+	var nRead int64
+
+	if nRead, err = ct.headerReadFrom(r); err != nil {
+		return n + nRead, err
+	}
+	n += nRead
+
+	if nRead, err = ct.valueReadFrom(r); err != nil {
+		return n + nRead, err
+	}
+	n += nRead
 
 	return
 }
@@ -153,6 +161,56 @@ func (ct UniEncryption[T]) ByteSize() int {
 	return 24 + 2*level*2*polyDegree*num.ByteSizeT[T]()
 }
 
+// headerWriteTo writes the header.
+func (ct UniEncryption[T]) headerWriteTo(w io.Writer) (n int64, err error) {
+	var nWrite int
+	var buf [8]byte
+
+	base := ct.GadgetParameters.Base()
+	binary.BigEndian.PutUint64(buf[:], uint64(base))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	level := len(ct.Value[0].Value)
+	binary.BigEndian.PutUint64(buf[:], uint64(level))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	polyDegree := ct.Value[0].Value[0].Value[0].Degree()
+	binary.BigEndian.PutUint64(buf[:], uint64(polyDegree))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	return
+}
+
+// valueWriteTo writes the value.
+func (ct UniEncryption[T]) valueWriteTo(w io.Writer) (n int64, err error) {
+	var nWrite int64
+
+	polyDegree := ct.Value[0].Value[0].Value[0].Degree()
+	buf := make([]byte, polyDegree*num.ByteSizeT[T]())
+
+	for i := range ct.Value {
+		for j := range ct.Value[i].Value {
+			for k := range ct.Value[i].Value[j].Value {
+				if nWrite, err = vecWriteToBuffered(ct.Value[i].Value[j].Value[k].Coeffs, buf, w); err != nil {
+					return n + nWrite, err
+				}
+				n += nWrite
+			}
+		}
+	}
+
+	return
+}
+
 // WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
@@ -162,61 +220,17 @@ func (ct UniEncryption[T]) ByteSize() int {
 //	[8] PolyDegree
 //	    Value
 func (ct UniEncryption[T]) WriteTo(w io.Writer) (n int64, err error) {
-	var nn int
+	var nWrite int64
 
-	level := len(ct.Value[0].Value)
-	polyDegree := ct.Value[0].Value[0].Value[0].Degree()
-
-	var metadata [24]byte
-	binary.BigEndian.PutUint64(metadata[0:8], uint64(ct.GadgetParameters.Base()))
-	binary.BigEndian.PutUint64(metadata[8:16], uint64(level))
-	binary.BigEndian.PutUint64(metadata[16:24], uint64(polyDegree))
-	nn, err = w.Write(metadata[:])
-	n += int64(nn)
-	if err != nil {
-		return
+	if nWrite, err = ct.headerWriteTo(w); err != nil {
+		return n + nWrite, err
 	}
+	n += nWrite
 
-	var z T
-	switch any(z).(type) {
-	case uint32:
-		buf := make([]byte, polyDegree*4)
-
-		for _, glev := range ct.Value {
-			for _, glwe := range glev.Value {
-				for _, p := range glwe.Value {
-					for i := range p.Coeffs {
-						binary.BigEndian.PutUint32(buf[i*4:(i+1)*4], uint32(p.Coeffs[i]))
-					}
-
-					nn, err = w.Write(buf)
-					n += int64(nn)
-					if err != nil {
-						return
-					}
-				}
-			}
-		}
-
-	case uint64:
-		buf := make([]byte, polyDegree*8)
-
-		for _, glev := range ct.Value {
-			for _, glwe := range glev.Value {
-				for _, p := range glwe.Value {
-					for i := range p.Coeffs {
-						binary.BigEndian.PutUint64(buf[i*8:(i+1)*8], uint64(p.Coeffs[i]))
-					}
-
-					nn, err = w.Write(buf)
-					n += int64(nn)
-					if err != nil {
-						return
-					}
-				}
-			}
-		}
+	if nWrite, err = ct.valueWriteTo(w); err != nil {
+		return n + nWrite, err
 	}
+	n += nWrite
 
 	if n < int64(ct.ByteSize()) {
 		return n, io.ErrShortWrite
@@ -225,63 +239,68 @@ func (ct UniEncryption[T]) WriteTo(w io.Writer) (n int64, err error) {
 	return
 }
 
+// headerReadFrom reads the header, and initializes the value.
+func (ct *UniEncryption[T]) headerReadFrom(r io.Reader) (n int64, err error) {
+	var nRead int
+	var buf [8]byte
+
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	base := T(binary.BigEndian.Uint64(buf[:]))
+
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	level := int(binary.BigEndian.Uint64(buf[:]))
+
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	polyDegree := int(binary.BigEndian.Uint64(buf[:]))
+
+	*ct = NewUniEncryptionCustom(polyDegree, tfhe.GadgetParametersLiteral[T]{Base: base, Level: level}.Compile())
+
+	return
+}
+
+// valueReadFrom reads the value.
+func (ct *UniEncryption[T]) valueReadFrom(r io.Reader) (n int64, err error) {
+	var nRead int64
+
+	polyDegree := ct.Value[0].Value[0].Value[0].Degree()
+	buf := make([]byte, polyDegree*num.ByteSizeT[T]())
+
+	for i := range ct.Value {
+		for j := range ct.Value[i].Value {
+			for k := range ct.Value[i].Value[j].Value {
+				if nRead, err = vecReadFromBuffered(ct.Value[i].Value[j].Value[k].Coeffs, buf, r); err != nil {
+					return n + nRead, err
+				}
+				n += nRead
+			}
+		}
+	}
+
+	return
+}
+
 // ReadFrom implements the [io.ReaderFrom] interface.
 func (ct *UniEncryption[T]) ReadFrom(r io.Reader) (n int64, err error) {
-	var nn int
+	var nRead int64
 
-	var metadata [24]byte
-	nn, err = io.ReadFull(r, metadata[:])
-	n += int64(nn)
-	if err != nil {
-		return
+	if nRead, err = ct.headerReadFrom(r); err != nil {
+		return n + nRead, err
 	}
+	n += nRead
 
-	base := int(binary.BigEndian.Uint64(metadata[0:8]))
-	level := int(binary.BigEndian.Uint64(metadata[8:16]))
-	polyDegree := int(binary.BigEndian.Uint64(metadata[16:24]))
-
-	*ct = NewUniEncryptionCustom(polyDegree, tfhe.GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
-
-	var z T
-	switch any(z).(type) {
-	case uint32:
-		buf := make([]byte, polyDegree*4)
-
-		for _, glev := range ct.Value {
-			for _, glwe := range glev.Value {
-				for _, p := range glwe.Value {
-					nn, err = io.ReadFull(r, buf)
-					n += int64(nn)
-					if err != nil {
-						return
-					}
-
-					for i := range p.Coeffs {
-						p.Coeffs[i] = T(binary.BigEndian.Uint32(buf[i*4 : (i+1)*4]))
-					}
-				}
-			}
-		}
-
-	case uint64:
-		buf := make([]byte, polyDegree*8)
-
-		for _, glev := range ct.Value {
-			for _, glwe := range glev.Value {
-				for _, p := range glwe.Value {
-					nn, err = io.ReadFull(r, buf)
-					n += int64(nn)
-					if err != nil {
-						return
-					}
-
-					for i := range p.Coeffs {
-						p.Coeffs[i] = T(binary.BigEndian.Uint64(buf[i*8 : (i+1)*8]))
-					}
-				}
-			}
-		}
+	if nRead, err = ct.valueReadFrom(r); err != nil {
+		return n + nRead, err
 	}
+	n += nRead
 
 	return
 }

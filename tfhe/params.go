@@ -137,15 +137,23 @@ func (p GadgetParameters[T]) ByteSize() int {
 //	[8] Base
 //	[8] Level
 func (p GadgetParameters[T]) WriteTo(w io.Writer) (n int64, err error) {
-	var buf [16]byte
-	binary.BigEndian.PutUint64(buf[0:8], uint64(p.base))
-	binary.BigEndian.PutUint64(buf[8:16], uint64(p.level))
+	var nWrite int
+	var buf [8]byte
 
-	nn, err := w.Write(buf[:])
-	n += int64(nn)
-	if err != nil {
-		return
+	base := p.base
+	binary.BigEndian.PutUint64(buf[:], uint64(base))
+
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
 	}
+	n += int64(nWrite)
+
+	level := p.level
+	binary.BigEndian.PutUint64(buf[:], uint64(level))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
 
 	if n < int64(p.ByteSize()) {
 		return n, io.ErrShortWrite
@@ -156,19 +164,24 @@ func (p GadgetParameters[T]) WriteTo(w io.Writer) (n int64, err error) {
 
 // ReadFrom implements the [io.ReaderFrom] interface.
 func (p *GadgetParameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
-	var buf [16]byte
-	nn, err := io.ReadFull(r, buf[:])
-	n += int64(nn)
-	if err != nil {
-		return
-	}
+	var nRead int
+	var buf [8]byte
 
-	base := binary.BigEndian.Uint64(buf[0:8])
-	level := binary.BigEndian.Uint64(buf[8:16])
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	base := T(binary.BigEndian.Uint64(buf[:]))
+
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	level := int(binary.BigEndian.Uint64(buf[:]))
 
 	*p = GadgetParametersLiteral[T]{
-		Base:  T(base),
-		Level: int(level),
+		Base:  base,
+		Level: level,
 	}.Compile()
 
 	return
@@ -628,7 +641,7 @@ func (p Parameters[T]) Literal() ParametersLiteral[T] {
 
 // ByteSize returns the byte size of the parameters.
 func (p Parameters[T]) ByteSize() int {
-	return 8*8 + 2*16 + 1
+	return 8*8 + p.bootstrapParameters.ByteSize() + p.keyswitchParameters.ByteSize() + 1
 }
 
 // WriteTo implements the [io.WriterTo] interface.
@@ -643,31 +656,85 @@ func (p Parameters[T]) ByteSize() int {
 //	[ 8] GLWEStdDev
 //	[ 8] BlockSize
 //	[ 8] MessageModulus
-//	[16] BootstrapParameters
-//	[16] KeySwitchParameters
+//	     BootstrapParameters
+//	     KeySwitchParameters
 //	[ 1] BootstrapOrder
 func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
-	var buf [8*8 + 2*16 + 1]byte
+	var nWrite int
+	var nWrite64 int64
+	var buf [8]byte
 
-	binary.BigEndian.PutUint64(buf[0:8], uint64(p.lweDimension))
-	binary.BigEndian.PutUint64(buf[8:16], uint64(p.glweRank))
-	binary.BigEndian.PutUint64(buf[16:24], uint64(p.polyDegree))
-	binary.BigEndian.PutUint64(buf[24:32], uint64(p.lookUpTableSize))
-	binary.BigEndian.PutUint64(buf[32:40], math.Float64bits(p.lweStdDev))
-	binary.BigEndian.PutUint64(buf[40:48], math.Float64bits(p.glweStdDev))
-	binary.BigEndian.PutUint64(buf[48:56], uint64(p.blockSize))
-	binary.BigEndian.PutUint64(buf[56:64], uint64(p.messageModulus))
-	binary.BigEndian.PutUint64(buf[64:72], uint64(p.bootstrapParameters.Base()))
-	binary.BigEndian.PutUint64(buf[72:80], uint64(p.bootstrapParameters.Level()))
-	binary.BigEndian.PutUint64(buf[80:88], uint64(p.keyswitchParameters.Base()))
-	binary.BigEndian.PutUint64(buf[88:96], uint64(p.keyswitchParameters.Level()))
-	buf[96] = byte(p.bootstrapOrder)
-
-	nn, err := w.Write(buf[:])
-	n += int64(nn)
-	if err != nil {
-		return
+	lweDimension := p.lweDimension
+	binary.BigEndian.PutUint64(buf[:], uint64(lweDimension))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
 	}
+	n += int64(nWrite)
+
+	glweRank := p.glweRank
+	binary.BigEndian.PutUint64(buf[:], uint64(glweRank))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	polyDegree := p.polyDegree
+	binary.BigEndian.PutUint64(buf[:], uint64(polyDegree))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	lookUpTableSize := p.lookUpTableSize
+	binary.BigEndian.PutUint64(buf[:], uint64(lookUpTableSize))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	lweStdDev := math.Float64bits(p.lweStdDev)
+	binary.BigEndian.PutUint64(buf[:], lweStdDev)
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	glweStdDev := math.Float64bits(p.glweStdDev)
+	binary.BigEndian.PutUint64(buf[:], glweStdDev)
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	blockSize := p.blockSize
+	binary.BigEndian.PutUint64(buf[:], uint64(blockSize))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	messageModulus := uint64(p.messageModulus)
+	binary.BigEndian.PutUint64(buf[:], messageModulus)
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	if nWrite64, err = p.bootstrapParameters.WriteTo(w); err != nil {
+		return n + nWrite64, err
+	}
+	n += nWrite64
+
+	if nWrite64, err = p.keyswitchParameters.WriteTo(w); err != nil {
+		return n + nWrite64, err
+	}
+	n += nWrite64
+
+	bootstrapOrder := p.bootstrapOrder
+	if nWrite, err = w.Write([]byte{byte(bootstrapOrder)}); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
 
 	if n < int64(p.ByteSize()) {
 		return n, io.ErrShortWrite
@@ -678,45 +745,93 @@ func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
 
 // ReadFrom implements the [io.ReaderFrom] interface.
 func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
-	var buf [8*8 + 2*16 + 1]byte
-	nn, err := io.ReadFull(r, buf[:])
-	n += int64(nn)
-	if err != nil {
-		return
-	}
+	var nRead int
+	var nRead64 int64
+	var buf [8]byte
 
-	lweDimension := binary.BigEndian.Uint64(buf[0:8])
-	glweRank := binary.BigEndian.Uint64(buf[8:16])
-	polyDegree := binary.BigEndian.Uint64(buf[16:24])
-	lookUpTableSize := binary.BigEndian.Uint64(buf[24:32])
-	lweStdDev := math.Float64frombits(binary.BigEndian.Uint64(buf[32:40]))
-	glweStdDev := math.Float64frombits(binary.BigEndian.Uint64(buf[40:48]))
-	blockSize := binary.BigEndian.Uint64(buf[48:56])
-	messageModulus := binary.BigEndian.Uint64(buf[56:64])
-
-	bootstrapParameters := GadgetParametersLiteral[T]{
-		Base:  T(binary.BigEndian.Uint64(buf[64:72])),
-		Level: int(binary.BigEndian.Uint64(buf[72:80])),
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
 	}
-	keyswitchParameters := GadgetParametersLiteral[T]{
-		Base:  T(binary.BigEndian.Uint64(buf[80:88])),
-		Level: int(binary.BigEndian.Uint64(buf[88:96])),
-	}
+	n += int64(nRead)
+	lweDimension := int(binary.BigEndian.Uint64(buf[:]))
 
-	bootstrapOrder := BootstrapOrder(buf[96])
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	glweRank := int(binary.BigEndian.Uint64(buf[:]))
+
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	polyDegree := int(binary.BigEndian.Uint64(buf[:]))
+
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	lookUpTableSize := int(binary.BigEndian.Uint64(buf[:]))
+
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	lweStdDev := math.Float64frombits(binary.BigEndian.Uint64(buf[:]))
+
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	glweStdDev := math.Float64frombits(binary.BigEndian.Uint64(buf[:]))
+
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	blockSize := int(binary.BigEndian.Uint64(buf[:]))
+
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	messageModulus := T(binary.BigEndian.Uint64(buf[:]))
+
+	var bootstrapParameters GadgetParameters[T]
+	if nRead64, err = bootstrapParameters.ReadFrom(r); err != nil {
+		return n + nRead64, err
+	}
+	n += nRead64
+
+	var keyswitchParameters GadgetParameters[T]
+	if nRead64, err = keyswitchParameters.ReadFrom(r); err != nil {
+		return n + nRead64, err
+	}
+	n += nRead64
+
+	if nRead, err = io.ReadFull(r, buf[:1]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	bootstrapOrder := BootstrapOrder(buf[0])
 
 	*p = ParametersLiteral[T]{
-		LWEDimension:        int(lweDimension),
-		GLWERank:            int(glweRank),
-		PolyDegree:          int(polyDegree),
-		LookUpTableSize:     int(lookUpTableSize),
-		LWEStdDev:           lweStdDev,
-		GLWEStdDev:          glweStdDev,
-		BlockSize:           int(blockSize),
-		MessageModulus:      T(messageModulus),
-		BootstrapParameters: bootstrapParameters,
-		KeySwitchParameters: keyswitchParameters,
-		BootstrapOrder:      bootstrapOrder,
+		LWEDimension:    lweDimension,
+		GLWERank:        glweRank,
+		PolyDegree:      polyDegree,
+		LookUpTableSize: lookUpTableSize,
+
+		LWEStdDev:  lweStdDev,
+		GLWEStdDev: glweStdDev,
+
+		BlockSize: blockSize,
+
+		MessageModulus: messageModulus,
+
+		BootstrapParameters: bootstrapParameters.Literal(),
+		KeySwitchParameters: keyswitchParameters.Literal(),
+
+		BootstrapOrder: bootstrapOrder,
 	}.Compile()
 
 	return

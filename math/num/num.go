@@ -62,7 +62,7 @@ func MaxT[T Integer]() uint64 {
 	return math.MaxUint
 }
 
-// SizeT returns the bits required to express value of type T in int.
+// SizeT returns the bits required to express value of type T.
 func SizeT[T Integer]() int {
 	var z T
 	switch any(z).(type) {
@@ -80,7 +80,7 @@ func SizeT[T Integer]() int {
 	return 64
 }
 
-// ByteSizeT returns the bytes required to express value of type T in int.
+// ByteSizeT returns the bytes required to express value of type T.
 func ByteSizeT[T Integer]() int {
 	return SizeT[T]() / 8
 }

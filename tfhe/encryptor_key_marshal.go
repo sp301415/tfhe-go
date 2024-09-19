@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"io"
-	"math"
 
 	"github.com/sp301415/tfhe-go/math/num"
 )
@@ -17,6 +16,35 @@ func (sk SecretKey[T]) ByteSize() int {
 	return 24 + glweRank*polyDegree*num.ByteSizeT[T]() + glweRank*polyDegree*8
 }
 
+// headerWriteTo writes the header.
+func (sk SecretKey[T]) headerWriteTo(w io.Writer) (n int64, err error) {
+	var nWrite int
+	var buf [8]byte
+
+	lweDimension := len(sk.LWEKey.Value)
+	binary.BigEndian.PutUint64(buf[:], uint64(lweDimension))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	glweRank := len(sk.GLWEKey.Value)
+	binary.BigEndian.PutUint64(buf[:], uint64(glweRank))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	polyDegree := sk.GLWEKey.Value[0].Degree()
+	binary.BigEndian.PutUint64(buf[:], uint64(polyDegree))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	return
+}
+
 // WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
@@ -27,64 +55,22 @@ func (sk SecretKey[T]) ByteSize() int {
 //	    LWELargeKey
 //	    FourierGLWEKey
 func (sk SecretKey[T]) WriteTo(w io.Writer) (n int64, err error) {
-	var nn int
+	var nWrite int64
 
-	lweDimension := len(sk.LWEKey.Value)
-	glweRank := len(sk.GLWEKey.Value)
-	polyDegree := sk.GLWEKey.Value[0].Degree()
-
-	var metadata [24]byte
-	binary.BigEndian.PutUint64(metadata[0:8], uint64(lweDimension))
-	binary.BigEndian.PutUint64(metadata[8:16], uint64(glweRank))
-	binary.BigEndian.PutUint64(metadata[16:24], uint64(polyDegree))
-	nn, err = w.Write(metadata[:])
-	n += int64(nn)
-	if err != nil {
-		return
+	if nWrite, err = sk.headerWriteTo(w); err != nil {
+		return n + nWrite, err
 	}
+	n += nWrite
 
-	buf := make([]byte, polyDegree*8)
-
-	var z T
-	switch any(z).(type) {
-	case uint32:
-		for _, p := range sk.GLWEKey.Value {
-			for i := range p.Coeffs {
-				binary.BigEndian.PutUint32(buf[i*4:(i+1)*4], uint32(p.Coeffs[i]))
-			}
-
-			nn, err = w.Write(buf[:polyDegree*4])
-			n += int64(nn)
-			if err != nil {
-				return
-			}
-		}
-
-	case uint64:
-		for _, p := range sk.GLWEKey.Value {
-			for i := range p.Coeffs {
-				binary.BigEndian.PutUint64(buf[i*8:(i+1)*8], uint64(p.Coeffs[i]))
-			}
-
-			nn, err = w.Write(buf)
-			n += int64(nn)
-			if err != nil {
-				return
-			}
-		}
+	if nWrite, err = sk.LWELargeKey.valueWriteTo(w); err != nil {
+		return n + nWrite, err
 	}
+	n += nWrite
 
-	for _, fp := range sk.FourierGLWEKey.Value {
-		for i := range fp.Coeffs {
-			binary.BigEndian.PutUint64(buf[(i+0)*8:(i+1)*8], math.Float64bits(fp.Coeffs[i]))
-		}
-
-		nn, err = w.Write(buf)
-		n += int64(nn)
-		if err != nil {
-			return
-		}
+	if nWrite, err = sk.FourierGLWEKey.valueWriteTo(w); err != nil {
+		return n + nWrite, err
 	}
+	n += nWrite
 
 	if n < int64(sk.ByteSize()) {
 		return n, io.ErrShortWrite
@@ -93,65 +79,52 @@ func (sk SecretKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	return
 }
 
-// ReadFrom implements the [io.ReaderFrom] interface.
-func (sk *SecretKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
-	var nn int
+// headerReadFrom reads the header, and initializes the value.
+func (sk *SecretKey[T]) headerReadFrom(r io.Reader) (n int64, err error) {
+	var nRead int
+	var buf [8]byte
 
-	var metadata [24]byte
-	nn, err = io.ReadFull(r, metadata[:])
-	n += int64(nn)
-	if err != nil {
-		return
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
 	}
+	n += int64(nRead)
+	lweDimension := int(binary.BigEndian.Uint64(buf[:]))
 
-	lweDimension := int(binary.BigEndian.Uint64(metadata[0:8]))
-	glweRank := int(binary.BigEndian.Uint64(metadata[8:16]))
-	polyDegree := int(binary.BigEndian.Uint64(metadata[16:24]))
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	glweRank := int(binary.BigEndian.Uint64(buf[:]))
+
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	polyDegree := int(binary.BigEndian.Uint64(buf[:]))
 
 	*sk = NewSecretKeyCustom[T](lweDimension, glweRank, polyDegree)
 
-	buf := make([]byte, polyDegree*8)
+	return
+}
 
-	var z T
-	switch any(z).(type) {
-	case uint32:
-		for _, p := range sk.GLWEKey.Value {
-			nn, err = io.ReadFull(r, buf[:polyDegree*4])
-			n += int64(nn)
-			if err != nil {
-				return
-			}
+// ReadFrom implements the [io.ReaderFrom] interface.
+func (sk *SecretKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
+	var nRead int64
 
-			for i := range p.Coeffs {
-				p.Coeffs[i] = T(binary.BigEndian.Uint32(buf[i*4 : (i+1)*4]))
-			}
-		}
-
-	case uint64:
-		for _, p := range sk.GLWEKey.Value {
-			nn, err = io.ReadFull(r, buf)
-			n += int64(nn)
-			if err != nil {
-				return
-			}
-
-			for i := range p.Coeffs {
-				p.Coeffs[i] = T(binary.BigEndian.Uint64(buf[i*8 : (i+1)*8]))
-			}
-		}
+	if nRead, err = sk.headerReadFrom(r); err != nil {
+		return n + nRead, err
 	}
+	n += nRead
 
-	for _, fp := range sk.FourierGLWEKey.Value {
-		nn, err = io.ReadFull(r, buf)
-		n += int64(nn)
-		if err != nil {
-			return
-		}
-
-		for i := range fp.Coeffs {
-			fp.Coeffs[i] = math.Float64frombits(binary.BigEndian.Uint64(buf[(i+0)*8 : (i+1)*8]))
-		}
+	if nRead, err = sk.LWELargeKey.valueReadFrom(r); err != nil {
+		return n + nRead, err
 	}
+	n += nRead
+
+	if nRead, err = sk.FourierGLWEKey.valueReadFrom(r); err != nil {
+		return n + nRead, err
+	}
+	n += nRead
 
 	return
 }
@@ -182,19 +155,17 @@ func (pk PublicKey[T]) ByteSize() int {
 //	LWEKey
 //	GLWEKey
 func (pk PublicKey[T]) WriteTo(w io.Writer) (n int64, err error) {
-	var nn int64
+	var nWrite int64
 
-	nn, err = pk.LWEKey.WriteTo(w)
-	n += int64(nn)
-	if err != nil {
-		return
+	if nWrite, err = pk.LWEKey.WriteTo(w); err != nil {
+		return n + nWrite, err
 	}
+	n += nWrite
 
-	nn, err = pk.GLWEKey.WriteTo(w)
-	n += int64(nn)
-	if err != nil {
-		return
+	if nWrite, err = pk.GLWEKey.WriteTo(w); err != nil {
+		return n + nWrite, err
 	}
+	n += nWrite
 
 	if n < int64(pk.ByteSize()) {
 		return n, io.ErrShortWrite
@@ -205,19 +176,17 @@ func (pk PublicKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 
 // ReadFrom implements the [io.ReaderFrom] interface.
 func (pk *PublicKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
-	var nn int64
+	var nRead int64
 
-	nn, err = pk.LWEKey.ReadFrom(r)
-	n += int64(nn)
-	if err != nil {
-		return
+	if nRead, err = pk.LWEKey.ReadFrom(r); err != nil {
+		return n + nRead, err
 	}
+	n += nRead
 
-	nn, err = pk.GLWEKey.ReadFrom(r)
-	n += int64(nn)
-	if err != nil {
-		return
+	if nRead, err = pk.GLWEKey.ReadFrom(r); err != nil {
+		return n + nRead, err
 	}
+	n += nRead
 
 	return
 }

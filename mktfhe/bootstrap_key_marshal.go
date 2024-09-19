@@ -18,25 +18,22 @@ func (evk EvaluationKey[T]) ByteSize() int {
 //	CRSPublicKey
 //	RelinKey
 func (evk EvaluationKey[T]) WriteTo(w io.Writer) (n int64, err error) {
-	var nn int64
+	var nWrite int64
 
-	nn, err = evk.EvaluationKey.WriteTo(w)
-	n += nn
-	if err != nil {
-		return
+	if nWrite, err = evk.EvaluationKey.WriteTo(w); err != nil {
+		return n + nWrite, err
 	}
+	n += nWrite
 
-	nn, err = evk.CRSPublicKey.WriteTo(w)
-	n += nn
-	if err != nil {
-		return
+	if nWrite, err = evk.CRSPublicKey.WriteTo(w); err != nil {
+		return n + nWrite, err
 	}
+	n += nWrite
 
-	nn, err = evk.RelinKey.WriteTo(w)
-	n += nn
-	if err != nil {
-		return
+	if nWrite, err = evk.RelinKey.WriteTo(w); err != nil {
+		return n + nWrite, err
 	}
+	n += nWrite
 
 	if n < int64(evk.ByteSize()) {
 		return n, io.ErrShortWrite
@@ -47,25 +44,22 @@ func (evk EvaluationKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 
 // ReadFrom implements the [io.ReaderFrom] interface.
 func (evk *EvaluationKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
-	var nn int64
+	var nRead int64
 
-	nn, err = evk.EvaluationKey.ReadFrom(r)
-	n += nn
-	if err != nil {
-		return
+	if nRead, err = evk.EvaluationKey.ReadFrom(r); err != nil {
+		return n + nRead, err
 	}
+	n += nRead
 
-	nn, err = evk.CRSPublicKey.ReadFrom(r)
-	n += nn
-	if err != nil {
-		return
+	if nRead, err = evk.CRSPublicKey.ReadFrom(r); err != nil {
+		return n + nRead, err
 	}
+	n += nRead
 
-	nn, err = evk.RelinKey.ReadFrom(r)
-	n += nn
-	if err != nil {
-		return
+	if nRead, err = evk.RelinKey.ReadFrom(r); err != nil {
+		return n + nRead, err
 	}
+	n += nRead
 
 	if n < int64(evk.ByteSize()) {
 		return n, io.ErrShortWrite

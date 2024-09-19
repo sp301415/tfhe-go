@@ -4,35 +4,57 @@ import (
 	"bytes"
 	"encoding/binary"
 	"io"
-	"math"
 
 	"github.com/sp301415/tfhe-go/math/num"
 )
 
 // ByteSize returns the size of the key in bytes.
 func (evk EvaluationKey[T]) ByteSize() int {
-	return evk.BootstrapKey.ByteSize() + evk.KeySwitchKey.ByteSize()
+	if len(evk.KeySwitchKey.Value) > 0 {
+		return 1 + evk.BootstrapKey.ByteSize() + evk.KeySwitchKey.ByteSize()
+	} else {
+		return 1 + evk.BootstrapKey.ByteSize() + evk.KeySwitchKey.GadgetParameters.ByteSize()
+	}
 }
 
 // WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
 //
-//	BootstrapKey
-//	KeySwitchKey
+//	 [1] IsKeySwitchKeyPresent
+//		 BootstrapKey
+//		 KeySwitchKey
+//
+// If IsKeySwitchKeyPresent is 0, then only the GadgetParameters of the KeySwitchKey is written.
 func (evk EvaluationKey[T]) WriteTo(w io.Writer) (n int64, err error) {
-	var nn int64
+	var nWrite int
+	var nWrite64 int64
 
-	nn, err = evk.BootstrapKey.WriteTo(w)
-	n += nn
-	if err != nil {
-		return
+	var isKeySwitchKeyPresent byte
+	if len(evk.KeySwitchKey.Value) > 0 {
+		isKeySwitchKeyPresent = 1
 	}
 
-	nn, err = evk.KeySwitchKey.WriteTo(w)
-	n += nn
-	if err != nil {
-		return
+	if nWrite, err = w.Write([]byte{isKeySwitchKeyPresent}); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	if nWrite64, err = evk.BootstrapKey.WriteTo(w); err != nil {
+		return n + nWrite64, err
+	}
+	n += nWrite64
+
+	if isKeySwitchKeyPresent == 0 {
+		if nWrite64, err = evk.KeySwitchKey.GadgetParameters.WriteTo(w); err != nil {
+			return n + nWrite64, err
+		}
+		n += nWrite64
+	} else {
+		if nWrite64, err = evk.KeySwitchKey.WriteTo(w); err != nil {
+			return n + nWrite64, err
+		}
+		n += nWrite64
 	}
 
 	if n < int64(evk.ByteSize()) {
@@ -44,18 +66,34 @@ func (evk EvaluationKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 
 // ReadFrom implements the [io.ReaderFrom] interface.
 func (evk *EvaluationKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
-	var nn int64
+	var nRead int
+	var nRead64 int64
 
-	nn, err = evk.BootstrapKey.ReadFrom(r)
-	n += nn
-	if err != nil {
-		return
+	var buf [1]byte
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
 	}
+	n += int64(nRead)
+	isKeySwitchKeyPresent := buf[0]
 
-	nn, err = evk.KeySwitchKey.ReadFrom(r)
-	n += nn
-	if err != nil {
-		return
+	if nRead64, err = evk.BootstrapKey.ReadFrom(r); err != nil {
+		return n + nRead64, err
+	}
+	n += nRead64
+
+	if isKeySwitchKeyPresent == 0 {
+		var keyswitchParams GadgetParameters[T]
+		if nRead64, err = keyswitchParams.ReadFrom(r); err != nil {
+			return n + nRead64, err
+		}
+		n += nRead64
+
+		evk.KeySwitchKey = NewKeySwitchKeyCustom(0, 0, keyswitchParams)
+	} else {
+		if nRead64, err = evk.KeySwitchKey.ReadFrom(r); err != nil {
+			return n + nRead64, err
+		}
+		n += nRead64
 	}
 
 	return
@@ -85,6 +123,72 @@ func (bsk BootstrapKey[T]) ByteSize() int {
 	return 40 + lweDimension*(glweRank+1)*level*(glweRank+1)*polyDegree*8
 }
 
+// headerWriteTo writes the header.
+func (bsk BootstrapKey[T]) headerWriteTo(w io.Writer) (n int64, err error) {
+	var nWrite int
+	var buf [8]byte
+
+	base := bsk.GadgetParameters.base
+	binary.BigEndian.PutUint64(buf[:], uint64(base))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	level := bsk.GadgetParameters.level
+	binary.BigEndian.PutUint64(buf[:], uint64(level))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	lweDimension := len(bsk.Value)
+	binary.BigEndian.PutUint64(buf[:], uint64(lweDimension))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	glweRank := len(bsk.Value[0].Value) - 1
+	binary.BigEndian.PutUint64(buf[:], uint64(glweRank))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	polyDegree := bsk.Value[0].Value[0].Value[0].Value[0].Degree()
+	binary.BigEndian.PutUint64(buf[:], uint64(polyDegree))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	return
+}
+
+// valueWriteTo writes the value.
+func (bsk BootstrapKey[T]) valueWriteTo(w io.Writer) (n int64, err error) {
+	var nWrite int64
+
+	polyDegree := bsk.Value[0].Value[0].Value[0].Value[0].Degree()
+	buf := make([]byte, polyDegree*8)
+
+	for i := range bsk.Value {
+		for j := range bsk.Value[i].Value {
+			for k := range bsk.Value[i].Value[j].Value {
+				for l := range bsk.Value[i].Value[j].Value[k].Value {
+					if nWrite, err = floatVecWriteToBuffered(bsk.Value[i].Value[j].Value[k].Value[l].Coeffs, buf, w); err != nil {
+						return n + nWrite, err
+					}
+					n += nWrite
+				}
+			}
+		}
+	}
+
+	return
+}
+
 // WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
@@ -96,44 +200,17 @@ func (bsk BootstrapKey[T]) ByteSize() int {
 //	[8] PolyDegree
 //	    Value
 func (bsk BootstrapKey[T]) WriteTo(w io.Writer) (n int64, err error) {
-	var nn int
+	var nWrite int64
 
-	lweDimension := len(bsk.Value)
-	glweRank := len(bsk.Value[0].Value) - 1
-	level := len(bsk.Value[0].Value[0].Value)
-	polyDegree := bsk.Value[0].Value[0].Value[0].Value[0].Degree()
-
-	var metadta [40]byte
-	binary.BigEndian.PutUint64(metadta[0:8], uint64(bsk.GadgetParameters.base))
-	binary.BigEndian.PutUint64(metadta[8:16], uint64(level))
-	binary.BigEndian.PutUint64(metadta[16:24], uint64(lweDimension))
-	binary.BigEndian.PutUint64(metadta[24:32], uint64(glweRank))
-	binary.BigEndian.PutUint64(metadta[32:40], uint64(polyDegree))
-	nn, err = w.Write(metadta[:])
-	n += int64(nn)
-	if err != nil {
-		return
+	if nWrite, err = bsk.headerWriteTo(w); err != nil {
+		return n + nWrite, err
 	}
+	n += nWrite
 
-	buf := make([]byte, polyDegree*8)
-
-	for _, fggsw := range bsk.Value {
-		for _, fglev := range fggsw.Value {
-			for _, fglwe := range fglev.Value {
-				for _, fp := range fglwe.Value {
-					for i := range fp.Coeffs {
-						binary.BigEndian.PutUint64(buf[i*8:(i+1)*8], math.Float64bits(fp.Coeffs[i]))
-					}
-
-					nn, err = w.Write(buf[:polyDegree*8])
-					n += int64(nn)
-					if err != nil {
-						return
-					}
-				}
-			}
-		}
+	if nWrite, err = bsk.valueWriteTo(w); err != nil {
+		return n + nWrite, err
 	}
+	n += nWrite
 
 	if n < int64(bsk.ByteSize()) {
 		return n, io.ErrShortWrite
@@ -142,44 +219,82 @@ func (bsk BootstrapKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	return
 }
 
-// ReadFrom implements the [io.ReaderFrom] interface.
-func (bsk *BootstrapKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
-	var nn int
+// headerReadFrom reads the header, and initializes the value.
+func (bsk *BootstrapKey[T]) headerReadFrom(r io.Reader) (n int64, err error) {
+	var nRead int
+	var buf [8]byte
 
-	var metadata [40]byte
-	nn, err = io.ReadFull(r, metadata[:])
-	n += int64(nn)
-	if err != nil {
-		return
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
 	}
+	n += int64(nRead)
+	base := T(binary.BigEndian.Uint64(buf[:]))
 
-	base := int(binary.BigEndian.Uint64(metadata[0:8]))
-	level := int(binary.BigEndian.Uint64(metadata[8:16]))
-	lweDimension := int(binary.BigEndian.Uint64(metadata[16:24]))
-	glweRank := int(binary.BigEndian.Uint64(metadata[24:32]))
-	polyDegree := int(binary.BigEndian.Uint64(metadata[32:40]))
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	level := int(binary.BigEndian.Uint64(buf[:]))
 
-	*bsk = NewBootstrapKeyCustom(lweDimension, glweRank, polyDegree, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	lweDimension := int(binary.BigEndian.Uint64(buf[:]))
 
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	glweRank := int(binary.BigEndian.Uint64(buf[:]))
+
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	polyDegree := int(binary.BigEndian.Uint64(buf[:]))
+
+	*bsk = NewBootstrapKeyCustom(lweDimension, glweRank, polyDegree, GadgetParametersLiteral[T]{Base: base, Level: level}.Compile())
+
+	return
+}
+
+// valueReadFrom reads the value.
+func (bsk *BootstrapKey[T]) valueReadFrom(r io.Reader) (n int64, err error) {
+	var nRead int64
+
+	polyDegree := bsk.Value[0].Value[0].Value[0].Value[0].Degree()
 	buf := make([]byte, polyDegree*8)
 
-	for _, fggsw := range bsk.Value {
-		for _, fglev := range fggsw.Value {
-			for _, fglwe := range fglev.Value {
-				for _, fp := range fglwe.Value {
-					nn, err = io.ReadFull(r, buf)
-					n += int64(nn)
-					if err != nil {
-						return
+	for i := range bsk.Value {
+		for j := range bsk.Value[i].Value {
+			for k := range bsk.Value[i].Value[j].Value {
+				for l := range bsk.Value[i].Value[j].Value[k].Value {
+					if nRead, err = floatVecReadFromBuffered(bsk.Value[i].Value[j].Value[k].Value[l].Coeffs, buf, r); err != nil {
+						return n + nRead, err
 					}
-
-					for i := range fp.Coeffs {
-						fp.Coeffs[i] = math.Float64frombits(binary.BigEndian.Uint64(buf[i*8 : (i+1)*8]))
-					}
+					n += nRead
 				}
 			}
 		}
 	}
+
+	return
+}
+
+// ReadFrom implements the [io.ReaderFrom] interface.
+func (bsk *BootstrapKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
+	var nRead int64
+
+	if nRead, err = bsk.headerReadFrom(r); err != nil {
+		return n + nRead, err
+	}
+	n += nRead
+
+	if nRead, err = bsk.valueReadFrom(r); err != nil {
+		return n + nRead, err
+	}
+	n += nRead
 
 	return
 }
@@ -207,6 +322,61 @@ func (ksk KeySwitchKey[T]) ByteSize() int {
 	return 32 + inputDimension*level*(outputDimension+1)*num.ByteSizeT[T]()
 }
 
+// headerWriteTo writes the header.
+func (ksk KeySwitchKey[T]) headerWriteTo(w io.Writer) (n int64, err error) {
+	var nWrite int
+	var buf [8]byte
+
+	base := ksk.GadgetParameters.base
+	binary.BigEndian.PutUint64(buf[:], uint64(base))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	level := ksk.GadgetParameters.level
+	binary.BigEndian.PutUint64(buf[:], uint64(level))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	inputDimension := len(ksk.Value)
+	binary.BigEndian.PutUint64(buf[:], uint64(inputDimension))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	outputDimension := len(ksk.Value[0].Value[0].Value) - 1
+	binary.BigEndian.PutUint64(buf[:], uint64(outputDimension))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	return
+}
+
+// valueWriteTo writes the value.
+func (ksk KeySwitchKey[T]) valueWriteTo(w io.Writer) (n int64, err error) {
+	var nWrite int64
+
+	outputDimension := len(ksk.Value[0].Value[0].Value) - 1
+	buf := make([]byte, (outputDimension+1)*num.ByteSizeT[T]())
+
+	for i := range ksk.Value {
+		for j := range ksk.Value[i].Value {
+			if nWrite, err = vecWriteToBuffered(ksk.Value[i].Value[j].Value, buf, w); err != nil {
+				return n + nWrite, err
+			}
+			n += nWrite
+		}
+	}
+
+	return
+}
+
 // WriteTo implements the [io.WriterTo] interface.
 //
 // The encoded form is as follows:
@@ -217,59 +387,17 @@ func (ksk KeySwitchKey[T]) ByteSize() int {
 //	[8] OutputDimension
 //	    Value
 func (ksk KeySwitchKey[T]) WriteTo(w io.Writer) (n int64, err error) {
-	var nn int
+	var nWrite int64
 
-	inputDimension := len(ksk.Value)
-	level := len(ksk.Value[0].Value)
-	outputDimension := len(ksk.Value[0].Value[0].Value) - 1
-
-	var metadta [32]byte
-	binary.BigEndian.PutUint64(metadta[0:8], uint64(ksk.GadgetParameters.base))
-	binary.BigEndian.PutUint64(metadta[8:16], uint64(level))
-	binary.BigEndian.PutUint64(metadta[16:24], uint64(inputDimension))
-	binary.BigEndian.PutUint64(metadta[24:32], uint64(outputDimension))
-	nn, err = w.Write(metadta[:])
-	n += int64(nn)
-	if err != nil {
-		return
+	if nWrite, err = ksk.headerWriteTo(w); err != nil {
+		return n + nWrite, err
 	}
+	n += nWrite
 
-	var z T
-	switch any(z).(type) {
-	case uint32:
-		buf := make([]byte, (outputDimension+1)*4)
-
-		for _, lev := range ksk.Value {
-			for _, lwe := range lev.Value {
-				for i := range lwe.Value {
-					binary.BigEndian.PutUint32(buf[i*4:(i+1)*4], uint32(lwe.Value[i]))
-				}
-
-				nn, err = w.Write(buf[:])
-				n += int64(nn)
-				if err != nil {
-					return
-				}
-			}
-		}
-
-	case uint64:
-		buf := make([]byte, (outputDimension+1)*8)
-
-		for _, lev := range ksk.Value {
-			for _, lwe := range lev.Value {
-				for i := range lwe.Value {
-					binary.BigEndian.PutUint64(buf[i*8:(i+1)*8], uint64(lwe.Value[i]))
-				}
-
-				nn, err = w.Write(buf[:])
-				n += int64(nn)
-				if err != nil {
-					return
-				}
-			}
-		}
+	if nWrite, err = ksk.valueWriteTo(w); err != nil {
+		return n + nWrite, err
 	}
+	n += nWrite
 
 	if n < int64(ksk.ByteSize()) {
 		return n, io.ErrShortWrite
@@ -278,60 +406,72 @@ func (ksk KeySwitchKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	return
 }
 
+// headerReadFrom reads the header, and initializes the value.
+func (ksk *KeySwitchKey[T]) headerReadFrom(r io.Reader) (n int64, err error) {
+	var nRead int
+	var buf [8]byte
+
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	base := T(binary.BigEndian.Uint64(buf[:]))
+
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	level := int(binary.BigEndian.Uint64(buf[:]))
+
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	inputDimension := int(binary.BigEndian.Uint64(buf[:]))
+
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	outputDimension := int(binary.BigEndian.Uint64(buf[:]))
+
+	*ksk = NewKeySwitchKeyCustom(inputDimension, outputDimension, GadgetParametersLiteral[T]{Base: base, Level: level}.Compile())
+
+	return
+}
+
+// valueReadFrom reads the value.
+func (ksk *KeySwitchKey[T]) valueReadFrom(r io.Reader) (n int64, err error) {
+	var nRead int64
+
+	outputDimension := len(ksk.Value[0].Value[0].Value) - 1
+	buf := make([]byte, (outputDimension+1)*num.ByteSizeT[T]())
+
+	for i := range ksk.Value {
+		for j := range ksk.Value[i].Value {
+			if nRead, err = vecReadFromBuffered(ksk.Value[i].Value[j].Value, buf, r); err != nil {
+				return n + nRead, err
+			}
+			n += nRead
+		}
+	}
+
+	return
+}
+
 // ReadFrom implements the [io.ReaderFrom] interface.
 func (ksk *KeySwitchKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
-	var nn int
+	var nRead int64
 
-	var metadata [32]byte
-	nn, err = io.ReadFull(r, metadata[:])
-	n += int64(nn)
-	if err != nil {
-		return
+	if nRead, err = ksk.headerReadFrom(r); err != nil {
+		return n + nRead, err
 	}
+	n += nRead
 
-	base := int(binary.BigEndian.Uint64(metadata[0:8]))
-	level := int(binary.BigEndian.Uint64(metadata[8:16]))
-	inputDimension := int(binary.BigEndian.Uint64(metadata[16:24]))
-	outputDimension := int(binary.BigEndian.Uint64(metadata[24:32]))
-
-	*ksk = NewKeySwitchKeyCustom(inputDimension, outputDimension, GadgetParametersLiteral[T]{Base: T(base), Level: int(level)}.Compile())
-
-	var z T
-	switch any(z).(type) {
-	case uint32:
-		buf := make([]byte, (outputDimension+1)*4)
-
-		for _, lev := range ksk.Value {
-			for _, lwe := range lev.Value {
-				nn, err = io.ReadFull(r, buf)
-				n += int64(nn)
-				if err != nil {
-					return
-				}
-
-				for i := range lwe.Value {
-					lwe.Value[i] = T(binary.BigEndian.Uint32(buf[i*4 : (i+1)*4]))
-				}
-			}
-		}
-
-	case uint64:
-		buf := make([]byte, (outputDimension+1)*8)
-
-		for _, lev := range ksk.Value {
-			for _, lwe := range lev.Value {
-				nn, err = io.ReadFull(r, buf)
-				n += int64(nn)
-				if err != nil {
-					return
-				}
-
-				for i := range lwe.Value {
-					lwe.Value[i] = T(binary.BigEndian.Uint64(buf[i*8 : (i+1)*8]))
-				}
-			}
-		}
+	if nRead, err = ksk.valueReadFrom(r); err != nil {
+		return n + nRead, err
 	}
+	n += nRead
 
 	return
 }

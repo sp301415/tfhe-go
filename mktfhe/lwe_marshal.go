@@ -6,11 +6,149 @@ import (
 	"io"
 
 	"github.com/sp301415/tfhe-go/math/num"
+	"github.com/sp301415/tfhe-go/tfhe"
 )
+
+// vecWriteTo implements the [io.WriterTo] interface for a vector of T.
+func vecWriteTo[T tfhe.TorusInt](v []T, w io.Writer) (n int64, err error) {
+	var nWrite int
+
+	var z T
+	switch any(z).(type) {
+	case uint32:
+		var buf [4]byte
+		for i := range v {
+			binary.BigEndian.PutUint32(buf[:], uint32(v[i]))
+			if nWrite, err = w.Write(buf[:]); err != nil {
+				return n + int64(nWrite), err
+			}
+			n += int64(nWrite)
+		}
+	case uint64:
+		var buf [8]byte
+		for i := range v {
+			binary.BigEndian.PutUint64(buf[:], uint64(v[i]))
+			if nWrite, err = w.Write(buf[:]); err != nil {
+				return n + int64(nWrite), err
+			}
+			n += int64(nWrite)
+		}
+	}
+	return
+}
+
+// vecWriteToBuffered implements the [io.WriterTo] interface for a vector of T, using a buffer.
+// Assumes the length of the buffer is exactly the byte length of v.
+func vecWriteToBuffered[T tfhe.TorusInt](v []T, buf []byte, w io.Writer) (n int64, err error) {
+	var nWrite int
+
+	var z T
+	switch any(z).(type) {
+	case uint32:
+		for i := range v {
+			binary.BigEndian.PutUint32(buf[i*4:(i+1)*4], uint32(v[i]))
+		}
+		if nWrite, err = w.Write(buf); err != nil {
+			return n + int64(nWrite), err
+		}
+		n += int64(nWrite)
+
+	case uint64:
+		for i := range v {
+			binary.BigEndian.PutUint64(buf[i*8:(i+1)*8], uint64(v[i]))
+		}
+		if nWrite, err = w.Write(buf); err != nil {
+			return n + int64(nWrite), err
+		}
+		n += int64(nWrite)
+	}
+	return
+}
+
+// vecReadFrom implements the [io.ReaderFrom] interface for a vector of T.
+func vecReadFrom[T tfhe.TorusInt](v []T, r io.Reader) (n int64, err error) {
+	var nRead int
+
+	var z T
+	switch any(z).(type) {
+	case uint32:
+		var buf [4]byte
+		for i := range v {
+			if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+				return n + int64(nRead), err
+			}
+			n += int64(nRead)
+			v[i] = T(binary.BigEndian.Uint32(buf[:]))
+		}
+
+	case uint64:
+		var buf [8]byte
+		for i := range v {
+			if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+				return n + int64(nRead), err
+			}
+			n += int64(nRead)
+			v[i] = T(binary.BigEndian.Uint64(buf[:]))
+		}
+	}
+
+	return
+}
+
+// vecReadFromBuffered implements the [io.ReaderFrom] interface for a vector of T, using a buffer.
+// Assumes the length of the buffer is exactly the byte length of v.
+func vecReadFromBuffered[T tfhe.TorusInt](v []T, buf []byte, r io.Reader) (n int64, err error) {
+	var nRead int
+
+	var z T
+	switch any(z).(type) {
+	case uint32:
+		if nRead, err = io.ReadFull(r, buf); err != nil {
+			return n + int64(nRead), err
+		}
+		n += int64(nRead)
+
+		for i := range v {
+			v[i] = T(binary.BigEndian.Uint32(buf[i*4 : (i+1)*4]))
+		}
+
+	case uint64:
+		if nRead, err = io.ReadFull(r, buf); err != nil {
+			return n + int64(nRead), err
+		}
+		n += int64(nRead)
+
+		for i := range v {
+			v[i] = T(binary.BigEndian.Uint64(buf[i*8 : (i+1)*8]))
+		}
+	}
+
+	return
+}
 
 // ByteSize returns the size of the ciphertext in bytes.
 func (ct LWECiphertext[T]) ByteSize() int {
 	return 8 + len(ct.Value)*num.ByteSizeT[T]()
+}
+
+// headerWriteTo writes the header.
+func (ct LWECiphertext[T]) headerWriteTo(w io.Writer) (n int64, err error) {
+	var nWrite int
+	var buf [8]byte
+
+	lweDimension := len(ct.Value) - 1
+	binary.BigEndian.PutUint64(buf[:], uint64(lweDimension))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
+	}
+	n += int64(nWrite)
+
+	return
+}
+
+// valueWriteTo writes the value.
+func (ct LWECiphertext[T]) valueWriteTo(w io.Writer) (n int64, err error) {
+	return vecWriteTo(ct.Value, w)
 }
 
 // WriteTo implements the [io.WriterTo] interface.
@@ -20,44 +158,17 @@ func (ct LWECiphertext[T]) ByteSize() int {
 //	[8] LWEDimension
 //	    Value
 func (ct LWECiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
-	var nn int
+	var nWrite int64
 
-	lweDimension := len(ct.Value) - 1
-
-	var metadata [8]byte
-	binary.BigEndian.PutUint64(metadata[0:8], uint64(lweDimension))
-	nn, err = w.Write(metadata[:])
-	n += int64(nn)
-	if err != nil {
-		return
+	if nWrite, err = ct.headerWriteTo(w); err != nil {
+		return n + nWrite, err
 	}
+	n += nWrite
 
-	var z T
-	switch any(z).(type) {
-	case uint32:
-		buf := make([]byte, (lweDimension+1)*4)
-		for i := range ct.Value {
-			binary.BigEndian.PutUint32(buf[i*4:(i+1)*4], uint32(ct.Value[i]))
-		}
-
-		nn, err = w.Write(buf)
-		n += int64(nn)
-		if err != nil {
-			return
-		}
-
-	case uint64:
-		buf := make([]byte, (lweDimension+1)*8)
-		for i := range ct.Value {
-			binary.BigEndian.PutUint64(buf[i*8:(i+1)*8], uint64(ct.Value[i]))
-		}
-
-		nn, err = w.Write(buf)
-		n += int64(nn)
-		if err != nil {
-			return
-		}
+	if nWrite, err = ct.valueWriteTo(w); err != nil {
+		return n + nWrite, err
 	}
+	n += nWrite
 
 	if n < int64(ct.ByteSize()) {
 		return n, io.ErrShortWrite
@@ -66,47 +177,40 @@ func (ct LWECiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	return
 }
 
+// headerReadFrom reads the header, and initializes the value.
+func (ct *LWECiphertext[T]) headerReadFrom(r io.Reader) (n int64, err error) {
+	var nRead int
+	var buf [8]byte
+
+	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
+		return n + int64(nRead), err
+	}
+	n += int64(nRead)
+	lweDimension := int(binary.BigEndian.Uint64(buf[:]))
+
+	*ct = NewLWECiphertextCustom[T](lweDimension)
+
+	return
+}
+
+// valueReadFrom reads the value.
+func (ct *LWECiphertext[T]) valueReadFrom(r io.Reader) (n int64, err error) {
+	return vecReadFrom(ct.Value, r)
+}
+
 // ReadFrom implements the [io.ReaderFrom] interface.
 func (ct *LWECiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
-	var nn int
+	var nRead int64
 
-	var metadata [8]byte
-	nn, err = io.ReadFull(r, metadata[:])
-	n += int64(nn)
-	if err != nil {
-		return
+	if nRead, err = ct.headerReadFrom(r); err != nil {
+		return n + nRead, err
 	}
+	n += nRead
 
-	lweDimension := int(binary.BigEndian.Uint64(metadata[0:8]))
-
-	var z T
-	switch any(z).(type) {
-	case uint32:
-		buf := make([]byte, (lweDimension+1)*4)
-		nn, err = io.ReadFull(r, buf)
-		n += int64(nn)
-		if err != nil {
-			return
-		}
-
-		*ct = NewLWECiphertextCustom[T](lweDimension)
-		for i := range ct.Value {
-			ct.Value[i] = T(binary.BigEndian.Uint32(buf[i*4 : (i+1)*4]))
-		}
-
-	case uint64:
-		buf := make([]byte, (lweDimension+1)*8)
-		nn, err = io.ReadFull(r, buf)
-		n += int64(nn)
-		if err != nil {
-			return
-		}
-
-		*ct = NewLWECiphertextCustom[T](lweDimension)
-		for i := range ct.Value {
-			ct.Value[i] = T(binary.BigEndian.Uint64(buf[i*8 : (i+1)*8]))
-		}
+	if nRead, err = ct.valueReadFrom(r); err != nil {
+		return n + nRead, err
 	}
+	n += nRead
 
 	return
 }

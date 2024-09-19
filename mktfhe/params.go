@@ -234,7 +234,7 @@ func (p Parameters[T]) Literal() ParametersLiteral[T] {
 
 // ByteSize returns the size of the parameters in bytes.
 func (p Parameters[T]) ByteSize() int {
-	return p.Parameters.ByteSize() + 8 + 2*16
+	return p.Parameters.ByteSize() + 8 + p.accumulatorParameters.ByteSize() + p.relinKeyParameters.ByteSize()
 }
 
 // WriteTo implements the [io.WriterTo] interface.
@@ -243,76 +243,75 @@ func (p Parameters[T]) ByteSize() int {
 //
 //		  Parameters
 //	 [ 8] PartyCount
-//	 [16] AccumulatorParameters
-//	 [16] RelinKeyParameters
+//	      AccumulatorParameters
+//	      RelinKeyParameters
 func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
-	var nn64 int64
-	var nn int
+	var nWrite int
+	var nWrite64 int64
+	var buf [8]byte
 
-	nn64, err = p.Parameters.WriteTo(w)
-	n += nn64
-	if err != nil {
-		return
+	if nWrite64, err = p.Parameters.WriteTo(w); err != nil {
+		return n + nWrite64, err
 	}
+	n += nWrite64
 
-	var buf [8 + 2*16]byte
-
-	binary.BigEndian.PutUint64(buf[0:8], uint64(p.partyCount))
-	binary.BigEndian.PutUint64(buf[8:16], uint64(p.accumulatorParameters.Base()))
-	binary.BigEndian.PutUint64(buf[16:24], uint64(p.accumulatorParameters.Level()))
-	binary.BigEndian.PutUint64(buf[24:32], uint64(p.relinKeyParameters.Base()))
-	binary.BigEndian.PutUint64(buf[32:40], uint64(p.relinKeyParameters.Level()))
-
-	nn, err = w.Write(buf[:])
-	n += int64(nn)
-	if err != nil {
-		return
+	partyCount := p.partyCount
+	binary.BigEndian.PutUint64(buf[:], uint64(partyCount))
+	if nWrite, err = w.Write(buf[:]); err != nil {
+		return n + int64(nWrite), err
 	}
+	n += int64(nWrite)
 
-	if n < int64(p.ByteSize()) {
-		return n, io.ErrShortWrite
+	if nWrite64, err = p.accumulatorParameters.WriteTo(w); err != nil {
+		return n + nWrite64, err
 	}
+	n += nWrite64
+
+	if nWrite64, err = p.relinKeyParameters.WriteTo(w); err != nil {
+		return n + nWrite64, err
+	}
+	n += nWrite64
 
 	return
 }
 
 // ReadFrom implements the [io.ReaderFrom] interface.
 func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
-	var nn64 int64
-	var nn int
+	var nRead int
+	var nRead64 int64
+	var buf [8]byte
 
-	nn64, err = p.Parameters.ReadFrom(r)
-	n += nn64
-	if err != nil {
-		return
+	var singleKeyParameters tfhe.Parameters[T]
+	if nRead64, err = singleKeyParameters.ReadFrom(r); err != nil {
+		return n + nRead64, err
 	}
+	n += nRead64
 
-	var buf [8 + 2*16]byte
-
-	nn, err = io.ReadFull(r, buf[:])
-	n += int64(nn)
-	if err != nil {
-		return
+	if nRead, err = r.Read(buf[:]); err != nil {
+		return n + int64(nRead), err
 	}
+	n += int64(nRead)
+	partyCount := int(binary.BigEndian.Uint64(buf[:]))
 
-	partyCount := binary.BigEndian.Uint64(buf[0:8])
+	var accumulatorParameters tfhe.GadgetParameters[T]
+	if nRead64, err = accumulatorParameters.ReadFrom(r); err != nil {
+		return n + nRead64, err
+	}
+	n += nRead64
 
-	accumulatorParameters := tfhe.GadgetParametersLiteral[T]{
-		Base:  T(binary.BigEndian.Uint64(buf[8:16])),
-		Level: int(binary.BigEndian.Uint64(buf[16:24])),
+	var relinKeyParameters tfhe.GadgetParameters[T]
+	if nRead64, err = relinKeyParameters.ReadFrom(r); err != nil {
+		return n + nRead64, err
 	}
-	relinKeyParameters := tfhe.GadgetParametersLiteral[T]{
-		Base:  T(binary.BigEndian.Uint64(buf[24:32])),
-		Level: int(binary.BigEndian.Uint64(buf[32:40])),
-	}
+	n += nRead64
 
 	*p = ParametersLiteral[T]{
-		ParametersLiteral: p.Parameters.Literal(),
+		ParametersLiteral: singleKeyParameters.Literal(),
 
-		PartyCount: int(partyCount),
+		PartyCount: partyCount,
 
-		AccumulatorParameters: accumulatorParameters,
-		RelinKeyParameters:    relinKeyParameters,
+		AccumulatorParameters: accumulatorParameters.Literal(),
+		RelinKeyParameters:    relinKeyParameters.Literal(),
 	}.Compile()
 
 	return
