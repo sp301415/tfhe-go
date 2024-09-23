@@ -54,30 +54,6 @@ type Evaluator[T num.Integer] struct {
 	// Equivalent to BitReverse([-1, 3, 7, ..., 2N-1]).
 	twMonoIdx []int
 
-	// splitBits is the number of bits to split in [*Evaluator.Mul].
-	//
-	//	- If sizeT <= 32, splitBits = 11.
-	//	- If sizeT = 64, splitBits = 13.
-	splitBits T
-	// splitCount is the number of splits in [*Evaluator.Mul].
-	//
-	//	- If sizeT = 8, splitCount = 1.
-	//	- If sizeT = 16, splitCount = 2.
-	//	- If sizeT = 32, splitCount = 3.
-	//	- If sizeT = 64, splitCount = 5.
-	splitCount int
-	// splitBitsBinary is the number of bits to split in [*Evaluator.BinaryFourierMul].
-	//
-	//	- If sizeT <= 16, splitBitsBinary = 16.
-	//	- If sizeT >= 32, splitBitsBinary = 26.
-	splitBitsBinary T
-	// splitCountBinary is the number of splits in [*Evaluator.BinaryFourierMul].
-	//
-	//	- If sizeT <= 16, splitCountBinary = 1.
-	//	- If sizeT = 32, splitCountBinary = 2.
-	//	- If sizeT = 64, splitCountBinary = 3.
-	splitCountBinary int
-
 	// buffer is the buffer values for this Evaluator.
 	buffer evaluationBuffer[T]
 }
@@ -92,14 +68,10 @@ type evaluationBuffer[T num.Integer] struct {
 	// fpInv is the InvFFT value of fp.
 	fpInv FourierPoly
 
-	// pSplit is the split value of p0, p1 in [*Evaluator.Mul].
+	// pSplit is the split value of p0 in [*Evaluator.BinaryFourierPolyMulPoly].
 	pSplit Poly[T]
-	// fp0Split is the fourier transformed p0Split.
-	fp0Split []FourierPoly
-	// fp1Split is the fourier transformed p1Split.
-	fp1Split []FourierPoly
-	// fpOutSplit is the fourier transformed pOutSplit.
-	fpOutSplit []FourierPoly
+	// fp0Split is the fourier transformed pSplit in [*Evaluator.BinaryFourierPolyMulPoly].
+	fpSplit []FourierPoly
 }
 
 // NewEvaluator allocates an empty Evaluator with degree N.
@@ -133,9 +105,6 @@ func NewEvaluator[T num.Integer](N int) *Evaluator[T] {
 	}
 	vec.BitReverseInPlace(twMonoIdx)
 
-	splitBits, splitCount := genSplitParameters[T]()
-	splitBitsBinary, splitCountBinary := genSplitParametersBinary[T]()
-
 	return &Evaluator[T]{
 		degree: N,
 		q:      Q,
@@ -145,11 +114,6 @@ func NewEvaluator[T num.Integer](N int) *Evaluator[T] {
 		twInv:     twInv,
 		twMono:    twMono,
 		twMonoIdx: twMonoIdx,
-
-		splitBits:        splitBits,
-		splitCount:       splitCount,
-		splitBitsBinary:  splitBitsBinary,
-		splitCountBinary: splitCountBinary,
 
 		buffer: newFourierBuffer[T](N),
 	}
@@ -201,8 +165,8 @@ func genTwiddleFactors(N int) (tw, twInv []complex128) {
 	return tw, twInv
 }
 
-// genSplitParameters generates splitBits and splitCount for [*Evaluator.MulPoly].
-func genSplitParameters[T num.Integer]() (splitBits T, splitCount int) {
+// splitParameters generates splitBits and splitCount for [*Evaluator.MulPoly].
+func splitParameters[T num.Integer]() (splitBits T, splitCount int) {
 	switch num.SizeT[T]() {
 	case 8:
 		return 11, 1
@@ -216,8 +180,8 @@ func genSplitParameters[T num.Integer]() (splitBits T, splitCount int) {
 	return 0, 0
 }
 
-// genSplitParametersBinary generates splitBitsBinary and splitCountBinary for [*Evaluator.BinaryFourierPolyMulPoly].
-func genSplitParametersBinary[T num.Integer]() (splitBitsBinary T, splitCountBinary int) {
+// splitParametersBinary generates splitBitsBinary and splitCountBinary for [*Evaluator.BinaryFourierPolyMulPoly].
+func splitParametersBinary[T num.Integer]() (splitBitsBinary T, splitCountBinary int) {
 	switch num.SizeT[T]() {
 	case 8:
 		return 16, 1
@@ -233,15 +197,11 @@ func genSplitParametersBinary[T num.Integer]() (splitBitsBinary T, splitCountBin
 
 // newFourierBuffer allocates an empty fourierBuffer.
 func newFourierBuffer[T num.Integer](N int) evaluationBuffer[T] {
-	_, splitCount := genSplitParameters[T]()
+	_, splitCountBinary := splitParametersBinary[T]()
 
-	fp0Split := make([]FourierPoly, splitCount)
-	fp1Split := make([]FourierPoly, splitCount)
-	fpOutSplit := make([]FourierPoly, splitCount)
-	for i := 0; i < splitCount; i++ {
-		fp0Split[i] = NewFourierPoly(N)
-		fp1Split[i] = NewFourierPoly(N)
-		fpOutSplit[i] = NewFourierPoly(N)
+	fpSplit := make([]FourierPoly, splitCountBinary)
+	for i := 0; i < splitCountBinary; i++ {
+		fpSplit[i] = NewFourierPoly(N)
 	}
 
 	return evaluationBuffer[T]{
@@ -250,10 +210,8 @@ func newFourierBuffer[T num.Integer](N int) evaluationBuffer[T] {
 		fp:    NewFourierPoly(N),
 		fpInv: NewFourierPoly(N),
 
-		pSplit:     NewPoly[T](N),
-		fp0Split:   fp0Split,
-		fp1Split:   fp1Split,
-		fpOutSplit: fpOutSplit,
+		pSplit:  NewPoly[T](N),
+		fpSplit: fpSplit,
 	}
 }
 
@@ -269,11 +227,6 @@ func (e *Evaluator[T]) ShallowCopy() *Evaluator[T] {
 		twInv:     e.twInv,
 		twMono:    e.twMono,
 		twMonoIdx: e.twMonoIdx,
-
-		splitBits:        e.splitBits,
-		splitCount:       e.splitCount,
-		splitBitsBinary:  e.splitBitsBinary,
-		splitCountBinary: e.splitCountBinary,
 
 		buffer: newFourierBuffer[T](e.degree),
 	}
