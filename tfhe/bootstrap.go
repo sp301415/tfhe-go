@@ -29,8 +29,8 @@ func (e *Evaluator[T]) BootstrapLUT(ct LWECiphertext[T], lut LookUpTable[T]) LWE
 func (e *Evaluator[T]) BootstrapLUTAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut LWECiphertext[T]) {
 	switch e.Parameters.bootstrapOrder {
 	case OrderKeySwitchBlindRotate:
-		e.KeySwitchForBootstrapAssign(ct, e.buffer.ctKeySwitchBootstrap)
-		e.BlindRotateAssign(e.buffer.ctKeySwitchBootstrap, lut, e.buffer.ctRotate)
+		e.KeySwitchForBootstrapAssign(ct, e.buffer.ctKeySwitchForBootstrap)
+		e.BlindRotateAssign(e.buffer.ctKeySwitchForBootstrap, lut, e.buffer.ctRotate)
 		e.buffer.ctRotate.ToLWECiphertextAssign(0, ctOut)
 	case OrderBlindRotateKeySwitch:
 		e.BlindRotateAssign(ct, lut, e.buffer.ctRotate)

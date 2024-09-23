@@ -71,8 +71,8 @@ type evaluationBuffer[T tfhe.TorusInt] struct {
 	ctRotate GLWECiphertext[T]
 	// ctExtract is the extracted LWE ciphertext after Blind Rotation.
 	ctExtract LWECiphertext[T]
-	// ctKeySwitch is the LWEDimension sized ciphertext from keyswitching.
-	ctKeySwitch LWECiphertext[T]
+	// ctKeySwitchForBootstrap is the LWEDimension sized ciphertext from keyswitching for bootstrapping.
+	ctKeySwitchForBootstrap LWECiphertext[T]
 
 	// lut is an empty lut, used for BlindRotateFunc.
 	lut tfhe.LookUpTable[T]
@@ -156,9 +156,9 @@ func newEvaluationBuffer[T tfhe.TorusInt](params Parameters[T]) evaluationBuffer
 		ctAccs:         ctAccs,
 		ctFourierAccs:  ctFourierAccs,
 
-		ctRotate:    NewGLWECiphertext(params),
-		ctExtract:   NewLWECiphertextCustom[T](params.GLWEDimension()),
-		ctKeySwitch: NewLWECiphertextCustom[T](params.LWEDimension()),
+		ctRotate:                NewGLWECiphertext(params),
+		ctExtract:               NewLWECiphertextCustom[T](params.GLWEDimension()),
+		ctKeySwitchForBootstrap: NewLWECiphertextCustom[T](params.LWEDimension()),
 
 		lut: tfhe.NewLookUpTable(params.Parameters),
 	}

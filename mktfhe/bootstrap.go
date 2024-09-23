@@ -30,8 +30,8 @@ func (e *Evaluator[T]) BootstrapLUT(ct LWECiphertext[T], lut tfhe.LookUpTable[T]
 func (e *Evaluator[T]) BootstrapLUTAssign(ct LWECiphertext[T], lut tfhe.LookUpTable[T], ctOut LWECiphertext[T]) {
 	switch e.Parameters.BootstrapOrder() {
 	case tfhe.OrderKeySwitchBlindRotate:
-		e.KeySwitchForBootstrapAssign(ct, e.buffer.ctKeySwitch)
-		e.BlindRotateAssign(e.buffer.ctKeySwitch, lut, e.buffer.ctRotate)
+		e.KeySwitchForBootstrapAssign(ct, e.buffer.ctKeySwitchForBootstrap)
+		e.BlindRotateAssign(e.buffer.ctKeySwitchForBootstrap, lut, e.buffer.ctRotate)
 		e.buffer.ctRotate.ToLWECiphertextAssign(0, ctOut)
 	case tfhe.OrderBlindRotateKeySwitch:
 		e.BlindRotateAssign(ct, lut, e.buffer.ctRotate)
@@ -63,8 +63,8 @@ func (e *Evaluator[T]) BootstrapLUTParallel(ct LWECiphertext[T], lut tfhe.LookUp
 func (e *Evaluator[T]) BootstrapLUTParallelAssign(ct LWECiphertext[T], lut tfhe.LookUpTable[T], ctOut LWECiphertext[T]) {
 	switch e.Parameters.BootstrapOrder() {
 	case tfhe.OrderKeySwitchBlindRotate:
-		e.KeySwitchForBootstrapAssign(ct, e.buffer.ctKeySwitch)
-		e.BlindRotateParallelAssign(e.buffer.ctKeySwitch, lut, e.buffer.ctRotate)
+		e.KeySwitchForBootstrapAssign(ct, e.buffer.ctKeySwitchForBootstrap)
+		e.BlindRotateParallelAssign(e.buffer.ctKeySwitchForBootstrap, lut, e.buffer.ctRotate)
 		e.buffer.ctRotate.ToLWECiphertextAssign(0, ctOut)
 	case tfhe.OrderBlindRotateKeySwitch:
 		e.BlindRotateParallelAssign(ct, lut, e.buffer.ctRotate)
