@@ -213,15 +213,13 @@ func (ct GLWECiphertext[T]) ToLWECiphertext(idx int) LWECiphertext[T] {
 func (ct GLWECiphertext[T]) ToLWECiphertextAssign(idx int, ctOut LWECiphertext[T]) {
 	ctOut.Value[0] = ct.Value[0].Coeffs[idx]
 
-	ctMask, ctOutMask := ct.Value[1:], ctOut.Value[1:]
 	for i := 0; i < len(ct.Value)-1; i++ {
-		start := i * ct.Value[i].Degree()
-		end := (i + 1) * ct.Value[i].Degree()
-
-		vec.ReverseAssign(ctMask[i].Coeffs, ctOutMask[start:end])
-
-		vec.RotateInPlace(ctOutMask[start:end], idx+1)
-		vec.NegAssign(ctOutMask[start+idx+1:end], ctOutMask[start+idx+1:end])
+		for j := 0; j <= idx; j++ {
+			ctOut.Value[1+i*ct.Value[i+1].Degree()+j] = ct.Value[i+1].Coeffs[idx-j]
+		}
+		for j := idx + 1; j < ct.Value[i+1].Degree(); j++ {
+			ctOut.Value[1+i*ct.Value[i+1].Degree()+j] = -ct.Value[i+1].Coeffs[idx-j+ct.Value[i+1].Degree()]
+		}
 	}
 }
 
