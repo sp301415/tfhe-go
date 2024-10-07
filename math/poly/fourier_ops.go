@@ -1,5 +1,11 @@
 package poly
 
+import (
+	"math/bits"
+
+	"github.com/sp301415/tfhe-go/math/num"
+)
+
 // AddFourierPoly returns fp0 + fp1.
 func (e *Evaluator[T]) AddFourierPoly(fp0, fp1 FourierPoly) FourierPoly {
 	fpOut := e.NewFourierPoly()
@@ -128,4 +134,171 @@ func (e *Evaluator[T]) PolyMulSubFourierPolyAssign(fp0 FourierPoly, p Poly[T], f
 	e.ToFourierPolyAssign(p, e.buffer.fp)
 
 	elementWiseMulSubCmplxAssign(fp0.Coeffs, e.buffer.fp.Coeffs, fpOut.Coeffs)
+}
+
+// PermuteFourierPoly returns fp0(X^d).
+//
+// Panics when d is not odd.
+// This is because the permutation is not bijective when d is even.
+func (e *Evaluator[T]) PermuteFourierPoly(fp0 FourierPoly, d int) FourierPoly {
+	if d&1 == 0 {
+		panic("d not odd")
+	}
+
+	fpOut := e.NewFourierPoly()
+	e.PermuteFourierPolyAssign(fp0, d, fpOut)
+	return fpOut
+}
+
+// PermuteFourierPolyAssign computes fpOut = fp0(X^d).
+//
+// fp0 and fpOut should not overlap. For inplace permutation,
+// use [*Evaluator.PermuteFourierPolyInPlace].
+//
+// Panics when d is not odd.
+// This is because the permutation is not bijective when d is even.
+func (e *Evaluator[T]) PermuteFourierPolyAssign(fp0 FourierPoly, d int, fpOut FourierPoly) {
+	if d&1 == 0 {
+		panic("d not odd")
+	}
+
+	revShiftBits := 64 - (num.Log2(e.degree) - 1)
+
+	d = d & (2*e.degree - 1)
+	if d%4 == 1 {
+		k := (d - 1) >> 2
+		var ci, cj int
+		for ii := 0; ii < e.degree; ii += 8 {
+			for i := ii; i < ii+4; i++ {
+				ci = ((i >> 3) << 2) | (i & 3)
+				ci = int(bits.Reverse64(uint64(ci)) >> revShiftBits)
+				cj = (d*ci - k) & (e.degree>>1 - 1)
+				cj = int(bits.Reverse64(uint64(cj)) >> revShiftBits)
+				j := ((cj >> 2) << 3) | (cj & 3)
+
+				fpOut.Coeffs[i+0] = fp0.Coeffs[j+0]
+				fpOut.Coeffs[i+4] = fp0.Coeffs[j+4]
+			}
+		}
+	} else {
+		k := (d - 3) >> 2
+		var ci, cj int
+		for ii := 0; ii < e.degree; ii += 8 {
+			for i := ii; i < ii+4; i++ {
+				ci = ((i >> 3) << 2) | (i & 3)
+				ci = int(bits.Reverse64(uint64(ci)) >> revShiftBits)
+				cj = (-d*ci + k + 1) & (e.degree>>1 - 1)
+				cj = int(bits.Reverse64(uint64(cj)) >> revShiftBits)
+				j := ((cj >> 2) << 3) | (cj & 3)
+
+				fpOut.Coeffs[i+0] = fp0.Coeffs[j+0]
+				fpOut.Coeffs[i+4] = -fp0.Coeffs[j+4]
+			}
+		}
+	}
+}
+
+// PermuteFourierPolyInPlace computes fp0 = fp0(X^d).
+//
+// Panics when d is not odd.
+// This is because the permutation is not bijective when d is even.
+func (e *Evaluator[T]) PermuteFourierPolyInPlace(fp0 FourierPoly, d int) {
+	if d&1 == 0 {
+		panic("d not odd")
+	}
+
+	e.PermuteFourierPolyAssign(fp0, d, e.buffer.fpOut)
+	fp0.CopyFrom(e.buffer.fpOut)
+}
+
+// PermuteAddFourierPolyAssign computes fpOut += fp0(X^d).
+//
+// fp0 and fpOut should not overlap.
+//
+// Panics when d is not odd.
+// This is because the permutation is not bijective when d is even.
+func (e *Evaluator[T]) PermuteAddFourierPolyAssign(fp0 FourierPoly, d int, fpOut FourierPoly) {
+	if d&1 == 0 {
+		panic("d not odd")
+	}
+
+	d = d & (2*e.degree - 1)
+	revShiftBits := 64 - (num.Log2(e.degree) - 1)
+	if d%4 == 1 {
+		k := (d - 1) >> 2
+		var ci, cj int
+		for ii := 0; ii < e.degree; ii += 8 {
+			for i := ii; i < ii+4; i++ {
+				ci = ((i >> 3) << 2) + (i & 3)
+				ci = int(bits.Reverse64(uint64(ci)) >> revShiftBits)
+				cj = (d*ci - k) & (e.degree>>1 - 1)
+				cj = int(bits.Reverse64(uint64(cj)) >> revShiftBits)
+				j := ((cj >> 2) << 3) + (cj & 3)
+
+				fpOut.Coeffs[i+0] += fp0.Coeffs[j+0]
+				fpOut.Coeffs[i+4] += fp0.Coeffs[j+4]
+			}
+		}
+	} else {
+		k := (d - 3) >> 2
+		var ci, cj int
+		for ii := 0; ii < e.degree; ii += 8 {
+			for i := ii; i < ii+4; i++ {
+				ci = ((i >> 3) << 2) + (i & 3)
+				ci = int(bits.Reverse64(uint64(ci)) >> revShiftBits)
+				cj = (-d*ci + k + 1) & (e.degree>>1 - 1)
+				cj = int(bits.Reverse64(uint64(cj)) >> revShiftBits)
+				j := ((cj >> 2) << 3) + (cj & 3)
+
+				fpOut.Coeffs[i+0] += fp0.Coeffs[j+0]
+				fpOut.Coeffs[i+4] += -fp0.Coeffs[j+4]
+			}
+		}
+	}
+}
+
+// PermuteSubFourierPolyAssign computes fpOut -= fp0(X^d).
+//
+// fp0 and fpOut should not overlap.
+//
+// Panics when d is not odd.
+// This is because the permutation is not bijective when d is even.
+func (e *Evaluator[T]) PermuteSubFourierPolyAssign(fp0 FourierPoly, d int, fpOut FourierPoly) {
+	if d&1 == 0 {
+		panic("d not odd")
+	}
+
+	d = d & (2*e.degree - 1)
+	revShiftBits := 64 - (num.Log2(e.degree) - 1)
+	if d%4 == 1 {
+		k := (d - 1) >> 2
+		var ci, cj int
+		for ii := 0; ii < e.degree; ii += 8 {
+			for i := ii; i < ii+4; i++ {
+				ci = ((i >> 3) << 2) | (i & 3)
+				ci = int(bits.Reverse64(uint64(ci)) >> revShiftBits)
+				cj = (d*ci - k) & (e.degree>>1 - 1)
+				cj = int(bits.Reverse64(uint64(cj)) >> revShiftBits)
+				j := ((cj >> 2) << 3) | (cj & 3)
+
+				fpOut.Coeffs[i+0] -= fp0.Coeffs[j+0]
+				fpOut.Coeffs[i+4] -= fp0.Coeffs[j+4]
+			}
+		}
+	} else {
+		k := (d - 3) >> 2
+		var ci, cj int
+		for ii := 0; ii < e.degree; ii += 8 {
+			for i := ii; i < ii+4; i++ {
+				ci = ((i >> 3) << 2) | (i & 3)
+				ci = int(bits.Reverse64(uint64(ci)) >> revShiftBits)
+				cj = (-d*ci + k + 1) & (e.degree>>1 - 1)
+				cj = int(bits.Reverse64(uint64(cj)) >> revShiftBits)
+				j := ((cj >> 2) << 3) | (cj & 3)
+
+				fpOut.Coeffs[i+0] -= fp0.Coeffs[j+0]
+				fpOut.Coeffs[i+4] -= -fp0.Coeffs[j+4]
+			}
+		}
+	}
 }

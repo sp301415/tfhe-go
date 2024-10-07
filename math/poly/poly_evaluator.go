@@ -62,6 +62,8 @@ type Evaluator[T num.Integer] struct {
 type evaluationBuffer[T num.Integer] struct {
 	// pOut is the intermediate output polynomial for InPlace operations.
 	pOut Poly[T]
+	// fpOut is the intermediate output fourier polynomial for InPlace operations.
+	fpOut FourierPoly
 
 	// fp is the FFT value of p.
 	fp FourierPoly
@@ -205,7 +207,8 @@ func newFourierBuffer[T num.Integer](N int) evaluationBuffer[T] {
 	}
 
 	return evaluationBuffer[T]{
-		pOut: NewPoly[T](N),
+		pOut:  NewPoly[T](N),
+		fpOut: NewFourierPoly(N),
 
 		fp:    NewFourierPoly(N),
 		fpInv: NewFourierPoly(N),

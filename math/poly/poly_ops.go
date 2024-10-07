@@ -232,7 +232,14 @@ func (e *Evaluator[T]) MonomialMulSubPolyAssign(p0 Poly[T], d int, pOut Poly[T])
 }
 
 // PermutePoly returns p0(X^d).
+//
+// Panics when d is not odd.
+// This is because the permutation is not bijective when d is even.
 func (e *Evaluator[T]) PermutePoly(p0 Poly[T], d int) Poly[T] {
+	if d&1 == 0 {
+		panic("d not odd")
+	}
+
 	pOut := e.NewPoly()
 	e.PermutePolyAssign(p0, d, pOut)
 	return pOut
@@ -242,19 +249,28 @@ func (e *Evaluator[T]) PermutePoly(p0 Poly[T], d int) Poly[T] {
 //
 // p0 and pOut should not overlap. For inplace permutation,
 // use [*Evaluator.PermutePolyInPlace].
+//
+// Panics when d is not odd.
+// This is because the permutation is not bijective when d is even.
 func (e *Evaluator[T]) PermutePolyAssign(p0 Poly[T], d int, pOut Poly[T]) {
-	pOut.Clear()
+	if d&1 == 0 {
+		panic("d not odd")
+	}
+
 	for i := 0; i < e.degree; i++ {
 		j := (d * i) & (2*e.degree - 1)
 		if j < e.degree {
-			pOut.Coeffs[j] += p0.Coeffs[i]
+			pOut.Coeffs[j] = p0.Coeffs[i]
 		} else {
-			pOut.Coeffs[j-e.degree] -= p0.Coeffs[i]
+			pOut.Coeffs[j-e.degree] = -p0.Coeffs[i]
 		}
 	}
 }
 
 // PermutePolyInPlace computes p0 = p0(X^d).
+//
+// Panics when d is not odd.
+// This is because the permutation is not bijective when d is even.
 func (e *Evaluator[T]) PermutePolyInPlace(p0 Poly[T], d int) {
 	e.PermutePolyAssign(p0, d, e.buffer.pOut)
 	p0.CopyFrom(e.buffer.pOut)
@@ -263,7 +279,14 @@ func (e *Evaluator[T]) PermutePolyInPlace(p0 Poly[T], d int) {
 // PermuteAddPolyAssign computes pOut += p0(X^d).
 //
 // p0 and pOut should not overlap.
+//
+// Panics when d is not odd.
+// This is because the permutation is not bijective when d is even.
 func (e *Evaluator[T]) PermuteAddPolyAssign(p0 Poly[T], d int, pOut Poly[T]) {
+	if d&1 == 0 {
+		panic("d not odd")
+	}
+
 	for i := 0; i < e.degree; i++ {
 		j := (d * i) & (2*e.degree - 1)
 		if j < e.degree {
@@ -277,7 +300,14 @@ func (e *Evaluator[T]) PermuteAddPolyAssign(p0 Poly[T], d int, pOut Poly[T]) {
 // PermuteSubPolyAssign computes pOut -= p0(X^d).
 //
 // p0 and pOut should not overlap.
+//
+// Panics when d is not odd.
+// This is because the permutation is not bijective when d is even.
 func (e *Evaluator[T]) PermuteSubPolyAssign(p0 Poly[T], d int, pOut Poly[T]) {
+	if d&1 == 0 {
+		panic("d not odd")
+	}
+
 	for i := 0; i < e.degree; i++ {
 		j := (d * i) & (2*e.degree - 1)
 		if j < e.degree {
