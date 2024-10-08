@@ -201,3 +201,50 @@ func (e *Evaluator[T]) MonomialMulSubGLWEAssign(ct0 GLWECiphertext[T], d int, ct
 		e.BaseSingleKeyEvaluator.PolyEvaluator.MonomialMulSubPolyAssign(ct0.Value[i], d, ctOut.Value[i])
 	}
 }
+
+// PermuteGLWEAssign computes ctOut = ct0(X^d).
+//
+// ct0 and ctOut should not overlap. For inplace permutation,
+// use [*Evaluator.PermuteGLWEInPlace].
+//
+// Panics when d is not odd.
+// This is because the permutation is not bijective when d is even.
+func (e *Evaluator[T]) PermuteGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
+		e.PolyEvaluator.PermutePolyAssign(ct0.Value[i], d, ctOut.Value[i])
+	}
+}
+
+// PermuteGLWEInPlace computes ct0 = ct0(X^d).
+//
+// Panics when d is not odd.
+// This is because the permutation is not bijective when d is even.
+func (e *Evaluator[T]) PermuteGLWEInPlace(ct0 GLWECiphertext[T], d int) {
+	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
+		e.PolyEvaluator.PermutePolyInPlace(ct0.Value[i], d)
+	}
+}
+
+// PermuteAddGLWEAssign computes ctOut += ct0(X^d).
+//
+// ct0 and ctOut should not overlap.
+//
+// Panics when d is not odd.
+// This is because the permutation is not bijective when d is even.
+func (e *Evaluator[T]) PermuteAddGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
+		e.PolyEvaluator.PermuteAddPolyAssign(ct0.Value[i], d, ctOut.Value[i])
+	}
+}
+
+// PermuteSubGLWEAssign computes ctOut -= ct0(X^d).
+//
+// ct0 and ctOut should not overlap.
+//
+// Panics when d is not odd.
+// This is because the permutation is not bijective when d is even.
+func (e *Evaluator[T]) PermuteSubGLWEAssign(ct0 GLWECiphertext[T], d int, ctOut GLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
+		e.PolyEvaluator.PermuteSubPolyAssign(ct0.Value[i], d, ctOut.Value[i])
+	}
+}

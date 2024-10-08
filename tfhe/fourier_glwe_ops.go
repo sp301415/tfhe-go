@@ -160,3 +160,50 @@ func (e *Evaluator[T]) FourierPolyMulSubFourierGLWEAssign(ct0 FourierGLWECiphert
 		e.PolyEvaluator.MulSubFourierPolyAssign(ct0.Value[i], fp, ctOut.Value[i])
 	}
 }
+
+// PermuteGLWEAssign computes ctOut = ct0(X^d).
+//
+// ct0 and ctOut should not overlap. For inplace permutation,
+// use [*Evaluator.PermuteFourierGLWEInPlace].
+//
+// Panics when d is not odd.
+// This is because the permutation is not bijective when d is even.
+func (e *Evaluator[T]) PermuteFourierGLWEAssign(ct0 FourierGLWECiphertext[T], d int, ctOut FourierGLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweRank+1; i++ {
+		e.PolyEvaluator.PermuteFourierPolyAssign(ct0.Value[i], d, ctOut.Value[i])
+	}
+}
+
+// PermuteGLWEInPlace computes ct0 = ct0(X^d).
+//
+// Panics when d is not odd.
+// This is because the permutation is not bijective when d is even.
+func (e *Evaluator[T]) PermuteFourierGLWEInPlace(ct0 FourierGLWECiphertext[T], d int) {
+	for i := 0; i < e.Parameters.glweRank+1; i++ {
+		e.PolyEvaluator.PermuteFourierPolyInPlace(ct0.Value[i], d)
+	}
+}
+
+// PermuteAddGLWEAssign computes ctOut += ct0(X^d).
+//
+// ct0 and ctOut should not overlap.
+//
+// Panics when d is not odd.
+// This is because the permutation is not bijective when d is even.
+func (e *Evaluator[T]) PermuteAddFourierGLWEAssign(ct0 FourierGLWECiphertext[T], d int, ctOut FourierGLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweRank+1; i++ {
+		e.PolyEvaluator.PermuteAddFourierPolyAssign(ct0.Value[i], d, ctOut.Value[i])
+	}
+}
+
+// PermuteSubGLWEAssign computes ctOut -= ct0(X^d).
+//
+// ct0 and ctOut should not overlap.
+//
+// Panics when d is not odd.
+// This is because the permutation is not bijective when d is even.
+func (e *Evaluator[T]) PermuteSubFourierGLWEAssign(ct0 FourierGLWECiphertext[T], d int, ctOut FourierGLWECiphertext[T]) {
+	for i := 0; i < e.Parameters.glweRank+1; i++ {
+		e.PolyEvaluator.PermuteSubFourierPolyAssign(ct0.Value[i], d, ctOut.Value[i])
+	}
+}
