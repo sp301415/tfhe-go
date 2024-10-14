@@ -10,12 +10,12 @@ import (
 )
 
 var (
-	NLog = []int{9, 10, 11, 12, 13, 14, 15}
+	LogN = []int{9, 10, 11, 12, 13, 14, 15}
 )
 
 func BenchmarkOps(b *testing.B) {
-	for _, nLog := range NLog {
-		N := 1 << nLog
+	for _, logN := range LogN {
+		N := 1 << logN
 
 		pev := poly.NewEvaluator[uint64](N)
 
@@ -49,8 +49,8 @@ func BenchmarkOps(b *testing.B) {
 }
 
 func BenchmarkFourierOps(b *testing.B) {
-	for _, nLog := range NLog {
-		N := 1 << nLog
+	for _, logN := range LogN {
+		N := 1 << logN
 
 		pev := poly.NewEvaluator[uint64](N)
 
@@ -84,7 +84,7 @@ func BenchmarkFourierOps(b *testing.B) {
 }
 
 func BenchmarkFourierTransform(b *testing.B) {
-	for _, nLog := range NLog {
+	for _, nLog := range LogN {
 		N := 1 << nLog
 
 		pev := poly.NewEvaluator[uint64](N)

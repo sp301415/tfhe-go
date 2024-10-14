@@ -195,11 +195,11 @@ func (e *Evaluator[T]) ExternalProductGLWE(idx int, ctFourierGLev tfhe.FourierGL
 func (e *Evaluator[T]) ExternalProductGLWEAssign(idx int, ctFourierGLev tfhe.FourierGLevCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
-	eIdx.GadgetProductAssignGLWE(ctFourierGLev, ctGLWE.Value[0], e.buffer.ctRelinTransposed[0])
+	eIdx.GadgetProductGLWEAssign(ctFourierGLev, ctGLWE.Value[0], e.buffer.ctRelinTransposed[0])
 	e.buffer.ctRelin.Value[0].CopyFrom(e.buffer.ctRelinTransposed[0].Value[1])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.GadgetProductAssignGLWE(ctFourierGLev, ctGLWE.Value[i+1], e.buffer.ctRelinTransposed[i+1])
+			eIdx.GadgetProductGLWEAssign(ctFourierGLev, ctGLWE.Value[i+1], e.buffer.ctRelinTransposed[i+1])
 			e.buffer.ctRelin.Value[i+1].CopyFrom(e.buffer.ctRelinTransposed[i+1].Value[1])
 		}
 	}
@@ -218,11 +218,11 @@ func (e *Evaluator[T]) ExternalProductGLWEAssign(idx int, ctFourierGLev tfhe.Fou
 func (e *Evaluator[T]) ExternalProductAddGLWEAssign(idx int, ctFourierGLev tfhe.FourierGLevCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
-	eIdx.GadgetProductAssignGLWE(ctFourierGLev, ctGLWE.Value[0], e.buffer.ctRelinTransposed[0])
+	eIdx.GadgetProductGLWEAssign(ctFourierGLev, ctGLWE.Value[0], e.buffer.ctRelinTransposed[0])
 	e.buffer.ctRelin.Value[0].CopyFrom(e.buffer.ctRelinTransposed[0].Value[1])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.GadgetProductAssignGLWE(ctFourierGLev, ctGLWE.Value[i+1], e.buffer.ctRelinTransposed[i+1])
+			eIdx.GadgetProductGLWEAssign(ctFourierGLev, ctGLWE.Value[i+1], e.buffer.ctRelinTransposed[i+1])
 			e.buffer.ctRelin.Value[i+1].CopyFrom(e.buffer.ctRelinTransposed[i+1].Value[1])
 		}
 	}
@@ -241,11 +241,11 @@ func (e *Evaluator[T]) ExternalProductAddGLWEAssign(idx int, ctFourierGLev tfhe.
 func (e *Evaluator[T]) ExternalProductSubGLWEAssign(idx int, ctFourierGLev tfhe.FourierGLevCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SingleKeyEvaluators[idx]
 
-	eIdx.GadgetProductAssignGLWE(ctFourierGLev, ctGLWE.Value[0], e.buffer.ctRelinTransposed[0])
+	eIdx.GadgetProductGLWEAssign(ctFourierGLev, ctGLWE.Value[0], e.buffer.ctRelinTransposed[0])
 	e.buffer.ctRelin.Value[0].CopyFrom(e.buffer.ctRelinTransposed[0].Value[1])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.GadgetProductAssignGLWE(ctFourierGLev, ctGLWE.Value[i+1], e.buffer.ctRelinTransposed[i+1])
+			eIdx.GadgetProductGLWEAssign(ctFourierGLev, ctGLWE.Value[i+1], e.buffer.ctRelinTransposed[i+1])
 			e.buffer.ctRelin.Value[i+1].CopyFrom(e.buffer.ctRelinTransposed[i+1].Value[1])
 		}
 	}

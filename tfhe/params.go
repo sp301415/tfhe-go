@@ -52,7 +52,7 @@ func (p GadgetParametersLiteral[T]) Compile() GadgetParameters[T] {
 
 	return GadgetParameters[T]{
 		base:    p.Base,
-		baseLog: num.Log2(p.Base),
+		logBase: num.Log2(p.Base),
 		level:   p.Level,
 		sizeT:   num.SizeT[T](),
 	}
@@ -62,8 +62,8 @@ func (p GadgetParametersLiteral[T]) Compile() GadgetParameters[T] {
 type GadgetParameters[T TorusInt] struct {
 	// Base is a base of gadget. It must be power of two.
 	base T
-	// BaseLog equals log(Base).
-	baseLog int
+	// LogBase equals log(Base).
+	logBase int
 	// Level is a length of gadget.
 	level int
 	// sizeT is the size of T in bits.
@@ -75,9 +75,9 @@ func (p GadgetParameters[T]) Base() T {
 	return p.base
 }
 
-// BaseLog equals log(Base).
-func (p GadgetParameters[T]) BaseLog() int {
-	return p.baseLog
+// LogBase equals log(Base).
+func (p GadgetParameters[T]) LogBase() int {
+	return p.logBase
 }
 
 // Level is a length of gadget.
@@ -88,33 +88,33 @@ func (p GadgetParameters[T]) Level() int {
 // BaseQ returns Q / Base^(i+1) for 0 <= i < Level.
 // For the most common usages i = 0 and i = Level-1, use [GadgetParameters.FirstBaseQ] and [GadgetParameters.LastBaseQ].
 func (p GadgetParameters[T]) BaseQ(i int) T {
-	return T(1 << (p.sizeT - (i+1)*p.baseLog))
+	return T(1 << (p.sizeT - (i+1)*p.logBase))
 }
 
 // FirstBaseQ returns Q / Base.
 func (p GadgetParameters[T]) FirstBaseQ() T {
-	return T(1 << (p.sizeT - p.baseLog))
+	return T(1 << (p.sizeT - p.logBase))
 }
 
 // LastBaseQ returns Q / Base^Level.
 func (p GadgetParameters[T]) LastBaseQ() T {
-	return T(1 << (p.sizeT - p.level*p.baseLog))
+	return T(1 << (p.sizeT - p.level*p.logBase))
 }
 
-// BaseQLog returns log(Q / Base^(i+1)) for 0 <= i < Level.
-// For the most common usages i = 0 and i = Level-1, use [GadgetParameters.FirstBaseQLog] and [GadgetParameters.LastBaseQLog].
-func (p GadgetParameters[T]) BaseQLog(i int) int {
-	return p.sizeT - (i+1)*p.baseLog
+// LogBaseQ returns log(Q / Base^(i+1)) for 0 <= i < Level.
+// For the most common usages i = 0 and i = Level-1, use [GadgetParameters.LogFirstBaseQ] and [GadgetParameters.LogLastBaseQ].
+func (p GadgetParameters[T]) LogBaseQ(i int) int {
+	return p.sizeT - (i+1)*p.logBase
 }
 
-// FirstBaseQLog returns log(Q / Base).
-func (p GadgetParameters[T]) FirstBaseQLog() int {
-	return p.sizeT - p.baseLog
+// LogFirstBaseQ returns log(Q / Base).
+func (p GadgetParameters[T]) LogFirstBaseQ() int {
+	return p.sizeT - p.logBase
 }
 
-// LastBaseQLog returns log(Q / Base^Level).
-func (p GadgetParameters[T]) LastBaseQLog() int {
-	return p.sizeT - p.level*p.baseLog
+// LogLastBaseQ returns log(Q / Base^Level).
+func (p GadgetParameters[T]) LogLastBaseQ() int {
+	return p.sizeT - p.level*p.logBase
 }
 
 // Literal returns a GadgetParametersLiteral from this GadgetParameters.
@@ -405,7 +405,7 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		glweDimension:    p.GLWERank * p.PolyDegree,
 		glweRank:         p.GLWERank,
 		polyDegree:       p.PolyDegree,
-		polyDegreeLog:    num.Log2(p.PolyDegree),
+		logPolyDegree:    num.Log2(p.PolyDegree),
 		lookUpTableSize:  p.LookUpTableSize,
 		polyExtendFactor: p.LookUpTableSize / p.PolyDegree,
 
@@ -440,7 +440,7 @@ type Parameters[T TorusInt] struct {
 	// PolyDegree is the degree of polynomials in GLWE entities. Usually this is denoted by N.
 	polyDegree int
 	// PolyDegreeLog equals log(PolyDegree).
-	polyDegreeLog int
+	logPolyDegree int
 	// LookUpTableSize is the size of Lookup Table used in Blind Rotation.
 	lookUpTableSize int
 	// PolyExtendFactor equals LookUpTableSize / PolyDegree.
@@ -507,9 +507,9 @@ func (p Parameters[T]) PolyDegree() int {
 	return p.polyDegree
 }
 
-// PolyDegreeLog equals log(PolyDegree).
-func (p Parameters[T]) PolyDegreeLog() int {
-	return p.polyDegreeLog
+// LogPolyDegree equals log(PolyDegree).
+func (p Parameters[T]) LogPolyDegree() int {
+	return p.logPolyDegree
 }
 
 // LookUpTableSize is the size of LookUpTable used in Blind Rotation.

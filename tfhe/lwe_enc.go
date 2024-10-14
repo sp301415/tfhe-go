@@ -69,7 +69,7 @@ func (e *Encryptor[T]) EncryptLevPlaintext(pt LWEPlaintext[T], gadgetParams Gadg
 // EncryptLevPlaintextAssign encrypts LWE plaintext to Lev ciphertext and writes it to ctOut.
 func (e *Encryptor[T]) EncryptLevPlaintextAssign(pt LWEPlaintext[T], ctOut LevCiphertext[T]) {
 	for i := 0; i < ctOut.GadgetParameters.level; i++ {
-		ctOut.Value[i].Value[0] = pt.Value << ctOut.GadgetParameters.BaseQLog(i)
+		ctOut.Value[i].Value[0] = pt.Value << ctOut.GadgetParameters.LogBaseQ(i)
 		e.EncryptLWEBody(ctOut.Value[i])
 	}
 }
@@ -77,7 +77,7 @@ func (e *Encryptor[T]) EncryptLevPlaintextAssign(pt LWEPlaintext[T], ctOut LevCi
 // DecryptLev decrypts Lev ciphertext to integer message.
 func (e *Encryptor[T]) DecryptLev(ct LevCiphertext[T]) int {
 	pt := e.DecryptLevPlaintext(ct)
-	return int(num.DivRoundBits(pt.Value, ct.GadgetParameters.LastBaseQLog()) % e.Parameters.messageModulus)
+	return int(num.DivRoundBits(pt.Value, ct.GadgetParameters.LogLastBaseQ()) % e.Parameters.messageModulus)
 }
 
 // DecryptLevPlaintext decrypts Lev ciphertext to LWE plaintext.
@@ -111,7 +111,7 @@ func (e *Encryptor[T]) EncryptGSWPlaintextAssign(pt LWEPlaintext[T], ctOut GSWCi
 
 	for i := 0; i < e.Parameters.DefaultLWEDimension(); i++ {
 		for j := 0; j < ctOut.GadgetParameters.level; j++ {
-			ctOut.Value[i+1].Value[j].Value[0] = e.DefaultLWESecretKey().Value[i] * pt.Value << ctOut.GadgetParameters.BaseQLog(j)
+			ctOut.Value[i+1].Value[j].Value[0] = e.DefaultLWESecretKey().Value[i] * pt.Value << ctOut.GadgetParameters.LogBaseQ(j)
 			e.EncryptLWEBody(ctOut.Value[i+1].Value[j])
 		}
 	}

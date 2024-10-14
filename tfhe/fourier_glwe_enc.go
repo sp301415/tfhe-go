@@ -98,7 +98,7 @@ func (e *Encryptor[T]) DecryptFourierGLevAssign(ct FourierGLevCiphertext[T], mes
 
 	length := num.Min(e.Parameters.polyDegree, len(messagesOut))
 	for i := 0; i < length; i++ {
-		messagesOut[i] = int(num.DivRoundBits(e.buffer.ptGLWE.Value.Coeffs[i], ct.GadgetParameters.LastBaseQLog()) % e.Parameters.messageModulus)
+		messagesOut[i] = int(num.DivRoundBits(e.buffer.ptGLWE.Value.Coeffs[i], ct.GadgetParameters.LogLastBaseQ()) % e.Parameters.messageModulus)
 	}
 }
 

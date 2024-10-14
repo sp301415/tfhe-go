@@ -114,11 +114,11 @@ func (d *Decomposer[T]) DecomposeScalar(x T, gadgetParams GadgetParameters[T]) [
 
 // DecomposeScalarAssign decomposes x with respect to gadgetParams and writes it to decomposedOut.
 func (d *Decomposer[T]) DecomposeScalarAssign(x T, gadgetParams GadgetParameters[T], decomposedOut []T) {
-	u := num.DivRoundBits(x, gadgetParams.LastBaseQLog())
+	u := num.DivRoundBits(x, gadgetParams.LogLastBaseQ())
 	for i := gadgetParams.level - 1; i >= 1; i-- {
 		decomposedOut[i] = u & (gadgetParams.base - 1)
-		u >>= gadgetParams.baseLog
-		u += decomposedOut[i] >> (gadgetParams.baseLog - 1)
+		u >>= gadgetParams.logBase
+		u += decomposedOut[i] >> (gadgetParams.logBase - 1)
 		decomposedOut[i] -= (decomposedOut[i] & (gadgetParams.base >> 1)) << 1
 	}
 	decomposedOut[0] = u & (gadgetParams.base - 1)
@@ -163,7 +163,7 @@ func (d *Decomposer[T]) FourierDecomposePolyAssign(p poly.Poly[T], gadgetParams 
 func (d *Decomposer[T]) RecomposeScalar(decomposed []T, gadgetParams GadgetParameters[T]) T {
 	var x T
 	for i := 0; i < gadgetParams.level; i++ {
-		x += decomposed[i] << gadgetParams.BaseQLog(i)
+		x += decomposed[i] << gadgetParams.LogBaseQ(i)
 	}
 	return x
 }
@@ -180,7 +180,7 @@ func (d *Decomposer[T]) RecomposePolyAssign(decomposed []poly.Poly[T], gadgetPar
 	for i := 0; i < pOut.Degree(); i++ {
 		pOut.Coeffs[i] = 0
 		for j := 0; j < gadgetParams.level; j++ {
-			pOut.Coeffs[i] += decomposed[j].Coeffs[i] << gadgetParams.BaseQLog(j)
+			pOut.Coeffs[i] += decomposed[j].Coeffs[i] << gadgetParams.LogBaseQ(j)
 		}
 	}
 }

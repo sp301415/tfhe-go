@@ -15,15 +15,15 @@ TEXT ·decomposePolyAssignUint32AVX2(SB), NOSPLIT, $0-64
 	// VET: go vet complains about VBROADCASTD on uint32 values.
 	// See https://github.com/golang/go/issues/47625.
 	VPBROADCASTD base+24(FP), Y10         // base
-	VPBROADCASTD baseLog+28(FP), Y11      // baseLog
-	VPBROADCASTD lastBaseQLog+32(FP), Y12 // lastBaseQLog
+	VPBROADCASTD logBase+28(FP), Y11      // logBase
+	VPBROADCASTD logLastBaseQ+32(FP), Y12 // logLastBaseQ
 
 	// Create (1, 1, 1, ..., 1)
 	VPBROADCASTD ONE<>+0(SB), Y0 // ONE
 
 	VPSUBD Y0, Y10, Y13 // baseMask = base - 1
 	VPSRLD $1, Y10, Y14 // baseHalf = base / 2
-	VPSUBD Y0, Y11, Y15 // baseLog - 1
+	VPSUBD Y0, Y11, Y15 // logBase - 1
 
 	XORQ SI, SI
 	JMP  N_loop_end
@@ -60,10 +60,10 @@ level_loop:
 	// d[j].Coeffs[i] = c & baseMask
 	VANDPD Y1, Y13, Y2 // d[j].Coeffs[i]
 
-	// c >>= baseLog
+	// c >>= logBase
 	VPSRLVD Y11, Y1, Y1
 
-	// c += d[j].Coeffs[i] >> (baseLog - 1)
+	// c += d[j].Coeffs[i] >> (logBase - 1)
 	VPSRLVD Y15, Y2, Y3
 	VPADDD  Y3, Y1, Y1
 
@@ -98,15 +98,15 @@ TEXT ·decomposePolyAssignUint64AVX2(SB), NOSPLIT, $0-72
 	MOVQ decomposedOut_len+56(FP), DX // level
 
 	VPBROADCASTQ base+24(FP), Y10         // base
-	VPBROADCASTQ baseLog+32(FP), Y11      // baseLog
-	VPBROADCASTQ lastBaseQLog+40(FP), Y12 // lastBaseQLog
+	VPBROADCASTQ logBase+32(FP), Y11      // logBase
+	VPBROADCASTQ logLastBaseQ+40(FP), Y12 // logLastBaseQ
 
 	// Create (1, 1, 1, ..., 1)
 	VPBROADCASTQ ONE<>+0(SB), Y0 // ONE
 
 	VPSUBQ Y0, Y10, Y13 // baseMask = base - 1
 	VPSRLQ $1, Y10, Y14 // baseHalf = base / 2
-	VPSUBQ Y0, Y11, Y15 // baseLog - 1
+	VPSUBQ Y0, Y11, Y15 // logBase - 1
 
 	XORQ SI, SI
 	JMP  N_loop_end
@@ -143,10 +143,10 @@ level_loop:
 	// d[j].Coeffs[i] = c & baseMask
 	VANDPD Y1, Y13, Y2 // d[j].Coeffs[i]
 
-	// c >>= baseLog
+	// c >>= logBase
 	VPSRLVQ Y11, Y1, Y1
 
-	// c += d[j].Coeffs[i] >> (baseLog - 1)
+	// c += d[j].Coeffs[i] >> (logBase - 1)
 	VPSRLVQ Y15, Y2, Y3
 	VPADDQ  Y3, Y1, Y1
 
