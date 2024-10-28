@@ -75,6 +75,7 @@ func newBFVEvaluationBuffer[T tfhe.TorusInt](params tfhe.Parameters[T]) bfvEvalu
 // ShallowCopy creates a shallow copy of this BFVEvaluator.
 func (e *BFVEvaluator[T]) ShallowCopy() *BFVEvaluator[T] {
 	return &BFVEvaluator[T]{
+		Parameters:    e.Parameters,
 		BaseEvaluator: e.BaseEvaluator.ShallowCopy(),
 		KeySwitchKeys: e.KeySwitchKeys,
 		buffer:        newBFVEvaluationBuffer(e.Parameters),
@@ -97,14 +98,13 @@ func (e *BFVEvaluator[T]) TensorAssign(ct0, ct1 tfhe.GLWECiphertext[T], ctOut [3
 	e.BaseEvaluator.ToFourierGLWECiphertextAssign(ct0, e.buffer.ctFourier[0])
 	e.BaseEvaluator.ToFourierGLWECiphertextAssign(ct1, e.buffer.ctFourier[1])
 
+	e.BaseEvaluator.PolyEvaluator.FloatMulFourierPolyAssign(e.buffer.ctFourier[0].Value[0], 1/float64(e.Parameters.Scale()), e.buffer.ctFourier[0].Value[0])
+	e.BaseEvaluator.PolyEvaluator.FloatMulFourierPolyAssign(e.buffer.ctFourier[0].Value[1], 1/float64(e.Parameters.Scale()), e.buffer.ctFourier[0].Value[1])
+
 	e.BaseEvaluator.PolyEvaluator.MulFourierPolyAssign(e.buffer.ctFourier[0].Value[0], e.buffer.ctFourier[1].Value[0], e.buffer.ctTensorFourier[0])
 	e.BaseEvaluator.PolyEvaluator.MulFourierPolyAssign(e.buffer.ctFourier[0].Value[0], e.buffer.ctFourier[1].Value[1], e.buffer.ctTensorFourier[1])
 	e.BaseEvaluator.PolyEvaluator.MulAddFourierPolyAssign(e.buffer.ctFourier[0].Value[1], e.buffer.ctFourier[1].Value[0], e.buffer.ctTensorFourier[1])
 	e.BaseEvaluator.PolyEvaluator.MulFourierPolyAssign(e.buffer.ctFourier[0].Value[1], e.buffer.ctFourier[1].Value[1], e.buffer.ctTensorFourier[2])
-
-	e.BaseEvaluator.PolyEvaluator.FloatMulFourierPolyAssign(e.buffer.ctTensorFourier[0], 1/float64(e.Parameters.Scale()), e.buffer.ctTensorFourier[0])
-	e.BaseEvaluator.PolyEvaluator.FloatMulFourierPolyAssign(e.buffer.ctTensorFourier[1], 1/float64(e.Parameters.Scale()), e.buffer.ctTensorFourier[1])
-	e.BaseEvaluator.PolyEvaluator.FloatMulFourierPolyAssign(e.buffer.ctTensorFourier[2], 1/float64(e.Parameters.Scale()), e.buffer.ctTensorFourier[2])
 
 	e.BaseEvaluator.PolyEvaluator.ToPolyAssignUnsafe(e.buffer.ctTensorFourier[0], ctOut[0])
 	e.BaseEvaluator.PolyEvaluator.ToPolyAssignUnsafe(e.buffer.ctTensorFourier[1], ctOut[1])

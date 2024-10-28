@@ -11,6 +11,8 @@ import (
 // BFVKeyGenerator is not safe for concurrent use.
 // Use [*BFVKeyGenerator.ShallowCopy] to get a safe copy.
 type BFVKeyGenerator[T tfhe.TorusInt] struct {
+	// Parameters is a parameter set for this BFVKeyGenerator.
+	Parameters tfhe.Parameters[T]
 	// BaseEncryptor is a base encryptor for this BFVKeyGenerator.
 	BaseEncryptor *tfhe.Encryptor[T]
 
@@ -32,11 +34,8 @@ type bfvKeyGenerationBuffer[T tfhe.TorusInt] struct {
 //
 // Panics when GLWERank > 1.
 func NewBFVKeyGenerator[T tfhe.TorusInt](params tfhe.Parameters[T], keySwitchParams tfhe.GadgetParameters[T], sk tfhe.SecretKey[T]) *BFVKeyGenerator[T] {
-	if params.GLWERank() > 1 {
-		panic("BFVKeyGenerator only supports GLWERank = 1")
-	}
-
 	return &BFVKeyGenerator[T]{
+		Parameters:      params,
 		BaseEncryptor:   tfhe.NewEncryptorWithKey(params, sk),
 		KeySwitchParams: keySwitchParams,
 		buffer:          newKeyGenerationBuffer(params),
@@ -54,6 +53,7 @@ func newKeyGenerationBuffer[T tfhe.TorusInt](params tfhe.Parameters[T]) bfvKeyGe
 // ShallowCopy creates a shallow copy of this BFVKeyGenerator.
 func (kg *BFVKeyGenerator[T]) ShallowCopy() *BFVKeyGenerator[T] {
 	return &BFVKeyGenerator[T]{
+		Parameters:      kg.Parameters,
 		BaseEncryptor:   kg.BaseEncryptor.ShallowCopy(),
 		KeySwitchParams: kg.KeySwitchParams,
 		buffer:          newKeyGenerationBuffer(kg.BaseEncryptor.Parameters),
@@ -103,9 +103,9 @@ func (kg *BFVKeyGenerator[T]) GenGaloisKeysAssign(idx []int, galKeysOut map[int]
 
 // GenGaloisKeysForRingPack generates automorphism keys for BFV automorphism for LWE to RLWE packing.
 func (kg *BFVKeyGenerator[T]) GenGaloisKeysForRingPack() map[int]tfhe.GLWEKeySwitchKey[T] {
-	auts := make([]int, kg.BaseEncryptor.Parameters.LogPolyDegree())
+	auts := make([]int, kg.Parameters.LogPolyDegree())
 	for i := range auts {
-		auts[i] = 1<<(kg.BaseEncryptor.Parameters.LogPolyDegree()-i) + 1
+		auts[i] = 1<<(kg.Parameters.LogPolyDegree()-i) + 1
 	}
 	return kg.GenGaloisKeys(auts)
 }
@@ -113,9 +113,9 @@ func (kg *BFVKeyGenerator[T]) GenGaloisKeysForRingPack() map[int]tfhe.GLWEKeySwi
 // GenGaloisKeysForRingPackAssign generates automorphism keys for BFV automorphism for LWE to RLWE packing and assigns them to the given map.
 // If a key for a given automorphism degree already exists in the map, it will be overwritten.
 func (kg *BFVKeyGenerator[T]) GenGaloisKeysForRingPackAssign(galKeysOut map[int]tfhe.GLWEKeySwitchKey[T]) {
-	auts := make([]int, kg.BaseEncryptor.Parameters.LogPolyDegree())
+	auts := make([]int, kg.Parameters.LogPolyDegree())
 	for i := range auts {
-		auts[i] = 1<<(kg.BaseEncryptor.Parameters.LogPolyDegree()-i) + 1
+		auts[i] = 1<<(kg.Parameters.LogPolyDegree()-i) + 1
 	}
 	kg.GenGaloisKeysAssign(auts, galKeysOut)
 }
