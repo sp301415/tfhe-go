@@ -45,3 +45,9 @@ jobs:
           go test ./mktfhe -timeout=0 -count=1
           go test ./mktfhe -timeout=0 -count=1 -tags=purego
           GODEBUG=cpu.all=off go test ./mktfhe -count=1
+
+      - name: Test xtfhe
+        run: |
+          go test ./xtfhe -timeout=0 -count=1
+          go test ./xtfhe -timeout=0 -count=1 -tags=purego
+          GODEBUG=cpu.all=off go test ./xtfhe -count=1
