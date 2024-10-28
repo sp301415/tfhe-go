@@ -168,9 +168,9 @@ func (e *BFVEvaluator[T]) RingPackAssign(ct tfhe.LWECiphertext[T], ctOut tfhe.GL
 	ctOut.Value[0].Clear()
 	ctOut.Value[0].Coeffs[0] = num.DivRoundBits(ct.Value[0], e.Parameters.LogPolyDegree())
 
-	ctOut.Value[1].Coeffs[0] = ct.Value[1]
+	ctOut.Value[1].Coeffs[0] = num.DivRoundBits(ct.Value[1], e.Parameters.LogPolyDegree())
 	for i := 1; i < e.Parameters.PolyDegree(); i++ {
-		ctOut.Value[1].Coeffs[e.Parameters.PolyDegree()-i] = num.DivRoundBits(-ct.Value[i+1], e.Parameters.LogPolyDegree())
+		ctOut.Value[1].Coeffs[e.Parameters.PolyDegree()-i] = -num.DivRoundBits(ct.Value[i+1], e.Parameters.LogPolyDegree())
 	}
 
 	for i := 0; i < e.Parameters.LogPolyDegree(); i++ {
