@@ -23,8 +23,6 @@ func NewPoly[T num.Integer](N int) Poly[T] {
 		panic("degree not power of two")
 	case N < MinDegree:
 		panic("degree smaller than MinDegree")
-	case N > MaxDegree:
-		panic("degree larger than MaxDegree")
 	}
 
 	return Poly[T]{Coeffs: make([]T, N)}
@@ -90,8 +88,6 @@ func NewFourierPoly(N int) FourierPoly {
 		panic("degree not power of two")
 	case N < MinDegree:
 		panic("degree smaller than MinDegree")
-	case N > MaxDegree:
-		panic("degree larger than MaxDegree")
 	}
 
 	return FourierPoly{Coeffs: make([]float64, N)}

@@ -13,11 +13,6 @@ const (
 	// Currently, this is set to 16, because AVX2 implementation of FFT and inverse FFT
 	// handles first/last two loops separately.
 	MinDegree = 1 << 4
-
-	// MaxDegree is the maximum degree of polynomial that Evaluator can handle.
-	// Currently, the maximum split bits used in [*Evaluator.Mul] is 13.
-	// For this split, in degree 2^24, the failure probability is less than 2^-73, which is negligible.
-	MaxDegree = 1 << 24
 )
 
 // Evaluator computes polynomial operations over the N-th cyclotomic ring.
@@ -72,8 +67,8 @@ type evaluationBuffer[T num.Integer] struct {
 
 	// pSplit is the split value of p0 in [*Evaluator.BinaryFourierPolyMulPoly].
 	pSplit Poly[T]
-	// fp0Split is the fourier transformed pSplit in [*Evaluator.BinaryFourierPolyMulPoly].
-	fpSplit []FourierPoly
+	// fpBinarySplit is the fourier transformed pSplit in [*Evaluator.BinaryFourierPolyMulPoly].
+	fpBinarySplit []FourierPoly
 }
 
 // NewEvaluator allocates an empty Evaluator with degree N.
@@ -85,8 +80,6 @@ func NewEvaluator[T num.Integer](N int) *Evaluator[T] {
 		panic("degree not power of two")
 	case N < MinDegree:
 		panic("degree smaller than MinDegree")
-	case N > MaxDegree:
-		panic("degree larger than MaxDegree")
 	}
 
 	Q := math.Exp2(float64(num.SizeT[T]()))
@@ -168,42 +161,26 @@ func genTwiddleFactors(N int) (tw, twInv []complex128) {
 }
 
 // splitParameters generates splitBits and splitCount for [*Evaluator.MulPoly].
-func splitParameters[T num.Integer]() (splitBits T, splitCount int) {
-	switch num.SizeT[T]() {
-	case 8:
-		return 11, 1
-	case 16:
-		return 11, 2
-	case 32:
-		return 11, 3
-	case 64:
-		return 13, 5
-	}
-	return 0, 0
+func splitParameters[T num.Integer](N int) (splitBits T, splitCount int) {
+	splitBits = T(50-num.Log2(N)) / 2
+	splitCount = int(math.Ceil(float64(num.SizeT[T]()) / float64(splitBits)))
+	return
 }
 
-// splitParametersBinary generates splitBitsBinary and splitCountBinary for [*Evaluator.BinaryFourierPolyMulPoly].
-func splitParametersBinary[T num.Integer]() (splitBitsBinary T, splitCountBinary int) {
-	switch num.SizeT[T]() {
-	case 8:
-		return 16, 1
-	case 16:
-		return 16, 1
-	case 32:
-		return 26, 2
-	case 64:
-		return 26, 3
-	}
-	return 0, 0
+// splitParametersBinary generates splitBits and splitCount for [*Evaluator.BinaryFourierPolyMulPoly].
+func splitParametersBinary[T num.Integer](N int) (splitBits T, splitCount int) {
+	splitBits = T(50 - num.Log2(N))
+	splitCount = int(math.Ceil(float64(num.SizeT[T]()) / float64(splitBits)))
+	return
 }
 
 // newFourierBuffer allocates an empty fourierBuffer.
 func newFourierBuffer[T num.Integer](N int) evaluationBuffer[T] {
-	_, splitCountBinary := splitParametersBinary[T]()
+	_, splitCount := splitParametersBinary[T](N)
 
-	fpSplit := make([]FourierPoly, splitCountBinary)
-	for i := 0; i < splitCountBinary; i++ {
-		fpSplit[i] = NewFourierPoly(N)
+	fpBinarySplit := make([]FourierPoly, splitCount)
+	for i := 0; i < splitCount; i++ {
+		fpBinarySplit[i] = NewFourierPoly(N)
 	}
 
 	return evaluationBuffer[T]{
@@ -213,8 +190,8 @@ func newFourierBuffer[T num.Integer](N int) evaluationBuffer[T] {
 		fp:    NewFourierPoly(N),
 		fpInv: NewFourierPoly(N),
 
-		pSplit:  NewPoly[T](N),
-		fpSplit: fpSplit,
+		pSplit:        NewPoly[T](N),
+		fpBinarySplit: fpBinarySplit,
 	}
 }
 

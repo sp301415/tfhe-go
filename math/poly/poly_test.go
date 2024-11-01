@@ -28,19 +28,27 @@ func BenchmarkOps(b *testing.B) {
 			p1.Coeffs[i] = rand.Uint64()
 		}
 
-		b.Run(fmt.Sprintf("op=N=%v/Add", N), func(b *testing.B) {
+		fp := pev.ToFourierPoly(p0)
+
+		b.Run(fmt.Sprintf("N=%v/op=Add", N), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				pev.AddPolyAssign(p0, p1, pOut)
 			}
 		})
 
-		b.Run(fmt.Sprintf("op=N=%v/Sub", N), func(b *testing.B) {
+		b.Run(fmt.Sprintf("N=%v/op=Sub", N), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				pev.SubPolyAssign(p0, p1, pOut)
 			}
 		})
 
-		b.Run(fmt.Sprintf("op=N=%v/Mul", N), func(b *testing.B) {
+		b.Run(fmt.Sprintf("N=%v/op=BinaryMul", N), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				pev.BinaryFourierPolyMulPolyAssign(p0, fp, pOut)
+			}
+		})
+
+		b.Run(fmt.Sprintf("N=%v/op=Mul", N), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				pev.MulPolyAssign(p0, p1, pOut)
 			}
