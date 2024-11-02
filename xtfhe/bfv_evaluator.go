@@ -7,16 +7,18 @@ import (
 )
 
 // BFVEvaluator evaluates BFV-type operations on RLWE ciphertexts.
-// Only parameters with GLWERank = 1 are supported.
 //
 // BFVEvaluator is not safe for concurrent use.
 // Use [*BFVEvaluator.ShallowCopy] to get a safe copy.
 type BFVEvaluator[T tfhe.TorusInt] struct {
-	// Parameters is the parameters for this BFVEvaluator.
-	Parameters tfhe.Parameters[T]
 	// BaseEvaluator is a base evaluator for this BFVEvaluator.
 	// Note that it does not hold evaluaation keys, so bootstrapping is not supported.
 	BaseEvaluator *tfhe.Evaluator[T]
+	// PolyEvaluator is a PolyEvaluator for this BFVEvaluator.
+	PolyEvaluator *poly.Evaluator[T]
+
+	// Parameters is the parameters for this BFVEvaluator.
+	Parameters tfhe.Parameters[T]
 
 	// KeySwitchKeys is the keyswitching keys for this BFVEvaluator.
 	KeySwitchKeys BFVKeySwitchKey[T]
@@ -27,11 +29,11 @@ type BFVEvaluator[T tfhe.TorusInt] struct {
 // bfvEvaluationBuffer is a buffer for BFV type evaluation.
 type bfvEvaluationBuffer[T tfhe.TorusInt] struct {
 	// ctFourier is the fourier transformed ciphertext for BFV multiplication.
-	ctFourier [2]tfhe.FourierGLWECiphertext[T]
+	ctMulFourier [2]tfhe.FourierGLWECiphertext[T]
 	// ctTensor is the tensored ciphertext for BFV multiplication.
-	ctTensor [3]poly.Poly[T]
+	ctTensor tfhe.GLWECiphertext[T]
 	// ctTensorFourier is the fourier transformed ctTensor.
-	ctTensorFourier [3]poly.FourierPoly
+	ctTensorFourier tfhe.FourierGLWECiphertext[T]
 	// ctPermute is the permuted ciphertext for BFV automorphism.
 	ctPermute tfhe.GLWECiphertext[T]
 	// ctPack is the permuted ciphertext for RingPack.
@@ -39,12 +41,11 @@ type bfvEvaluationBuffer[T tfhe.TorusInt] struct {
 }
 
 // NewBFVEvaluator creates a new BFVEvaluator.
-//
-// Panics when GLWERank > 1.
 func NewBFVEvaluator[T tfhe.TorusInt](params tfhe.Parameters[T], keySwitchKeys BFVKeySwitchKey[T]) *BFVEvaluator[T] {
 	return &BFVEvaluator[T]{
-		Parameters:    params,
 		BaseEvaluator: tfhe.NewEvaluator(params, tfhe.EvaluationKey[T]{}),
+		PolyEvaluator: poly.NewEvaluator[T](params.PolyDegree()),
+		Parameters:    params,
 		KeySwitchKeys: keySwitchKeys,
 		buffer:        newBFVEvaluationBuffer(params),
 	}
@@ -52,77 +53,81 @@ func NewBFVEvaluator[T tfhe.TorusInt](params tfhe.Parameters[T], keySwitchKeys B
 
 // newBFVEvaluationBuffer creates a new BFVEvaluationBuffer.
 func newBFVEvaluationBuffer[T tfhe.TorusInt](params tfhe.Parameters[T]) bfvEvaluationBuffer[T] {
+	tensorRank := params.GLWERank() * (params.GLWERank() + 3) / 2
 	return bfvEvaluationBuffer[T]{
-		ctFourier: [2]tfhe.FourierGLWECiphertext[T]{
+		ctMulFourier: [2]tfhe.FourierGLWECiphertext[T]{
 			tfhe.NewFourierGLWECiphertext(params),
 			tfhe.NewFourierGLWECiphertext(params),
 		},
-		ctTensor: [3]poly.Poly[T]{
-			poly.NewPoly[T](params.PolyDegree()),
-			poly.NewPoly[T](params.PolyDegree()),
-			poly.NewPoly[T](params.PolyDegree()),
-		},
-		ctTensorFourier: [3]poly.FourierPoly{
-			poly.NewFourierPoly(params.PolyDegree()),
-			poly.NewFourierPoly(params.PolyDegree()),
-			poly.NewFourierPoly(params.PolyDegree()),
-		},
-		ctPermute: tfhe.NewGLWECiphertext(params),
-		ctPack:    tfhe.NewGLWECiphertext(params),
+		ctTensor:        tfhe.NewGLWECiphertextCustom[T](tensorRank, params.PolyDegree()),
+		ctTensorFourier: tfhe.NewFourierGLWECiphertextCustom[T](tensorRank, params.PolyDegree()),
+		ctPermute:       tfhe.NewGLWECiphertext(params),
+		ctPack:          tfhe.NewGLWECiphertext(params),
 	}
 }
 
 // ShallowCopy creates a shallow copy of this BFVEvaluator.
 func (e *BFVEvaluator[T]) ShallowCopy() *BFVEvaluator[T] {
 	return &BFVEvaluator[T]{
-		Parameters:    e.Parameters,
 		BaseEvaluator: e.BaseEvaluator.ShallowCopy(),
+		PolyEvaluator: e.PolyEvaluator.ShallowCopy(),
+		Parameters:    e.Parameters,
 		KeySwitchKeys: e.KeySwitchKeys,
 		buffer:        newBFVEvaluationBuffer(e.Parameters),
 	}
 }
 
 // Tensor computes the tensor product of two ciphertexts.
-func (e *BFVEvaluator[T]) Tensor(ct0, ct1 tfhe.GLWECiphertext[T]) [3]poly.Poly[T] {
-	ctOut := [3]poly.Poly[T]{
-		e.BaseEvaluator.PolyEvaluator.NewPoly(),
-		e.BaseEvaluator.PolyEvaluator.NewPoly(),
-		e.BaseEvaluator.PolyEvaluator.NewPoly(),
-	}
+// ctOut has GLWERank = params.GLWERank + (params.GLWERank + 3) / 2.
+func (e *BFVEvaluator[T]) Tensor(ct0, ct1 tfhe.GLWECiphertext[T]) tfhe.GLWECiphertext[T] {
+	tensorRank := e.Parameters.GLWERank() * (e.Parameters.GLWERank() + 3) / 2
+	ctOut := tfhe.NewGLWECiphertextCustom[T](tensorRank, e.Parameters.PolyDegree())
 	e.TensorAssign(ct0, ct1, ctOut)
 	return ctOut
 }
 
 // TensorAssign computes the tensor product of two ciphertexts and assigns the result to ctOut.
-func (e *BFVEvaluator[T]) TensorAssign(ct0, ct1 tfhe.GLWECiphertext[T], ctOut [3]poly.Poly[T]) {
-	e.BaseEvaluator.ToFourierGLWECiphertextAssign(ct0, e.buffer.ctFourier[0])
-	e.BaseEvaluator.ToFourierGLWECiphertextAssign(ct1, e.buffer.ctFourier[1])
+// ctOut should have GLWERank = params.GLWERank + (params.GLWERank + 3) / 2.
+func (e *BFVEvaluator[T]) TensorAssign(ct0, ct1, ctOut tfhe.GLWECiphertext[T]) {
+	e.BaseEvaluator.ToFourierGLWECiphertextAssign(ct0, e.buffer.ctMulFourier[0])
+	e.BaseEvaluator.ToFourierGLWECiphertextAssign(ct1, e.buffer.ctMulFourier[1])
 
-	e.BaseEvaluator.PolyEvaluator.FloatMulFourierPolyAssign(e.buffer.ctFourier[0].Value[0], 1/float64(e.Parameters.Scale()), e.buffer.ctFourier[0].Value[0])
-	e.BaseEvaluator.PolyEvaluator.FloatMulFourierPolyAssign(e.buffer.ctFourier[0].Value[1], 1/float64(e.Parameters.Scale()), e.buffer.ctFourier[0].Value[1])
+	tensorIdx := 0
+	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
+		e.PolyEvaluator.MulFourierPolyAssign(e.buffer.ctMulFourier[0].Value[i], e.buffer.ctMulFourier[1].Value[i], e.buffer.ctTensorFourier.Value[tensorIdx])
+		tensorIdx++
+		for j := i + 1; j < e.Parameters.GLWERank()+1; j++ {
+			e.PolyEvaluator.MulFourierPolyAssign(e.buffer.ctMulFourier[0].Value[i], e.buffer.ctMulFourier[1].Value[j], e.buffer.ctTensorFourier.Value[tensorIdx])
+			e.PolyEvaluator.MulAddFourierPolyAssign(e.buffer.ctMulFourier[0].Value[j], e.buffer.ctMulFourier[1].Value[i], e.buffer.ctTensorFourier.Value[tensorIdx])
+			tensorIdx++
+		}
+	}
 
-	e.BaseEvaluator.PolyEvaluator.MulFourierPolyAssign(e.buffer.ctFourier[0].Value[0], e.buffer.ctFourier[1].Value[0], e.buffer.ctTensorFourier[0])
-	e.BaseEvaluator.PolyEvaluator.MulFourierPolyAssign(e.buffer.ctFourier[0].Value[0], e.buffer.ctFourier[1].Value[1], e.buffer.ctTensorFourier[1])
-	e.BaseEvaluator.PolyEvaluator.MulAddFourierPolyAssign(e.buffer.ctFourier[0].Value[1], e.buffer.ctFourier[1].Value[0], e.buffer.ctTensorFourier[1])
-	e.BaseEvaluator.PolyEvaluator.MulFourierPolyAssign(e.buffer.ctFourier[0].Value[1], e.buffer.ctFourier[1].Value[1], e.buffer.ctTensorFourier[2])
-
-	e.BaseEvaluator.PolyEvaluator.ToPolyAssignUnsafe(e.buffer.ctTensorFourier[0], ctOut[0])
-	e.BaseEvaluator.PolyEvaluator.ToPolyAssignUnsafe(e.buffer.ctTensorFourier[1], ctOut[1])
-	e.BaseEvaluator.PolyEvaluator.ToPolyAssignUnsafe(e.buffer.ctTensorFourier[2], ctOut[2])
+	tensorRank := e.Parameters.GLWERank() * (e.Parameters.GLWERank() + 3) / 2
+	for i := 0; i < tensorRank+1; i++ {
+		e.PolyEvaluator.FloatMulFourierPolyAssign(e.buffer.ctTensorFourier.Value[i], 1/float64(e.Parameters.Scale()), e.buffer.ctTensorFourier.Value[i])
+		e.PolyEvaluator.ToPolyAssignUnsafe(e.buffer.ctTensorFourier.Value[i], e.buffer.ctTensor.Value[i])
+	}
 }
 
 // Relinearize relinearizes a tensor product of two ciphertexts.
-func (e *BFVEvaluator[T]) Relinearize(ct [3]poly.Poly[T]) tfhe.GLWECiphertext[T] {
+// ct should have GLWERank = params.GLWERank + (params.GLWERank + 3) / 2.
+func (e *BFVEvaluator[T]) Relinearize(ct tfhe.GLWECiphertext[T]) tfhe.GLWECiphertext[T] {
 	ctOut := tfhe.NewGLWECiphertext(e.Parameters)
 	e.RelinearizeAssign(ct, ctOut)
 	return ctOut
 }
 
 // RelinearizeAssign relinearizes a tensor product of two ciphertexts and assigns the result to ctOut.
-func (e *BFVEvaluator[T]) RelinearizeAssign(ct [3]poly.Poly[T], ctOut tfhe.GLWECiphertext[T]) {
-	e.BaseEvaluator.GadgetProductGLWEAssign(e.KeySwitchKeys.RelinKey.Value[0], ct[2], ctOut)
-	e.BaseEvaluator.PolyEvaluator.AddPolyAssign(ct[0], ctOut.Value[0], ctOut.Value[0])
-	e.BaseEvaluator.PolyEvaluator.AddPolyAssign(ct[1], ctOut.Value[1], ctOut.Value[1])
+// ct should have GLWERank = params.GLWERank + (params.GLWERank + 3) / 2.
+func (e *BFVEvaluator[T]) RelinearizeAssign(ct, ctOut tfhe.GLWECiphertext[T]) {
+	tensorRank := e.Parameters.GLWERank() * (e.Parameters.GLWERank() + 3) / 2
+	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
+		ctOut.Value[i].CopyFrom(e.buffer.ctTensor.Value[i])
+	}
+	for i, ii := e.Parameters.GLWERank()+1, 0; i < tensorRank+1; i, ii = i+1, ii+1 {
+		e.BaseEvaluator.GadgetProductAddGLWEAssign(e.KeySwitchKeys.RelinKey.Value[ii], e.buffer.ctTensor.Value[i], ctOut)
+	}
 }
 
 // Mul returns ctOut = ct0 * ct1, using BFV multiplication.
@@ -152,8 +157,7 @@ func (e *BFVEvaluator[T]) Permute(ct0 tfhe.GLWECiphertext[T], d int) tfhe.GLWECi
 // Panics if BFVEvaluator does not have galois key for d.
 func (e *BFVEvaluator[T]) PermuteAssign(ct0 tfhe.GLWECiphertext[T], d int, ctOut tfhe.GLWECiphertext[T]) {
 	e.BaseEvaluator.PermuteGLWEAssign(ct0, d, e.buffer.ctPermute)
-	e.BaseEvaluator.GadgetProductGLWEAssign(e.KeySwitchKeys.GaloisKeys[d].Value[0], e.buffer.ctPermute.Value[1], ctOut)
-	e.BaseEvaluator.PolyEvaluator.AddPolyAssign(e.buffer.ctPermute.Value[0], ctOut.Value[0], ctOut.Value[0])
+	e.BaseEvaluator.KeySwitchGLWEAssign(e.buffer.ctPermute, e.KeySwitchKeys.GaloisKeys[d], ctOut)
 }
 
 // RingPack packs a LWE ciphertext to RLWE ciphertext.
@@ -168,9 +172,11 @@ func (e *BFVEvaluator[T]) RingPackAssign(ct tfhe.LWECiphertext[T], ctOut tfhe.GL
 	ctOut.Value[0].Clear()
 	ctOut.Value[0].Coeffs[0] = num.DivRoundBits(ct.Value[0], e.Parameters.LogPolyDegree())
 
-	ctOut.Value[1].Coeffs[0] = num.DivRoundBits(ct.Value[1], e.Parameters.LogPolyDegree())
-	for i := 1; i < e.Parameters.PolyDegree(); i++ {
-		ctOut.Value[1].Coeffs[e.Parameters.PolyDegree()-i] = -num.DivRoundBits(ct.Value[i+1], e.Parameters.LogPolyDegree())
+	for i := 0; i < e.Parameters.GLWERank(); i++ {
+		ctOut.Value[1+i].Coeffs[0] = num.DivRoundBits(ct.Value[1+i*e.Parameters.PolyDegree()], e.Parameters.LogPolyDegree())
+		for j := 1; j < e.Parameters.PolyDegree(); j++ {
+			ctOut.Value[1+i].Coeffs[j] = -num.DivRoundBits(ct.Value[1+i*e.Parameters.PolyDegree()+j], e.Parameters.LogPolyDegree())
+		}
 	}
 
 	for i := 0; i < e.Parameters.LogPolyDegree(); i++ {

@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	params = tfhe.ParamsUint6.Compile()
+	params = tfhe.ParamsUint3.Compile()
 	enc    = tfhe.NewEncryptor(params)
 	keyGen = xtfhe.NewBFVKeyGenerator(params, xtfhe.ParamsBFVKeySwitchLogN11.Compile(), enc.SecretKey)
 	eval   = xtfhe.NewBFVEvaluator(params, xtfhe.BFVKeySwitchKey[uint64]{

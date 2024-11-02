@@ -6,57 +6,39 @@ import (
 )
 
 // BFVKeyGenerator generates keyswitching keys for BFV type operations.
-// Only parameters with GLWERank = 1 are supported.
 //
 // BFVKeyGenerator is not safe for concurrent use.
 // Use [*BFVKeyGenerator.ShallowCopy] to get a safe copy.
 type BFVKeyGenerator[T tfhe.TorusInt] struct {
-	// Parameters is a parameter set for this BFVKeyGenerator.
-	Parameters tfhe.Parameters[T]
 	// BaseEncryptor is a base encryptor for this BFVKeyGenerator.
 	BaseEncryptor *tfhe.Encryptor[T]
+	// PolyEvaluator is a PolyEvaluator for this BFVKeyGenerator.
+	PolyEvaluator *poly.Evaluator[T]
+
+	// Parameters is a parameter set for this BFVKeyGenerator.
+	Parameters tfhe.Parameters[T]
 
 	// KeySwitchParams is a gadget parameter set for keyswitching keys in BFV type operations.
 	KeySwitchParams tfhe.GadgetParameters[T]
-
-	buffer bfvKeyGenerationBuffer[T]
-}
-
-// bfvKeyGenerationBuffer is a buffer for BFV type key generation.
-type bfvKeyGenerationBuffer[T tfhe.TorusInt] struct {
-	// sk is a buffer for transformed secret key.
-	sk tfhe.GLWESecretKey[T]
-	// fptSk is a buffer for the fourier transformed sk.
-	fsk poly.FourierPoly
 }
 
 // NewBFVKeyGenerator creates a new BFVKeyGenerator.
-//
-// Panics when GLWERank > 1.
 func NewBFVKeyGenerator[T tfhe.TorusInt](params tfhe.Parameters[T], keySwitchParams tfhe.GadgetParameters[T], sk tfhe.SecretKey[T]) *BFVKeyGenerator[T] {
 	return &BFVKeyGenerator[T]{
-		Parameters:      params,
 		BaseEncryptor:   tfhe.NewEncryptorWithKey(params, sk),
+		PolyEvaluator:   poly.NewEvaluator[T](params.PolyDegree()),
+		Parameters:      params,
 		KeySwitchParams: keySwitchParams,
-		buffer:          newKeyGenerationBuffer(params),
-	}
-}
-
-// newKeyGenerationBuffer creates a new keyGenerationBuffer.
-func newKeyGenerationBuffer[T tfhe.TorusInt](params tfhe.Parameters[T]) bfvKeyGenerationBuffer[T] {
-	return bfvKeyGenerationBuffer[T]{
-		sk:  tfhe.NewGLWESecretKey(params),
-		fsk: poly.NewFourierPoly(params.PolyDegree()),
 	}
 }
 
 // ShallowCopy creates a shallow copy of this BFVKeyGenerator.
 func (kg *BFVKeyGenerator[T]) ShallowCopy() *BFVKeyGenerator[T] {
 	return &BFVKeyGenerator[T]{
-		Parameters:      kg.Parameters,
 		BaseEncryptor:   kg.BaseEncryptor.ShallowCopy(),
+		PolyEvaluator:   kg.PolyEvaluator.ShallowCopy(),
+		Parameters:      kg.Parameters,
 		KeySwitchParams: kg.KeySwitchParams,
-		buffer:          newKeyGenerationBuffer(kg.BaseEncryptor.Parameters),
 	}
 }
 
@@ -71,21 +53,34 @@ type BFVKeySwitchKey[T tfhe.TorusInt] struct {
 
 // GenRelinKey generates a relinearization key for BFV multiplication.
 func (kg *BFVKeyGenerator[T]) GenRelinKey() tfhe.GLWEKeySwitchKey[T] {
-	fsk := kg.BaseEncryptor.SecretKey.FourierGLWEKey.Value[0]
-	kg.BaseEncryptor.PolyEvaluator.MulFourierPolyAssign(fsk, fsk, kg.buffer.fsk)
-	kg.BaseEncryptor.PolyEvaluator.ToPolyAssignUnsafe(kg.buffer.fsk, kg.buffer.sk.Value[0])
+	skOut := tfhe.NewGLWESecretKeyCustom[T](kg.Parameters.GLWERank()*(kg.Parameters.GLWERank()+1)/2, kg.Parameters.PolyDegree())
+	fskOut := tfhe.NewFourierGLWESecretKeyCustom[T](kg.Parameters.GLWERank()*(kg.Parameters.GLWERank()+1)/2, kg.Parameters.PolyDegree())
 
-	return kg.BaseEncryptor.GenGLWEKeySwitchKey(kg.buffer.sk, kg.KeySwitchParams)
+	skOutIdx := 0
+	for i := 0; i < kg.Parameters.GLWERank(); i++ {
+		for j := i; j < kg.Parameters.GLWERank(); j++ {
+			kg.BaseEncryptor.PolyEvaluator.MulFourierPolyAssign(kg.BaseEncryptor.SecretKey.FourierGLWEKey.Value[i], kg.BaseEncryptor.SecretKey.FourierGLWEKey.Value[j], fskOut.Value[skOutIdx])
+			skOutIdx++
+		}
+	}
+
+	for i := range fskOut.Value {
+		kg.BaseEncryptor.PolyEvaluator.ToPolyAssignUnsafe(fskOut.Value[i], skOut.Value[i])
+	}
+
+	return kg.BaseEncryptor.GenGLWEKeySwitchKey(skOut, kg.KeySwitchParams)
 }
 
 // GenGaloisKeys generate galois keys for BFV automorphism.
 func (kg *BFVKeyGenerator[T]) GenGaloisKeys(idx []int) map[int]tfhe.GLWEKeySwitchKey[T] {
 	galKeys := make(map[int]tfhe.GLWEKeySwitchKey[T], len(idx))
-	sk := kg.BaseEncryptor.SecretKey.GLWEKey.Value[0]
+	skOut := tfhe.NewGLWESecretKey(kg.Parameters)
 
 	for _, d := range idx {
-		kg.BaseEncryptor.PolyEvaluator.PermutePolyAssign(sk, d, kg.buffer.sk.Value[0])
-		galKeys[d] = kg.BaseEncryptor.GenGLWEKeySwitchKey(kg.buffer.sk, kg.KeySwitchParams)
+		for i := 0; i < kg.Parameters.GLWERank(); i++ {
+			kg.BaseEncryptor.PolyEvaluator.PermutePolyAssign(kg.BaseEncryptor.SecretKey.GLWEKey.Value[i], d, skOut.Value[i])
+		}
+		galKeys[d] = kg.BaseEncryptor.GenGLWEKeySwitchKey(skOut, kg.KeySwitchParams)
 	}
 	return galKeys
 }
@@ -93,11 +88,13 @@ func (kg *BFVKeyGenerator[T]) GenGaloisKeys(idx []int) map[int]tfhe.GLWEKeySwitc
 // GenGaloisKeysAssign generates automorphism keys for BFV automorphism and assigns them to the given map.
 // If a key for a given automorphism degree already exists in the map, it will be overwritten.
 func (kg *BFVKeyGenerator[T]) GenGaloisKeysAssign(idx []int, galKeysOut map[int]tfhe.GLWEKeySwitchKey[T]) {
-	sk := kg.BaseEncryptor.SecretKey.GLWEKey.Value[0]
+	skOut := tfhe.NewGLWESecretKey(kg.Parameters)
 
 	for _, d := range idx {
-		kg.BaseEncryptor.PolyEvaluator.PermutePolyAssign(sk, d, kg.buffer.sk.Value[0])
-		galKeysOut[d] = kg.BaseEncryptor.GenGLWEKeySwitchKey(kg.buffer.sk, kg.KeySwitchParams)
+		for i := 0; i < kg.Parameters.GLWERank(); i++ {
+			kg.BaseEncryptor.PolyEvaluator.PermutePolyAssign(kg.BaseEncryptor.SecretKey.GLWEKey.Value[i], d, skOut.Value[i])
+		}
+		galKeysOut[d] = kg.BaseEncryptor.GenGLWEKeySwitchKey(skOut, kg.KeySwitchParams)
 	}
 }
 
