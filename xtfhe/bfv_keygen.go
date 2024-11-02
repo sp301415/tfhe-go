@@ -42,13 +42,21 @@ func (kg *BFVKeyGenerator[T]) ShallowCopy() *BFVKeyGenerator[T] {
 	}
 }
 
-// BFVKeySwitchKey is a keyswitching key for BFV type operations.
+// BFVEvaluationKey is a keyswitching key for BFV type operations.
 // It holds relinearization and automorphism keys.
-type BFVKeySwitchKey[T tfhe.TorusInt] struct {
+type BFVEvaluationKey[T tfhe.TorusInt] struct {
 	// RelinKey is a relinearization key.
 	RelinKey tfhe.GLWEKeySwitchKey[T]
 	// GaloisKeys is a map of automorphism keys.
 	GaloisKeys map[int]tfhe.GLWEKeySwitchKey[T]
+}
+
+// GenEvaluationKey generates an evaluation key for BFV type operations.
+func (kg *BFVKeyGenerator[T]) GenEvaluationKey(idx []int) BFVEvaluationKey[T] {
+	return BFVEvaluationKey[T]{
+		RelinKey:   kg.GenRelinKey(),
+		GaloisKeys: kg.GenGaloisKeys(idx),
+	}
 }
 
 // GenRelinKey generates a relinearization key for BFV multiplication.
@@ -98,8 +106,8 @@ func (kg *BFVKeyGenerator[T]) GenGaloisKeysAssign(idx []int, galKeysOut map[int]
 	}
 }
 
-// GenGaloisKeysForRingPack generates automorphism keys for BFV automorphism for LWE to RLWE packing.
-func (kg *BFVKeyGenerator[T]) GenGaloisKeysForRingPack() map[int]tfhe.GLWEKeySwitchKey[T] {
+// GenGaloisKeysForLWEToGLWECiphertext generates automorphism keys for BFV automorphism for LWE to GLWE packing.
+func (kg *BFVKeyGenerator[T]) GenGaloisKeysForLWEToGLWECiphertext() map[int]tfhe.GLWEKeySwitchKey[T] {
 	auts := make([]int, kg.Parameters.LogPolyDegree())
 	for i := range auts {
 		auts[i] = 1<<(kg.Parameters.LogPolyDegree()-i) + 1
@@ -107,9 +115,9 @@ func (kg *BFVKeyGenerator[T]) GenGaloisKeysForRingPack() map[int]tfhe.GLWEKeySwi
 	return kg.GenGaloisKeys(auts)
 }
 
-// GenGaloisKeysForRingPackAssign generates automorphism keys for BFV automorphism for LWE to RLWE packing and assigns them to the given map.
+// GenGaloisKeysForLWEToGLWECiphertextAssign generates automorphism keys for BFV automorphism for LWE to GLWE packing and assigns them to the given map.
 // If a key for a given automorphism degree already exists in the map, it will be overwritten.
-func (kg *BFVKeyGenerator[T]) GenGaloisKeysForRingPackAssign(galKeysOut map[int]tfhe.GLWEKeySwitchKey[T]) {
+func (kg *BFVKeyGenerator[T]) GenGaloisKeysForLWEToGLWECiphertextAssign(galKeysOut map[int]tfhe.GLWEKeySwitchKey[T]) {
 	auts := make([]int, kg.Parameters.LogPolyDegree())
 	for i := range auts {
 		auts[i] = 1<<(kg.Parameters.LogPolyDegree()-i) + 1

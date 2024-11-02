@@ -6,7 +6,7 @@ import (
 	"github.com/sp301415/tfhe-go/tfhe"
 )
 
-// BFVEvaluator evaluates BFV-type operations on RLWE ciphertexts.
+// BFVEvaluator evaluates BFV-type operations on GLWE ciphertexts.
 //
 // BFVEvaluator is not safe for concurrent use.
 // Use [*BFVEvaluator.ShallowCopy] to get a safe copy.
@@ -21,7 +21,7 @@ type BFVEvaluator[T tfhe.TorusInt] struct {
 	Parameters tfhe.Parameters[T]
 
 	// KeySwitchKeys is the keyswitching keys for this BFVEvaluator.
-	KeySwitchKeys BFVKeySwitchKey[T]
+	KeySwitchKeys BFVEvaluationKey[T]
 
 	buffer bfvEvaluationBuffer[T]
 }
@@ -41,7 +41,7 @@ type bfvEvaluationBuffer[T tfhe.TorusInt] struct {
 }
 
 // NewBFVEvaluator creates a new BFVEvaluator.
-func NewBFVEvaluator[T tfhe.TorusInt](params tfhe.Parameters[T], keySwitchKeys BFVKeySwitchKey[T]) *BFVEvaluator[T] {
+func NewBFVEvaluator[T tfhe.TorusInt](params tfhe.Parameters[T], keySwitchKeys BFVEvaluationKey[T]) *BFVEvaluator[T] {
 	return &BFVEvaluator[T]{
 		BaseEvaluator: tfhe.NewEvaluator(params, tfhe.EvaluationKey[T]{}),
 		PolyEvaluator: poly.NewEvaluator[T](params.PolyDegree()),
@@ -160,15 +160,15 @@ func (e *BFVEvaluator[T]) PermuteAssign(ct0 tfhe.GLWECiphertext[T], d int, ctOut
 	e.BaseEvaluator.KeySwitchGLWEAssign(e.buffer.ctPermute, e.KeySwitchKeys.GaloisKeys[d], ctOut)
 }
 
-// RingPack packs a LWE ciphertext to RLWE ciphertext.
-func (e *BFVEvaluator[T]) RingPack(ct tfhe.LWECiphertext[T]) tfhe.GLWECiphertext[T] {
+// LWEToGLWECiphertext packs a LWE ciphertext to GLWE ciphertext.
+func (e *BFVEvaluator[T]) LWEToGLWECiphertext(ct tfhe.LWECiphertext[T]) tfhe.GLWECiphertext[T] {
 	ctOut := tfhe.NewGLWECiphertext(e.Parameters)
-	e.RingPackAssign(ct, ctOut)
+	e.LWEToGLWECiphertextAssign(ct, ctOut)
 	return ctOut
 }
 
-// RingPackAssign packs a LWE ciphertext to RLWE ciphertext.
-func (e *BFVEvaluator[T]) RingPackAssign(ct tfhe.LWECiphertext[T], ctOut tfhe.GLWECiphertext[T]) {
+// LWEToGLWECiphertextAssign packs a LWE ciphertext to GLWE ciphertext.
+func (e *BFVEvaluator[T]) LWEToGLWECiphertextAssign(ct tfhe.LWECiphertext[T], ctOut tfhe.GLWECiphertext[T]) {
 	ctOut.Value[0].Clear()
 	ctOut.Value[0].Coeffs[0] = num.DivRoundBits(ct.Value[0], e.Parameters.LogPolyDegree())
 

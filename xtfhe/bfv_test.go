@@ -13,9 +13,9 @@ var (
 	params = tfhe.ParamsUint3.Compile()
 	enc    = tfhe.NewEncryptor(params)
 	keyGen = xtfhe.NewBFVKeyGenerator(params, xtfhe.ParamsBFVKeySwitchLogN11.Compile(), enc.SecretKey)
-	eval   = xtfhe.NewBFVEvaluator(params, xtfhe.BFVKeySwitchKey[uint64]{
+	eval   = xtfhe.NewBFVEvaluator(params, xtfhe.BFVEvaluationKey[uint64]{
 		RelinKey:   keyGen.GenRelinKey(),
-		GaloisKeys: keyGen.GenGaloisKeysForRingPack(),
+		GaloisKeys: keyGen.GenGaloisKeysForLWEToGLWECiphertext(),
 	})
 )
 
@@ -43,10 +43,10 @@ func TestBFVPermute(t *testing.T) {
 	assert.Equal(t, enc.DecryptGLWE(ctAut)[d], m1)
 }
 
-func TestBFVRingPack(t *testing.T) {
+func TestLWEToGLWECiphertext(t *testing.T) {
 	m := 3
 	ctLWE := enc.EncryptLWE(m)
-	ctGLWE := eval.RingPack(ctLWE)
+	ctGLWE := eval.LWEToGLWECiphertext(ctLWE)
 
 	assert.Equal(t, enc.DecryptGLWE(ctGLWE)[0], m)
 }
@@ -68,6 +68,6 @@ func BenchmarkBFVRingPack(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		eval.RingPackAssign(ctLWE, ctGLWE)
+		eval.LWEToGLWECiphertextAssign(ctLWE, ctGLWE)
 	}
 }
