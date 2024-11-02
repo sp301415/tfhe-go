@@ -175,7 +175,7 @@ func (e *BFVEvaluator[T]) LWEToGLWECiphertextAssign(ct tfhe.LWECiphertext[T], ct
 	for i := 0; i < e.Parameters.GLWERank(); i++ {
 		ctOut.Value[1+i].Coeffs[0] = num.DivRoundBits(ct.Value[1+i*e.Parameters.PolyDegree()], e.Parameters.LogPolyDegree())
 		for j := 1; j < e.Parameters.PolyDegree(); j++ {
-			ctOut.Value[1+i].Coeffs[j] = -num.DivRoundBits(ct.Value[1+i*e.Parameters.PolyDegree()+j], e.Parameters.LogPolyDegree())
+			ctOut.Value[1+i].Coeffs[e.Parameters.PolyDegree()-j] = -num.DivRoundBits(ct.Value[1+i*e.Parameters.PolyDegree()+j], e.Parameters.LogPolyDegree())
 		}
 	}
 
