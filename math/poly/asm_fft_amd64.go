@@ -208,13 +208,13 @@ func fftInPlace(coeffs []float64, tw []complex128) {
 	}
 }
 
-func invFFTInPlaceAVX2(coeffs []float64, twInv []complex128, NInv float64)
+func invFFTInPlaceAVX2(coeffs []float64, twInv []complex128, scale float64)
 
 // invfftInPlace is a top-level function for inverse FFT.
 // All internal inverse FFT implementations calls this function for performance.
 func invFFTInPlace(coeffs []float64, twInv []complex128) {
 	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
-		invFFTInPlaceAVX2(coeffs, twInv, 2/float64(len(coeffs)))
+		invFFTInPlaceAVX2(coeffs, twInv, float64(len(coeffs)/2))
 		return
 	}
 
@@ -380,7 +380,7 @@ func invFFTInPlace(coeffs []float64, twInv []complex128) {
 	}
 
 	// Last Loop
-	NInv := 2 / float64(N)
+	scale := float64(N / 2)
 	Wr := real(twInv[w])
 	Wi := imag(twInv[w])
 	for j := 0; j < N/2; j += 8 {
@@ -404,15 +404,15 @@ func invFFTInPlace(coeffs []float64, twInv []complex128) {
 		Vi2 := coeffs[j+N/2+6]
 		Vi3 := coeffs[j+N/2+7]
 
-		coeffs[j+0] = (Ur0 + Vr0) * NInv
-		coeffs[j+1] = (Ur1 + Vr1) * NInv
-		coeffs[j+2] = (Ur2 + Vr2) * NInv
-		coeffs[j+3] = (Ur3 + Vr3) * NInv
+		coeffs[j+0] = (Ur0 + Vr0) / scale
+		coeffs[j+1] = (Ur1 + Vr1) / scale
+		coeffs[j+2] = (Ur2 + Vr2) / scale
+		coeffs[j+3] = (Ur3 + Vr3) / scale
 
-		coeffs[j+4] = (Ui0 + Vi0) * NInv
-		coeffs[j+5] = (Ui1 + Vi1) * NInv
-		coeffs[j+6] = (Ui2 + Vi2) * NInv
-		coeffs[j+7] = (Ui3 + Vi3) * NInv
+		coeffs[j+4] = (Ui0 + Vi0) / scale
+		coeffs[j+5] = (Ui1 + Vi1) / scale
+		coeffs[j+6] = (Ui2 + Vi2) / scale
+		coeffs[j+7] = (Ui3 + Vi3) / scale
 
 		UVr0 := Ur0 - Vr0
 		UVr1 := Ur1 - Vr1
@@ -434,14 +434,14 @@ func invFFTInPlace(coeffs []float64, twInv []complex128) {
 		UVi2W := UVr2*Wi + UVi2*Wr
 		UVi3W := UVr3*Wi + UVi3*Wr
 
-		coeffs[j+N/2+0] = UVr0W
-		coeffs[j+N/2+1] = UVr1W
-		coeffs[j+N/2+2] = UVr2W
-		coeffs[j+N/2+3] = UVr3W
+		coeffs[j+N/2+0] = UVr0W / scale
+		coeffs[j+N/2+1] = UVr1W / scale
+		coeffs[j+N/2+2] = UVr2W / scale
+		coeffs[j+N/2+3] = UVr3W / scale
 
-		coeffs[j+N/2+4] = UVi0W
-		coeffs[j+N/2+5] = UVi1W
-		coeffs[j+N/2+6] = UVi2W
-		coeffs[j+N/2+7] = UVi3W
+		coeffs[j+N/2+4] = UVi0W / scale
+		coeffs[j+N/2+5] = UVi1W / scale
+		coeffs[j+N/2+6] = UVi2W / scale
+		coeffs[j+N/2+7] = UVi3W / scale
 	}
 }

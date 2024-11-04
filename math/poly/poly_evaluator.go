@@ -13,6 +13,10 @@ const (
 	// Currently, this is set to 16, because AVX2 implementation of FFT and inverse FFT
 	// handles first/last two loops separately.
 	MinDegree = 1 << 4
+
+	// splitBound is denotes the maximum bits of N*B1*B2, where B1, B2 is the splitting bound of polynomial multiplication.
+	// Currently, this is set to 50, which gives failure rate less than 2^-73.
+	splitBound = 50
 )
 
 // Evaluator computes polynomial operations over the N-th cyclotomic ring.
@@ -116,60 +120,46 @@ func NewEvaluator[T num.Integer](N int) *Evaluator[T] {
 
 // genTwiddleFactors generates twiddle factors for FFT.
 func genTwiddleFactors(N int) (tw, twInv []complex128) {
-	wNj := make([]complex128, N/2)
-	wNjInv := make([]complex128, N/2)
+	twFFT := make([]complex128, N/2)
+	twInvFFT := make([]complex128, N/2)
 	for j := 0; j < N/2; j++ {
 		e := -2 * math.Pi * float64(j) / float64(N)
-		wNj[j] = cmplx.Exp(complex(0, e))
-		wNjInv[j] = cmplx.Exp(-complex(0, e))
+		twFFT[j] = cmplx.Exp(complex(0, e))
+		twInvFFT[j] = cmplx.Exp(-complex(0, e))
 	}
-	vec.BitReverseInPlace(wNj)
-	vec.BitReverseInPlace(wNjInv)
+	vec.BitReverseInPlace(twFFT)
+	vec.BitReverseInPlace(twInvFFT)
 
-	logN := num.Log2(N)
-	w4Nj := make([]complex128, logN)
-	w4NjInv := make([]complex128, logN)
-	for j := 0; j < logN; j++ {
-		e := 2 * math.Pi * math.Exp2(float64(j)) / float64(4*N)
-		w4Nj[j] = cmplx.Exp(complex(0, e))
-		w4NjInv[j] = cmplx.Exp(-complex(0, e))
-	}
+	tw = make([]complex128, 0, N-1)
+	twInv = make([]complex128, 0, N-1)
 
-	tw = make([]complex128, N)
-	twInv = make([]complex128, N)
-
-	w, t := 0, logN
-	for m := 1; m < N; m <<= 1 {
-		t--
+	for m, t := 1, N/2; m < N; m, t = m<<1, t>>1 {
+		twFold := cmplx.Exp(complex(0, 2*math.Pi*float64(t)/float64(4*N)))
 		for i := 0; i < m; i++ {
-			tw[w] = wNj[i] * w4Nj[t]
-			w++
+			tw = append(tw, twFFT[i]*twFold)
 		}
 	}
 
-	w, t = 0, 0
-	for m := N; m > 1; m >>= 1 {
+	for m, t := N, 1; m > 1; m, t = m>>1, t<<1 {
+		twInvFold := cmplx.Exp(complex(0, -2*math.Pi*float64(t)/float64(4*N)))
 		for i := 0; i < m/2; i++ {
-			twInv[w] = wNjInv[i] * w4NjInv[t]
-			w++
+			twInv = append(twInv, twInvFFT[i]*twInvFold)
 		}
-		t++
 	}
-	twInv[w-1] /= complex(float64(N), 0)
 
 	return tw, twInv
 }
 
 // splitParameters generates splitBits and splitCount for [*Evaluator.MulPoly].
 func splitParameters[T num.Integer](N int) (splitBits T, splitCount int) {
-	splitBits = T(50-num.Log2(N)) / 2
+	splitBits = T(splitBound-num.Log2(N)) / 2
 	splitCount = int(math.Ceil(float64(num.SizeT[T]()) / float64(splitBits)))
 	return
 }
 
 // splitParametersBinary generates splitBits and splitCount for [*Evaluator.BinaryFourierPolyMulPoly].
 func splitParametersBinary[T num.Integer](N int) (splitBits T, splitCount int) {
-	splitBits = T(50 - num.Log2(N))
+	splitBits = T(splitBound - num.Log2(N))
 	splitCount = int(math.Ceil(float64(num.SizeT[T]()) / float64(splitBits)))
 	return
 }
