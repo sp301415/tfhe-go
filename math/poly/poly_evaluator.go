@@ -15,8 +15,8 @@ const (
 	MinDegree = 1 << 4
 
 	// splitBound is denotes the maximum bits of N*B1*B2, where B1, B2 is the splitting bound of polynomial multiplication.
-	// Currently, this is set to 50, which gives failure rate less than 2^-73.
-	splitBound = 50
+	// Currently, this is set to 48, which gives failure rate less than 2^-284.
+	splitBound = 48
 )
 
 // Evaluator computes polynomial operations over the N-th cyclotomic ring.
