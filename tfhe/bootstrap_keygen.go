@@ -14,25 +14,25 @@ import (
 // Use [*Encryptor.GenEvaluationKeyParallel] for better key generation performance.
 func (e *Encryptor[T]) GenEvaluationKey() EvaluationKey[T] {
 	return EvaluationKey[T]{
-		BootstrapKey: e.GenBootstrapKey(),
-		KeySwitchKey: e.GenKeySwitchKeyForBootstrap(),
+		BlindRotateKey: e.GenBlindRotateKey(),
+		KeySwitchKey:   e.GenKeySwitchKeyForBootstrap(),
 	}
 }
 
 // GenEvaluationKeyParallel samples a new evaluation key for bootstrapping in parallel.
 func (e *Encryptor[T]) GenEvaluationKeyParallel() EvaluationKey[T] {
 	return EvaluationKey[T]{
-		BootstrapKey: e.GenBootstrapKeyParallel(),
-		KeySwitchKey: e.GenKeySwitchKeyForBootstrapParallel(),
+		BlindRotateKey: e.GenBlindRotateKeyParallel(),
+		KeySwitchKey:   e.GenKeySwitchKeyForBootstrapParallel(),
 	}
 }
 
-// GenBootstrapKey samples a new bootstrapping key.
+// GenBlindRotateKey samples a new bootstrapping key.
 //
 // This can take a long time.
-// Use [*Encryptor.GenBootstrapKeyParallel] for better key generation performance.
-func (e *Encryptor[T]) GenBootstrapKey() BootstrapKey[T] {
-	bsk := NewBootstrapKey(e.Parameters)
+// Use [*Encryptor.GenBlindRotateKeyParallel] for better key generation performance.
+func (e *Encryptor[T]) GenBlindRotateKey() BlindRotateKey[T] {
+	brk := NewBlindRotateKey(e.Parameters)
 
 	for i := 0; i < e.Parameters.lweDimension; i++ {
 		for j := 0; j < e.Parameters.glweRank+1; j++ {
@@ -45,17 +45,17 @@ func (e *Encryptor[T]) GenBootstrapKey() BootstrapKey[T] {
 			for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
 				e.PolyEvaluator.ScalarMulPolyAssign(e.buffer.ptGGSW, e.Parameters.bootstrapParameters.BaseQ(k), e.buffer.ctGLWE.Value[0])
 				e.EncryptGLWEBody(e.buffer.ctGLWE)
-				e.ToFourierGLWECiphertextAssign(e.buffer.ctGLWE, bsk.Value[i].Value[j].Value[k])
+				e.ToFourierGLWECiphertextAssign(e.buffer.ctGLWE, brk.Value[i].Value[j].Value[k])
 			}
 		}
 	}
 
-	return bsk
+	return brk
 }
 
-// GenBootstrapKeyParallel samples a new bootstrapping key in parallel.
-func (e *Encryptor[T]) GenBootstrapKeyParallel() BootstrapKey[T] {
-	bsk := NewBootstrapKey(e.Parameters)
+// GenBlindRotateKeyParallel samples a new bootstrapping key in parallel.
+func (e *Encryptor[T]) GenBlindRotateKeyParallel() BlindRotateKey[T] {
+	brk := NewBlindRotateKey(e.Parameters)
 
 	workSize := e.Parameters.lweDimension * (e.Parameters.glweRank + 1)
 	chunkCount := num.Min(runtime.NumCPU(), num.Sqrt(workSize))
@@ -92,7 +92,7 @@ func (e *Encryptor[T]) GenBootstrapKeyParallel() BootstrapKey[T] {
 				for k := 0; k < eIdx.Parameters.bootstrapParameters.level; k++ {
 					eIdx.PolyEvaluator.ScalarMulPolyAssign(eIdx.buffer.ptGGSW, eIdx.Parameters.bootstrapParameters.BaseQ(k), eIdx.buffer.ctGLWE.Value[0])
 					eIdx.EncryptGLWEBody(eIdx.buffer.ctGLWE)
-					eIdx.ToFourierGLWECiphertextAssign(eIdx.buffer.ctGLWE, bsk.Value[i].Value[j].Value[k])
+					eIdx.ToFourierGLWECiphertextAssign(eIdx.buffer.ctGLWE, brk.Value[i].Value[j].Value[k])
 				}
 			}
 			wg.Done()
@@ -100,7 +100,7 @@ func (e *Encryptor[T]) GenBootstrapKeyParallel() BootstrapKey[T] {
 	}
 	wg.Wait()
 
-	return bsk
+	return brk
 }
 
 // GenKeySwitchKeyForBootstrap samples a new keyswitch key LWELargeKey -> LWEKey,

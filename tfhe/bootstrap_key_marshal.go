@@ -9,9 +9,9 @@ import (
 // ByteSize returns the size of the key in bytes.
 func (evk EvaluationKey[T]) ByteSize() int {
 	if len(evk.KeySwitchKey.Value) > 0 {
-		return 1 + evk.BootstrapKey.ByteSize() + evk.KeySwitchKey.ByteSize()
+		return 1 + evk.BlindRotateKey.ByteSize() + evk.KeySwitchKey.ByteSize()
 	} else {
-		return 1 + evk.BootstrapKey.ByteSize() + evk.KeySwitchKey.GadgetParameters.ByteSize()
+		return 1 + evk.BlindRotateKey.ByteSize() + evk.KeySwitchKey.GadgetParameters.ByteSize()
 	}
 }
 
@@ -20,7 +20,7 @@ func (evk EvaluationKey[T]) ByteSize() int {
 // The encoded form is as follows:
 //
 //	 [1] IsKeySwitchKeyPresent
-//		 BootstrapKey
+//		 BlindRotateKey
 //		 KeySwitchKey
 //
 // If IsKeySwitchKeyPresent is 0, then only the GadgetParameters of the KeySwitchKey is written.
@@ -38,7 +38,7 @@ func (evk EvaluationKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	}
 	n += int64(nWrite)
 
-	if nWrite64, err = evk.BootstrapKey.WriteTo(w); err != nil {
+	if nWrite64, err = evk.BlindRotateKey.WriteTo(w); err != nil {
 		return n + nWrite64, err
 	}
 	n += nWrite64
@@ -74,7 +74,7 @@ func (evk *EvaluationKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	n += int64(nRead)
 	isKeySwitchKeyPresent := buf[0]
 
-	if nRead64, err = evk.BootstrapKey.ReadFrom(r); err != nil {
+	if nRead64, err = evk.BlindRotateKey.ReadFrom(r); err != nil {
 		return n + nRead64, err
 	}
 	n += nRead64
@@ -112,49 +112,49 @@ func (evk *EvaluationKey[T]) UnmarshalBinary(data []byte) error {
 }
 
 // ByteSize returns the size of the key in bytes.
-func (bsk BootstrapKey[T]) ByteSize() int {
-	lweDimension := len(bsk.Value)
-	glweRank := len(bsk.Value[0].Value) - 1
-	level := len(bsk.Value[0].Value[0].Value)
-	polyDegree := bsk.Value[0].Value[0].Value[0].Value[0].Degree()
+func (brk BlindRotateKey[T]) ByteSize() int {
+	lweDimension := len(brk.Value)
+	glweRank := len(brk.Value[0].Value) - 1
+	level := len(brk.Value[0].Value[0].Value)
+	polyDegree := brk.Value[0].Value[0].Value[0].Value[0].Degree()
 
 	return 40 + lweDimension*(glweRank+1)*level*(glweRank+1)*polyDegree*8
 }
 
 // headerWriteTo writes the header.
-func (bsk BootstrapKey[T]) headerWriteTo(w io.Writer) (n int64, err error) {
+func (brk BlindRotateKey[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int
 	var buf [8]byte
 
-	base := bsk.GadgetParameters.base
+	base := brk.GadgetParameters.base
 	binary.BigEndian.PutUint64(buf[:], uint64(base))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
 	}
 	n += int64(nWrite)
 
-	level := bsk.GadgetParameters.level
+	level := brk.GadgetParameters.level
 	binary.BigEndian.PutUint64(buf[:], uint64(level))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
 	}
 	n += int64(nWrite)
 
-	lweDimension := len(bsk.Value)
+	lweDimension := len(brk.Value)
 	binary.BigEndian.PutUint64(buf[:], uint64(lweDimension))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
 	}
 	n += int64(nWrite)
 
-	glweRank := len(bsk.Value[0].Value) - 1
+	glweRank := len(brk.Value[0].Value) - 1
 	binary.BigEndian.PutUint64(buf[:], uint64(glweRank))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
 	}
 	n += int64(nWrite)
 
-	polyDegree := bsk.Value[0].Value[0].Value[0].Value[0].Degree()
+	polyDegree := brk.Value[0].Value[0].Value[0].Value[0].Degree()
 	binary.BigEndian.PutUint64(buf[:], uint64(polyDegree))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
@@ -165,17 +165,17 @@ func (bsk BootstrapKey[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 }
 
 // valueWriteTo writes the value.
-func (bsk BootstrapKey[T]) valueWriteTo(w io.Writer) (n int64, err error) {
+func (brk BlindRotateKey[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
 
-	polyDegree := bsk.Value[0].Value[0].Value[0].Value[0].Degree()
+	polyDegree := brk.Value[0].Value[0].Value[0].Value[0].Degree()
 	buf := make([]byte, polyDegree*8)
 
-	for i := range bsk.Value {
-		for j := range bsk.Value[i].Value {
-			for k := range bsk.Value[i].Value[j].Value {
-				for l := range bsk.Value[i].Value[j].Value[k].Value {
-					if nWrite, err = floatVecWriteToBuffered(bsk.Value[i].Value[j].Value[k].Value[l].Coeffs, buf, w); err != nil {
+	for i := range brk.Value {
+		for j := range brk.Value[i].Value {
+			for k := range brk.Value[i].Value[j].Value {
+				for l := range brk.Value[i].Value[j].Value[k].Value {
+					if nWrite, err = floatVecWriteToBuffered(brk.Value[i].Value[j].Value[k].Value[l].Coeffs, buf, w); err != nil {
 						return n + nWrite, err
 					}
 					n += nWrite
@@ -197,20 +197,20 @@ func (bsk BootstrapKey[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 //	[8] GLWERank
 //	[8] PolyDegree
 //	    Value
-func (bsk BootstrapKey[T]) WriteTo(w io.Writer) (n int64, err error) {
+func (brk BlindRotateKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
 
-	if nWrite, err = bsk.headerWriteTo(w); err != nil {
+	if nWrite, err = brk.headerWriteTo(w); err != nil {
 		return n + nWrite, err
 	}
 	n += nWrite
 
-	if nWrite, err = bsk.valueWriteTo(w); err != nil {
+	if nWrite, err = brk.valueWriteTo(w); err != nil {
 		return n + nWrite, err
 	}
 	n += nWrite
 
-	if n < int64(bsk.ByteSize()) {
+	if n < int64(brk.ByteSize()) {
 		return n, io.ErrShortWrite
 	}
 
@@ -218,7 +218,7 @@ func (bsk BootstrapKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // headerReadFrom reads the header, and initializes the value.
-func (bsk *BootstrapKey[T]) headerReadFrom(r io.Reader) (n int64, err error) {
+func (brk *BlindRotateKey[T]) headerReadFrom(r io.Reader) (n int64, err error) {
 	var nRead int
 	var buf [8]byte
 
@@ -252,23 +252,23 @@ func (bsk *BootstrapKey[T]) headerReadFrom(r io.Reader) (n int64, err error) {
 	n += int64(nRead)
 	polyDegree := int(binary.BigEndian.Uint64(buf[:]))
 
-	*bsk = NewBootstrapKeyCustom(lweDimension, glweRank, polyDegree, GadgetParametersLiteral[T]{Base: base, Level: level}.Compile())
+	*brk = NewBlindRotateKeyCustom(lweDimension, glweRank, polyDegree, GadgetParametersLiteral[T]{Base: base, Level: level}.Compile())
 
 	return
 }
 
 // valueReadFrom reads the value.
-func (bsk *BootstrapKey[T]) valueReadFrom(r io.Reader) (n int64, err error) {
+func (brk *BlindRotateKey[T]) valueReadFrom(r io.Reader) (n int64, err error) {
 	var nRead int64
 
-	polyDegree := bsk.Value[0].Value[0].Value[0].Value[0].Degree()
+	polyDegree := brk.Value[0].Value[0].Value[0].Value[0].Degree()
 	buf := make([]byte, polyDegree*8)
 
-	for i := range bsk.Value {
-		for j := range bsk.Value[i].Value {
-			for k := range bsk.Value[i].Value[j].Value {
-				for l := range bsk.Value[i].Value[j].Value[k].Value {
-					if nRead, err = floatVecReadFromBuffered(bsk.Value[i].Value[j].Value[k].Value[l].Coeffs, buf, r); err != nil {
+	for i := range brk.Value {
+		for j := range brk.Value[i].Value {
+			for k := range brk.Value[i].Value[j].Value {
+				for l := range brk.Value[i].Value[j].Value[k].Value {
+					if nRead, err = floatVecReadFromBuffered(brk.Value[i].Value[j].Value[k].Value[l].Coeffs, buf, r); err != nil {
 						return n + nRead, err
 					}
 					n += nRead
@@ -281,15 +281,15 @@ func (bsk *BootstrapKey[T]) valueReadFrom(r io.Reader) (n int64, err error) {
 }
 
 // ReadFrom implements the [io.ReaderFrom] interface.
-func (bsk *BootstrapKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
+func (brk *BlindRotateKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	var nRead int64
 
-	if nRead, err = bsk.headerReadFrom(r); err != nil {
+	if nRead, err = brk.headerReadFrom(r); err != nil {
 		return n + nRead, err
 	}
 	n += nRead
 
-	if nRead, err = bsk.valueReadFrom(r); err != nil {
+	if nRead, err = brk.valueReadFrom(r); err != nil {
 		return n + nRead, err
 	}
 	n += nRead
@@ -298,15 +298,15 @@ func (bsk *BootstrapKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 }
 
 // MarshalBinary implements the [encoding.BinaryMarshaler] interface.
-func (bsk BootstrapKey[T]) MarshalBinary() (data []byte, err error) {
-	buf := bytes.NewBuffer(make([]byte, 0, bsk.ByteSize()))
-	_, err = bsk.WriteTo(buf)
+func (brk BlindRotateKey[T]) MarshalBinary() (data []byte, err error) {
+	buf := bytes.NewBuffer(make([]byte, 0, brk.ByteSize()))
+	_, err = brk.WriteTo(buf)
 	return buf.Bytes(), err
 }
 
 // UnmarshalBinary implements the [encoding.BinaryUnmarshaler] interface.
-func (bsk *BootstrapKey[T]) UnmarshalBinary(data []byte) error {
+func (brk *BlindRotateKey[T]) UnmarshalBinary(data []byte) error {
 	buf := bytes.NewBuffer(data)
-	_, err := bsk.ReadFrom(buf)
+	_, err := brk.ReadFrom(buf)
 	return err
 }
