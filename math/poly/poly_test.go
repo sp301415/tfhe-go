@@ -44,7 +44,7 @@ func BenchmarkOps(b *testing.B) {
 
 		b.Run(fmt.Sprintf("N=%v/op=BinaryMul", N), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				pev.BinaryFourierPolyMulPolyAssign(p0, fp, pOut)
+				pev.ShortFourierPolyMulPolyAssign(p0, fp, pOut)
 			}
 		})
 

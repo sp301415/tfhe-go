@@ -40,7 +40,7 @@ func (e *Encryptor[T]) FourierUniEncryptPlaintextAssign(pt tfhe.GLWEPlaintext[T]
 		e.buffer.ctGLWESingle.Value[1].CopyFrom(e.CRS[i])
 		e.SingleKeyEncryptor.PolyEvaluator.ScalarMulPolyAssign(pt.Value, ctOut.GadgetParameters.BaseQ(i), e.buffer.ctGLWESingle.Value[0])
 
-		e.SingleKeyEncryptor.PolyEvaluator.BinaryFourierPolyMulAddPolyAssign(e.buffer.ctGLWESingle.Value[1], e.buffer.auxFourierKey.Value[0], e.buffer.ctGLWESingle.Value[0])
+		e.SingleKeyEncryptor.PolyEvaluator.ShortFourierPolyMulAddPolyAssign(e.buffer.ctGLWESingle.Value[1], e.buffer.auxFourierKey.Value[0], e.buffer.ctGLWESingle.Value[0])
 		e.SingleKeyEncryptor.GaussianSampler.SamplePolyAddAssign(e.Parameters.GLWEStdDevQ(), e.buffer.ctGLWESingle.Value[0])
 
 		e.SingleKeyEncryptor.ToFourierGLWECiphertextAssign(e.buffer.ctGLWESingle, ctOut.Value[0].Value[i])
@@ -87,5 +87,5 @@ func (e *Encryptor[T]) FourierUniDecryptPlaintextAssign(ct FourierUniEncryption[
 
 	e.SingleKeyEncryptor.ToGLWECiphertextAssign(ct.Value[0].Value[ct.GadgetParameters.Level()-1], e.buffer.ctGLWESingle)
 	ptOut.Value.CopyFrom(e.buffer.ctGLWESingle.Value[0])
-	e.SingleKeyEncryptor.PolyEvaluator.BinaryFourierPolyMulSubPolyAssign(e.buffer.ctGLWESingle.Value[1], e.buffer.auxFourierKey.Value[0], ptOut.Value)
+	e.SingleKeyEncryptor.PolyEvaluator.ShortFourierPolyMulSubPolyAssign(e.buffer.ctGLWESingle.Value[1], e.buffer.auxFourierKey.Value[0], ptOut.Value)
 }

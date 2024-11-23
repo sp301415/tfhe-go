@@ -100,13 +100,12 @@ loop_end:
 
 	RET
 
-TEXT ·floatModQInPlaceAVX2(SB), NOSPLIT, $0-40
+TEXT ·floatModQInPlaceAVX2(SB), NOSPLIT, $0-32
 	MOVQ coeffs_base+0(FP), AX
 
 	MOVQ coeffs_len+8(FP), DX
 
 	VBROADCASTSD Q+24(FP), Y10
-	VBROADCASTSD QInv+32(FP), Y11
 
 	XORQ SI, SI
 	JMP  loop_end
@@ -114,10 +113,10 @@ TEXT ·floatModQInPlaceAVX2(SB), NOSPLIT, $0-40
 loop_body:
 	VMOVUPD (AX)(SI*8), Y0
 
-	VMULPD   Y0, Y11, Y0
+	VDIVPD   Y10, Y0, Y0
 	VROUNDPD $0, Y0, Y1
 	VSUBPD   Y1, Y0, Y1
-	VMULPD   Y1, Y10, Y1
+	VMULPD   Y10, Y1, Y1
 	VROUNDPD $0, Y1, Y2
 
 	VMOVUPD Y2, (AX)(SI*8)

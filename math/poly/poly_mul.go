@@ -210,23 +210,25 @@ func (e *Evaluator[T]) MulSubPolyAssign(p0, p1, pOut Poly[T]) {
 	}
 }
 
-// BinaryFourierPolyMulPoly returns p0 * fpBinary, under the assumption that fpBinary is a binary polynomial.
+// ShortFourierPolyMulPoly returns p0 * fpShort, under the assumption that fpShort is a short polynomial.
+// (i.e., all coefficients are bounded by [ShortPolyBound].)
 // This is faster than [*Evaluator.MulPoly], and the result is exact unlike [*Evaluator.FourierPolyMulPoly].
-func (e *Evaluator[T]) BinaryFourierPolyMulPoly(p0 Poly[T], fpBinary FourierPoly) Poly[T] {
+func (e *Evaluator[T]) ShortFourierPolyMulPoly(p0 Poly[T], fpShort FourierPoly) Poly[T] {
 	pOut := e.NewPoly()
-	e.BinaryFourierPolyMulPolyAssign(p0, fpBinary, pOut)
+	e.ShortFourierPolyMulPolyAssign(p0, fpShort, pOut)
 	return pOut
 }
 
-// BinaryFourierPolyMulPolyAssign computes pOut = p0 * fpBinary, under the assumption that fpBinary is a binary polynomial.
+// ShortFourierPolyMulPolyAssign computes pOut = p0 * fpShort, under the assumption that fpShort is a short polynomial.
+// (i.e., all coefficients are bounded by [ShortPolyBound].)
 // This is faster than [*Evaluator.MulPolyAssign], and the result is exact unlike [*Evaluator.FourierPolyMulPolyAssign].
-func (e *Evaluator[T]) BinaryFourierPolyMulPolyAssign(p0 Poly[T], fpBinary FourierPoly, pOut Poly[T]) {
-	splitBits, splitCount := splitParametersBinary[T](e.degree)
+func (e *Evaluator[T]) ShortFourierPolyMulPolyAssign(p0 Poly[T], fpShort FourierPoly, pOut Poly[T]) {
+	splitBits, splitCount := splitParametersShort[T](e.degree)
 
 	if splitCount == 1 {
-		e.ToFourierPolyAssign(p0, e.buffer.fpBinarySplit[0])
-		e.MulFourierPolyAssign(e.buffer.fpBinarySplit[0], fpBinary, e.buffer.fpBinarySplit[0])
-		e.ToPolyAssignUnsafe(e.buffer.fpBinarySplit[0], pOut)
+		e.ToFourierPolyAssign(p0, e.buffer.fpShortSplit[0])
+		e.MulFourierPolyAssign(e.buffer.fpShortSplit[0], fpShort, e.buffer.fpShortSplit[0])
+		e.ToPolyAssignUnsafe(e.buffer.fpShortSplit[0], pOut)
 		return
 	}
 
@@ -237,8 +239,8 @@ func (e *Evaluator[T]) BinaryFourierPolyMulPolyAssign(p0 Poly[T], fpBinary Fouri
 			for j := 0; j < e.degree; j++ {
 				e.buffer.pSplit.Coeffs[j] = (p0.Coeffs[j] / splitLow) % splitChunk
 			}
-			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpBinarySplit[i])
-			e.MulFourierPolyAssign(e.buffer.fpBinarySplit[i], fpBinary, e.buffer.fpBinarySplit[i])
+			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpShortSplit[i])
+			e.MulFourierPolyAssign(e.buffer.fpShortSplit[i], fpShort, e.buffer.fpShortSplit[i])
 		}
 	} else {
 		var splitMask T = 1<<splitBits - 1
@@ -247,14 +249,14 @@ func (e *Evaluator[T]) BinaryFourierPolyMulPolyAssign(p0 Poly[T], fpBinary Fouri
 			for j := 0; j < e.degree; j++ {
 				e.buffer.pSplit.Coeffs[j] = (p0.Coeffs[j] >> splitLowBits) & splitMask
 			}
-			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpBinarySplit[i])
-			e.MulFourierPolyAssign(e.buffer.fpBinarySplit[i], fpBinary, e.buffer.fpBinarySplit[i])
+			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpShortSplit[i])
+			e.MulFourierPolyAssign(e.buffer.fpShortSplit[i], fpShort, e.buffer.fpShortSplit[i])
 		}
 	}
 
-	e.ToPolyAssignUnsafe(e.buffer.fpBinarySplit[0], pOut)
+	e.ToPolyAssignUnsafe(e.buffer.fpShortSplit[0], pOut)
 	for i := 1; i < splitCount; i++ {
-		e.ToPolyAssignUnsafe(e.buffer.fpBinarySplit[i], e.buffer.pSplit)
+		e.ToPolyAssignUnsafe(e.buffer.fpShortSplit[i], e.buffer.pSplit)
 		splitLowBits := i * int(splitBits)
 		for j := 0; j < e.degree; j++ {
 			pOut.Coeffs[j] += e.buffer.pSplit.Coeffs[j] << splitLowBits
@@ -262,15 +264,16 @@ func (e *Evaluator[T]) BinaryFourierPolyMulPolyAssign(p0 Poly[T], fpBinary Fouri
 	}
 }
 
-// BinaryFourierPolyMulAddPolyAssign computes pOut += p0 * fpBinary, under the assumption that fpBinary is a binary polynomial.
+// ShortFourierPolyMulAddPolyAssign computes pOut += p0 * fpShort, under the assumption that fpShort is a short polynomial.
+// (i.e., all coefficients are bounded by [ShortPolyBound].)
 // This is faster than [*Evaluator.MulAddPolyAssign], and the result is exact unlike [*Evaluator.FourierPolyMulAddPolyAssign].
-func (e *Evaluator[T]) BinaryFourierPolyMulAddPolyAssign(p0 Poly[T], fpBinary FourierPoly, pOut Poly[T]) {
-	splitBits, splitCount := splitParametersBinary[T](e.degree)
+func (e *Evaluator[T]) ShortFourierPolyMulAddPolyAssign(p0 Poly[T], fpShort FourierPoly, pOut Poly[T]) {
+	splitBits, splitCount := splitParametersShort[T](e.degree)
 
 	if splitCount == 1 {
-		e.ToFourierPolyAssign(p0, e.buffer.fpBinarySplit[0])
-		e.MulFourierPolyAssign(e.buffer.fpBinarySplit[0], fpBinary, e.buffer.fpBinarySplit[0])
-		e.ToPolyAddAssignUnsafe(e.buffer.fpBinarySplit[0], pOut)
+		e.ToFourierPolyAssign(p0, e.buffer.fpShortSplit[0])
+		e.MulFourierPolyAssign(e.buffer.fpShortSplit[0], fpShort, e.buffer.fpShortSplit[0])
+		e.ToPolyAddAssignUnsafe(e.buffer.fpShortSplit[0], pOut)
 		return
 	}
 
@@ -281,8 +284,8 @@ func (e *Evaluator[T]) BinaryFourierPolyMulAddPolyAssign(p0 Poly[T], fpBinary Fo
 			for j := 0; j < e.degree; j++ {
 				e.buffer.pSplit.Coeffs[j] = (p0.Coeffs[j] / splitLow) % splitChunk
 			}
-			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpBinarySplit[i])
-			e.MulFourierPolyAssign(e.buffer.fpBinarySplit[i], fpBinary, e.buffer.fpBinarySplit[i])
+			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpShortSplit[i])
+			e.MulFourierPolyAssign(e.buffer.fpShortSplit[i], fpShort, e.buffer.fpShortSplit[i])
 		}
 	} else {
 		var splitMask T = 1<<splitBits - 1
@@ -291,14 +294,14 @@ func (e *Evaluator[T]) BinaryFourierPolyMulAddPolyAssign(p0 Poly[T], fpBinary Fo
 			for j := 0; j < e.degree; j++ {
 				e.buffer.pSplit.Coeffs[j] = (p0.Coeffs[j] >> splitLowBits) & splitMask
 			}
-			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpBinarySplit[i])
-			e.MulFourierPolyAssign(e.buffer.fpBinarySplit[i], fpBinary, e.buffer.fpBinarySplit[i])
+			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpShortSplit[i])
+			e.MulFourierPolyAssign(e.buffer.fpShortSplit[i], fpShort, e.buffer.fpShortSplit[i])
 		}
 	}
 
-	e.ToPolyAddAssignUnsafe(e.buffer.fpBinarySplit[0], pOut)
+	e.ToPolyAddAssignUnsafe(e.buffer.fpShortSplit[0], pOut)
 	for i := 1; i < splitCount; i++ {
-		e.ToPolyAssignUnsafe(e.buffer.fpBinarySplit[i], e.buffer.pSplit)
+		e.ToPolyAssignUnsafe(e.buffer.fpShortSplit[i], e.buffer.pSplit)
 		splitLowBits := i * int(splitBits)
 		for j := 0; j < e.degree; j++ {
 			pOut.Coeffs[j] += e.buffer.pSplit.Coeffs[j] << splitLowBits
@@ -306,15 +309,16 @@ func (e *Evaluator[T]) BinaryFourierPolyMulAddPolyAssign(p0 Poly[T], fpBinary Fo
 	}
 }
 
-// BinaryFourierPolyMulSubPolyAssign computes pOut -= p0 * fpBinary, under the assumption that fpBinary is a binary polynomial.
+// ShortFourierPolyMulSubPolyAssign computes pOut -= p0 * fpShort, under the assumption that fpShort is a short polynomial.
+// (i.e., all coefficients are bounded by [ShortPolyBound].)
 // This is faster than [*Evaluator.MulSubPolyAssign], and the result is exact unlike [*Evaluator.FourierPolyMulSubPolyAssign].
-func (e *Evaluator[T]) BinaryFourierPolyMulSubPolyAssign(p0 Poly[T], fpBinary FourierPoly, pOut Poly[T]) {
-	splitBits, splitCount := splitParametersBinary[T](e.degree)
+func (e *Evaluator[T]) ShortFourierPolyMulSubPolyAssign(p0 Poly[T], fpShort FourierPoly, pOut Poly[T]) {
+	splitBits, splitCount := splitParametersShort[T](e.degree)
 
 	if splitCount == 1 {
-		e.ToFourierPolyAssign(p0, e.buffer.fpBinarySplit[0])
-		e.MulFourierPolyAssign(e.buffer.fpBinarySplit[0], fpBinary, e.buffer.fpBinarySplit[0])
-		e.ToPolySubAssignUnsafe(e.buffer.fpBinarySplit[0], pOut)
+		e.ToFourierPolyAssign(p0, e.buffer.fpShortSplit[0])
+		e.MulFourierPolyAssign(e.buffer.fpShortSplit[0], fpShort, e.buffer.fpShortSplit[0])
+		e.ToPolySubAssignUnsafe(e.buffer.fpShortSplit[0], pOut)
 		return
 	}
 
@@ -325,8 +329,8 @@ func (e *Evaluator[T]) BinaryFourierPolyMulSubPolyAssign(p0 Poly[T], fpBinary Fo
 			for j := 0; j < e.degree; j++ {
 				e.buffer.pSplit.Coeffs[j] = (p0.Coeffs[j] / splitLow) % splitChunk
 			}
-			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpBinarySplit[i])
-			e.MulFourierPolyAssign(e.buffer.fpBinarySplit[i], fpBinary, e.buffer.fpBinarySplit[i])
+			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpShortSplit[i])
+			e.MulFourierPolyAssign(e.buffer.fpShortSplit[i], fpShort, e.buffer.fpShortSplit[i])
 		}
 	} else {
 		var splitMask T = 1<<splitBits - 1
@@ -335,14 +339,14 @@ func (e *Evaluator[T]) BinaryFourierPolyMulSubPolyAssign(p0 Poly[T], fpBinary Fo
 			for j := 0; j < e.degree; j++ {
 				e.buffer.pSplit.Coeffs[j] = (p0.Coeffs[j] >> splitLowBits) & splitMask
 			}
-			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpBinarySplit[i])
-			e.MulFourierPolyAssign(e.buffer.fpBinarySplit[i], fpBinary, e.buffer.fpBinarySplit[i])
+			e.ToFourierPolyAssign(e.buffer.pSplit, e.buffer.fpShortSplit[i])
+			e.MulFourierPolyAssign(e.buffer.fpShortSplit[i], fpShort, e.buffer.fpShortSplit[i])
 		}
 	}
 
-	e.ToPolySubAssignUnsafe(e.buffer.fpBinarySplit[0], pOut)
+	e.ToPolySubAssignUnsafe(e.buffer.fpShortSplit[0], pOut)
 	for i := 1; i < splitCount; i++ {
-		e.ToPolyAssignUnsafe(e.buffer.fpBinarySplit[i], e.buffer.pSplit)
+		e.ToPolyAssignUnsafe(e.buffer.fpShortSplit[i], e.buffer.pSplit)
 		splitLowBits := i * int(splitBits)
 		for j := 0; j < e.degree; j++ {
 			pOut.Coeffs[j] -= e.buffer.pSplit.Coeffs[j] << splitLowBits

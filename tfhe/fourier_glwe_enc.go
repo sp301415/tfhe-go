@@ -144,7 +144,7 @@ func (e *Encryptor[T]) EncryptFourierGGSWPlaintext(pt GLWEPlaintext[T], gadgetPa
 func (e *Encryptor[T]) EncryptFourierGGSWPlaintextAssign(pt GLWEPlaintext[T], ctOut FourierGGSWCiphertext[T]) {
 	e.EncryptFourierGLevPlaintextAssign(pt, ctOut.Value[0])
 	for i := 0; i < e.Parameters.glweRank; i++ {
-		e.PolyEvaluator.BinaryFourierPolyMulPolyAssign(pt.Value, e.SecretKey.FourierGLWEKey.Value[i], e.buffer.ptGGSW)
+		e.PolyEvaluator.ShortFourierPolyMulPolyAssign(pt.Value, e.SecretKey.FourierGLWEKey.Value[i], e.buffer.ptGGSW)
 		for j := 0; j < ctOut.GadgetParameters.level; j++ {
 			e.PolyEvaluator.ScalarMulPolyAssign(e.buffer.ptGGSW, ctOut.GadgetParameters.BaseQ(j), e.buffer.ctGLWE.Value[0])
 			e.EncryptGLWEBody(e.buffer.ctGLWE)

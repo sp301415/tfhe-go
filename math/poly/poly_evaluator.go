@@ -10,9 +10,14 @@ import (
 
 const (
 	// MinDegree is the minimum degree of polynomial that Evaluator can handle.
-	// Currently, this is set to 16, because AVX2 implementation of FFT and inverse FFT
+	// Currently, this is set to 16 = 2^4, because AVX2 implementation of FFT and inverse FFT
 	// handles first/last two loops separately.
 	MinDegree = 1 << 4
+
+	// ShortPolyBound is a maximum bound for the coefficients of "short" polynomials
+	// used in ShortFourierPolyMulPoly functions.
+	// Currently, this is set to 256 = 2^8.
+	ShortPolyBound = 1 << 8
 
 	// splitBound is denotes the maximum bits of N*B1*B2, where B1, B2 is the splitting bound of polynomial multiplication.
 	// Currently, this is set to 48, which gives failure rate less than 2^-284.
@@ -35,8 +40,6 @@ type Evaluator[T num.Integer] struct {
 	degree int
 	// q is a float64 value of Q.
 	q float64
-	// qInv is a float64 value of 1/Q.
-	qInv float64
 
 	// tw is the twiddle factors for fourier transform.
 	// This is stored as "long" form, so that access to the factors are contiguous.
@@ -69,10 +72,10 @@ type evaluationBuffer[T num.Integer] struct {
 	// fpInv is the InvFFT value of fp.
 	fpInv FourierPoly
 
-	// pSplit is the split value of p0 in [*Evaluator.BinaryFourierPolyMulPoly].
+	// pSplit is the split value of p0 in [*Evaluator.ShortFourierPolyMulPoly].
 	pSplit Poly[T]
-	// fpBinarySplit is the fourier transformed pSplit in [*Evaluator.BinaryFourierPolyMulPoly].
-	fpBinarySplit []FourierPoly
+	// fpShortSplit is the fourier transformed pSplit in [*Evaluator.ShortFourierPolyMulPoly].
+	fpShortSplit []FourierPoly
 }
 
 // NewEvaluator allocates an empty Evaluator with degree N.
@@ -87,7 +90,6 @@ func NewEvaluator[T num.Integer](N int) *Evaluator[T] {
 	}
 
 	Q := math.Exp2(float64(num.SizeT[T]()))
-	QInv := math.Exp2(-float64(num.SizeT[T]()))
 
 	tw, twInv := genTwiddleFactors(N / 2)
 
@@ -107,7 +109,6 @@ func NewEvaluator[T num.Integer](N int) *Evaluator[T] {
 	return &Evaluator[T]{
 		degree: N,
 		q:      Q,
-		qInv:   QInv,
 
 		tw:        tw,
 		twInv:     twInv,
@@ -157,20 +158,20 @@ func splitParameters[T num.Integer](N int) (splitBits T, splitCount int) {
 	return
 }
 
-// splitParametersBinary generates splitBits and splitCount for [*Evaluator.BinaryFourierPolyMulPoly].
-func splitParametersBinary[T num.Integer](N int) (splitBits T, splitCount int) {
-	splitBits = T(splitBound - num.Log2(N))
+// splitParametersShort generates splitBits and splitCount for [*Evaluator.ShortFourierPolyMulPoly].
+func splitParametersShort[T num.Integer](N int) (splitBits T, splitCount int) {
+	splitBits = T(splitBound - ShortPolyBound - num.Log2(N))
 	splitCount = int(math.Ceil(float64(num.SizeT[T]()) / float64(splitBits)))
 	return
 }
 
 // newFourierBuffer allocates an empty fourierBuffer.
 func newFourierBuffer[T num.Integer](N int) evaluationBuffer[T] {
-	_, splitCount := splitParametersBinary[T](N)
+	_, splitCount := splitParametersShort[T](N)
 
-	fpBinarySplit := make([]FourierPoly, splitCount)
+	fpShortSplit := make([]FourierPoly, splitCount)
 	for i := 0; i < splitCount; i++ {
-		fpBinarySplit[i] = NewFourierPoly(N)
+		fpShortSplit[i] = NewFourierPoly(N)
 	}
 
 	return evaluationBuffer[T]{
@@ -180,8 +181,8 @@ func newFourierBuffer[T num.Integer](N int) evaluationBuffer[T] {
 		fp:    NewFourierPoly(N),
 		fpInv: NewFourierPoly(N),
 
-		pSplit:        NewPoly[T](N),
-		fpBinarySplit: fpBinarySplit,
+		pSplit:       NewPoly[T](N),
+		fpShortSplit: fpShortSplit,
 	}
 }
 
@@ -191,7 +192,6 @@ func (e *Evaluator[T]) ShallowCopy() *Evaluator[T] {
 	return &Evaluator[T]{
 		degree: e.degree,
 		q:      e.q,
-		qInv:   e.qInv,
 
 		tw:        e.tw,
 		twInv:     e.twInv,

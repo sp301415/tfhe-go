@@ -100,7 +100,7 @@ func (e *Evaluator[T]) ToPoly(fp FourierPoly) Poly[T] {
 func (e *Evaluator[T]) ToPolyAssign(fp FourierPoly, pOut Poly[T]) {
 	e.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(e.buffer.fpInv.Coeffs, e.twInv)
-	floatModQInPlace(e.buffer.fpInv.Coeffs, e.q, e.qInv)
+	floatModQInPlace(e.buffer.fpInv.Coeffs, e.q)
 	convertFourierPolyToPolyAssign(e.buffer.fpInv.Coeffs, pOut.Coeffs)
 }
 
@@ -108,7 +108,7 @@ func (e *Evaluator[T]) ToPolyAssign(fp FourierPoly, pOut Poly[T]) {
 func (e *Evaluator[T]) ToPolyAddAssign(fp FourierPoly, pOut Poly[T]) {
 	e.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(e.buffer.fpInv.Coeffs, e.twInv)
-	floatModQInPlace(e.buffer.fpInv.Coeffs, e.q, e.qInv)
+	floatModQInPlace(e.buffer.fpInv.Coeffs, e.q)
 	convertFourierPolyToPolyAddAssign(e.buffer.fpInv.Coeffs, pOut.Coeffs)
 }
 
@@ -116,7 +116,7 @@ func (e *Evaluator[T]) ToPolyAddAssign(fp FourierPoly, pOut Poly[T]) {
 func (e *Evaluator[T]) ToPolySubAssign(fp FourierPoly, pOut Poly[T]) {
 	e.buffer.fpInv.CopyFrom(fp)
 	invFFTInPlace(e.buffer.fpInv.Coeffs, e.twInv)
-	floatModQInPlace(e.buffer.fpInv.Coeffs, e.q, e.qInv)
+	floatModQInPlace(e.buffer.fpInv.Coeffs, e.q)
 	convertFourierPolyToPolySubAssign(e.buffer.fpInv.Coeffs, pOut.Coeffs)
 }
 
@@ -126,7 +126,7 @@ func (e *Evaluator[T]) ToPolySubAssign(fp FourierPoly, pOut Poly[T]) {
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
 func (e *Evaluator[T]) ToPolyAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
 	invFFTInPlace(fp.Coeffs, e.twInv)
-	floatModQInPlace(fp.Coeffs, e.q, e.qInv)
+	floatModQInPlace(fp.Coeffs, e.q)
 	convertFourierPolyToPolyAssign(fp.Coeffs, pOut.Coeffs)
 }
 
@@ -136,7 +136,7 @@ func (e *Evaluator[T]) ToPolyAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
 func (e *Evaluator[T]) ToPolyAddAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
 	invFFTInPlace(fp.Coeffs, e.twInv)
-	floatModQInPlace(fp.Coeffs, e.q, e.qInv)
+	floatModQInPlace(fp.Coeffs, e.q)
 	convertFourierPolyToPolyAddAssign(fp.Coeffs, pOut.Coeffs)
 }
 
@@ -146,6 +146,6 @@ func (e *Evaluator[T]) ToPolyAddAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
 func (e *Evaluator[T]) ToPolySubAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
 	invFFTInPlace(fp.Coeffs, e.twInv)
-	floatModQInPlace(fp.Coeffs, e.q, e.qInv)
+	floatModQInPlace(fp.Coeffs, e.q)
 	convertFourierPolyToPolySubAssign(fp.Coeffs, pOut.Coeffs)
 }

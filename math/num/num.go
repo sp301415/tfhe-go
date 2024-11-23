@@ -212,3 +212,69 @@ func Sqrt[T Integer](x T) T {
 
 	return T(c)
 }
+
+// ModInverse returns the modular inverse of x modulo m.
+// Output is always positive.
+// Panics if m <= 0 or x and m are not coprime.
+func ModInverse[T Integer](x, m T) T {
+	if m <= 0 {
+		panic("modulus not positive")
+	}
+
+	x %= m
+	if x < 0 {
+		x += m
+	}
+
+	a, b := x, m
+	u, v := T(1), T(0)
+	for b != 0 {
+		q := a / b
+		a, b = b, a-q*b
+		u, v = v, u-q*v
+	}
+
+	if a != 1 {
+		panic("modular inverse does not exist")
+	}
+
+	u %= m
+	if u < 0 {
+		u += m
+	}
+	return u
+}
+
+// ModExp returns x^y mod m.
+// Output is always positive.
+// Panics if m <= 0.
+//
+// If y < 0, it returns (x^-1)^(-y) mod m.
+// Panics if x and m are not coprime in this case.
+func ModExp[T Integer](x, y, m T) T {
+	if m <= 0 {
+		panic("modulus not positive")
+	}
+
+	switch {
+	case y < 0:
+		x = ModInverse(x, m)
+		y = -y
+	case y == 0:
+		return 1
+	}
+
+	res := T(1)
+	for y > 0 {
+		if y&1 == 1 {
+			res = (res * x) % m
+		}
+		x = (x * x) % m
+		y >>= 1
+	}
+
+	if res < 0 {
+		res += m
+	}
+	return res
+}

@@ -34,13 +34,13 @@ func (e *PublicEncryptor[T]) EncryptGLWEBody(ct GLWECiphertext[T]) {
 	}
 	e.ToFourierGLWESecretKeyAssign(e.buffer.auxKey, e.buffer.auxFourierKey)
 
-	e.PolyEvaluator.BinaryFourierPolyMulAddPolyAssign(e.PublicKey.GLWEKey.Value[0].Value[0], e.buffer.auxFourierKey.Value[0], ct.Value[0])
+	e.PolyEvaluator.ShortFourierPolyMulAddPolyAssign(e.PublicKey.GLWEKey.Value[0].Value[0], e.buffer.auxFourierKey.Value[0], ct.Value[0])
 	for j := 1; j < e.Parameters.glweRank+1; j++ {
-		e.PolyEvaluator.BinaryFourierPolyMulAddPolyAssign(e.PublicKey.GLWEKey.Value[0].Value[j], e.buffer.auxFourierKey.Value[0], ct.Value[j])
+		e.PolyEvaluator.ShortFourierPolyMulAddPolyAssign(e.PublicKey.GLWEKey.Value[0].Value[j], e.buffer.auxFourierKey.Value[0], ct.Value[j])
 	}
 	for i := 1; i < e.Parameters.glweRank; i++ {
 		for j := 0; j < e.Parameters.glweRank+1; j++ {
-			e.PolyEvaluator.BinaryFourierPolyMulAddPolyAssign(e.PublicKey.GLWEKey.Value[i].Value[j], e.buffer.auxFourierKey.Value[i], ct.Value[j])
+			e.PolyEvaluator.ShortFourierPolyMulAddPolyAssign(e.PublicKey.GLWEKey.Value[i].Value[j], e.buffer.auxFourierKey.Value[i], ct.Value[j])
 		}
 	}
 
