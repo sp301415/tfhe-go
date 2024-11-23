@@ -264,6 +264,11 @@ func ModExp[T Integer](x, y, m T) T {
 		return 1
 	}
 
+	x %= m
+	if x < 0 {
+		x += m
+	}
+
 	res := T(1)
 	for y > 0 {
 		if y&1 == 1 {
