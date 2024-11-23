@@ -17,7 +17,7 @@ type GLWECiphertext[T tfhe.TorusInt] struct {
 func NewGLWECiphertext[T tfhe.TorusInt](params Parameters[T]) GLWECiphertext[T] {
 	ct := make([]poly.Poly[T], params.GLWERank()+1)
 	for i := 0; i < params.GLWERank()+1; i++ {
-		ct[i] = poly.NewPoly[T](params.PolyDegree())
+		ct[i] = poly.NewPoly[T](params.polyDegree)
 	}
 	return GLWECiphertext[T]{Value: ct}
 }
@@ -106,8 +106,8 @@ func NewUniEncryption[T tfhe.TorusInt](params Parameters[T], gadgetParams tfhe.G
 	return UniEncryption[T]{
 		GadgetParameters: gadgetParams,
 		Value: []tfhe.GLevCiphertext[T]{
-			tfhe.NewGLevCiphertextCustom(1, params.PolyDegree(), gadgetParams),
-			tfhe.NewGLevCiphertextCustom(1, params.PolyDegree(), gadgetParams),
+			tfhe.NewGLevCiphertextCustom(1, params.polyDegree, gadgetParams),
+			tfhe.NewGLevCiphertextCustom(1, params.polyDegree, gadgetParams),
 		},
 	}
 }

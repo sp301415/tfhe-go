@@ -131,7 +131,7 @@ func TestEvaluator(t *testing.T) {
 		for _, i := range []int{0, 1} {
 			ct0 := enc.EncryptGLWE(messagesPool[0])
 			ct1 := enc.EncryptGLWE(messagesPool[1])
-			ctGGSW := enc.EncryptFourierGGSW([]int{i}, params.BootstrapParameters())
+			ctGGSW := enc.EncryptFourierGGSW([]int{i}, params.BlindRotateParameters())
 
 			ctOut := eval.CMux(ctGGSW, ct0, ct1)
 

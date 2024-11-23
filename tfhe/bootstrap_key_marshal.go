@@ -80,13 +80,13 @@ func (evk *EvaluationKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	n += nRead64
 
 	if isKeySwitchKeyPresent == 0 {
-		var keyswitchParams GadgetParameters[T]
-		if nRead64, err = keyswitchParams.ReadFrom(r); err != nil {
+		var keySwitchParams GadgetParameters[T]
+		if nRead64, err = keySwitchParams.ReadFrom(r); err != nil {
 			return n + nRead64, err
 		}
 		n += nRead64
 
-		evk.KeySwitchKey = NewLWEKeySwitchKeyCustom(0, 0, keyswitchParams)
+		evk.KeySwitchKey = NewLWEKeySwitchKeyCustom(0, 0, keySwitchParams)
 	} else {
 		if nRead64, err = evk.KeySwitchKey.ReadFrom(r); err != nil {
 			return n + nRead64, err

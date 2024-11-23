@@ -18,7 +18,7 @@ type GLWETransformer[T tfhe.TorusInt] struct {
 func NewGLWETransformer[T tfhe.TorusInt](params Parameters[T]) *GLWETransformer[T] {
 	return &GLWETransformer[T]{
 		Parameters:    params,
-		PolyEvaluator: poly.NewEvaluator[T](params.PolyDegree()),
+		PolyEvaluator: poly.NewEvaluator[T](params.polyDegree),
 	}
 }
 
@@ -33,35 +33,35 @@ func (e *GLWETransformer[T]) ShallowCopy() *GLWETransformer[T] {
 
 // ToFourierGLWESecretKey transforms GLWE secret key to Fourier GLWE secret key.
 func (e *GLWETransformer[T]) ToFourierGLWESecretKey(sk tfhe.GLWESecretKey[T]) tfhe.FourierGLWESecretKey[T] {
-	skOut := tfhe.NewFourierGLWESecretKeyCustom[T](e.Parameters.SingleKeyGLWERank(), e.Parameters.PolyDegree())
+	skOut := tfhe.NewFourierGLWESecretKeyCustom[T](e.Parameters.GLWERank(), e.Parameters.polyDegree)
 	e.ToFourierGLWESecretKeyAssign(sk, skOut)
 	return skOut
 }
 
 // ToFourierGLWESecretKeyAssign transforms GLWE secret key to Fourier GLWE secret key and writes it to skOut.
 func (e *GLWETransformer[T]) ToFourierGLWESecretKeyAssign(skIn tfhe.GLWESecretKey[T], skOut tfhe.FourierGLWESecretKey[T]) {
-	for i := 0; i < e.Parameters.SingleKeyGLWERank(); i++ {
+	for i := 0; i < e.Parameters.SingleGLWERank(); i++ {
 		e.PolyEvaluator.ToFourierPolyAssign(skIn.Value[i], skOut.Value[i])
 	}
 }
 
 // ToGLWESecretKey transforms Fourier GLWE secret key to GLWE secret key.
 func (e *GLWETransformer[T]) ToGLWESecretKey(sk tfhe.FourierGLWESecretKey[T]) tfhe.GLWESecretKey[T] {
-	skOut := tfhe.NewGLWESecretKeyCustom[T](e.Parameters.SingleKeyGLWERank(), e.Parameters.PolyDegree())
+	skOut := tfhe.NewGLWESecretKeyCustom[T](e.Parameters.SingleGLWERank(), e.Parameters.polyDegree)
 	e.ToGLWESecretKeyAssign(sk, skOut)
 	return skOut
 }
 
 // ToGLWESecretKeyAssign transforms Fourier GLWE secret key to GLWE secret key and writes it to skOut.
 func (e *GLWETransformer[T]) ToGLWESecretKeyAssign(skIn tfhe.FourierGLWESecretKey[T], skOut tfhe.GLWESecretKey[T]) {
-	for i := 0; i < e.Parameters.SingleKeyGLWERank(); i++ {
+	for i := 0; i < e.Parameters.SingleGLWERank(); i++ {
 		e.PolyEvaluator.ToPolyAssign(skIn.Value[i], skOut.Value[i])
 	}
 }
 
 // ToFourierGLWECiphertext transforms GLWE ciphertext to Fourier GLWE ciphertext.
 func (e *GLWETransformer[T]) ToFourierGLWECiphertext(ct GLWECiphertext[T]) FourierGLWECiphertext[T] {
-	ctOut := NewFourierGLWECiphertextCustom[T](e.Parameters.GLWERank(), e.Parameters.PolyDegree())
+	ctOut := NewFourierGLWECiphertextCustom[T](e.Parameters.GLWERank(), e.Parameters.polyDegree)
 	e.ToFourierGLWECiphertextAssign(ct, ctOut)
 	return ctOut
 }
@@ -75,7 +75,7 @@ func (e *GLWETransformer[T]) ToFourierGLWECiphertextAssign(ctIn GLWECiphertext[T
 
 // ToGLWECiphertext transforms Fourier GLWE ciphertext to GLWE ciphertext.
 func (e *GLWETransformer[T]) ToGLWECiphertext(ct FourierGLWECiphertext[T]) GLWECiphertext[T] {
-	ctOut := NewGLWECiphertextCustom[T](e.Parameters.GLWERank(), e.Parameters.PolyDegree())
+	ctOut := NewGLWECiphertextCustom[T](e.Parameters.GLWERank(), e.Parameters.polyDegree)
 	e.ToGLWECiphertextAssign(ct, ctOut)
 	return ctOut
 }
@@ -89,7 +89,7 @@ func (e *GLWETransformer[T]) ToGLWECiphertextAssign(ctIn FourierGLWECiphertext[T
 
 // ToFourierUniEncryption transforms UniEncryption to Fourier UniEncryption.
 func (e *GLWETransformer[T]) ToFourierUniEncryption(ct UniEncryption[T]) FourierUniEncryption[T] {
-	ctOut := NewFourierUniEncryptionCustom(e.Parameters.PolyDegree(), ct.GadgetParameters)
+	ctOut := NewFourierUniEncryptionCustom(e.Parameters.polyDegree, ct.GadgetParameters)
 	e.ToFourierUniEncryptionAssign(ct, ctOut)
 	return ctOut
 }
@@ -107,7 +107,7 @@ func (e *GLWETransformer[T]) ToFourierUniEncryptionAssign(ctIn UniEncryption[T],
 
 // ToUniEncryption transforms Fourier UniEncryption to UniEncryption.
 func (e *GLWETransformer[T]) ToUniEncryption(ct FourierUniEncryption[T]) UniEncryption[T] {
-	ctOut := NewUniEncryptionCustom(e.Parameters.PolyDegree(), ct.GadgetParameters)
+	ctOut := NewUniEncryptionCustom(e.Parameters.polyDegree, ct.GadgetParameters)
 	e.ToUniEncryptionAssign(ct, ctOut)
 	return ctOut
 }

@@ -42,7 +42,7 @@ func (e *Encryptor[T]) GenKeySwitchKeyForBootstrapParallel() tfhe.LWEKeySwitchKe
 
 // GenCRSPublicKey samples a new public key from the common reference string.
 func (e *Encryptor[T]) GenCRSPublicKey() tfhe.FourierGLevCiphertext[T] {
-	pk := tfhe.NewFourierGLevCiphertext(e.Parameters.Parameters, e.Parameters.relinKeyParameters)
+	pk := tfhe.NewFourierGLevCiphertext(e.Parameters.singleKeyParameters, e.Parameters.relinKeyParameters)
 	for i := 0; i < e.Parameters.relinKeyParameters.Level(); i++ {
 		e.buffer.ctGLWESingle.Value[1].CopyFrom(e.CRS[i])
 

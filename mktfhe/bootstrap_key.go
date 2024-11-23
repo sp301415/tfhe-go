@@ -15,16 +15,16 @@ type EvaluationKey[T tfhe.TorusInt] struct {
 // NewEvaluationKey allocates an empty EvaluationKey.
 func NewEvaluationKey[T tfhe.TorusInt](params Parameters[T]) EvaluationKey[T] {
 	return EvaluationKey[T]{
-		EvaluationKey: tfhe.NewEvaluationKey(params.Parameters),
-		CRSPublicKey:  tfhe.NewFourierGLevCiphertext(params.Parameters, params.relinKeyParameters),
+		EvaluationKey: tfhe.NewEvaluationKey(params.singleKeyParameters),
+		CRSPublicKey:  tfhe.NewFourierGLevCiphertext(params.singleKeyParameters, params.relinKeyParameters),
 		RelinKey:      NewFourierUniEncryption(params, params.relinKeyParameters),
 	}
 }
 
 // NewEvaluationKeyCustom allocates an empty EvaluationKey with custom parameters.
-func NewEvaluationKeyCustom[T tfhe.TorusInt](lweDimension, polyDegree int, bootstrapParams, keyswitchParams, relinParams tfhe.GadgetParameters[T]) EvaluationKey[T] {
+func NewEvaluationKeyCustom[T tfhe.TorusInt](lweDimension, polyDegree int, blindRotateParams, keySwitchParams, relinParams tfhe.GadgetParameters[T]) EvaluationKey[T] {
 	return EvaluationKey[T]{
-		EvaluationKey: tfhe.NewEvaluationKeyCustom(lweDimension, 1, polyDegree, bootstrapParams, keyswitchParams),
+		EvaluationKey: tfhe.NewEvaluationKeyCustom(lweDimension, 1, polyDegree, blindRotateParams, keySwitchParams),
 		CRSPublicKey:  tfhe.NewFourierGLevCiphertextCustom(1, polyDegree, relinParams),
 		RelinKey:      NewFourierUniEncryptionCustom(polyDegree, relinParams),
 	}

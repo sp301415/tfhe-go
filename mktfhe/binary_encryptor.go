@@ -17,7 +17,7 @@ type BinaryEncryptor[T tfhe.TorusInt] struct {
 // NewBinaryEncryptor allocates an empty BinaryEncryptor.
 func NewBinaryEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte) *BinaryEncryptor[T] {
 	return &BinaryEncryptor[T]{
-		BinaryEncoder: tfhe.NewBinaryEncoder(params.Parameters),
+		BinaryEncoder: tfhe.NewBinaryEncoder(params.singleKeyParameters),
 		Parameters:    params,
 		BaseEncryptor: NewEncryptor(params, idx, crsSeed),
 	}
@@ -26,7 +26,7 @@ func NewBinaryEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed 
 // NewBinaryEncryptorWithKey allocates an empty BinaryEncryptor with a given key.
 func NewBinaryEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte, sk tfhe.SecretKey[T]) *BinaryEncryptor[T] {
 	return &BinaryEncryptor[T]{
-		BinaryEncoder: tfhe.NewBinaryEncoder(params.Parameters),
+		BinaryEncoder: tfhe.NewBinaryEncoder(params.singleKeyParameters),
 		Parameters:    params,
 		BaseEncryptor: NewEncryptorWithKey(params, idx, crsSeed, sk),
 	}

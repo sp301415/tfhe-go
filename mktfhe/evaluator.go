@@ -81,29 +81,29 @@ type evaluationBuffer[T tfhe.TorusInt] struct {
 // NewEvaluator allocates an empty Evaluator.
 // Only indices between 0 and params.PartyCount is valid for evk.
 func NewEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationKey[T]) *Evaluator[T] {
-	singleEvals := make([]*tfhe.Evaluator[T], params.PartyCount())
-	singleKeys := make([]EvaluationKey[T], params.PartyCount())
-	partyBitMap := make([]bool, params.PartyCount())
+	singleEvals := make([]*tfhe.Evaluator[T], params.partyCount)
+	singleKeys := make([]EvaluationKey[T], params.partyCount)
+	partyBitMap := make([]bool, params.partyCount)
 	for i := range evk {
-		singleEvals[i] = tfhe.NewEvaluator(params.Parameters, evk[i].EvaluationKey)
+		singleEvals[i] = tfhe.NewEvaluator(params.singleKeyParameters, evk[i].EvaluationKey)
 		singleKeys[i] = evk[i]
 		partyBitMap[i] = true
 	}
 
-	decomposer := tfhe.NewDecomposer[T](params.PolyDegree())
-	decomposer.ScalarDecomposedBuffer(params.KeySwitchParameters())
+	decomposer := tfhe.NewDecomposer[T](params.polyDegree)
+	decomposer.ScalarDecomposedBuffer(params.keySwitchParameters)
 	decomposer.PolyDecomposedBuffer(params.relinKeyParameters)
 	decomposer.PolyFourierDecomposedBuffer(params.relinKeyParameters)
 
 	return &Evaluator[T]{
-		Encoder:         tfhe.NewEncoder(params.Parameters),
+		Encoder:         tfhe.NewEncoder(params.singleKeyParameters),
 		GLWETransformer: NewGLWETransformer(params),
 
-		BaseSingleKeyEvaluator: tfhe.NewEvaluator(params.Parameters, tfhe.EvaluationKey[T]{}),
+		BaseSingleKeyEvaluator: tfhe.NewEvaluator(params.singleKeyParameters, tfhe.EvaluationKey[T]{}),
 		SingleKeyEvaluators:    singleEvals,
 
 		Decomposer:    decomposer,
-		PolyEvaluator: poly.NewEvaluator[T](params.PolyDegree()),
+		PolyEvaluator: poly.NewEvaluator[T](params.polyDegree),
 
 		Parameters: params,
 
@@ -120,33 +120,33 @@ func newEvaluationBuffer[T tfhe.TorusInt](params Parameters[T]) evaluationBuffer
 	ctRelin := NewGLWECiphertext(params)
 	ctRelinTransposed := make([]tfhe.GLWECiphertext[T], params.GLWERank()+1)
 	for i := 0; i < params.GLWERank()+1; i++ {
-		ctRelinTransposed[i] = tfhe.NewGLWECiphertext(params.Parameters)
+		ctRelinTransposed[i] = tfhe.NewGLWECiphertext(params.singleKeyParameters)
 	}
 
 	ctRotateInputs := make([]tfhe.LWECiphertext[T], params.partyCount)
 	for i := 0; i < params.partyCount; i++ {
-		ctRotateInputs[i] = tfhe.NewLWECiphertextCustom[T](params.SingleKeyLWEDimension())
+		ctRotateInputs[i] = tfhe.NewLWECiphertextCustom[T](params.singleLWEDimension)
 	}
 
 	gadgetLUTs := make([]tfhe.LookUpTable[T], params.accumulatorParameters.Level())
 	for i := 0; i < params.accumulatorParameters.Level(); i++ {
-		gadgetLUTs[i] = tfhe.NewLookUpTable(params.Parameters)
+		gadgetLUTs[i] = tfhe.NewLookUpTable(params.singleKeyParameters)
 		gadgetLUTs[i].Value[0] = params.accumulatorParameters.BaseQ(i)
 	}
 
 	ctAccs := make([]tfhe.GLWECiphertext[T], params.partyCount)
 	ctFourierAccs := make([]tfhe.FourierGLevCiphertext[T], params.partyCount)
 	for i := 0; i < params.partyCount; i++ {
-		ctAccs[i] = tfhe.NewGLWECiphertext(params.Parameters)
-		ctFourierAccs[i] = tfhe.NewFourierGLevCiphertext(params.Parameters, params.accumulatorParameters)
+		ctAccs[i] = tfhe.NewGLWECiphertext(params.singleKeyParameters)
+		ctFourierAccs[i] = tfhe.NewFourierGLevCiphertext(params.singleKeyParameters, params.accumulatorParameters)
 	}
 
 	return evaluationBuffer[T]{
 		ctProd:        NewGLWECiphertext(params),
 		ctFourierProd: NewFourierGLWECiphertext(params),
 
-		ctProdSingle:        poly.NewPoly[T](params.PolyDegree()),
-		ctFourierProdSingle: poly.NewFourierPoly(params.PolyDegree()),
+		ctProdSingle:        poly.NewPoly[T](params.polyDegree),
+		ctFourierProdSingle: poly.NewFourierPoly(params.polyDegree),
 
 		ctRelin:           ctRelin,
 		ctRelinTransposed: ctRelinTransposed,
@@ -160,14 +160,14 @@ func newEvaluationBuffer[T tfhe.TorusInt](params Parameters[T]) evaluationBuffer
 		ctExtract:               NewLWECiphertextCustom[T](params.GLWEDimension()),
 		ctKeySwitchForBootstrap: NewLWECiphertextCustom[T](params.LWEDimension()),
 
-		lut: tfhe.NewLookUpTable(params.Parameters),
+		lut: tfhe.NewLookUpTable(params.singleKeyParameters),
 	}
 }
 
 // AddEvaluationKey adds an evaluation key for given index.
 // If an evaluation key already exists for given index, it is overwritten.
 func (e *Evaluator[T]) AddEvaluationKey(idx int, evk EvaluationKey[T]) {
-	e.SingleKeyEvaluators[idx] = tfhe.NewEvaluator(e.Parameters.Parameters, evk.EvaluationKey)
+	e.SingleKeyEvaluators[idx] = tfhe.NewEvaluator(e.Parameters.singleKeyParameters, evk.EvaluationKey)
 	e.EvaluationKeys[idx] = evk
 	e.PartyBitMap[idx] = true
 }

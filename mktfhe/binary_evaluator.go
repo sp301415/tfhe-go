@@ -20,11 +20,11 @@ type BinaryEvaluator[T tfhe.TorusInt] struct {
 // NewBinaryEvaluator allocates an empty BinaryEvaluator based on parameters.
 // This does not copy evaluation keys, since they are large.
 func NewBinaryEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationKey[T]) *BinaryEvaluator[T] {
-	signLUT := tfhe.NewLookUpTable(params.Parameters)
-	vec.Fill(signLUT.Value, 1<<(params.LogQ()-3))
+	signLUT := tfhe.NewLookUpTableCustom[T](params.polyDegree)
+	vec.Fill(signLUT.Value, 1<<(params.logQ-3))
 
 	return &BinaryEvaluator[T]{
-		BinaryEncoder: tfhe.NewBinaryEncoder(params.Parameters),
+		BinaryEncoder: tfhe.NewBinaryEncoder(params.singleKeyParameters),
 		Parameters:    params,
 		BaseEvaluator: NewEvaluator(params, evk),
 		signLUT:       signLUT,
@@ -73,7 +73,7 @@ func (e *BinaryEvaluator[T]) ANDAssign(ct0, ct1, ctOut LWECiphertext[T]) {
 	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		ctOut.Value[i] = ct0.Value[i] + ct1.Value[i]
 	}
-	ctOut.Value[0] -= 1 << (e.Parameters.LogQ() - 3)
+	ctOut.Value[0] -= 1 << (e.Parameters.logQ - 3)
 
 	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
 }
@@ -92,7 +92,7 @@ func (e *BinaryEvaluator[T]) ANDParallelAssign(ct0, ct1, ctOut LWECiphertext[T])
 	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		ctOut.Value[i] = ct0.Value[i] + ct1.Value[i]
 	}
-	ctOut.Value[0] -= 1 << (e.Parameters.LogQ() - 3)
+	ctOut.Value[0] -= 1 << (e.Parameters.logQ - 3)
 
 	e.BaseEvaluator.BootstrapLUTParallelAssign(ctOut, e.signLUT, ctOut)
 }
@@ -111,7 +111,7 @@ func (e *BinaryEvaluator[T]) NANDAssign(ct0, ct1, ctOut LWECiphertext[T]) {
 	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		ctOut.Value[i] = -ct0.Value[i] - ct1.Value[i]
 	}
-	ctOut.Value[0] += 1 << (e.Parameters.LogQ() - 3)
+	ctOut.Value[0] += 1 << (e.Parameters.logQ - 3)
 
 	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
 }
@@ -130,7 +130,7 @@ func (e *BinaryEvaluator[T]) NANDParallelAssign(ct0, ct1, ctOut LWECiphertext[T]
 	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		ctOut.Value[i] = -ct0.Value[i] - ct1.Value[i]
 	}
-	ctOut.Value[0] += 1 << (e.Parameters.LogQ() - 3)
+	ctOut.Value[0] += 1 << (e.Parameters.logQ - 3)
 
 	e.BaseEvaluator.BootstrapLUTParallelAssign(ctOut, e.signLUT, ctOut)
 }
@@ -149,7 +149,7 @@ func (e *BinaryEvaluator[T]) ORAssign(ct0, ct1, ctOut LWECiphertext[T]) {
 	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		ctOut.Value[i] = ct0.Value[i] + ct1.Value[i]
 	}
-	ctOut.Value[0] += 1 << (e.Parameters.LogQ() - 3)
+	ctOut.Value[0] += 1 << (e.Parameters.logQ - 3)
 
 	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
 }
@@ -168,7 +168,7 @@ func (e *BinaryEvaluator[T]) ORParallelAssign(ct0, ct1, ctOut LWECiphertext[T]) 
 	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		ctOut.Value[i] = ct0.Value[i] + ct1.Value[i]
 	}
-	ctOut.Value[0] += 1 << (e.Parameters.LogQ() - 3)
+	ctOut.Value[0] += 1 << (e.Parameters.logQ - 3)
 
 	e.BaseEvaluator.BootstrapLUTParallelAssign(ctOut, e.signLUT, ctOut)
 }
@@ -187,7 +187,7 @@ func (e *BinaryEvaluator[T]) NORAssign(ct0, ct1, ctOut LWECiphertext[T]) {
 	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		ctOut.Value[i] = -ct0.Value[i] - ct1.Value[i]
 	}
-	ctOut.Value[0] -= 1 << (e.Parameters.LogQ() - 3)
+	ctOut.Value[0] -= 1 << (e.Parameters.logQ - 3)
 
 	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
 }
@@ -206,7 +206,7 @@ func (e *BinaryEvaluator[T]) NORParallelAssign(ct0, ct1, ctOut LWECiphertext[T])
 	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		ctOut.Value[i] = -ct0.Value[i] - ct1.Value[i]
 	}
-	ctOut.Value[0] -= 1 << (e.Parameters.LogQ() - 3)
+	ctOut.Value[0] -= 1 << (e.Parameters.logQ - 3)
 
 	e.BaseEvaluator.BootstrapLUTParallelAssign(ctOut, e.signLUT, ctOut)
 }
@@ -225,7 +225,7 @@ func (e *BinaryEvaluator[T]) XORAssign(ct0, ct1, ctOut LWECiphertext[T]) {
 	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		ctOut.Value[i] = 2 * (ct0.Value[i] + ct1.Value[i])
 	}
-	ctOut.Value[0] += 1 << (e.Parameters.LogQ() - 3)
+	ctOut.Value[0] += 1 << (e.Parameters.logQ - 3)
 
 	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
 }
@@ -244,7 +244,7 @@ func (e *BinaryEvaluator[T]) XORParallelAssign(ct0, ct1, ctOut LWECiphertext[T])
 	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		ctOut.Value[i] = 2 * (ct0.Value[i] + ct1.Value[i])
 	}
-	ctOut.Value[0] += 1 << (e.Parameters.LogQ() - 3)
+	ctOut.Value[0] += 1 << (e.Parameters.logQ - 3)
 
 	e.BaseEvaluator.BootstrapLUTParallelAssign(ctOut, e.signLUT, ctOut)
 }
@@ -263,7 +263,7 @@ func (e *BinaryEvaluator[T]) XNORAssign(ct0, ct1, ctOut LWECiphertext[T]) {
 	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		ctOut.Value[i] = 2 * (-ct0.Value[i] - ct1.Value[i])
 	}
-	ctOut.Value[0] -= 1 << (e.Parameters.LogQ() - 3)
+	ctOut.Value[0] -= 1 << (e.Parameters.logQ - 3)
 
 	e.BaseEvaluator.BootstrapLUTAssign(ctOut, e.signLUT, ctOut)
 }
@@ -282,7 +282,7 @@ func (e *BinaryEvaluator[T]) XNORParallelAssign(ct0, ct1, ctOut LWECiphertext[T]
 	for i := 0; i < e.Parameters.DefaultLWEDimension()+1; i++ {
 		ctOut.Value[i] = 2 * (-ct0.Value[i] - ct1.Value[i])
 	}
-	ctOut.Value[0] -= 1 << (e.Parameters.LogQ() - 3)
+	ctOut.Value[0] -= 1 << (e.Parameters.logQ - 3)
 
 	e.BaseEvaluator.BootstrapLUTParallelAssign(ctOut, e.signLUT, ctOut)
 }

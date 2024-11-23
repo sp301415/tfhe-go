@@ -66,7 +66,7 @@ func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut LookUpTable[T]
 // blindRotateExtendedAssign computes the blind rotation when LookUpTableSize > PolyDegree.
 // This is equivalent to the blind rotation algorithm using extended polynomials, as explained in https://eprint.iacr.org/2023/402.
 func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
-	polyDecomposed := e.Decomposer.buffer.polyDecomposed[:e.Parameters.bootstrapParameters.level]
+	polyDecomposed := e.Decomposer.buffer.polyDecomposed[:e.Parameters.blindRotateParameters.level]
 
 	b2N := 2*e.Parameters.lookUpTableSize - e.ModSwitch(ct.Value[0])
 	b2NMono, b2NIdx := b2N/e.Parameters.polyExtendFactor, b2N%e.Parameters.polyExtendFactor
@@ -92,8 +92,8 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 	}
 
 	for j := 0; j < e.Parameters.polyExtendFactor; j++ {
-		e.Decomposer.DecomposePolyAssign(e.buffer.ctAcc[j].Value[0], e.Parameters.bootstrapParameters, polyDecomposed)
-		for l := 0; l < e.Parameters.bootstrapParameters.level; l++ {
+		e.Decomposer.DecomposePolyAssign(e.buffer.ctAcc[j].Value[0], e.Parameters.blindRotateParameters, polyDecomposed)
+		for l := 0; l < e.Parameters.blindRotateParameters.level; l++ {
 			e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[l], e.buffer.ctAccFourierDecomposed[j][0][l])
 		}
 	}
@@ -159,8 +159,8 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 	for i := 1; i < e.Parameters.blockCount-1; i++ {
 		for j := 0; j < e.Parameters.polyExtendFactor; j++ {
 			for k := 0; k < e.Parameters.glweRank+1; k++ {
-				e.Decomposer.DecomposePolyAssign(e.buffer.ctAcc[j].Value[k], e.Parameters.bootstrapParameters, polyDecomposed)
-				for l := 0; l < e.Parameters.bootstrapParameters.level; l++ {
+				e.Decomposer.DecomposePolyAssign(e.buffer.ctAcc[j].Value[k], e.Parameters.blindRotateParameters, polyDecomposed)
+				for l := 0; l < e.Parameters.blindRotateParameters.level; l++ {
 					e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[l], e.buffer.ctAccFourierDecomposed[j][k][l])
 				}
 			}
@@ -227,8 +227,8 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 
 	for j := 0; j < e.Parameters.polyExtendFactor; j++ {
 		for k := 0; k < e.Parameters.glweRank+1; k++ {
-			e.Decomposer.DecomposePolyAssign(e.buffer.ctAcc[j].Value[k], e.Parameters.bootstrapParameters, polyDecomposed)
-			for l := 0; l < e.Parameters.bootstrapParameters.level; l++ {
+			e.Decomposer.DecomposePolyAssign(e.buffer.ctAcc[j].Value[k], e.Parameters.blindRotateParameters, polyDecomposed)
+			for l := 0; l < e.Parameters.blindRotateParameters.level; l++ {
 				e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[l], e.buffer.ctAccFourierDecomposed[j][k][l])
 			}
 		}
@@ -277,7 +277,7 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 // blindRotateBlockAssign computes the blind rotation when PolyDegree = LookUpTableSize and BlockSize > 1.
 // This is equivalent to the blind rotation algorithm using block binary keys, as explained in https://eprint.iacr.org/2023/958.
 func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
-	polyDecomposed := e.Decomposer.buffer.polyDecomposed[:e.Parameters.bootstrapParameters.level]
+	polyDecomposed := e.Decomposer.buffer.polyDecomposed[:e.Parameters.blindRotateParameters.level]
 
 	vec.CopyAssign(lut.Value, ctOut.Value[0].Coeffs)
 	e.PolyEvaluator.MonomialMulPolyInPlace(ctOut.Value[0], -e.ModSwitch(ct.Value[0]))
@@ -285,8 +285,8 @@ func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTab
 		ctOut.Value[i].Clear()
 	}
 
-	e.Decomposer.DecomposePolyAssign(ctOut.Value[0], e.Parameters.bootstrapParameters, polyDecomposed)
-	for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
+	e.Decomposer.DecomposePolyAssign(ctOut.Value[0], e.Parameters.blindRotateParameters, polyDecomposed)
+	for k := 0; k < e.Parameters.blindRotateParameters.level; k++ {
 		e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[k], e.buffer.ctAccFourierDecomposed[0][0][k])
 	}
 
@@ -305,8 +305,8 @@ func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTab
 
 	for i := 1; i < e.Parameters.blockCount; i++ {
 		for j := 0; j < e.Parameters.glweRank+1; j++ {
-			e.Decomposer.DecomposePolyAssign(ctOut.Value[j], e.Parameters.bootstrapParameters, polyDecomposed)
-			for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
+			e.Decomposer.DecomposePolyAssign(ctOut.Value[j], e.Parameters.blindRotateParameters, polyDecomposed)
+			for k := 0; k < e.Parameters.blindRotateParameters.level; k++ {
 				e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[k], e.buffer.ctAccFourierDecomposed[0][j][k])
 			}
 		}
@@ -329,7 +329,7 @@ func (e *Evaluator[T]) blindRotateBlockAssign(ct LWECiphertext[T], lut LookUpTab
 // blindRotateOriginalAssign computes the blind rotation when PolyDegree = LookUpTableSize and BlockSize = 1.
 // This is equivalent to the original blind rotation algorithm.
 func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUpTable[T], ctOut GLWECiphertext[T]) {
-	polyDecomposed := e.Decomposer.buffer.polyDecomposed[:e.Parameters.bootstrapParameters.level]
+	polyDecomposed := e.Decomposer.buffer.polyDecomposed[:e.Parameters.blindRotateParameters.level]
 
 	vec.CopyAssign(lut.Value, ctOut.Value[0].Coeffs)
 	e.PolyEvaluator.MonomialMulPolyInPlace(ctOut.Value[0], -e.ModSwitch(ct.Value[0]))
@@ -337,8 +337,8 @@ func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUp
 		ctOut.Value[i].Clear()
 	}
 
-	e.Decomposer.DecomposePolyAssign(ctOut.Value[0], e.Parameters.bootstrapParameters, polyDecomposed)
-	for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
+	e.Decomposer.DecomposePolyAssign(ctOut.Value[0], e.Parameters.blindRotateParameters, polyDecomposed)
+	for k := 0; k < e.Parameters.blindRotateParameters.level; k++ {
 		e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[k], e.buffer.ctAccFourierDecomposed[0][0][k])
 	}
 
@@ -351,8 +351,8 @@ func (e *Evaluator[T]) blindRotateOriginalAssign(ct LWECiphertext[T], lut LookUp
 
 	for i := 1; i < e.Parameters.lweDimension; i++ {
 		for j := 0; j < e.Parameters.glweRank+1; j++ {
-			e.Decomposer.DecomposePolyAssign(ctOut.Value[j], e.Parameters.bootstrapParameters, polyDecomposed)
-			for k := 0; k < e.Parameters.bootstrapParameters.level; k++ {
+			e.Decomposer.DecomposePolyAssign(ctOut.Value[j], e.Parameters.blindRotateParameters, polyDecomposed)
+			for k := 0; k < e.Parameters.blindRotateParameters.level; k++ {
 				e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[k], e.buffer.ctAccFourierDecomposed[0][j][k])
 			}
 		}
@@ -380,12 +380,12 @@ func (e *Evaluator[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[
 // Input ciphertext should be of length GLWEDimension + 1.
 // Output ciphertext should be of length LWEDimension + 1.
 func (e *Evaluator[T]) KeySwitchForBootstrapAssign(ct, ctOut LWECiphertext[T]) {
-	scalarDecomposed := e.Decomposer.buffer.scalarDecomposed[:e.Parameters.keyswitchParameters.level]
+	scalarDecomposed := e.Decomposer.buffer.scalarDecomposed[:e.Parameters.keySwitchParameters.level]
 
 	vec.CopyAssign(ct.Value[:e.Parameters.lweDimension+1], ctOut.Value)
 	for i, ii := e.Parameters.lweDimension, 0; i < e.Parameters.glweDimension; i, ii = i+1, ii+1 {
-		e.Decomposer.DecomposeScalarAssign(ct.Value[i+1], e.Parameters.keyswitchParameters, scalarDecomposed)
-		for j := 0; j < e.Parameters.keyswitchParameters.level; j++ {
+		e.Decomposer.DecomposeScalarAssign(ct.Value[i+1], e.Parameters.keySwitchParameters, scalarDecomposed)
+		for j := 0; j < e.Parameters.keySwitchParameters.level; j++ {
 			e.ScalarMulAddLWEAssign(e.EvaluationKey.KeySwitchKey.Value[ii].Value[j], scalarDecomposed[j], ctOut)
 		}
 	}

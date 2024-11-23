@@ -62,10 +62,10 @@ func NewEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte
 		s.SamplePolyAssign(crs[i])
 	}
 
-	enc := tfhe.NewEncryptor(params.Parameters)
+	enc := tfhe.NewEncryptor(params.singleKeyParameters)
 
 	return &Encryptor[T]{
-		Encoder:            tfhe.NewEncoder(params.Parameters),
+		Encoder:            tfhe.NewEncoder(params.singleKeyParameters),
 		GLWETransformer:    NewGLWETransformer(params),
 		SingleKeyEncryptor: enc,
 
@@ -96,9 +96,9 @@ func NewEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed
 	}
 
 	return &Encryptor[T]{
-		Encoder:            tfhe.NewEncoder(params.Parameters),
+		Encoder:            tfhe.NewEncoder(params.singleKeyParameters),
 		GLWETransformer:    NewGLWETransformer(params),
-		SingleKeyEncryptor: tfhe.NewEncryptorWithKey(params.Parameters, sk),
+		SingleKeyEncryptor: tfhe.NewEncryptorWithKey(params.singleKeyParameters, sk),
 
 		Parameters: params,
 		Index:      idx,
@@ -114,14 +114,14 @@ func NewEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed
 // newEncryptionBuffer allocates an empty encryptionBuffer.
 func newEncryptionBuffer[T tfhe.TorusInt](params Parameters[T]) encryptionBuffer[T] {
 	return encryptionBuffer[T]{
-		ptGLWE: tfhe.NewGLWEPlaintext(params.Parameters),
+		ptGLWE: tfhe.NewGLWEPlaintext(params.singleKeyParameters),
 		ctGLWE: NewGLWECiphertext(params),
 
-		auxKey:        tfhe.NewGLWESecretKey(params.Parameters),
-		auxFourierKey: tfhe.NewFourierGLWESecretKey(params.Parameters),
+		auxKey:        tfhe.NewGLWESecretKey(params.singleKeyParameters),
+		auxFourierKey: tfhe.NewFourierGLWESecretKey(params.singleKeyParameters),
 
-		ctLWESingle:  tfhe.NewLWECiphertext(params.Parameters),
-		ctGLWESingle: tfhe.NewGLWECiphertext(params.Parameters),
+		ctLWESingle:  tfhe.NewLWECiphertext(params.singleKeyParameters),
+		ctGLWESingle: tfhe.NewGLWECiphertext(params.singleKeyParameters),
 	}
 }
 

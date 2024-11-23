@@ -78,9 +78,9 @@ type evaluationBuffer[T TorusInt] struct {
 // This does not copy evaluation keys, since they may be large.
 func NewEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *Evaluator[T] {
 	decomposer := NewDecomposer[T](params.polyDegree)
-	decomposer.ScalarDecomposedBuffer(params.keyswitchParameters)
-	decomposer.PolyDecomposedBuffer(params.bootstrapParameters)
-	decomposer.PolyFourierDecomposedBuffer(params.bootstrapParameters)
+	decomposer.ScalarDecomposedBuffer(params.keySwitchParameters)
+	decomposer.PolyDecomposedBuffer(params.blindRotateParameters)
+	decomposer.PolyFourierDecomposedBuffer(params.blindRotateParameters)
 
 	return &Evaluator[T]{
 		Encoder:         NewEncoder(params),
@@ -101,9 +101,9 @@ func NewEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *Evalu
 
 // newEvaluationBuffer allocates an empty evaluationBuffer.
 func newEvaluationBuffer[T TorusInt](params Parameters[T]) evaluationBuffer[T] {
-	polyDecomposed := make([]poly.Poly[T], params.bootstrapParameters.level)
-	polyFourierDecomposed := make([]poly.FourierPoly, params.bootstrapParameters.level)
-	for i := 0; i < params.bootstrapParameters.level; i++ {
+	polyDecomposed := make([]poly.Poly[T], params.blindRotateParameters.level)
+	polyFourierDecomposed := make([]poly.FourierPoly, params.blindRotateParameters.level)
+	for i := 0; i < params.blindRotateParameters.level; i++ {
 		polyDecomposed[i] = poly.NewPoly[T](params.polyDegree)
 		polyFourierDecomposed[i] = poly.NewFourierPoly(params.polyDegree)
 	}
@@ -121,8 +121,8 @@ func newEvaluationBuffer[T TorusInt](params Parameters[T]) evaluationBuffer[T] {
 	for i := 0; i < params.polyExtendFactor; i++ {
 		ctAccFourierDecomposed[i] = make([][]poly.FourierPoly, params.glweRank+1)
 		for j := 0; j < params.glweRank+1; j++ {
-			ctAccFourierDecomposed[i][j] = make([]poly.FourierPoly, params.bootstrapParameters.level)
-			for k := 0; k < params.bootstrapParameters.level; k++ {
+			ctAccFourierDecomposed[i][j] = make([]poly.FourierPoly, params.blindRotateParameters.level)
+			for k := 0; k < params.blindRotateParameters.level; k++ {
 				ctAccFourierDecomposed[i][j][k] = poly.NewFourierPoly(params.polyDegree)
 			}
 		}

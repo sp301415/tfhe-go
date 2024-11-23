@@ -46,9 +46,9 @@ func NewPublicEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, publicKe
 	}
 
 	return &PublicEncryptor[T]{
-		Encoder:                  tfhe.NewEncoder(params.Parameters),
+		Encoder:                  tfhe.NewEncoder(params.singleKeyParameters),
 		GLWETransformer:          NewGLWETransformer(params),
-		SingleKeyPublicEncryptor: tfhe.NewPublicEncryptor(params.Parameters, publicKey),
+		SingleKeyPublicEncryptor: tfhe.NewPublicEncryptor(params.singleKeyParameters, publicKey),
 
 		Parameters: params,
 		Index:      idx,
@@ -62,11 +62,11 @@ func NewPublicEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, publicKe
 // newPublicEncryptionBuffer allocates a new publicEncryptionBuffer.
 func newPublicEncryptionBuffer[T tfhe.TorusInt](params Parameters[T]) publicEncryptionBuffer[T] {
 	return publicEncryptionBuffer[T]{
-		ptGLWE: tfhe.NewGLWEPlaintext(params.Parameters),
+		ptGLWE: tfhe.NewGLWEPlaintext(params.singleKeyParameters),
 		ctGLWE: NewGLWECiphertext(params),
 
-		ctLWESingle:  tfhe.NewLWECiphertext(params.Parameters),
-		ctGLWESingle: tfhe.NewGLWECiphertext(params.Parameters),
+		ctLWESingle:  tfhe.NewLWECiphertext(params.singleKeyParameters),
+		ctGLWESingle: tfhe.NewGLWECiphertext(params.singleKeyParameters),
 	}
 }
 

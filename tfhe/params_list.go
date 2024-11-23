@@ -15,7 +15,7 @@ var (
 
 		MessageModulus: 1 << 1,
 
-		BootstrapParameters: GadgetParametersLiteral[uint32]{
+		BlindRotateParameters: GadgetParametersLiteral[uint32]{
 			Base:  1 << 6,
 			Level: 3,
 		},
@@ -42,7 +42,7 @@ var (
 
 		MessageModulus: 1 << 1,
 
-		BootstrapParameters: GadgetParametersLiteral[uint32]{
+		BlindRotateParameters: GadgetParametersLiteral[uint32]{
 			Base:  1 << 6,
 			Level: 3,
 		},
@@ -65,7 +65,7 @@ var (
 
 		MessageModulus: 1 << 1,
 
-		BootstrapParameters: GadgetParametersLiteral[uint32]{
+		BlindRotateParameters: GadgetParametersLiteral[uint32]{
 			Base:  1 << 7,
 			Level: 3,
 		},
@@ -91,7 +91,7 @@ var (
 
 		MessageModulus: 1 << 2,
 
-		BootstrapParameters: GadgetParametersLiteral[uint64]{
+		BlindRotateParameters: GadgetParametersLiteral[uint64]{
 			Base:  1 << 18,
 			Level: 1,
 		},
@@ -117,7 +117,7 @@ var (
 
 		MessageModulus: 1 << 3,
 
-		BootstrapParameters: GadgetParametersLiteral[uint64]{
+		BlindRotateParameters: GadgetParametersLiteral[uint64]{
 			Base:  1 << 23,
 			Level: 1,
 		},
@@ -143,7 +143,7 @@ var (
 
 		MessageModulus: 1 << 4,
 
-		BootstrapParameters: GadgetParametersLiteral[uint64]{
+		BlindRotateParameters: GadgetParametersLiteral[uint64]{
 			Base:  1 << 22,
 			Level: 1,
 		},
@@ -169,7 +169,7 @@ var (
 
 		MessageModulus: 1 << 5,
 
-		BootstrapParameters: GadgetParametersLiteral[uint64]{
+		BlindRotateParameters: GadgetParametersLiteral[uint64]{
 			Base:  1 << 22,
 			Level: 1,
 		},
@@ -195,7 +195,7 @@ var (
 
 		MessageModulus: 1 << 6,
 
-		BootstrapParameters: GadgetParametersLiteral[uint64]{
+		BlindRotateParameters: GadgetParametersLiteral[uint64]{
 			Base:  1 << 22,
 			Level: 1,
 		},
@@ -221,7 +221,7 @@ var (
 
 		MessageModulus: 1 << 7,
 
-		BootstrapParameters: GadgetParametersLiteral[uint64]{
+		BlindRotateParameters: GadgetParametersLiteral[uint64]{
 			Base:  1 << 22,
 			Level: 1,
 		},
@@ -247,7 +247,7 @@ var (
 
 		MessageModulus: 1 << 8,
 
-		BootstrapParameters: GadgetParametersLiteral[uint64]{
+		BlindRotateParameters: GadgetParametersLiteral[uint64]{
 			Base:  1 << 22,
 			Level: 1,
 		},

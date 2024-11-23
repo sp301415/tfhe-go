@@ -58,13 +58,13 @@ func NewDecryptor[T tfhe.TorusInt](params Parameters[T], sk map[int]tfhe.SecretK
 	singleKeys := make([]tfhe.SecretKey[T], len(sk))
 	partyBitMap := make([]bool, params.PartyCount())
 	for i := range sk {
-		singleEncs[i] = tfhe.NewEncryptorWithKey(params.Parameters, sk[i])
+		singleEncs[i] = tfhe.NewEncryptorWithKey(params.singleKeyParameters, sk[i])
 		singleKeys[i] = sk[i]
 		partyBitMap[i] = true
 	}
 
 	return &Decryptor[T]{
-		Encoder:             tfhe.NewEncoder(params.Parameters),
+		Encoder:             tfhe.NewEncoder(params.singleKeyParameters),
 		GLWETransformer:     NewGLWETransformer(params),
 		SingleKeyDecryptors: singleEncs,
 
@@ -80,18 +80,18 @@ func NewDecryptor[T tfhe.TorusInt](params Parameters[T], sk map[int]tfhe.SecretK
 // newDecryptionBuffer allocates an empty decryptionBuffer.
 func newDecryptionBuffer[T tfhe.TorusInt](params Parameters[T]) decryptionBuffer[T] {
 	return decryptionBuffer[T]{
-		ptGLWE: tfhe.NewGLWEPlaintext(params.Parameters),
+		ptGLWE: tfhe.NewGLWEPlaintext(params.singleKeyParameters),
 		ctGLWE: NewGLWECiphertext(params),
 
-		ctLWESingle:  tfhe.NewLWECiphertext(params.Parameters),
-		ctGLWESingle: tfhe.NewGLWECiphertext(params.Parameters),
+		ctLWESingle:  tfhe.NewLWECiphertext(params.singleKeyParameters),
+		ctGLWESingle: tfhe.NewGLWECiphertext(params.singleKeyParameters),
 	}
 }
 
 // AddSecretKey adds a secret key to this Decryptor.
 // If a secret key of a given index already exists, it is overwritten.
 func (d *Decryptor[T]) AddSecretKey(idx int, sk tfhe.SecretKey[T]) {
-	d.SingleKeyDecryptors[idx] = tfhe.NewEncryptorWithKey(d.Parameters.Parameters, sk)
+	d.SingleKeyDecryptors[idx] = tfhe.NewEncryptorWithKey(d.Parameters.singleKeyParameters, sk)
 	d.SecretKeys[idx] = sk
 	d.PartyBitMap[idx] = true
 }
@@ -130,7 +130,7 @@ func (d *Decryptor[T]) DecryptLWEPlaintext(ct LWECiphertext[T]) tfhe.LWEPlaintex
 	pt := ct.Value[0]
 	for i, ok := range d.PartyBitMap {
 		if ok {
-			ctMask := ct.Value[1+i*d.Parameters.SingleKeyDefaultLWEDimension() : 1+(i+1)*d.Parameters.SingleKeyDefaultLWEDimension()]
+			ctMask := ct.Value[1+i*d.Parameters.SingleDefaultLWEDimension() : 1+(i+1)*d.Parameters.SingleDefaultLWEDimension()]
 			pt += vec.Dot(ctMask, d.SingleKeyDecryptors[i].DefaultLWESecretKey().Value)
 		}
 	}
@@ -151,7 +151,7 @@ func (d *Decryptor[T]) DecryptGLWEAssign(ct GLWECiphertext[T], messagesOut []int
 
 // DecryptGLWEPlaintext decrypts GLWE ciphertext to GLWE plaintext.
 func (d *Decryptor[T]) DecryptGLWEPlaintext(ct GLWECiphertext[T]) tfhe.GLWEPlaintext[T] {
-	pt := tfhe.NewGLWEPlaintext(d.Parameters.Parameters)
+	pt := tfhe.NewGLWEPlaintext(d.Parameters.singleKeyParameters)
 	d.DecryptGLWEPlaintextAssign(ct, pt)
 	return pt
 }
@@ -180,7 +180,7 @@ func (d *Decryptor[T]) DecryptFourierGLWEAssign(ct FourierGLWECiphertext[T], mes
 
 // DecryptFourierGLWEPlaintext decrypts FourierGLWE ciphertext to GLWE plaintext.
 func (d *Decryptor[T]) DecryptFourierGLWEPlaintext(ct FourierGLWECiphertext[T]) tfhe.GLWEPlaintext[T] {
-	ptOut := tfhe.NewGLWEPlaintext(d.Parameters.Parameters)
+	ptOut := tfhe.NewGLWEPlaintext(d.Parameters.singleKeyParameters)
 	d.DecryptFourierGLWEPlaintextAssign(ct, ptOut)
 	return ptOut
 }

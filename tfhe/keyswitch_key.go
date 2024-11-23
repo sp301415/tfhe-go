@@ -28,7 +28,7 @@ func NewLWEKeySwitchKeyCustom[T TorusInt](inputDimension, outputDimension int, g
 
 // NewKeySwitchKeyForBootstrap allocates an empty LWEKeySwitchingKey for bootstrapping.
 func NewKeySwitchKeyForBootstrap[T TorusInt](params Parameters[T]) LWEKeySwitchKey[T] {
-	return NewLWEKeySwitchKeyCustom(params.glweDimension-params.lweDimension, params.lweDimension, params.keyswitchParameters)
+	return NewLWEKeySwitchKeyCustom(params.glweDimension-params.lweDimension, params.lweDimension, params.keySwitchParameters)
 }
 
 // NewKeySwitchKeyForBootstrapCustom allocates an empty LWEKeySwitchingKey with custom parameters.

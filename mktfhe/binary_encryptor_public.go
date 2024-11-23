@@ -15,7 +15,7 @@ type BinaryPublicEncryptor[T tfhe.TorusInt] struct {
 // NewBinaryPublicEncryptor allocates a new BinaryPublicEncryptor.
 func NewBinaryPublicEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, pk tfhe.PublicKey[T]) *BinaryPublicEncryptor[T] {
 	return &BinaryPublicEncryptor[T]{
-		BinaryEncoder: tfhe.NewBinaryEncoder(params.Parameters),
+		BinaryEncoder: tfhe.NewBinaryEncoder(params.singleKeyParameters),
 		Parameters:    params,
 		BaseEncryptor: NewPublicEncryptor(params, idx, pk),
 	}

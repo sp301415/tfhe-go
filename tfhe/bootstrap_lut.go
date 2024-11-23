@@ -16,6 +16,11 @@ func NewLookUpTable[T TorusInt](params Parameters[T]) LookUpTable[T] {
 	return LookUpTable[T]{Value: make([]T, params.lookUpTableSize)}
 }
 
+// NewLookUpTableCustom allocates an empty lookup table with custom size.
+func NewLookUpTableCustom[T TorusInt](lutSize int) LookUpTable[T] {
+	return LookUpTable[T]{Value: make([]T, lutSize)}
+}
+
 // Copy returns a copy of the LUT.
 func (lut LookUpTable[T]) Copy() LookUpTable[T] {
 	return LookUpTable[T]{Value: vec.Copy(lut.Value)}

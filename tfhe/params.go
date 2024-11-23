@@ -263,8 +263,8 @@ type ParametersLiteral[T TorusInt] struct {
 	// MessageModulus is the modulus of the encoded message.
 	MessageModulus T
 
-	// BootstrapParameters is the gadget parameters for Programmable Bootstrapping.
-	BootstrapParameters GadgetParametersLiteral[T]
+	// BlindRotateParameters is the gadget parameters for Blind Rotation.
+	BlindRotateParameters GadgetParametersLiteral[T]
 	// KeySwitchParameters is the gadget parameters for KeySwitching.
 	KeySwitchParameters GadgetParametersLiteral[T]
 
@@ -339,15 +339,15 @@ func (p ParametersLiteral[T]) WithMessageModulus(messageModulus T) ParametersLit
 	return p
 }
 
-// WithBootstrapParameters sets the BootstrapParameters and returns the new ParametersLiteral.
-func (p ParametersLiteral[T]) WithBootstrapParameters(bootstrapParameters GadgetParametersLiteral[T]) ParametersLiteral[T] {
-	p.BootstrapParameters = bootstrapParameters
+// WithBlindRotateParameters sets the BlindRotateParameters and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithBlindRotateParameters(blindRotateParameters GadgetParametersLiteral[T]) ParametersLiteral[T] {
+	p.BlindRotateParameters = blindRotateParameters
 	return p
 }
 
 // WithKeySwitchParameters sets the KeySwitchParameters and returns the new ParametersLiteral.
-func (p ParametersLiteral[T]) WithKeySwitchParameters(keyswitchParameters GadgetParametersLiteral[T]) ParametersLiteral[T] {
-	p.KeySwitchParameters = keyswitchParameters
+func (p ParametersLiteral[T]) WithKeySwitchParameters(keySwitchParameters GadgetParametersLiteral[T]) ParametersLiteral[T] {
+	p.KeySwitchParameters = keySwitchParameters
 	return p
 }
 
@@ -421,8 +421,8 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		logQ:   num.SizeT[T](),
 		floatQ: math.Exp2(float64(num.SizeT[T]())),
 
-		bootstrapParameters: p.BootstrapParameters.Compile(),
-		keyswitchParameters: p.KeySwitchParameters.Compile(),
+		blindRotateParameters: p.BlindRotateParameters.Compile(),
+		keySwitchParameters:   p.KeySwitchParameters.Compile(),
 
 		bootstrapOrder: p.BootstrapOrder,
 	}
@@ -439,7 +439,7 @@ type Parameters[T TorusInt] struct {
 	glweRank int
 	// PolyDegree is the degree of polynomials in GLWE entities. Usually this is denoted by N.
 	polyDegree int
-	// PolyDegreeLog equals log(PolyDegree).
+	// LogPolyDegree equals log(PolyDegree).
 	logPolyDegree int
 	// LookUpTableSize is the size of Lookup Table used in Blind Rotation.
 	lookUpTableSize int
@@ -467,10 +467,10 @@ type Parameters[T TorusInt] struct {
 	// floatQ is the value of Q as float64.
 	floatQ float64
 
-	// bootstrapParameters is the gadget parameters for Programmable Bootstrapping.
-	bootstrapParameters GadgetParameters[T]
-	// keyswitchParameters is the gadget parameters for KeySwitching.
-	keyswitchParameters GadgetParameters[T]
+	// blindRotateParameters is the gadget parameters for Blind Rotation.
+	blindRotateParameters GadgetParameters[T]
+	// keySwitchParameters is the gadget parameters for KeySwitching.
+	keySwitchParameters GadgetParameters[T]
 
 	// bootstrapOrder is the order of Programmable Bootstrapping.
 	bootstrapOrder BootstrapOrder
@@ -595,14 +595,14 @@ func (p Parameters[T]) LogQ() int {
 	return p.logQ
 }
 
-// BootstrapParameters is the gadget parameters for Programmable Bootstrapping.
-func (p Parameters[T]) BootstrapParameters() GadgetParameters[T] {
-	return p.bootstrapParameters
+// BlindRotateParameters is the gadget parameters for Programmable Bootstrapping.
+func (p Parameters[T]) BlindRotateParameters() GadgetParameters[T] {
+	return p.blindRotateParameters
 }
 
 // KeySwitchParameters is the gadget parameters for KeySwitching.
 func (p Parameters[T]) KeySwitchParameters() GadgetParameters[T] {
-	return p.keyswitchParameters
+	return p.keySwitchParameters
 }
 
 // BootstrapOrder is the order of Programmable Bootstrapping.
@@ -632,8 +632,8 @@ func (p Parameters[T]) Literal() ParametersLiteral[T] {
 
 		MessageModulus: p.messageModulus,
 
-		BootstrapParameters: p.bootstrapParameters.Literal(),
-		KeySwitchParameters: p.keyswitchParameters.Literal(),
+		BlindRotateParameters: p.blindRotateParameters.Literal(),
+		KeySwitchParameters:   p.keySwitchParameters.Literal(),
 
 		BootstrapOrder: p.bootstrapOrder,
 	}
@@ -641,7 +641,7 @@ func (p Parameters[T]) Literal() ParametersLiteral[T] {
 
 // ByteSize returns the byte size of the parameters.
 func (p Parameters[T]) ByteSize() int {
-	return 8*8 + p.bootstrapParameters.ByteSize() + p.keyswitchParameters.ByteSize() + 1
+	return 8*8 + p.blindRotateParameters.ByteSize() + p.keySwitchParameters.ByteSize() + 1
 }
 
 // WriteTo implements the [io.WriterTo] interface.
@@ -656,7 +656,7 @@ func (p Parameters[T]) ByteSize() int {
 //	[ 8] GLWEStdDev
 //	[ 8] BlockSize
 //	[ 8] MessageModulus
-//	     BootstrapParameters
+//	     BlindRotateParameters
 //	     KeySwitchParameters
 //	[ 1] BootstrapOrder
 func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
@@ -720,12 +720,12 @@ func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
 	}
 	n += int64(nWrite)
 
-	if nWrite64, err = p.bootstrapParameters.WriteTo(w); err != nil {
+	if nWrite64, err = p.blindRotateParameters.WriteTo(w); err != nil {
 		return n + nWrite64, err
 	}
 	n += nWrite64
 
-	if nWrite64, err = p.keyswitchParameters.WriteTo(w); err != nil {
+	if nWrite64, err = p.keySwitchParameters.WriteTo(w); err != nil {
 		return n + nWrite64, err
 	}
 	n += nWrite64
@@ -797,14 +797,14 @@ func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	n += int64(nRead)
 	messageModulus := T(binary.BigEndian.Uint64(buf[:]))
 
-	var bootstrapParameters GadgetParameters[T]
-	if nRead64, err = bootstrapParameters.ReadFrom(r); err != nil {
+	var blindRotateParameters GadgetParameters[T]
+	if nRead64, err = blindRotateParameters.ReadFrom(r); err != nil {
 		return n + nRead64, err
 	}
 	n += nRead64
 
-	var keyswitchParameters GadgetParameters[T]
-	if nRead64, err = keyswitchParameters.ReadFrom(r); err != nil {
+	var keySwitchParameters GadgetParameters[T]
+	if nRead64, err = keySwitchParameters.ReadFrom(r); err != nil {
 		return n + nRead64, err
 	}
 	n += nRead64
@@ -828,8 +828,8 @@ func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
 
 		MessageModulus: messageModulus,
 
-		BootstrapParameters: bootstrapParameters.Literal(),
-		KeySwitchParameters: keyswitchParameters.Literal(),
+		BlindRotateParameters: blindRotateParameters.Literal(),
+		KeySwitchParameters:   keySwitchParameters.Literal(),
 
 		BootstrapOrder: bootstrapOrder,
 	}.Compile()
