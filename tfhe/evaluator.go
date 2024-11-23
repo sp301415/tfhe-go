@@ -101,13 +101,6 @@ func NewEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *Evalu
 
 // newEvaluationBuffer allocates an empty evaluationBuffer.
 func newEvaluationBuffer[T TorusInt](params Parameters[T]) evaluationBuffer[T] {
-	polyDecomposed := make([]poly.Poly[T], params.blindRotateParameters.level)
-	polyFourierDecomposed := make([]poly.FourierPoly, params.blindRotateParameters.level)
-	for i := 0; i < params.blindRotateParameters.level; i++ {
-		polyDecomposed[i] = poly.NewPoly[T](params.polyDegree)
-		polyFourierDecomposed[i] = poly.NewFourierPoly(params.polyDegree)
-	}
-
 	ctAcc := make([]GLWECiphertext[T], params.polyExtendFactor)
 	ctFourierAcc := make([]FourierGLWECiphertext[T], params.polyExtendFactor)
 	ctBlockFourierAcc := make([]FourierGLWECiphertext[T], params.polyExtendFactor)
