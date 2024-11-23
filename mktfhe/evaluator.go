@@ -90,8 +90,8 @@ func NewEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationK
 		partyBitMap[i] = true
 	}
 
-	decomposer := tfhe.NewDecomposer[T](params.polyDegree)
-	decomposer.ScalarDecomposedBuffer(params.keySwitchParameters)
+	decomposer := tfhe.NewDecomposer[T](params.PolyDegree())
+	decomposer.ScalarDecomposedBuffer(params.KeySwitchParameters())
 	decomposer.PolyDecomposedBuffer(params.relinKeyParameters)
 	decomposer.PolyFourierDecomposedBuffer(params.relinKeyParameters)
 
@@ -103,7 +103,7 @@ func NewEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationK
 		SingleKeyEvaluators:    singleEvals,
 
 		Decomposer:    decomposer,
-		PolyEvaluator: poly.NewEvaluator[T](params.polyDegree),
+		PolyEvaluator: poly.NewEvaluator[T](params.PolyDegree()),
 
 		Parameters: params,
 
@@ -125,7 +125,7 @@ func newEvaluationBuffer[T tfhe.TorusInt](params Parameters[T]) evaluationBuffer
 
 	ctRotateInputs := make([]tfhe.LWECiphertext[T], params.partyCount)
 	for i := 0; i < params.partyCount; i++ {
-		ctRotateInputs[i] = tfhe.NewLWECiphertextCustom[T](params.singleLWEDimension)
+		ctRotateInputs[i] = tfhe.NewLWECiphertextCustom[T](params.singleKeyParameters.LWEDimension())
 	}
 
 	gadgetLUTs := make([]tfhe.LookUpTable[T], params.accumulatorParameters.Level())
@@ -145,8 +145,8 @@ func newEvaluationBuffer[T tfhe.TorusInt](params Parameters[T]) evaluationBuffer
 		ctProd:        NewGLWECiphertext(params),
 		ctFourierProd: NewFourierGLWECiphertext(params),
 
-		ctProdSingle:        poly.NewPoly[T](params.polyDegree),
-		ctFourierProdSingle: poly.NewFourierPoly(params.polyDegree),
+		ctProdSingle:        poly.NewPoly[T](params.PolyDegree()),
+		ctFourierProdSingle: poly.NewFourierPoly(params.PolyDegree()),
 
 		ctRelin:           ctRelin,
 		ctRelinTransposed: ctRelinTransposed,

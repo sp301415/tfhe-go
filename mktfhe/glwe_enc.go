@@ -17,7 +17,7 @@ func (e *Encryptor[T]) UniEncrypt(messages []int, gadgetParams tfhe.GadgetParame
 func (e *Encryptor[T]) UniEncryptAssign(messages []int, gadgetParams tfhe.GadgetParameters[T], ctOut UniEncryption[T]) {
 	length := num.Min(e.Parameters.PolyDegree(), len(messages))
 	for i := 0; i < length; i++ {
-		e.buffer.ptGLWE.Value.Coeffs[i] = T(messages[i]) % e.Parameters.messageModulus
+		e.buffer.ptGLWE.Value.Coeffs[i] = T(messages[i]) % e.Parameters.MessageModulus()
 	}
 	vec.Fill(e.buffer.ptGLWE.Value.Coeffs[length:], 0)
 
@@ -52,7 +52,7 @@ func (e *Encryptor[T]) UniEncryptPlaintextAssign(pt tfhe.GLWEPlaintext[T], ctOut
 
 // UniDecrypt decrypts UniEncryption to integer messages.
 func (e *Encryptor[T]) UniDecrypt(ct UniEncryption[T]) []int {
-	messages := make([]int, e.Parameters.polyDegree)
+	messages := make([]int, e.Parameters.PolyDegree())
 	e.UniDecryptAssign(ct, messages)
 	return messages
 }
@@ -61,15 +61,15 @@ func (e *Encryptor[T]) UniDecrypt(ct UniEncryption[T]) []int {
 func (e *Encryptor[T]) UniDecryptAssign(ct UniEncryption[T], messagesOut []int) {
 	e.UniDecryptPlaintextAssign(ct, e.buffer.ptGLWE)
 
-	length := num.Min(e.Parameters.polyDegree, len(messagesOut))
+	length := num.Min(e.Parameters.PolyDegree(), len(messagesOut))
 	for i := 0; i < length; i++ {
-		messagesOut[i] = int(num.DivRoundBits(e.buffer.ptGLWE.Value.Coeffs[i], ct.GadgetParameters.LogLastBaseQ()) % e.Parameters.messageModulus)
+		messagesOut[i] = int(num.DivRoundBits(e.buffer.ptGLWE.Value.Coeffs[i], ct.GadgetParameters.LogLastBaseQ()) % e.Parameters.MessageModulus())
 	}
 }
 
 // UniDecryptPlaintext decrypts UniEncryption to GLWE plaintext.
 func (e *Encryptor[T]) UniDecryptPlaintext(ct UniEncryption[T]) tfhe.GLWEPlaintext[T] {
-	pt := tfhe.NewGLWEPlaintextCustom[T](e.Parameters.polyDegree)
+	pt := tfhe.NewGLWEPlaintextCustom[T](e.Parameters.PolyDegree())
 	e.UniDecryptPlaintextAssign(ct, pt)
 	return pt
 }
@@ -77,7 +77,7 @@ func (e *Encryptor[T]) UniDecryptPlaintext(ct UniEncryption[T]) tfhe.GLWEPlainte
 // UniDecryptPlaintextAssign decrypts UniEncryption to GLWE plaintext and writes it to ptOut.
 func (e *Encryptor[T]) UniDecryptPlaintextAssign(ct UniEncryption[T], ptOut tfhe.GLWEPlaintext[T]) {
 	e.SingleKeyEncryptor.DecryptGLevPlaintextAssign(ct.Value[1], tfhe.GLWEPlaintext[T]{Value: e.buffer.auxKey.Value[0]})
-	for i := 0; i < e.Parameters.polyDegree; i++ {
+	for i := 0; i < e.Parameters.PolyDegree(); i++ {
 		e.buffer.auxKey.Value[0].Coeffs[i] = num.DivRoundBits(e.buffer.auxKey.Value[0].Coeffs[i], ct.GadgetParameters.LogLastBaseQ()) & (1<<ct.GadgetParameters.LogBase() - 1)
 	}
 	e.SingleKeyEncryptor.ToFourierGLWESecretKeyAssign(e.buffer.auxKey, e.buffer.auxFourierKey)

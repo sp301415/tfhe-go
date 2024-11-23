@@ -130,7 +130,7 @@ func (d *Decryptor[T]) DecryptLWEPlaintext(ct LWECiphertext[T]) tfhe.LWEPlaintex
 	pt := ct.Value[0]
 	for i, ok := range d.PartyBitMap {
 		if ok {
-			ctMask := ct.Value[1+i*d.Parameters.SingleDefaultLWEDimension() : 1+(i+1)*d.Parameters.SingleDefaultLWEDimension()]
+			ctMask := ct.Value[1+i*d.Parameters.singleKeyParameters.DefaultLWEDimension() : 1+(i+1)*d.Parameters.singleKeyParameters.DefaultLWEDimension()]
 			pt += vec.Dot(ctMask, d.SingleKeyDecryptors[i].DefaultLWESecretKey().Value)
 		}
 	}
