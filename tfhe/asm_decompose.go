@@ -9,9 +9,9 @@ import (
 
 // decomposePolyAssign decomposes p with respect to gadgetParams and writes it to decomposedOut.
 func decomposePolyAssign[T TorusInt](p poly.Poly[T], gadgetParams GadgetParameters[T], decomposedOut []poly.Poly[T]) {
-	LogLastBaseQ := gadgetParams.LogLastBaseQ()
+	logLastBaseQ := gadgetParams.LogLastBaseQ()
 	for i := 0; i < p.Degree(); i++ {
-		c := num.DivRoundBits(p.Coeffs[i], LogLastBaseQ)
+		c := num.DivRoundBits(p.Coeffs[i], logLastBaseQ)
 		for j := gadgetParams.level - 1; j >= 1; j-- {
 			decomposedOut[j].Coeffs[i] = c & (gadgetParams.base - 1)
 			c >>= gadgetParams.logBase
