@@ -20,8 +20,8 @@ type BFVEvaluator[T tfhe.TorusInt] struct {
 	// Parameters is the parameters for this BFVEvaluator.
 	Parameters tfhe.Parameters[T]
 
-	// KeySwitchKeys is the keyswitching keys for this BFVEvaluator.
-	KeySwitchKeys BFVEvaluationKey[T]
+	// EvaluationKey is the keyswitching keys for this BFVEvaluator.
+	EvaluationKey BFVEvaluationKey[T]
 
 	buffer bfvEvaluationBuffer[T]
 }
@@ -41,12 +41,12 @@ type bfvEvaluationBuffer[T tfhe.TorusInt] struct {
 }
 
 // NewBFVEvaluator creates a new BFVEvaluator.
-func NewBFVEvaluator[T tfhe.TorusInt](params tfhe.Parameters[T], keySwitchKeys BFVEvaluationKey[T]) *BFVEvaluator[T] {
+func NewBFVEvaluator[T tfhe.TorusInt](params tfhe.Parameters[T], evk BFVEvaluationKey[T]) *BFVEvaluator[T] {
 	return &BFVEvaluator[T]{
 		BaseEvaluator: tfhe.NewEvaluator(params, tfhe.EvaluationKey[T]{}),
 		PolyEvaluator: poly.NewEvaluator[T](params.PolyDegree()),
 		Parameters:    params,
-		KeySwitchKeys: keySwitchKeys,
+		EvaluationKey: evk,
 		buffer:        newBFVEvaluationBuffer(params),
 	}
 }
@@ -72,7 +72,7 @@ func (e *BFVEvaluator[T]) ShallowCopy() *BFVEvaluator[T] {
 		BaseEvaluator: e.BaseEvaluator.ShallowCopy(),
 		PolyEvaluator: e.PolyEvaluator.ShallowCopy(),
 		Parameters:    e.Parameters,
-		KeySwitchKeys: e.KeySwitchKeys,
+		EvaluationKey: e.EvaluationKey,
 		buffer:        newBFVEvaluationBuffer(e.Parameters),
 	}
 }
@@ -126,7 +126,7 @@ func (e *BFVEvaluator[T]) RelinearizeAssign(ct, ctOut tfhe.GLWECiphertext[T]) {
 		ctOut.Value[i].CopyFrom(e.buffer.ctTensor.Value[i])
 	}
 	for i, ii := e.Parameters.GLWERank()+1, 0; i < tensorRank+1; i, ii = i+1, ii+1 {
-		e.BaseEvaluator.GadgetProductAddGLWEAssign(e.KeySwitchKeys.RelinKey.Value[ii], e.buffer.ctTensor.Value[i], ctOut)
+		e.BaseEvaluator.GadgetProductAddGLWEAssign(e.EvaluationKey.RelinKey.Value[ii], e.buffer.ctTensor.Value[i], ctOut)
 	}
 }
 
@@ -157,7 +157,7 @@ func (e *BFVEvaluator[T]) Permute(ct0 tfhe.GLWECiphertext[T], d int) tfhe.GLWECi
 // Panics if BFVEvaluator does not have galois key for d.
 func (e *BFVEvaluator[T]) PermuteAssign(ct0 tfhe.GLWECiphertext[T], d int, ctOut tfhe.GLWECiphertext[T]) {
 	e.BaseEvaluator.PermuteGLWEAssign(ct0, d, e.buffer.ctPermute)
-	e.BaseEvaluator.KeySwitchGLWEAssign(e.buffer.ctPermute, e.KeySwitchKeys.GaloisKeys[d], ctOut)
+	e.BaseEvaluator.KeySwitchGLWEAssign(e.buffer.ctPermute, e.EvaluationKey.GaloisKeys[d], ctOut)
 }
 
 // LWEToGLWECiphertext packs a LWE ciphertext to GLWE ciphertext.
