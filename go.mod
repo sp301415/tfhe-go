@@ -3,9 +3,9 @@ module github.com/sp301415/tfhe-go
 go 1.18
 
 require (
-	github.com/stretchr/testify v1.9.0
-	golang.org/x/crypto v0.28.0
-	golang.org/x/sys v0.26.0
+	github.com/stretchr/testify v1.10.0
+	golang.org/x/crypto v0.31.0
+	golang.org/x/sys v0.28.0
 )
 
 require (
