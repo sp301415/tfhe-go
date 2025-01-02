@@ -61,7 +61,7 @@ func (e *Evaluator[T]) GenLookUpTableFull(f func(int) T) LookUpTable[T] {
 // GenLookUpTableFullAssign generates a lookup table based on function f and writes it to lutOut.
 // Output of f is encoded as-is.
 func (e *Evaluator[T]) GenLookUpTableFullAssign(f func(int) T, lutOut LookUpTable[T]) {
-	e.GenLookUpTableFullCustomAssign(f, e.Parameters.messageModulus, e.Parameters.scale, lutOut)
+	e.GenLookUpTableFullCustomAssign(f, e.Parameters.messageModulus, lutOut)
 }
 
 // GenLookUpTableCustom generates a lookup table based on function f using custom messageModulus and scale.
@@ -75,20 +75,7 @@ func (e *Evaluator[T]) GenLookUpTableCustom(f func(int) int, messageModulus, sca
 // GenLookUpTableCustomAssign generates a lookup table based on function f using custom messageModulus and scale and writes it to lutOut.
 // Input and output of f is cut by messageModulus.
 func (e *Evaluator[T]) GenLookUpTableCustomAssign(f func(int) int, messageModulus, scale T, lutOut LookUpTable[T]) {
-	for x := 0; x < int(messageModulus); x++ {
-		start := num.DivRound(x*e.Parameters.lookUpTableSize, int(messageModulus))
-		end := num.DivRound((x+1)*e.Parameters.lookUpTableSize, int(messageModulus))
-		y := e.EncodeLWECustom(f(x), messageModulus, scale).Value
-		for xx := start; xx < end; xx++ {
-			lutOut.Value[xx] = y
-		}
-	}
-
-	offset := num.DivRound(e.Parameters.lookUpTableSize, int(2*messageModulus))
-	vec.RotateInPlace(lutOut.Value, -offset)
-	for i := e.Parameters.lookUpTableSize - offset; i < e.Parameters.lookUpTableSize; i++ {
-		lutOut.Value[i] = -lutOut.Value[i]
-	}
+	e.GenLookUpTableFullCustomAssign(func(x int) T { return e.EncodeLWECustom(f(x), messageModulus, scale).Value }, messageModulus, lutOut)
 }
 
 // GenLookUpTableFullCustom generates a lookup table based on function f using custom messageModulus and scale.
@@ -101,7 +88,7 @@ func (e *Evaluator[T]) GenLookUpTableFullCustom(f func(int) T, messageModulus, s
 
 // GenLookUpTableFullCustomAssign generates a lookup table based on function f using custom messageModulus and scale and writes it to lutOut.
 // Output of f is encoded as-is.
-func (e *Evaluator[T]) GenLookUpTableFullCustomAssign(f func(int) T, messageModulus, scale T, lutOut LookUpTable[T]) {
+func (e *Evaluator[T]) GenLookUpTableFullCustomAssign(f func(int) T, messageModulus T, lutOut LookUpTable[T]) {
 	for x := 0; x < int(messageModulus); x++ {
 		start := num.DivRound(x*e.Parameters.lookUpTableSize, int(messageModulus))
 		end := num.DivRound((x+1)*e.Parameters.lookUpTableSize, int(messageModulus))
