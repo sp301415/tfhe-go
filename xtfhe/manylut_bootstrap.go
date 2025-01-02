@@ -11,7 +11,7 @@ import (
 //
 // Panics if len(f) > LUTCount.
 func (e *ManyLUTEvaluator[T]) GenLookUpTable(f []func(int) int) tfhe.LookUpTable[T] {
-	lutOut := tfhe.NewLookUpTable(e.Parameters)
+	lutOut := tfhe.NewLookUpTable(e.Parameters.baseParameters)
 	e.GenLookUpTableAssign(f, lutOut)
 	return lutOut
 }
@@ -21,7 +21,7 @@ func (e *ManyLUTEvaluator[T]) GenLookUpTable(f []func(int) int) tfhe.LookUpTable
 //
 // Panics if len(f) > LUTCount.
 func (e *ManyLUTEvaluator[T]) GenLookUpTableAssign(f []func(int) int, lutOut tfhe.LookUpTable[T]) {
-	e.GenLookUpTableCustomAssign(f, e.Parameters.MessageModulus(), e.Parameters.Scale(), lutOut)
+	e.GenLookUpTableCustomAssign(f, e.Parameters.baseParameters.MessageModulus(), e.Parameters.baseParameters.Scale(), lutOut)
 }
 
 // GenLookUpTableFull generates a lookup table based on function f.
@@ -29,7 +29,7 @@ func (e *ManyLUTEvaluator[T]) GenLookUpTableAssign(f []func(int) int, lutOut tfh
 //
 // Panics if len(f) > LUTCount.
 func (e *ManyLUTEvaluator[T]) GenLookUpTableFull(f []func(int) T) tfhe.LookUpTable[T] {
-	lutOut := tfhe.NewLookUpTable(e.Parameters)
+	lutOut := tfhe.NewLookUpTable(e.Parameters.baseParameters)
 	e.GenLookUpTableFullAssign(f, lutOut)
 	return lutOut
 }
@@ -39,7 +39,7 @@ func (e *ManyLUTEvaluator[T]) GenLookUpTableFull(f []func(int) T) tfhe.LookUpTab
 //
 // Panics if len(f) > LUTCount.
 func (e *ManyLUTEvaluator[T]) GenLookUpTableFullAssign(f []func(int) T, lutOut tfhe.LookUpTable[T]) {
-	e.GenLookUpTableFullCustomAssign(f, e.Parameters.MessageModulus(), lutOut)
+	e.GenLookUpTableFullCustomAssign(f, e.Parameters.baseParameters.MessageModulus(), lutOut)
 }
 
 // GenLookUpTableCustom generates a lookup table based on function f using custom messageModulus and scale.
@@ -47,7 +47,7 @@ func (e *ManyLUTEvaluator[T]) GenLookUpTableFullAssign(f []func(int) T, lutOut t
 //
 // Panics if len(f) > LUTCount.
 func (e *ManyLUTEvaluator[T]) GenLookUpTableCustom(f []func(int) int, messageModulus, scale T) tfhe.LookUpTable[T] {
-	lutOut := tfhe.NewLookUpTable(e.Parameters)
+	lutOut := tfhe.NewLookUpTable(e.Parameters.baseParameters)
 	e.GenLookUpTableCustomAssign(f, messageModulus, scale, lutOut)
 	return lutOut
 }
@@ -70,7 +70,7 @@ func (e *ManyLUTEvaluator[T]) GenLookUpTableCustomAssign(f []func(int) int, mess
 //
 // Panics if len(f) > LUTCount.
 func (e *ManyLUTEvaluator[T]) GenLookUpTableFullCustom(f []func(int) T, messageModulus, scale T) tfhe.LookUpTable[T] {
-	lutOut := tfhe.NewLookUpTable(e.Parameters)
+	lutOut := tfhe.NewLookUpTable(e.Parameters.baseParameters)
 	e.GenLookUpTableFullAssign(f, lutOut)
 	return lutOut
 }
@@ -80,28 +80,28 @@ func (e *ManyLUTEvaluator[T]) GenLookUpTableFullCustom(f []func(int) T, messageM
 //
 // Panics if len(f) > LUTCount.
 func (e *ManyLUTEvaluator[T]) GenLookUpTableFullCustomAssign(f []func(int) T, messageModulus T, lutOut tfhe.LookUpTable[T]) {
-	if len(f) > e.LUTCount() {
+	if len(f) > e.Parameters.lutCount {
 		panic("Number of functions exceeds LUTCount")
 	}
 
-	y := make([]T, e.lutCount)
+	y := make([]T, e.Parameters.lutCount)
 
 	for x := 0; x < int(messageModulus); x++ {
-		start := num.DivRound(x*e.Parameters.LookUpTableSize(), int(messageModulus))
-		end := num.DivRound((x+1)*e.Parameters.LookUpTableSize(), int(messageModulus))
+		start := num.DivRound(x*e.Parameters.baseParameters.LookUpTableSize(), int(messageModulus))
+		end := num.DivRound((x+1)*e.Parameters.baseParameters.LookUpTableSize(), int(messageModulus))
 		for i := range f {
 			y[i] = f[i](x)
 		}
-		for xx := start; xx < end; xx += e.lutCount {
-			for i := 0; i < e.lutCount; i++ {
+		for xx := start; xx < end; xx += e.Parameters.lutCount {
+			for i := 0; i < e.Parameters.lutCount; i++ {
 				lutOut.Value[xx+i] = y[i]
 			}
 		}
 	}
 
-	offset := num.DivRound(e.Parameters.LookUpTableSize(), int(2*messageModulus))
+	offset := num.DivRound(e.Parameters.baseParameters.LookUpTableSize(), int(2*messageModulus))
 	vec.RotateInPlace(lutOut.Value, -offset)
-	for i := e.Parameters.LookUpTableSize() - offset; i < e.Parameters.LookUpTableSize(); i++ {
+	for i := e.Parameters.baseParameters.LookUpTableSize() - offset; i < e.Parameters.baseParameters.LookUpTableSize(); i++ {
 		lutOut.Value[i] = -lutOut.Value[i]
 	}
 }
@@ -126,9 +126,9 @@ func (e *ManyLUTEvaluator[T]) BootstrapFuncAssign(ct tfhe.LWECiphertext[T], f []
 
 // BootstrapLUT returns a bootstrapped LWE ciphertext with respect to given LUT.
 func (e *ManyLUTEvaluator[T]) BootstrapLUT(ct tfhe.LWECiphertext[T], lut tfhe.LookUpTable[T]) []tfhe.LWECiphertext[T] {
-	ctOut := make([]tfhe.LWECiphertext[T], e.lutCount)
-	for i := 0; i < e.lutCount; i++ {
-		ctOut[i] = tfhe.NewLWECiphertext(e.Parameters)
+	ctOut := make([]tfhe.LWECiphertext[T], e.Parameters.lutCount)
+	for i := 0; i < e.Parameters.lutCount; i++ {
+		ctOut[i] = tfhe.NewLWECiphertext(e.Parameters.baseParameters)
 	}
 	e.BootstrapLUTAssign(ct, lut, ctOut)
 	return ctOut
@@ -139,16 +139,16 @@ func (e *ManyLUTEvaluator[T]) BootstrapLUT(ct tfhe.LWECiphertext[T], lut tfhe.Lo
 // If len(ctOut) > LUTCount, only the first LUTCount elements are written.
 // Panics if len(ctOut) < LUTCount.
 func (e *ManyLUTEvaluator[T]) BootstrapLUTAssign(ct tfhe.LWECiphertext[T], lut tfhe.LookUpTable[T], ctOut []tfhe.LWECiphertext[T]) {
-	switch e.Parameters.BootstrapOrder() {
+	switch e.Parameters.baseParameters.BootstrapOrder() {
 	case tfhe.OrderKeySwitchBlindRotate:
 		e.KeySwitchForBootstrapAssign(ct, e.buffer.ctKeySwitchForBootstrap)
 		e.BlindRotateAssign(e.buffer.ctKeySwitchForBootstrap, lut, e.buffer.ctRotate)
-		for i := 0; i < e.lutCount; i++ {
+		for i := 0; i < e.Parameters.lutCount; i++ {
 			e.buffer.ctRotate.ToLWECiphertextAssign(i, ctOut[i])
 		}
 	case tfhe.OrderBlindRotateKeySwitch:
 		e.BlindRotateAssign(ct, lut, e.buffer.ctRotate)
-		for i := 0; i < e.lutCount; i++ {
+		for i := 0; i < e.Parameters.lutCount; i++ {
 			e.buffer.ctRotate.ToLWECiphertextAssign(i, e.buffer.ctExtract)
 			e.KeySwitchForBootstrapAssign(e.buffer.ctExtract, ctOut[i])
 		}
@@ -157,12 +157,12 @@ func (e *ManyLUTEvaluator[T]) BootstrapLUTAssign(ct tfhe.LWECiphertext[T], lut t
 
 // ModSwitch switches the modulus of x from Q to 2 * LookUpTableSize.
 func (e *ManyLUTEvaluator[T]) ModSwitch(x T) int {
-	return int(num.DivRoundBits(x, e.Parameters.LogQ()-e.Parameters.LogPolyDegree()-1+e.logLUTCount) << e.logLUTCount)
+	return int(num.DivRoundBits(x, e.Parameters.baseParameters.LogQ()-e.Parameters.baseParameters.LogPolyDegree()-1+e.Parameters.logLUTCount) << e.Parameters.logLUTCount)
 }
 
 // BlindRotate returns the blind rotation of LWE ciphertext with respect to LUT.
 func (e *ManyLUTEvaluator[T]) BlindRotate(ct tfhe.LWECiphertext[T], lut tfhe.LookUpTable[T]) tfhe.GLWECiphertext[T] {
-	ctOut := tfhe.NewGLWECiphertext(e.Parameters)
+	ctOut := tfhe.NewGLWECiphertext(e.Parameters.baseParameters)
 	e.BlindRotateAssign(ct, lut, ctOut)
 	return ctOut
 }
@@ -170,7 +170,7 @@ func (e *ManyLUTEvaluator[T]) BlindRotate(ct tfhe.LWECiphertext[T], lut tfhe.Loo
 // BlindRotateAssign computes the blind rotation of LWE ciphertext with respect to LUT, and writes it to ctOut.
 func (e *ManyLUTEvaluator[T]) BlindRotateAssign(ct tfhe.LWECiphertext[T], lut tfhe.LookUpTable[T], ctOut tfhe.GLWECiphertext[T]) {
 	switch {
-	case e.Parameters.BlockSize() > 1:
+	case e.Parameters.baseParameters.BlockSize() > 1:
 		e.blindRotateBlockAssign(ct, lut, ctOut)
 	default:
 		e.blindRotateOriginalAssign(ct, lut, ctOut)
@@ -180,50 +180,50 @@ func (e *ManyLUTEvaluator[T]) BlindRotateAssign(ct tfhe.LWECiphertext[T], lut tf
 // blindRotateBlockAssign computes the blind rotation when PolyDegree = LookUpTableSize and BlockSize > 1.
 // This is equivalent to the blind rotation algorithm using block binary keys, as explained in https://eprint.iacr.org/2023/958.
 func (e *ManyLUTEvaluator[T]) blindRotateBlockAssign(ct tfhe.LWECiphertext[T], lut tfhe.LookUpTable[T], ctOut tfhe.GLWECiphertext[T]) {
-	polyDecomposed := e.Decomposer.PolyDecomposedBuffer(e.Parameters.BlindRotateParameters())
+	polyDecomposed := e.Decomposer.PolyDecomposedBuffer(e.Parameters.baseParameters.BlindRotateParameters())
 
 	vec.CopyAssign(lut.Value, ctOut.Value[0].Coeffs)
 	e.PolyEvaluator.MonomialMulPolyInPlace(ctOut.Value[0], -e.ModSwitch(ct.Value[0]))
-	for i := 1; i < e.Parameters.GLWERank()+1; i++ {
+	for i := 1; i < e.Parameters.baseParameters.GLWERank()+1; i++ {
 		ctOut.Value[i].Clear()
 	}
 
-	e.Decomposer.DecomposePolyAssign(ctOut.Value[0], e.Parameters.BlindRotateParameters(), polyDecomposed)
-	for k := 0; k < e.Parameters.BlindRotateParameters().Level(); k++ {
+	e.Decomposer.DecomposePolyAssign(ctOut.Value[0], e.Parameters.baseParameters.BlindRotateParameters(), polyDecomposed)
+	for k := 0; k < e.Parameters.baseParameters.BlindRotateParameters().Level(); k++ {
 		e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[k], e.buffer.ctAccFourierDecomposed[0][k])
 	}
 
 	e.GadgetProductFourierDecomposedFourierGLWEAssign(e.EvaluationKey.BlindRotateKey.Value[0].Value[0], e.buffer.ctAccFourierDecomposed[0], e.buffer.ctBlockFourierAcc)
 	e.PolyEvaluator.MonomialSubOneToFourierPolyAssign(-e.ModSwitch(ct.Value[1]), e.buffer.fMono)
 	e.FourierPolyMulFourierGLWEAssign(e.buffer.ctBlockFourierAcc, e.buffer.fMono, e.buffer.ctFourierAcc)
-	for j := 1; j < e.Parameters.BlockSize(); j++ {
+	for j := 1; j < e.Parameters.baseParameters.BlockSize(); j++ {
 		e.GadgetProductFourierDecomposedFourierGLWEAssign(e.EvaluationKey.BlindRotateKey.Value[j].Value[0], e.buffer.ctAccFourierDecomposed[0], e.buffer.ctBlockFourierAcc)
 		e.PolyEvaluator.MonomialSubOneToFourierPolyAssign(-e.ModSwitch(ct.Value[j+1]), e.buffer.fMono)
 		e.FourierPolyMulAddFourierGLWEAssign(e.buffer.ctBlockFourierAcc, e.buffer.fMono, e.buffer.ctFourierAcc)
 	}
 
-	for j := 0; j < e.Parameters.GLWERank()+1; j++ {
+	for j := 0; j < e.Parameters.baseParameters.GLWERank()+1; j++ {
 		e.PolyEvaluator.ToPolyAddAssignUnsafe(e.buffer.ctFourierAcc.Value[j], ctOut.Value[j])
 	}
 
-	for i := 1; i < e.Parameters.BlockCount(); i++ {
-		for j := 0; j < e.Parameters.GLWERank()+1; j++ {
-			e.Decomposer.DecomposePolyAssign(ctOut.Value[j], e.Parameters.BlindRotateParameters(), polyDecomposed)
-			for k := 0; k < e.Parameters.BlindRotateParameters().Level(); k++ {
+	for i := 1; i < e.Parameters.baseParameters.BlockCount(); i++ {
+		for j := 0; j < e.Parameters.baseParameters.GLWERank()+1; j++ {
+			e.Decomposer.DecomposePolyAssign(ctOut.Value[j], e.Parameters.baseParameters.BlindRotateParameters(), polyDecomposed)
+			for k := 0; k < e.Parameters.baseParameters.BlindRotateParameters().Level(); k++ {
 				e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[k], e.buffer.ctAccFourierDecomposed[j][k])
 			}
 		}
 
-		e.ExternalProductFourierDecomposedFourierGLWEAssign(e.EvaluationKey.BlindRotateKey.Value[i*e.Parameters.BlockSize()], e.buffer.ctAccFourierDecomposed, e.buffer.ctBlockFourierAcc)
-		e.PolyEvaluator.MonomialSubOneToFourierPolyAssign(-e.ModSwitch(ct.Value[i*e.Parameters.BlockSize()+1]), e.buffer.fMono)
+		e.ExternalProductFourierDecomposedFourierGLWEAssign(e.EvaluationKey.BlindRotateKey.Value[i*e.Parameters.baseParameters.BlockSize()], e.buffer.ctAccFourierDecomposed, e.buffer.ctBlockFourierAcc)
+		e.PolyEvaluator.MonomialSubOneToFourierPolyAssign(-e.ModSwitch(ct.Value[i*e.Parameters.baseParameters.BlockSize()+1]), e.buffer.fMono)
 		e.FourierPolyMulFourierGLWEAssign(e.buffer.ctBlockFourierAcc, e.buffer.fMono, e.buffer.ctFourierAcc)
-		for j := i*e.Parameters.BlockSize() + 1; j < (i+1)*e.Parameters.BlockSize(); j++ {
+		for j := i*e.Parameters.baseParameters.BlockSize() + 1; j < (i+1)*e.Parameters.baseParameters.BlockSize(); j++ {
 			e.ExternalProductFourierDecomposedFourierGLWEAssign(e.EvaluationKey.BlindRotateKey.Value[j], e.buffer.ctAccFourierDecomposed, e.buffer.ctBlockFourierAcc)
 			e.PolyEvaluator.MonomialSubOneToFourierPolyAssign(-e.ModSwitch(ct.Value[j+1]), e.buffer.fMono)
 			e.FourierPolyMulAddFourierGLWEAssign(e.buffer.ctBlockFourierAcc, e.buffer.fMono, e.buffer.ctFourierAcc)
 		}
 
-		for j := 0; j < e.Parameters.GLWERank()+1; j++ {
+		for j := 0; j < e.Parameters.baseParameters.GLWERank()+1; j++ {
 			e.PolyEvaluator.ToPolyAddAssignUnsafe(e.buffer.ctFourierAcc.Value[j], ctOut.Value[j])
 		}
 	}
@@ -232,30 +232,30 @@ func (e *ManyLUTEvaluator[T]) blindRotateBlockAssign(ct tfhe.LWECiphertext[T], l
 // blindRotateOriginalAssign computes the blind rotation when PolyDegree = LookUpTableSize and BlockSize = 1.
 // This is equivalent to the original blind rotation algorithm.
 func (e *ManyLUTEvaluator[T]) blindRotateOriginalAssign(ct tfhe.LWECiphertext[T], lut tfhe.LookUpTable[T], ctOut tfhe.GLWECiphertext[T]) {
-	polyDecomposed := e.Decomposer.PolyDecomposedBuffer(e.Parameters.BlindRotateParameters())
+	polyDecomposed := e.Decomposer.PolyDecomposedBuffer(e.Parameters.baseParameters.BlindRotateParameters())
 
 	vec.CopyAssign(lut.Value, ctOut.Value[0].Coeffs)
 	e.PolyEvaluator.MonomialMulPolyInPlace(ctOut.Value[0], -e.ModSwitch(ct.Value[0]))
-	for i := 1; i < e.Parameters.GLWERank()+1; i++ {
+	for i := 1; i < e.Parameters.baseParameters.GLWERank()+1; i++ {
 		ctOut.Value[i].Clear()
 	}
 
-	e.Decomposer.DecomposePolyAssign(ctOut.Value[0], e.Parameters.BlindRotateParameters(), polyDecomposed)
-	for k := 0; k < e.Parameters.BlindRotateParameters().Level(); k++ {
+	e.Decomposer.DecomposePolyAssign(ctOut.Value[0], e.Parameters.baseParameters.BlindRotateParameters(), polyDecomposed)
+	for k := 0; k < e.Parameters.baseParameters.BlindRotateParameters().Level(); k++ {
 		e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[k], e.buffer.ctAccFourierDecomposed[0][k])
 	}
 
 	e.GadgetProductFourierDecomposedFourierGLWEAssign(e.EvaluationKey.BlindRotateKey.Value[0].Value[0], e.buffer.ctAccFourierDecomposed[0], e.buffer.ctFourierAcc)
 	e.PolyEvaluator.MonomialSubOneToFourierPolyAssign(-e.ModSwitch(ct.Value[1]), e.buffer.fMono)
 	e.FourierPolyMulFourierGLWEAssign(e.buffer.ctFourierAcc, e.buffer.fMono, e.buffer.ctFourierAcc)
-	for j := 0; j < e.Parameters.GLWERank()+1; j++ {
+	for j := 0; j < e.Parameters.baseParameters.GLWERank()+1; j++ {
 		e.PolyEvaluator.ToPolyAddAssignUnsafe(e.buffer.ctFourierAcc.Value[j], ctOut.Value[j])
 	}
 
-	for i := 1; i < e.Parameters.LWEDimension(); i++ {
-		for j := 0; j < e.Parameters.GLWERank()+1; j++ {
-			e.Decomposer.DecomposePolyAssign(ctOut.Value[j], e.Parameters.BlindRotateParameters(), polyDecomposed)
-			for k := 0; k < e.Parameters.BlindRotateParameters().Level(); k++ {
+	for i := 1; i < e.Parameters.baseParameters.LWEDimension(); i++ {
+		for j := 0; j < e.Parameters.baseParameters.GLWERank()+1; j++ {
+			e.Decomposer.DecomposePolyAssign(ctOut.Value[j], e.Parameters.baseParameters.BlindRotateParameters(), polyDecomposed)
+			for k := 0; k < e.Parameters.baseParameters.BlindRotateParameters().Level(); k++ {
 				e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[k], e.buffer.ctAccFourierDecomposed[j][k])
 			}
 		}
@@ -264,7 +264,7 @@ func (e *ManyLUTEvaluator[T]) blindRotateOriginalAssign(ct tfhe.LWECiphertext[T]
 		e.PolyEvaluator.MonomialSubOneToFourierPolyAssign(-e.ModSwitch(ct.Value[i+1]), e.buffer.fMono)
 		e.FourierPolyMulFourierGLWEAssign(e.buffer.ctFourierAcc, e.buffer.fMono, e.buffer.ctFourierAcc)
 
-		for j := 0; j < e.Parameters.GLWERank()+1; j++ {
+		for j := 0; j < e.Parameters.baseParameters.GLWERank()+1; j++ {
 			e.PolyEvaluator.ToPolyAddAssignUnsafe(e.buffer.ctFourierAcc.Value[j], ctOut.Value[j])
 		}
 	}
