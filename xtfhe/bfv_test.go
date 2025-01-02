@@ -10,25 +10,25 @@ import (
 )
 
 var (
-	params = tfhe.ParamsUint3.Compile()
-	enc    = tfhe.NewEncryptor(params)
-	keyGen = xtfhe.NewBFVKeyGenerator(params, xtfhe.ParamsBFVKeySwitchLogN11.Compile(), enc.SecretKey)
-	eval   = xtfhe.NewBFVEvaluator(params, xtfhe.BFVEvaluationKey[uint64]{
-		RelinKey:   keyGen.GenRelinKey(),
-		GaloisKeys: keyGen.GenGaloisKeysForLWEToGLWECiphertext(),
+	bfvParams = tfhe.ParamsUint3.Compile()
+	bfvEnc    = tfhe.NewEncryptor(bfvParams)
+	bfvKeyGen = xtfhe.NewBFVKeyGenerator(bfvParams, xtfhe.ParamsBFVKeySwitchLogN11.Compile(), bfvEnc.SecretKey)
+	bfvEval   = xtfhe.NewBFVEvaluator(bfvParams, xtfhe.BFVEvaluationKey[uint64]{
+		RelinKey:   bfvKeyGen.GenRelinKey(),
+		GaloisKeys: bfvKeyGen.GenGaloisKeysForLWEToGLWECiphertext(),
 	})
 )
 
 func TestBFVMul(t *testing.T) {
-	m0 := int(num.Sqrt(params.MessageModulus()) - 1)
-	m1 := int(num.Sqrt(params.MessageModulus()) - 2)
+	m0 := int(num.Sqrt(bfvParams.MessageModulus()) - 1)
+	m1 := int(num.Sqrt(bfvParams.MessageModulus()) - 2)
 
-	ct0 := enc.EncryptGLWE([]int{m0})
-	ct1 := enc.EncryptGLWE([]int{m1})
+	ct0 := bfvEnc.EncryptGLWE([]int{m0})
+	ct1 := bfvEnc.EncryptGLWE([]int{m1})
 
-	ctMul := eval.Mul(ct0, ct1)
+	ctMul := bfvEval.Mul(ct0, ct1)
 
-	assert.Equal(t, enc.DecryptGLWE(ctMul)[0], m0*m1)
+	assert.Equal(t, bfvEnc.DecryptGLWE(ctMul)[0], m0*m1)
 }
 
 func TestBFVPermute(t *testing.T) {
@@ -36,38 +36,38 @@ func TestBFVPermute(t *testing.T) {
 	m1 := 1
 	d := 1<<5 + 1
 
-	ct0 := enc.EncryptGLWE([]int{m0, m1})
-	ctAut := eval.Permute(ct0, d)
+	ct0 := bfvEnc.EncryptGLWE([]int{m0, m1})
+	ctAut := bfvEval.Permute(ct0, d)
 
-	assert.Equal(t, enc.DecryptGLWE(ctAut)[0], m0)
-	assert.Equal(t, enc.DecryptGLWE(ctAut)[d], m1)
+	assert.Equal(t, bfvEnc.DecryptGLWE(ctAut)[0], m0)
+	assert.Equal(t, bfvEnc.DecryptGLWE(ctAut)[d], m1)
 }
 
 func TestLWEToGLWECiphertext(t *testing.T) {
 	m := 3
-	ctLWE := enc.EncryptLWE(m)
-	ctGLWE := eval.LWEToGLWECiphertext(ctLWE)
+	ctLWE := bfvEnc.EncryptLWE(m)
+	ctGLWE := bfvEval.LWEToGLWECiphertext(ctLWE)
 
-	assert.Equal(t, enc.DecryptGLWE(ctGLWE)[0], m)
+	assert.Equal(t, bfvEnc.DecryptGLWE(ctGLWE)[0], m)
 }
 
 func BenchmarkBFVMul(b *testing.B) {
-	ct0 := enc.EncryptGLWE(nil)
-	ct1 := enc.EncryptGLWE(nil)
-	ctMul := enc.EncryptGLWE(nil)
+	ct0 := bfvEnc.EncryptGLWE(nil)
+	ct1 := bfvEnc.EncryptGLWE(nil)
+	ctMul := bfvEnc.EncryptGLWE(nil)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		eval.MulAssign(ct0, ct1, ctMul)
+		bfvEval.MulAssign(ct0, ct1, ctMul)
 	}
 }
 
 func BenchmarkBFVRingPack(b *testing.B) {
-	ctLWE := enc.EncryptLWE(0)
-	ctGLWE := enc.EncryptGLWE(nil)
+	ctLWE := bfvEnc.EncryptLWE(0)
+	ctGLWE := bfvEnc.EncryptGLWE(nil)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		eval.LWEToGLWECiphertextAssign(ctLWE, ctGLWE)
+		bfvEval.LWEToGLWECiphertextAssign(ctLWE, ctGLWE)
 	}
 }
