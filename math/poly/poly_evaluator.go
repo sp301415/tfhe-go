@@ -53,7 +53,7 @@ type Evaluator[T num.Integer] struct {
 	// Unlike other complex128 slices, twMono is in natural representation.
 	twMono []complex128
 	// twMonoIdx is the precomputed bit-reversed index for monomial fourier transform.
-	// Equivalent to BitReverse([-1, 3, 7, ..., 2N-1]).
+	// Equivalent to BitReverse([-1, 3, 7, ..., 2N-3]).
 	twMonoIdx []int
 
 	// buffer is the buffer values for this Evaluator.
