@@ -11,7 +11,7 @@
 > TFHE-go is still under heavy development. There may be backward-incompatible changes at any time.
 
 **TFHE-go** is a Go implementation of TFHE[[CGGI16](https://eprint.iacr.org/2016/870)] and Multi-Key TFHE[[KMS22](https://eprint.iacr.org/2022/1460)] scheme. It provides:
-- Support for binary and integer TFHE and its multi-key variant
+- Support for binary and integer TFHE and its multi-key variant, as well as advanced algorithms such as BFV-style evaluation, PBSManyLUT[[CLOT21](https://eprint.iacr.org/2021/729)], Circuit Bootstrapping[[WHS+24](https://eprint.iacr.org/2024/1318)] and LMKCDEY(FHEW)[[LMK+22](https://eprint.iacr.org/2022/198)].
 - Pure Go implementation, along with SIMD-accelerated Go Assembly on amd64 platforms
 - Comparable performance to state-of-the-art C++/Rust libraries
 - Readable code and user-friendly API using modern Go features like generics
@@ -143,10 +143,10 @@ fmt.Println(dec.DecryptLWEBool(ctOut)) // false
 ## Benchmarks
 All benchmarks were measured on a machine equipped with Intel Xeon Platinum 8268 CPU @ 2.90GHz and 384GB of RAM.
 
-|Operation|TFHE-go|TFHE-rs (v0.8.0)|
+|Operation|TFHE-go|TFHE-rs (v0.11.0)|
 |---------|-------|-------|
-|Gate Bootstrapping|9.38ms|15.70ms|
-|Programmable Bootstrapping (6 bits)|21.52ms|105.05ms|
+|Gate Bootstrapping|9.38ms|14.17ms|
+|Programmable Bootstrapping (6 bits)|21.52ms|107.96ms|
 
 You can use the standard go test tool to reproduce benchmarks:
 ```
@@ -190,3 +190,6 @@ TFHE-go logo is designed by [@mlgng2010](https://www.instagram.com/mlgng2010/), 
 - New Secret Keys for Enhanced Performance in (T)FHE (https://eprint.iacr.org/2023/979)
 - TFHE Public-Key Encryption Revisited (https://eprint.iacr.org/2023/603)
 - Towards Practical Multi-key TFHE: Parallelizable, Key-Compatible, Quasi-linear Complexity (https://eprint.iacr.org/2022/1460)
+- Improved Programmable Bootstrapping with Larger Precision and Efficient Arithmetic Circuits for TFHE (https://eprint.iacr.org/2021/729)
+- FHEW-like Leveled Homomorphic Evaluation: Refined Workflow and Polished Building Blocks (https://eprint.iacr.org/2024/1318)
+- Efficient FHEW Bootstrapping with Small Evaluation Keys, and Applications to Threshold Homomorphic Encryption (https://eprint.iacr.org/2022/198)

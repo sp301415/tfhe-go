@@ -21,15 +21,17 @@ type ManyLUTParametersLiteral[T tfhe.TorusInt] struct {
 // If there is any invalid parameter in the literal, it panics.
 // Default parameters are guaranteed to be compiled without panics.
 func (p ManyLUTParametersLiteral[T]) Compile() ManyLUTParameters[T] {
+	baseParameters := p.BaseParametersLiteral.Compile()
+
 	switch {
-	case p.BaseParametersLiteral.PolyDegree != p.BaseParametersLiteral.LookUpTableSize:
+	case baseParameters.PolyDegree() != baseParameters.LookUpTableSize():
 		panic("PolyDegree must equal LookUpTableSize")
 	case !num.IsPowerOfTwo(p.LUTCount):
 		panic("lutCount not power of two")
 	}
 
 	return ManyLUTParameters[T]{
-		baseParameters: p.BaseParametersLiteral.Compile(),
+		baseParameters: baseParameters,
 
 		lutCount:    p.LUTCount,
 		logLUTCount: num.Log2(p.LUTCount),

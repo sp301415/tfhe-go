@@ -71,7 +71,7 @@ func (e *ManyLUTEvaluator[T]) GenLookUpTableCustomAssign(f []func(int) int, mess
 // Panics if len(f) > LUTCount.
 func (e *ManyLUTEvaluator[T]) GenLookUpTableFullCustom(f []func(int) T, messageModulus, scale T) tfhe.LookUpTable[T] {
 	lutOut := tfhe.NewLookUpTable(e.Parameters.baseParameters)
-	e.GenLookUpTableFullAssign(f, lutOut)
+	e.GenLookUpTableFullCustomAssign(f, messageModulus, lutOut)
 	return lutOut
 }
 

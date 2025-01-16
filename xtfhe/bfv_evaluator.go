@@ -36,7 +36,7 @@ type bfvEvaluationBuffer[T tfhe.TorusInt] struct {
 	ctTensorFourier tfhe.FourierGLWECiphertext[T]
 	// ctPermute is the permuted ciphertext for BFV automorphism.
 	ctPermute tfhe.GLWECiphertext[T]
-	// ctPack is the permuted ciphertext for RingPack.
+	// ctPack is the permuted ciphertext for LWEToGLWECiphertext.
 	ctPack tfhe.GLWECiphertext[T]
 }
 

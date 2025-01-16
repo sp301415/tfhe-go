@@ -80,9 +80,9 @@ func (e *Evaluator[T]) GenLookUpTableCustomAssign(f func(int) int, messageModulu
 
 // GenLookUpTableFullCustom generates a lookup table based on function f using custom messageModulus and scale.
 // Output of f is encoded as-is.
-func (e *Evaluator[T]) GenLookUpTableFullCustom(f func(int) T, messageModulus, scale T) LookUpTable[T] {
+func (e *Evaluator[T]) GenLookUpTableFullCustom(f func(int) T, messageModulus T) LookUpTable[T] {
 	lutOut := NewLookUpTable(e.Parameters)
-	e.GenLookUpTableFullAssign(f, lutOut)
+	e.GenLookUpTableFullCustomAssign(f, messageModulus, lutOut)
 	return lutOut
 }
 

@@ -115,17 +115,19 @@ func (p ParametersLiteral[T]) WithBootstrapOrder(bootstrapOrder tfhe.BootstrapOr
 // Unless you are a cryptographic expert, DO NOT set parameters by yourself;
 // always use the default parameters provided.
 func (p ParametersLiteral[T]) Compile() Parameters[T] {
+	singleKeyParameters := p.SingleKeyParametersLiteral.Compile()
+
 	switch {
 	case p.PartyCount <= 0:
 		panic("PartyCount smaller than zero")
-	case p.SingleKeyParametersLiteral.GLWERank != 1:
+	case singleKeyParameters.GLWERank() != 1:
 		panic("Multi-Key TFHE only supports GLWE dimension 1")
-	case p.SingleKeyParametersLiteral.LookUpTableSize != 0 && p.SingleKeyParametersLiteral.LookUpTableSize != p.SingleKeyParametersLiteral.PolyDegree:
+	case singleKeyParameters.LookUpTableSize() != singleKeyParameters.PolyDegree():
 		panic("Multi-Key TFHE only supports LookUpTableSize equal to PolyDegree")
 	}
 
 	return Parameters[T]{
-		singleKeyParameters: p.SingleKeyParametersLiteral.Compile(),
+		singleKeyParameters: singleKeyParameters,
 
 		partyCount: p.PartyCount,
 

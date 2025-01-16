@@ -12,10 +12,10 @@ import (
 var (
 	bfvParams = tfhe.ParamsUint3.Compile()
 	bfvEnc    = tfhe.NewEncryptor(bfvParams)
-	bfvKeyGen = xtfhe.NewBFVKeyGenerator(bfvParams, xtfhe.ParamsBFVKeySwitchLogN11.Compile(), bfvEnc.SecretKey)
+	bfvKeyGen = xtfhe.NewBFVKeyGenerator(bfvParams, bfvEnc.SecretKey)
 	bfvEval   = xtfhe.NewBFVEvaluator(bfvParams, xtfhe.BFVEvaluationKey[uint64]{
-		RelinKey:   bfvKeyGen.GenRelinKey(),
-		GaloisKeys: bfvKeyGen.GenGaloisKeysForLWEToGLWECiphertext(),
+		RelinKey:   bfvKeyGen.GenRelinKey(xtfhe.ParamsBFVKeySwitchLogN11.Compile()),
+		GaloisKeys: bfvKeyGen.GenGaloisKeysForLWEToGLWECiphertext(xtfhe.ParamsBFVKeySwitchLogN11.Compile()),
 	})
 )
 
