@@ -20,11 +20,11 @@ var (
 				Level: 3,
 			},
 			KeySwitchParameters: tfhe.GadgetParametersLiteral[uint64]{
-				Base:  1 << 5,
-				Level: 3,
+				Base:  1 << 3,
+				Level: 4,
 			},
 
-			BootstrapOrder: tfhe.OrderKeySwitchBlindRotate,
+			BootstrapOrder: tfhe.OrderBlindRotateKeySwitch,
 		},
 
 		SecretKeyStdDev: 0.00000000000000000017347234759768072,
