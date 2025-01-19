@@ -8,6 +8,9 @@ import (
 
 // CircuitBootstrapper wraps around [tfhe.Evaluator], and implements Circuit Bootstrapping Algorithm.
 // For more details, see https://eprint.iacr.org/2024/1318.
+//
+// CircuitBootstrapper is not safe for concurrent use.
+// Use [*CircuitBootstrapper.ShallowCopy] to get a safe copy.
 type CircuitBootstrapper[T tfhe.TorusInt] struct {
 	// Evaluator is an embedded Evaluator for this CircuitBootstrapper.
 	*ManyLUTEvaluator[T]

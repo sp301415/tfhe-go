@@ -6,6 +6,9 @@ import (
 )
 
 // FHEWEvaluator wraps around [tfhe.Evaluator] and implements FHEW blind rotation.
+//
+// FHEWEvaluator is not safe for concurrent use.
+// Use [*FHEWEvaluator.ShallowCopy] to get a safe copy.
 type FHEWEvaluator[T tfhe.TorusInt] struct {
 	// Evaluator is an embedded [tfhe.Evaluator] for this FHEWEvaluator.
 	*tfhe.Evaluator[T]

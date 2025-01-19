@@ -7,6 +7,9 @@ import (
 
 // ManyLUTEvaluator wraps around [tfhe.Evaluator], and implements PBSManyLUT algorithm.
 // For more details, see https://eprint.iacr.org/2021/729.
+//
+// ManyLUTEvaluator is not safe for concurrent use.
+// Use [*ManyLUTEvaluator.ShallowCopy] to get a safe copy.
 type ManyLUTEvaluator[T tfhe.TorusInt] struct {
 	// Evaluator is an embedded Evaluator for this ManyLUTEvaluator.
 	*tfhe.Evaluator[T]
