@@ -62,7 +62,7 @@ func (p Poly[T]) Equals(p0 Poly[T]) bool {
 	return vec.Equals(p.Coeffs, p0.Coeffs)
 }
 
-// FourierPoly is a polynomial modulo X^N + 1 over the fourier domain.
+// FourierPoly is a polynomial modulo X^(N/2) + 1 over the fourier domain.
 // N should be power of two.
 type FourierPoly struct {
 	// Coeffs is represented as float-4 complex vector
@@ -79,9 +79,9 @@ type FourierPoly struct {
 	Coeffs []float64
 }
 
-// NewFourierPoly creates a fourier polynomial with degree N with empty coefficients.
+// NewFourierPoly creates a fourier polynomial with degree N/2 with empty coefficients.
 //
-// Panics when N is not a power of two, or when N is smaller than MinDegree or larger than MaxDegree.
+// Panics when N is not a power of two, or when N is smaller than MinDegree.
 func NewFourierPoly(N int) FourierPoly {
 	switch {
 	case !num.IsPowerOfTwo(N):
@@ -93,7 +93,7 @@ func NewFourierPoly(N int) FourierPoly {
 	return FourierPoly{Coeffs: make([]float64, N)}
 }
 
-// Degree returns the degree of the polynomial.
+// Degree returns the (doubled) degree of the polynomial.
 func (p FourierPoly) Degree() int {
 	return len(p.Coeffs)
 }

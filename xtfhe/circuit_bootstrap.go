@@ -13,6 +13,8 @@ type CircuitBootstrapper[T tfhe.TorusInt] struct {
 	*ManyLUTEvaluator[T]
 	// BFVEvaluator is an embedded BFVEvaluator for this CircuitBootstrapper.
 	*BFVEvaluator[T]
+	// Decomposer is a Decomposer for this CircuitBootstrapper.
+	Decomposer *tfhe.Decomposer[T]
 
 	// Parameters is a parameter set for this CircuitBootstrapper.
 	Parameters CircuitBootstrapParameters[T]
@@ -30,8 +32,6 @@ type circuitBootstrapBuffer[T tfhe.TorusInt] struct {
 	// lut is an empty lut.
 	lut tfhe.LookUpTable[T]
 
-	// ctDecomposed are buffer for decomposed ciphertexts during LWE to GLWE.
-	ctDecomposed []poly.Poly[T]
 	// ctFourierDecomposed are buffer for decomposed ciphertexts during scheme switching.
 	ctFourierDecomposed [][]poly.FourierPoly
 
@@ -47,12 +47,16 @@ type circuitBootstrapBuffer[T tfhe.TorusInt] struct {
 	ctGGSWOut tfhe.GGSWCiphertext[T]
 }
 
-// NewCircuitBootstrapper creates a new CircuitBootstrapper.
+// NewCircuitBootstrapper allocates an empty CircuitBootstrapper.
 // For circuit bootstrapping, we need relin key and galois keys for LWE to GLWE.
 func NewCircuitBootstrapper[T tfhe.TorusInt](params CircuitBootstrapParameters[T], evk tfhe.EvaluationKey[T], cbk CircuitBootstrapKey[T]) *CircuitBootstrapper[T] {
+	decomposer := tfhe.NewDecomposer[T](params.BaseParameters().PolyDegree())
+	decomposer.PolyDecomposedBuffer(params.schemeSwitchParameters)
+
 	return &CircuitBootstrapper[T]{
 		ManyLUTEvaluator: NewManyLUTEvaluator(params.manyLUTParameters, evk),
 		BFVEvaluator:     NewBFVEvaluator(params.BaseParameters(), BFVEvaluationKey[T]{GaloisKeys: cbk.TraceKeys}),
+		Decomposer:       decomposer,
 
 		Parameters:    params,
 		EvaluationKey: cbk,
@@ -61,16 +65,11 @@ func NewCircuitBootstrapper[T tfhe.TorusInt](params CircuitBootstrapParameters[T
 	}
 }
 
-// newCircuitBootstrapBuffer creates a new circuitBootstrapBuffer.
+// newCircuitBootstrapBuffer allocates an empty circuitBootstrapBuffer.
 func newCircuitBootstrapBuffer[T tfhe.TorusInt](params CircuitBootstrapParameters[T]) circuitBootstrapBuffer[T] {
 	fs := make([]func(x int) T, params.manyLUTParameters.lutCount)
 	for i := 0; i < params.manyLUTParameters.lutCount; i++ {
 		fs[i] = func(x int) T { return 0 }
-	}
-
-	ctDecomposed := make([]poly.Poly[T], params.schemeSwitchParameters.Level())
-	for i := 0; i < params.schemeSwitchParameters.Level(); i++ {
-		ctDecomposed[i] = poly.NewPoly[T](params.BaseParameters().PolyDegree())
 	}
 
 	ctFourierDecomposed := make([][]poly.FourierPoly, params.BaseParameters().GLWERank()+1)
@@ -85,7 +84,6 @@ func newCircuitBootstrapBuffer[T tfhe.TorusInt](params CircuitBootstrapParameter
 		fs:  fs,
 		lut: tfhe.NewLookUpTable(params.BaseParameters()),
 
-		ctDecomposed:        ctDecomposed,
 		ctFourierDecomposed: ctFourierDecomposed,
 
 		ctKeySwitch:      tfhe.NewLWECiphertextCustom[T](params.BaseParameters().LWEDimension()),
@@ -120,6 +118,8 @@ func (e *CircuitBootstrapper[T]) CircuitBootstrap(ct tfhe.LWECiphertext[T]) tfhe
 // CircuitBootstrapAssign performs Circuit Bootstrapping and writes the result to ctOut.
 // The gadget parameters of ctOut should be equal to the output parameters of CircuitBootstrapper.
 func (e *CircuitBootstrapper[T]) CircuitBootstrapAssign(ct tfhe.LWECiphertext[T], ctOut tfhe.FourierGGSWCiphertext[T]) {
+	polyDecomposed := e.Decomposer.PolyDecomposedBuffer(e.Parameters.schemeSwitchParameters)
+
 	for i := 0; i < e.Parameters.outputParameters.Level(); i += e.ManyLUTEvaluator.Parameters.lutCount {
 		start := i
 		end := num.Min(i+e.ManyLUTEvaluator.Parameters.lutCount, e.Parameters.outputParameters.Level())
@@ -154,9 +154,9 @@ func (e *CircuitBootstrapper[T]) CircuitBootstrapAssign(ct tfhe.LWECiphertext[T]
 			}
 
 			for k := 0; k < e.Parameters.BaseParameters().GLWERank()+1; k++ {
-				e.Decomposer.DecomposePolyAssign(e.buffer.ctGGSWOut.Value[0].Value[j].Value[k], e.Parameters.schemeSwitchParameters, e.buffer.ctDecomposed)
+				e.Decomposer.DecomposePolyAssign(e.buffer.ctGGSWOut.Value[0].Value[j].Value[k], e.Parameters.schemeSwitchParameters, polyDecomposed)
 				for l := 0; l < e.Parameters.schemeSwitchParameters.Level(); l++ {
-					e.PolyEvaluator.ToFourierPolyAssign(e.buffer.ctDecomposed[l], e.buffer.ctFourierDecomposed[k][l])
+					e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[l], e.buffer.ctFourierDecomposed[k][l])
 				}
 			}
 

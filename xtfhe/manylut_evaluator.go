@@ -40,7 +40,7 @@ type manyLUTEvaluationBuffer[T tfhe.TorusInt] struct {
 	lut tfhe.LookUpTable[T]
 }
 
-// NewManyLUTEvaluator creates a new ManyLUTEvaluator.
+// NewManyLUTEvaluator allocates an empty ManyLUTEvaluator.
 func NewManyLUTEvaluator[T tfhe.TorusInt](params ManyLUTParameters[T], evk tfhe.EvaluationKey[T]) *ManyLUTEvaluator[T] {
 	return &ManyLUTEvaluator[T]{
 		Evaluator: tfhe.NewEvaluator(params.baseParameters, evk),
@@ -51,7 +51,7 @@ func NewManyLUTEvaluator[T tfhe.TorusInt](params ManyLUTParameters[T], evk tfhe.
 	}
 }
 
-// newManyLUTEvaluationBuffer creates a new manyLUTEvaluationBuffer.
+// newManyLUTEvaluationBuffer allocates an empty manyLUTEvaluationBuffer.
 func newManyLUTEvaluationBuffer[T tfhe.TorusInt](params ManyLUTParameters[T]) manyLUTEvaluationBuffer[T] {
 	ctAccFourierDecomposed := make([][]poly.FourierPoly, params.baseParameters.GLWERank()+1)
 	for i := 0; i < params.baseParameters.GLWERank()+1; i++ {

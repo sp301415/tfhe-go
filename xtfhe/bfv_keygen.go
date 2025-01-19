@@ -56,8 +56,9 @@ func (kg *BFVKeyGenerator[T]) GenEvaluationKey(idx []int, kskParams tfhe.GadgetP
 
 // GenRelinKey generates a relinearization key for BFV multiplication.
 func (kg *BFVKeyGenerator[T]) GenRelinKey(kskParams tfhe.GadgetParameters[T]) tfhe.GLWEKeySwitchKey[T] {
-	skOut := tfhe.NewGLWESecretKeyCustom[T](kg.Parameters.GLWERank()*(kg.Parameters.GLWERank()+1)/2, kg.Parameters.PolyDegree())
-	fskOut := tfhe.NewFourierGLWESecretKeyCustom[T](kg.Parameters.GLWERank()*(kg.Parameters.GLWERank()+1)/2, kg.Parameters.PolyDegree())
+	rlkRank := kg.Parameters.GLWERank() * (kg.Parameters.GLWERank() + 1) / 2
+	skOut := tfhe.NewGLWESecretKeyCustom[T](rlkRank, kg.Parameters.PolyDegree())
+	fskOut := tfhe.NewFourierGLWESecretKeyCustom[T](rlkRank, kg.Parameters.PolyDegree())
 
 	skOutIdx := 0
 	for i := 0; i < kg.Parameters.GLWERank(); i++ {

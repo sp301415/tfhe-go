@@ -7,7 +7,7 @@ import (
 
 // ManyLUTParametersLiteral is a structure for PBSManyLUT Parameters.
 //
-// PolyDegree must equal LookUpTableSize.
+// PolyDegree does not equal LookUpTableSize.
 type ManyLUTParametersLiteral[T tfhe.TorusInt] struct {
 	// BaseParametersLiteral is a base parameter set for this ManyLUTParametersLiteral.
 	BaseParametersLiteral tfhe.ParametersLiteral[T]
@@ -25,7 +25,7 @@ func (p ManyLUTParametersLiteral[T]) Compile() ManyLUTParameters[T] {
 
 	switch {
 	case baseParameters.PolyDegree() != baseParameters.LookUpTableSize():
-		panic("PolyDegree must equal LookUpTableSize")
+		panic("PolyDegree does not equal LookUpTableSize")
 	case !num.IsPowerOfTwo(p.LUTCount):
 		panic("lutCount not power of two")
 	}

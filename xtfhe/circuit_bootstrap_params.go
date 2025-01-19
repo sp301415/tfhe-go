@@ -5,8 +5,6 @@ import (
 )
 
 // CircuitBootstrapParametersLiteral is a structure for Circuit Bootstrapping Parameters.
-//
-// PolyDegree must equal LookUpTableSize.
 type CircuitBootstrapParametersLiteral[T tfhe.TorusInt] struct {
 	// ManyLUTParametersLiteral is a base ManyLUTParametersLiteral for this CircuitBootstrapParametersLiteral.
 	ManyLUTParametersLiteral ManyLUTParametersLiteral[T]

@@ -30,25 +30,25 @@ func BenchmarkOps(b *testing.B) {
 
 		fp := pev.ToFourierPoly(p0)
 
-		b.Run(fmt.Sprintf("N=%v/op=Add", N), func(b *testing.B) {
+		b.Run(fmt.Sprintf("LogN=%v/op=Add", logN), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				pev.AddPolyAssign(p0, p1, pOut)
 			}
 		})
 
-		b.Run(fmt.Sprintf("N=%v/op=Sub", N), func(b *testing.B) {
+		b.Run(fmt.Sprintf("LogN=%v/op=Sub", logN), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				pev.SubPolyAssign(p0, p1, pOut)
 			}
 		})
 
-		b.Run(fmt.Sprintf("N=%v/op=BinaryMul", N), func(b *testing.B) {
+		b.Run(fmt.Sprintf("LogN=%v/op=BinaryMul", logN), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				pev.ShortFourierPolyMulPolyAssign(p0, fp, pOut)
 			}
 		})
 
-		b.Run(fmt.Sprintf("N=%v/op=Mul", N), func(b *testing.B) {
+		b.Run(fmt.Sprintf("LogN=%v/op=Mul", logN), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				pev.MulPolyAssign(p0, p1, pOut)
 			}
@@ -71,19 +71,19 @@ func BenchmarkFourierOps(b *testing.B) {
 			fp1.Coeffs[i] = (2*rand.Float64() - 1.0) * math.Exp(63)
 		}
 
-		b.Run(fmt.Sprintf("N=%v/op=Add", N), func(b *testing.B) {
+		b.Run(fmt.Sprintf("LogN=%v/op=Add", logN), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				pev.AddFourierPolyAssign(fp0, fp1, fpOut)
 			}
 		})
 
-		b.Run(fmt.Sprintf("N=%v/op=Sub", N), func(b *testing.B) {
+		b.Run(fmt.Sprintf("LogN=%v/op=Sub", logN), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				pev.SubFourierPolyAssign(fp0, fp1, fpOut)
 			}
 		})
 
-		b.Run(fmt.Sprintf("N=%v/op=Mul", N), func(b *testing.B) {
+		b.Run(fmt.Sprintf("LogN=%v/op=Mul", logN), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				pev.MulFourierPolyAssign(fp0, fp1, fpOut)
 			}
@@ -92,8 +92,8 @@ func BenchmarkFourierOps(b *testing.B) {
 }
 
 func BenchmarkFourierTransform(b *testing.B) {
-	for _, nLog := range LogN {
-		N := 1 << nLog
+	for _, logN := range LogN {
+		N := 1 << logN
 
 		pev := poly.NewEvaluator[uint64](N)
 
@@ -104,20 +104,20 @@ func BenchmarkFourierTransform(b *testing.B) {
 			p.Coeffs[i] = rand.Uint64()
 		}
 
-		b.Run(fmt.Sprintf("N=%v/op=ToFourierPoly", N), func(b *testing.B) {
+		b.Run(fmt.Sprintf("LogN=%v/op=ToFourierPoly", logN), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				pev.ToFourierPolyAssign(p, fp)
 			}
 		})
 
 		x := N / 3
-		b.Run(fmt.Sprintf("N=%v/op=MonomialToFourierPoly", N), func(b *testing.B) {
+		b.Run(fmt.Sprintf("LogN=%v/op=MonomialToFourierPoly", logN), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				pev.MonomialToFourierPolyAssign(x, fp)
 			}
 		})
 
-		b.Run(fmt.Sprintf("N=%v/op=ToPoly", N), func(b *testing.B) {
+		b.Run(fmt.Sprintf("LogN=%v/op=ToPoly", logN), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				pev.ToPolyAssignUnsafe(fp, p)
 			}
