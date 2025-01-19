@@ -106,12 +106,12 @@ func convertPolyToFourierPolyAssign[T num.Integer](p []T, fpOut []float64) {
 	}
 }
 
-func floatModQInPlaceAVX2(coeffs []float64, Q float64)
+func floatModQInPlaceAVX2(coeffs []float64, Q, QInv float64)
 
 // floatModQ computes coeffs mod Q in place.
 func floatModQInPlace(coeffs []float64, Q float64) {
 	if cpu.X86.HasAVX2 {
-		floatModQInPlaceAVX2(coeffs, Q)
+		floatModQInPlaceAVX2(coeffs, Q, 1/Q)
 		return
 	}
 

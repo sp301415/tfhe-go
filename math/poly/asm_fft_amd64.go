@@ -214,7 +214,7 @@ func invFFTInPlaceAVX2(coeffs []float64, twInv []complex128, scale float64)
 // All internal inverse FFT implementations calls this function for performance.
 func invFFTInPlace(coeffs []float64, twInv []complex128) {
 	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
-		invFFTInPlaceAVX2(coeffs, twInv, float64(len(coeffs)/2))
+		invFFTInPlaceAVX2(coeffs, twInv, 2/float64(len(coeffs)))
 		return
 	}
 
