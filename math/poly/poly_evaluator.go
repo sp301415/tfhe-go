@@ -35,6 +35,9 @@ const (
 //
 // For performance reasons, most methods in this package don't implement bound checks.
 // If length mismatch happens, it may panic or produce wrong results.
+//
+// Evaluator is not safe for concurrent use.
+// Use [*Evaluator.ShallowCopy] to get a safe copy.
 type Evaluator[T num.Integer] struct {
 	// degree is the degree of polynomial that this transformer can handle.
 	degree int

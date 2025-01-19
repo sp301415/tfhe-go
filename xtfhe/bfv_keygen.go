@@ -24,7 +24,7 @@ type BFVKeyGenerator[T tfhe.TorusInt] struct {
 	// PolyEvaluator is a PolyEvaluator for this BFVKeyGenerator.
 	PolyEvaluator *poly.Evaluator[T]
 
-	// Parameters is a parameter set for this BFVKeyGenerator.
+	// Parameters is the parameters for this BFVKeyGenerator.
 	Parameters tfhe.Parameters[T]
 }
 

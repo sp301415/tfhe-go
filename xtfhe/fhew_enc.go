@@ -10,7 +10,7 @@ type FHEWEncryptor[T tfhe.TorusInt] struct {
 	// Encryptor is an embedded [tfhe.Encryptor] for this FHEWEncryptor.
 	*tfhe.Encryptor[T]
 
-	// Parameters is the parameter set for this FHEWEncryptor.
+	// Parameters is the parameters for this FHEWEncryptor.
 	Parameters FHEWParameters[T]
 
 	buffer fhewEncryptionBuffer[T]

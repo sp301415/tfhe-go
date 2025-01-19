@@ -11,7 +11,7 @@ import (
 //
 // BlockSize must be 1, and PolyDegree does not equal LookUpTableSize.
 type FHEWParametersLiteral[T tfhe.TorusInt] struct {
-	// BaseParametersLiteral is a base parameter set for this FHEWParametersLiteral.
+	// BaseParametersLiteral is a base parameters for this FHEWParametersLiteral.
 	BaseParametersLiteral tfhe.ParametersLiteral[T]
 
 	// SecretKeyStdDev is the standard deviation of the secret key.
@@ -51,7 +51,7 @@ func (p FHEWParametersLiteral[T]) Compile() FHEWParameters[T] {
 
 // FHEWParameters are read-only, compiled parameters for FHEW.
 type FHEWParameters[T tfhe.TorusInt] struct {
-	// BaseParameters is a base parameter set for this FHEWParameters.
+	// BaseParameters is a base parameters for this FHEWParameters.
 	baseParameters tfhe.Parameters[T]
 
 	// SecretKeyStdDev is the standard deviation of the secret key.
@@ -62,7 +62,7 @@ type FHEWParameters[T tfhe.TorusInt] struct {
 	windowSize int
 }
 
-// BaseParameters returns the base parameter set for this FHEWParameters.
+// BaseParameters returns the base parameters for this FHEWParameters.
 func (p FHEWParameters[T]) BaseParameters() tfhe.Parameters[T] {
 	return p.baseParameters
 }

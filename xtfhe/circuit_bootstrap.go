@@ -19,7 +19,7 @@ type CircuitBootstrapper[T tfhe.TorusInt] struct {
 	// Decomposer is a Decomposer for this CircuitBootstrapper.
 	Decomposer *tfhe.Decomposer[T]
 
-	// Parameters is a parameter set for this CircuitBootstrapper.
+	// Parameters is the parameters for this CircuitBootstrapper.
 	Parameters CircuitBootstrapParameters[T]
 
 	// EvaluationKey is a circuit bootstrapping key for this CircuitBootstrapper.

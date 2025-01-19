@@ -48,7 +48,7 @@ func (p CircuitBootstrapParameters[T]) ManyLUTParameters() ManyLUTParameters[T] 
 	return p.manyLUTParameters
 }
 
-// BaseParameters returns the base parameter set for this ManyLUTParameters.
+// BaseParameters returns the base parameters for this ManyLUTParameters.
 func (p CircuitBootstrapParameters[T]) BaseParameters() tfhe.Parameters[T] {
 	return p.manyLUTParameters.baseParameters
 }

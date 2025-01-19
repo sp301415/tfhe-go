@@ -9,7 +9,7 @@ import (
 //
 // PolyDegree does not equal LookUpTableSize.
 type ManyLUTParametersLiteral[T tfhe.TorusInt] struct {
-	// BaseParametersLiteral is a base parameter set for this ManyLUTParametersLiteral.
+	// BaseParametersLiteral is a base parameters for this ManyLUTParametersLiteral.
 	BaseParametersLiteral tfhe.ParametersLiteral[T]
 
 	// LUTCount is the number of LUTs that can be evaluated at once.
@@ -40,7 +40,7 @@ func (p ManyLUTParametersLiteral[T]) Compile() ManyLUTParameters[T] {
 
 // ManyLUTParameters is a parameter set for PBSManyLUT.
 type ManyLUTParameters[T tfhe.TorusInt] struct {
-	// baseParameters is a base parameter set for this ManyLUTParameters.
+	// baseParameters is a base parameters for this ManyLUTParameters.
 	baseParameters tfhe.Parameters[T]
 
 	// LUTCount is the number of LUTs that can be evaluated at once.
@@ -50,7 +50,7 @@ type ManyLUTParameters[T tfhe.TorusInt] struct {
 	logLUTCount int
 }
 
-// BaseParameters returns the base parameter set for this ManyLUTParameters.
+// BaseParameters returns the base parameters for this ManyLUTParameters.
 func (p ManyLUTParameters[T]) BaseParameters() tfhe.Parameters[T] {
 	return p.baseParameters
 }
