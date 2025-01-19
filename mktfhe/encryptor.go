@@ -27,7 +27,6 @@ type Encryptor[T tfhe.TorusInt] struct {
 	// This is shared with SingleKeyEncryptor.
 	SecretKey tfhe.SecretKey[T]
 
-	// buffer is a buffer for this Encryptor.
 	buffer encryptionBuffer[T]
 }
 
@@ -49,7 +48,7 @@ type encryptionBuffer[T tfhe.TorusInt] struct {
 	ctGLWESingle tfhe.GLWECiphertext[T]
 }
 
-// NewEncryptor allocates an empty Encryptor.
+// NewEncryptor creates a new Encryptor.
 func NewEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte) *Encryptor[T] {
 	if idx > params.partyCount {
 		panic("index larger than PartyCount")
@@ -80,7 +79,7 @@ func NewEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte
 	}
 }
 
-// NewEncryptorWithKey allocates an empty Encryptor with a given key.
+// NewEncryptorWithKey creates a new Encryptor with a given key.
 //
 // Panics if the index is larger than PartyCount.
 func NewEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte, sk tfhe.SecretKey[T]) *Encryptor[T] {
@@ -111,7 +110,7 @@ func NewEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed
 	}
 }
 
-// newEncryptionBuffer allocates an empty encryptionBuffer.
+// newEncryptionBuffer creates a new encryptionBuffer.
 func newEncryptionBuffer[T tfhe.TorusInt](params Parameters[T]) encryptionBuffer[T] {
 	return encryptionBuffer[T]{
 		ptGLWE: tfhe.NewGLWEPlaintext(params.singleKeyParameters),

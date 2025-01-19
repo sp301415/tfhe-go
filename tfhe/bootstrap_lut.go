@@ -11,12 +11,12 @@ type LookUpTable[T TorusInt] struct {
 	Value []T
 }
 
-// NewLookUpTable allocates an empty lookup table.
+// NewLookUpTable creates a new lookup table.
 func NewLookUpTable[T TorusInt](params Parameters[T]) LookUpTable[T] {
 	return LookUpTable[T]{Value: make([]T, params.lookUpTableSize)}
 }
 
-// NewLookUpTableCustom allocates an empty lookup table with custom size.
+// NewLookUpTableCustom creates a new lookup table with custom size.
 func NewLookUpTableCustom[T TorusInt](lutSize int) LookUpTable[T] {
 	return LookUpTable[T]{Value: make([]T, lutSize)}
 }

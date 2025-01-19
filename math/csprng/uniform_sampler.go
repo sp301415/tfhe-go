@@ -23,7 +23,7 @@ type UniformSampler[T num.Integer] struct {
 	maxT      T
 }
 
-// NewUniformSampler allocates an empty UniformSampler.
+// NewUniformSampler creates a new UniformSampler.
 //
 // Panics when read from crypto/rand or blake2b initialization fails.
 func NewUniformSampler[T num.Integer]() *UniformSampler[T] {
@@ -34,7 +34,7 @@ func NewUniformSampler[T num.Integer]() *UniformSampler[T] {
 	return NewUniformSamplerWithSeed[T](seed)
 }
 
-// NewUniformSamplerWithSeed allocates an empty UniformSampler, with user supplied seed.
+// NewUniformSamplerWithSeed creates a new UniformSampler, with user supplied seed.
 //
 // Panics when blake2b initialization fails.
 func NewUniformSamplerWithSeed[T num.Integer](seed []byte) *UniformSampler[T] {

@@ -22,7 +22,7 @@ type FHEWEvaluator[T tfhe.TorusInt] struct {
 	buffer fhewEvaluationBuffer[T]
 }
 
-// fhewEvaluationBuffer contains buffer values for FHEWEvaluator.
+// fhewEvaluationBuffer is a buffer for FHEWEvaluator.
 type fhewEvaluationBuffer[T tfhe.TorusInt] struct {
 	// ctFourierAcc is the fourier transformed accumulator in Blind Rotation.
 	ctFourierAcc tfhe.FourierGLWECiphertext[T]
@@ -42,7 +42,7 @@ type fhewEvaluationBuffer[T tfhe.TorusInt] struct {
 	lut tfhe.LookUpTable[T]
 }
 
-// NewFHEWEvaluator allocates an empty FHEWEvaluator.
+// NewFHEWEvaluator creates a new FHEWEvaluator.
 func NewFHEWEvaluator[T tfhe.TorusInt](params FHEWParameters[T], evk FHEWEvaluationKey[T]) *FHEWEvaluator[T] {
 	autIdxMap := make([]int, 2*params.baseParameters.PolyDegree())
 	autIdx := 1
@@ -66,7 +66,7 @@ func NewFHEWEvaluator[T tfhe.TorusInt](params FHEWParameters[T], evk FHEWEvaluat
 	}
 }
 
-// newFHEWEvaluationBuffer allocates an empty evaluationBuffer.
+// newFHEWEvaluationBuffer creates a new evaluationBuffer.
 func newFHEWEvaluationBuffer[T tfhe.TorusInt](params FHEWParameters[T]) fhewEvaluationBuffer[T] {
 	ctAccFourierDecomposed := make([][]poly.FourierPoly, params.baseParameters.GLWERank()+1)
 	for i := 0; i < params.baseParameters.GLWERank()+1; i++ {

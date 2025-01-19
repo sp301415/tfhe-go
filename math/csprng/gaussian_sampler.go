@@ -12,7 +12,7 @@ type GaussianSampler[T num.Integer] struct {
 	baseSampler *UniformSampler[uint32]
 }
 
-// NewGaussianSampler allocates an empty GaussianSampler.
+// NewGaussianSampler creates a new GaussianSampler.
 //
 // Panics when read from crypto/rand or blake2b initialization fails.
 func NewGaussianSampler[T num.Integer]() *GaussianSampler[T] {
@@ -21,7 +21,7 @@ func NewGaussianSampler[T num.Integer]() *GaussianSampler[T] {
 	}
 }
 
-// NewGaussianSamplerWithSeed allocates an empty GaussianSampler, with user supplied seed.
+// NewGaussianSamplerWithSeed creates a new GaussianSampler, with user supplied seed.
 //
 // Panics when blake2b initialization fails.
 func NewGaussianSamplerWithSeed[T num.Integer](seed []byte, stdDev float64) *GaussianSampler[T] {

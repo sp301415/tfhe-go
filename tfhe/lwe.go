@@ -10,12 +10,12 @@ type LWESecretKey[T TorusInt] struct {
 	Value []T
 }
 
-// NewLWESecretKey allocates an empty LWESecretKey.
+// NewLWESecretKey creates a new LWESecretKey.
 func NewLWESecretKey[T TorusInt](params Parameters[T]) LWESecretKey[T] {
 	return LWESecretKey[T]{Value: make([]T, params.DefaultLWEDimension())}
 }
 
-// NewLWESecretKeyCustom allocates an empty LWESecretKey with given dimension.
+// NewLWESecretKeyCustom creates a new LWESecretKey with given dimension.
 func NewLWESecretKeyCustom[T TorusInt](lweDimension int) LWESecretKey[T] {
 	return LWESecretKey[T]{Value: make([]T, lweDimension)}
 }
@@ -44,7 +44,7 @@ type LWEPublicKey[T TorusInt] struct {
 	Value []GLWECiphertext[T]
 }
 
-// NewLWEPublicKey allocates an empty LWEPublicKey.
+// NewLWEPublicKey creates a new LWEPublicKey.
 //
 // Panics when the parameters do not support public key encryption.
 func NewLWEPublicKey[T TorusInt](params Parameters[T]) LWEPublicKey[T] {
@@ -59,7 +59,7 @@ func NewLWEPublicKey[T TorusInt](params Parameters[T]) LWEPublicKey[T] {
 	return LWEPublicKey[T]{Value: pk}
 }
 
-// NewLWEPublicKeyCustom allocates an empty LWEPublicKey with given dimension and polyDegree.
+// NewLWEPublicKeyCustom creates a new LWEPublicKey with given dimension and polyDegree.
 func NewLWEPublicKeyCustom[T TorusInt](glweRank, polyDegree int) LWEPublicKey[T] {
 	pk := make([]GLWECiphertext[T], glweRank)
 	for i := 0; i < glweRank; i++ {
@@ -97,7 +97,7 @@ type LWEPlaintext[T TorusInt] struct {
 	Value T
 }
 
-// NewLWEPlaintext allocates an empty LWEPlaintext.
+// NewLWEPlaintext creates a new LWEPlaintext.
 func NewLWEPlaintext[T TorusInt]() LWEPlaintext[T] {
 	return LWEPlaintext[T]{}
 }
@@ -127,12 +127,12 @@ type LWECiphertext[T TorusInt] struct {
 	Value []T
 }
 
-// NewLWECiphertext allocates an empty LWECiphertext.
+// NewLWECiphertext creates a new LWECiphertext.
 func NewLWECiphertext[T TorusInt](params Parameters[T]) LWECiphertext[T] {
 	return LWECiphertext[T]{Value: make([]T, params.DefaultLWEDimension()+1)}
 }
 
-// NewLWECiphertextCustom allocates an empty LWECiphertext with given dimension.
+// NewLWECiphertextCustom creates a new LWECiphertext with given dimension.
 func NewLWECiphertextCustom[T TorusInt](lweDimension int) LWECiphertext[T] {
 	return LWECiphertext[T]{Value: make([]T, lweDimension+1)}
 }
@@ -160,7 +160,7 @@ type LevCiphertext[T TorusInt] struct {
 	Value []LWECiphertext[T]
 }
 
-// NewLevCiphertext allocates an empty LevCiphertext.
+// NewLevCiphertext creates a new LevCiphertext.
 func NewLevCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetParameters[T]) LevCiphertext[T] {
 	ct := make([]LWECiphertext[T], gadgetParams.level)
 	for i := 0; i < gadgetParams.level; i++ {
@@ -169,7 +169,7 @@ func NewLevCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetParam
 	return LevCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
 }
 
-// NewLevCiphertextCustom allocates an empty LevCiphertext with given dimension.
+// NewLevCiphertextCustom creates a new LevCiphertext with given dimension.
 func NewLevCiphertextCustom[T TorusInt](lweDimension int, gadgetParams GadgetParameters[T]) LevCiphertext[T] {
 	ct := make([]LWECiphertext[T], gadgetParams.level)
 	for i := 0; i < gadgetParams.level; i++ {
@@ -211,7 +211,7 @@ type GSWCiphertext[T TorusInt] struct {
 	Value []LevCiphertext[T]
 }
 
-// NewGSWCiphertext allocates an empty GSW ciphertext.
+// NewGSWCiphertext creates a new GSW ciphertext.
 func NewGSWCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetParameters[T]) GSWCiphertext[T] {
 	lweDimension := params.DefaultLWEDimension()
 	ct := make([]LevCiphertext[T], lweDimension+1)
@@ -221,7 +221,7 @@ func NewGSWCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetParam
 	return GSWCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
 }
 
-// NewGSWCiphertextCustom allocates an empty GSW ciphertext with given dimension.
+// NewGSWCiphertextCustom creates a new GSW ciphertext with given dimension.
 func NewGSWCiphertextCustom[T TorusInt](lweDimension int, gadgetParams GadgetParameters[T]) GSWCiphertext[T] {
 	ct := make([]LevCiphertext[T], lweDimension+1)
 	for i := 0; i < lweDimension+1; i++ {

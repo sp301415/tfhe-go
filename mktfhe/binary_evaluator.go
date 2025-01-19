@@ -17,7 +17,7 @@ type BinaryEvaluator[T tfhe.TorusInt] struct {
 	signLUT tfhe.LookUpTable[T]
 }
 
-// NewBinaryEvaluator allocates an empty BinaryEvaluator based on parameters.
+// NewBinaryEvaluator creates a new BinaryEvaluator based on parameters.
 // This does not copy evaluation keys, since they are large.
 func NewBinaryEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationKey[T]) *BinaryEvaluator[T] {
 	signLUT := tfhe.NewLookUpTableCustom[T](params.PolyDegree())

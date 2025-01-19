@@ -14,11 +14,10 @@ type ManyLUTEvaluator[T tfhe.TorusInt] struct {
 	// Parameters is the parameters for this ManyLUTEvaluator.
 	Parameters ManyLUTParameters[T]
 
-	// buffer is the buffer values for this ManyLUTEvaluator.
 	buffer manyLUTEvaluationBuffer[T]
 }
 
-// manyLUTEvaluationBuffer contains buffer values for ManyLUTEvaluator.
+// manyLUTEvaluationBuffer is a buffer for ManyLUTEvaluator.
 type manyLUTEvaluationBuffer[T tfhe.TorusInt] struct {
 	// ctFourierAcc is the fourier transformed accumulator in Blind Rotation.
 	ctFourierAcc tfhe.FourierGLWECiphertext[T]
@@ -40,7 +39,7 @@ type manyLUTEvaluationBuffer[T tfhe.TorusInt] struct {
 	lut tfhe.LookUpTable[T]
 }
 
-// NewManyLUTEvaluator allocates an empty ManyLUTEvaluator.
+// NewManyLUTEvaluator creates a new ManyLUTEvaluator.
 func NewManyLUTEvaluator[T tfhe.TorusInt](params ManyLUTParameters[T], evk tfhe.EvaluationKey[T]) *ManyLUTEvaluator[T] {
 	return &ManyLUTEvaluator[T]{
 		Evaluator: tfhe.NewEvaluator(params.baseParameters, evk),
@@ -51,7 +50,7 @@ func NewManyLUTEvaluator[T tfhe.TorusInt](params ManyLUTParameters[T], evk tfhe.
 	}
 }
 
-// newManyLUTEvaluationBuffer allocates an empty manyLUTEvaluationBuffer.
+// newManyLUTEvaluationBuffer creates a new manyLUTEvaluationBuffer.
 func newManyLUTEvaluationBuffer[T tfhe.TorusInt](params ManyLUTParameters[T]) manyLUTEvaluationBuffer[T] {
 	ctAccFourierDecomposed := make([][]poly.FourierPoly, params.baseParameters.GLWERank()+1)
 	for i := 0; i < params.baseParameters.GLWERank()+1; i++ {

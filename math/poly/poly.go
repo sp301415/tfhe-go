@@ -28,7 +28,7 @@ func NewPoly[T num.Integer](N int) Poly[T] {
 	return Poly[T]{Coeffs: make([]T, N)}
 }
 
-// From allocates an empty polynomial from given coefficient slice.
+// From creates a new polynomial from given coefficient slice.
 // The given slice is copied, and extended to degree N.
 func From[T num.Integer](coeffs []T, N int) Poly[T] {
 	p := NewPoly[T](N)

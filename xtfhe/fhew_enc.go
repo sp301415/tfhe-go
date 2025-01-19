@@ -16,7 +16,7 @@ type FHEWEncryptor[T tfhe.TorusInt] struct {
 	buffer fhewEncryptionBuffer[T]
 }
 
-// fhewEncryptionBuffer contains buffer values for FHEWEncryptor.
+// fhewEncryptionBuffer is a buffer for FHEWEncryptor.
 type fhewEncryptionBuffer[T tfhe.TorusInt] struct {
 	// skPermute is the permuted secret key.
 	skPermute tfhe.GLWESecretKey[T]

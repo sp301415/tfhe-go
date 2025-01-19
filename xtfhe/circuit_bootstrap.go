@@ -25,7 +25,7 @@ type CircuitBootstrapper[T tfhe.TorusInt] struct {
 	buffer circuitBootstrapBuffer[T]
 }
 
-// circuitBootstrapBuffer contains buffer values for CircuitBootstrapper.
+// circuitBootstrapBuffer is a buffer for CircuitBootstrapper.
 type circuitBootstrapBuffer[T tfhe.TorusInt] struct {
 	// fs are the functions for LUT.
 	fs []func(x int) T
@@ -47,11 +47,12 @@ type circuitBootstrapBuffer[T tfhe.TorusInt] struct {
 	ctGGSWOut tfhe.GGSWCiphertext[T]
 }
 
-// NewCircuitBootstrapper allocates an empty CircuitBootstrapper.
+// NewCircuitBootstrapper creates a new CircuitBootstrapper.
 // For circuit bootstrapping, we need relin key and galois keys for LWE to GLWE.
 func NewCircuitBootstrapper[T tfhe.TorusInt](params CircuitBootstrapParameters[T], evk tfhe.EvaluationKey[T], cbk CircuitBootstrapKey[T]) *CircuitBootstrapper[T] {
 	decomposer := tfhe.NewDecomposer[T](params.BaseParameters().PolyDegree())
 	decomposer.PolyDecomposedBuffer(params.schemeSwitchParameters)
+	decomposer.PolyFourierDecomposedBuffer(params.schemeSwitchParameters)
 
 	return &CircuitBootstrapper[T]{
 		ManyLUTEvaluator: NewManyLUTEvaluator(params.manyLUTParameters, evk),
@@ -65,7 +66,7 @@ func NewCircuitBootstrapper[T tfhe.TorusInt](params CircuitBootstrapParameters[T
 	}
 }
 
-// newCircuitBootstrapBuffer allocates an empty circuitBootstrapBuffer.
+// newCircuitBootstrapBuffer creates a new circuitBootstrapBuffer.
 func newCircuitBootstrapBuffer[T tfhe.TorusInt](params CircuitBootstrapParameters[T]) circuitBootstrapBuffer[T] {
 	fs := make([]func(x int) T, params.manyLUTParameters.lutCount)
 	for i := 0; i < params.manyLUTParameters.lutCount; i++ {

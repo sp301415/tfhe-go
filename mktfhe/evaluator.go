@@ -37,7 +37,6 @@ type Evaluator[T tfhe.TorusInt] struct {
 	// If an evaluation key does not exist for given index, it is empty.
 	EvaluationKeys []EvaluationKey[T]
 
-	// buffer is a buffer for this Evaluator.
 	buffer evaluationBuffer[T]
 }
 
@@ -78,7 +77,7 @@ type evaluationBuffer[T tfhe.TorusInt] struct {
 	lut tfhe.LookUpTable[T]
 }
 
-// NewEvaluator allocates an empty Evaluator.
+// NewEvaluator creates a new Evaluator.
 // Only indices between 0 and params.PartyCount is valid for evk.
 func NewEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationKey[T]) *Evaluator[T] {
 	singleEvals := make([]*tfhe.Evaluator[T], params.partyCount)
@@ -115,7 +114,7 @@ func NewEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationK
 	}
 }
 
-// newEvaluationBuffer allocates an empty evaluationBuffer.
+// newEvaluationBuffer creates a new evaluationBuffer.
 func newEvaluationBuffer[T tfhe.TorusInt](params Parameters[T]) evaluationBuffer[T] {
 	ctRelin := NewGLWECiphertext(params)
 	ctRelinTransposed := make([]tfhe.GLWECiphertext[T], params.GLWERank()+1)

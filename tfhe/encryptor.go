@@ -37,11 +37,10 @@ type Encryptor[T TorusInt] struct {
 	// For encrypting/decrypting LWE ciphertexts, use [*Encryptor DefaultLWEKey].
 	SecretKey SecretKey[T]
 
-	// buffer is the buffer values for this Encryptor.
 	buffer encryptionBuffer[T]
 }
 
-// encryptionBuffer contains buffer values for Encryptor.
+// encryptionBuffer is a buffer for Encryptor.
 type encryptionBuffer[T TorusInt] struct {
 	// ptGLWE is the GLWE plaintext for GLWE encryption / decryptions.
 	ptGLWE GLWEPlaintext[T]
@@ -96,7 +95,7 @@ func NewEncryptorWithKey[T TorusInt](params Parameters[T], sk SecretKey[T]) *Enc
 	}
 }
 
-// newEncryptionBuffer allocates an empty encryptionBuffer.
+// newEncryptionBuffer creates a new encryptionBuffer.
 func newEncryptionBuffer[T TorusInt](params Parameters[T]) encryptionBuffer[T] {
 	return encryptionBuffer[T]{
 		ptGLWE: NewGLWEPlaintext(params),

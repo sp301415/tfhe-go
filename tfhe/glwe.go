@@ -11,7 +11,7 @@ type GLWESecretKey[T TorusInt] struct {
 	Value []poly.Poly[T]
 }
 
-// NewGLWESecretKey allocates an empty GLWESecretKey.
+// NewGLWESecretKey creates a new GLWESecretKey.
 func NewGLWESecretKey[T TorusInt](params Parameters[T]) GLWESecretKey[T] {
 	sk := make([]poly.Poly[T], params.glweRank)
 	for i := range sk {
@@ -20,7 +20,7 @@ func NewGLWESecretKey[T TorusInt](params Parameters[T]) GLWESecretKey[T] {
 	return GLWESecretKey[T]{Value: sk}
 }
 
-// NewGLWESecretKeyCustom allocates an empty GLWESecretKey with given dimension and polyDegree.
+// NewGLWESecretKeyCustom creates a new GLWESecretKey with given dimension and polyDegree.
 func NewGLWESecretKeyCustom[T TorusInt](glweRank, polyDegree int) GLWESecretKey[T] {
 	sk := make([]poly.Poly[T], glweRank)
 	for i := range sk {
@@ -77,7 +77,7 @@ type GLWEPublicKey[T TorusInt] struct {
 	Value []GLWECiphertext[T]
 }
 
-// NewGLWEPublicKey allocates an empty GLWEPublicKey.
+// NewGLWEPublicKey creates a new GLWEPublicKey.
 func NewGLWEPublicKey[T TorusInt](params Parameters[T]) GLWEPublicKey[T] {
 	pk := make([]GLWECiphertext[T], params.glweRank)
 	for i := 0; i < params.glweRank; i++ {
@@ -86,7 +86,7 @@ func NewGLWEPublicKey[T TorusInt](params Parameters[T]) GLWEPublicKey[T] {
 	return GLWEPublicKey[T]{Value: pk}
 }
 
-// NewGLWEPublicKeyCustom allocates an empty GLWEPublicKey with given dimension and polyDegree.
+// NewGLWEPublicKeyCustom creates a new GLWEPublicKey with given dimension and polyDegree.
 func NewGLWEPublicKeyCustom[T TorusInt](glweRank, polyDegree int) GLWEPublicKey[T] {
 	pk := make([]GLWECiphertext[T], glweRank)
 	for i := 0; i < glweRank; i++ {
@@ -124,12 +124,12 @@ type GLWEPlaintext[T TorusInt] struct {
 	Value poly.Poly[T]
 }
 
-// NewGLWEPlaintext allocates an empty GLWEPlaintext.
+// NewGLWEPlaintext creates a new GLWEPlaintext.
 func NewGLWEPlaintext[T TorusInt](params Parameters[T]) GLWEPlaintext[T] {
 	return GLWEPlaintext[T]{Value: poly.NewPoly[T](params.polyDegree)}
 }
 
-// NewGLWEPlaintextCustom allocates an empty GLWEPlaintext with given polyDegree.
+// NewGLWEPlaintextCustom creates a new GLWEPlaintext with given polyDegree.
 func NewGLWEPlaintextCustom[T TorusInt](polyDegree int) GLWEPlaintext[T] {
 	return GLWEPlaintext[T]{Value: poly.NewPoly[T](polyDegree)}
 }
@@ -157,7 +157,7 @@ type GLWECiphertext[T TorusInt] struct {
 	Value []poly.Poly[T]
 }
 
-// NewGLWECiphertext allocates an empty GLWECiphertext.
+// NewGLWECiphertext creates a new GLWECiphertext.
 func NewGLWECiphertext[T TorusInt](params Parameters[T]) GLWECiphertext[T] {
 	ct := make([]poly.Poly[T], params.glweRank+1)
 	for i := 0; i < params.glweRank+1; i++ {
@@ -166,7 +166,7 @@ func NewGLWECiphertext[T TorusInt](params Parameters[T]) GLWECiphertext[T] {
 	return GLWECiphertext[T]{Value: ct}
 }
 
-// NewGLWECiphertextCustom allocates an empty GLWECiphertext with given dimension and polyDegree.
+// NewGLWECiphertextCustom creates a new GLWECiphertext with given dimension and polyDegree.
 func NewGLWECiphertextCustom[T TorusInt](glweRank, polyDegree int) GLWECiphertext[T] {
 	ct := make([]poly.Poly[T], glweRank+1)
 	for i := 0; i < glweRank+1; i++ {
@@ -231,7 +231,7 @@ type GLevCiphertext[T TorusInt] struct {
 	Value []GLWECiphertext[T]
 }
 
-// NewGLevCiphertext allocates an empty GLevCiphertext.
+// NewGLevCiphertext creates a new GLevCiphertext.
 func NewGLevCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetParameters[T]) GLevCiphertext[T] {
 	ct := make([]GLWECiphertext[T], gadgetParams.level)
 	for i := 0; i < gadgetParams.level; i++ {
@@ -240,7 +240,7 @@ func NewGLevCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetPara
 	return GLevCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
 }
 
-// NewGLevCiphertextCustom allocates an empty GLevCiphertext with given dimension and polyDegree.
+// NewGLevCiphertextCustom creates a new GLevCiphertext with given dimension and polyDegree.
 func NewGLevCiphertextCustom[T TorusInt](glweRank, polyDegree int, gadgetParams GadgetParameters[T]) GLevCiphertext[T] {
 	ct := make([]GLWECiphertext[T], gadgetParams.level)
 	for i := 0; i < gadgetParams.level; i++ {
@@ -282,7 +282,7 @@ type GGSWCiphertext[T TorusInt] struct {
 	Value []GLevCiphertext[T]
 }
 
-// NewGGSWCiphertext allocates an empty GGSW ciphertext.
+// NewGGSWCiphertext creates a new GGSW ciphertext.
 func NewGGSWCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetParameters[T]) GGSWCiphertext[T] {
 	ct := make([]GLevCiphertext[T], params.glweRank+1)
 	for i := 0; i < params.glweRank+1; i++ {
@@ -291,7 +291,7 @@ func NewGGSWCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetPara
 	return GGSWCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
 }
 
-// NewGGSWCiphertextCustom allocates an empty GGSW ciphertext with given dimension and polyDegree.
+// NewGGSWCiphertextCustom creates a new GGSW ciphertext with given dimension and polyDegree.
 func NewGGSWCiphertextCustom[T TorusInt](glweRank, polyDegree int, gadgetParams GadgetParameters[T]) GGSWCiphertext[T] {
 	ct := make([]GLevCiphertext[T], glweRank+1)
 	for i := 0; i < glweRank+1; i++ {

@@ -22,7 +22,6 @@ type PublicEncryptor[T tfhe.TorusInt] struct {
 	// This is shared with SingleKeyPublicEncryptor.
 	PublicKey tfhe.PublicKey[T]
 
-	// buffer is a buffer for this PublicEncryptor.
 	buffer publicEncryptionBuffer[T]
 }
 
@@ -39,7 +38,7 @@ type publicEncryptionBuffer[T tfhe.TorusInt] struct {
 	ctGLWESingle tfhe.GLWECiphertext[T]
 }
 
-// NewPublicEncryptor allocates an empty PublicEncryptor.
+// NewPublicEncryptor creates a new PublicEncryptor.
 func NewPublicEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, publicKey tfhe.PublicKey[T]) *PublicEncryptor[T] {
 	if idx > params.partyCount {
 		panic("index larger than PartyCount")

@@ -12,7 +12,7 @@ type BinaryDecryptor[T tfhe.TorusInt] struct {
 	BaseDecryptor *Decryptor[T]
 }
 
-// NewBinaryDecryptor allocates an empty BinaryDecryptor.
+// NewBinaryDecryptor creates a new BinaryDecryptor.
 func NewBinaryDecryptor[T tfhe.TorusInt](params Parameters[T], sk map[int]tfhe.SecretKey[T]) *BinaryDecryptor[T] {
 	return &BinaryDecryptor[T]{
 		BinaryEncoder: tfhe.NewBinaryEncoder(params.singleKeyParameters),

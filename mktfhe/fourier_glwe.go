@@ -11,7 +11,7 @@ type FourierGLWECiphertext[T tfhe.TorusInt] struct {
 	Value []poly.FourierPoly
 }
 
-// NewFourierGLWECiphertext allocates an empty Fourier GLWE ciphertext.
+// NewFourierGLWECiphertext creates a new Fourier GLWE ciphertext.
 func NewFourierGLWECiphertext[T tfhe.TorusInt](params Parameters[T]) FourierGLWECiphertext[T] {
 	ct := make([]poly.FourierPoly, params.GLWERank()+1)
 	for i := 0; i < params.GLWERank()+1; i++ {
@@ -20,7 +20,7 @@ func NewFourierGLWECiphertext[T tfhe.TorusInt](params Parameters[T]) FourierGLWE
 	return FourierGLWECiphertext[T]{Value: ct}
 }
 
-// NewFourierGLWECiphertextCustom allocates an empty Fourier GLWE ciphertext with given dimension and polyDegree
+// NewFourierGLWECiphertextCustom creates a new Fourier GLWE ciphertext with given dimension and polyDegree
 func NewFourierGLWECiphertextCustom[T tfhe.TorusInt](glweRank, polyDegree int) FourierGLWECiphertext[T] {
 	ct := make([]poly.FourierPoly, glweRank+1)
 	for i := 0; i < glweRank+1; i++ {
@@ -74,7 +74,7 @@ type FourierUniEncryption[T tfhe.TorusInt] struct {
 	Value []tfhe.FourierGLevCiphertext[T]
 }
 
-// NewFourierUniEncryption allocates an empty Fourier UniEncryption.
+// NewFourierUniEncryption creates a new Fourier UniEncryption.
 func NewFourierUniEncryption[T tfhe.TorusInt](params Parameters[T], gadgetParams tfhe.GadgetParameters[T]) FourierUniEncryption[T] {
 	return FourierUniEncryption[T]{
 		GadgetParameters: gadgetParams,
@@ -85,7 +85,7 @@ func NewFourierUniEncryption[T tfhe.TorusInt](params Parameters[T], gadgetParams
 	}
 }
 
-// NewFourierUniEncryptionCustom allocates an empty FourierUniEncryption with given polyDegree and partyCount.
+// NewFourierUniEncryptionCustom creates a new FourierUniEncryption with given polyDegree and partyCount.
 func NewFourierUniEncryptionCustom[T tfhe.TorusInt](polyDegree int, gadgetParams tfhe.GadgetParameters[T]) FourierUniEncryption[T] {
 	return FourierUniEncryption[T]{
 		GadgetParameters: gadgetParams,

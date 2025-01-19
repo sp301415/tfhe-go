@@ -31,11 +31,10 @@ type Evaluator[T TorusInt] struct {
 	// modSwitchConstant is a constant for modulus switching.
 	modSwitchConstant float64
 
-	// buffer is the buffer values for this Evaluator.
 	buffer evaluationBuffer[T]
 }
 
-// evaluationBuffer contains buffer values for Evaluator.
+// evaluationBuffer is a buffer for Evaluator.
 type evaluationBuffer[T TorusInt] struct {
 	// fpMul is the fourier transformed polynomial for multiplications.
 	fpMul poly.FourierPoly
@@ -74,7 +73,7 @@ type evaluationBuffer[T TorusInt] struct {
 	lut LookUpTable[T]
 }
 
-// NewEvaluator allocates an empty Evaluator based on parameters.
+// NewEvaluator creates a new Evaluator based on parameters.
 // This does not copy evaluation keys, since they may be large.
 func NewEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *Evaluator[T] {
 	decomposer := NewDecomposer[T](params.polyDegree)
@@ -99,7 +98,7 @@ func NewEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *Evalu
 	}
 }
 
-// newEvaluationBuffer allocates an empty evaluationBuffer.
+// newEvaluationBuffer creates a new evaluationBuffer.
 func newEvaluationBuffer[T TorusInt](params Parameters[T]) evaluationBuffer[T] {
 	ctAcc := make([]GLWECiphertext[T], params.polyExtendFactor)
 	ctFourierAcc := make([]FourierGLWECiphertext[T], params.polyExtendFactor)

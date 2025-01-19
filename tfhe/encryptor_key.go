@@ -26,7 +26,7 @@ type SecretKey[T TorusInt] struct {
 	LWEKey LWESecretKey[T]
 }
 
-// NewSecretKey allocates an empty SecretKey.
+// NewSecretKey creates a new SecretKey.
 // Each key shares the same backing slice, held by LWEKey.
 func NewSecretKey[T TorusInt](params Parameters[T]) SecretKey[T] {
 	lweLargeKey := LWESecretKey[T]{Value: make([]T, params.glweDimension)}
@@ -47,7 +47,7 @@ func NewSecretKey[T TorusInt](params Parameters[T]) SecretKey[T] {
 	}
 }
 
-// NewSecretKeyCustom allocates an empty SecretKey with given dimension and polyDegree.
+// NewSecretKeyCustom creates a new SecretKey with given dimension and polyDegree.
 // Each key shares the same backing slice, held by LWEKey.
 func NewSecretKeyCustom[T TorusInt](lweDimension, glweRank, polyDegree int) SecretKey[T] {
 	lweLargeKey := LWESecretKey[T]{Value: make([]T, glweRank*polyDegree)}
@@ -118,7 +118,7 @@ type PublicKey[T TorusInt] struct {
 	GLWEKey GLWEPublicKey[T]
 }
 
-// NewPublicKey allocates an empty PublicKey.
+// NewPublicKey creates a new PublicKey.
 //
 // Panics when the parameters do not support public key encryption.
 func NewPublicKey[T TorusInt](params Parameters[T]) PublicKey[T] {
@@ -132,7 +132,7 @@ func NewPublicKey[T TorusInt](params Parameters[T]) PublicKey[T] {
 	}
 }
 
-// NewPublicKeyCustom allocates an empty PublicKey with given dimension and polyDegree.
+// NewPublicKeyCustom creates a new PublicKey with given dimension and polyDegree.
 func NewPublicKeyCustom[T TorusInt](glweRank, polyDegree int) PublicKey[T] {
 	return PublicKey[T]{
 		LWEKey:  NewLWEPublicKeyCustom[T](glweRank, polyDegree),

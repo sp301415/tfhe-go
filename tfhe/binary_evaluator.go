@@ -21,7 +21,7 @@ type BinaryEvaluator[T TorusInt] struct {
 	signLUT LookUpTable[T]
 }
 
-// NewBinaryEvaluator allocates an empty BinaryEvaluator based on parameters.
+// NewBinaryEvaluator creates a new BinaryEvaluator based on parameters.
 // This does not copy evaluation keys, since they are large.
 func NewBinaryEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *BinaryEvaluator[T] {
 	signLUT := NewLookUpTable(params)

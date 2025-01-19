@@ -34,7 +34,6 @@ type Decryptor[T tfhe.TorusInt] struct {
 	// If a secret key of a given index does not exist, it is empty.
 	SecretKeys []tfhe.SecretKey[T]
 
-	// buffer is a buffer for this Decryptor.
 	buffer decryptionBuffer[T]
 }
 
@@ -51,7 +50,7 @@ type decryptionBuffer[T tfhe.TorusInt] struct {
 	ctGLWESingle tfhe.GLWECiphertext[T]
 }
 
-// NewDecryptor allocates an empty Decryptor.
+// NewDecryptor creates a new Decryptor.
 // Only indices between 0 and params.PartyCount is valid for sk.
 func NewDecryptor[T tfhe.TorusInt](params Parameters[T], sk map[int]tfhe.SecretKey[T]) *Decryptor[T] {
 	singleEncs := make([]*tfhe.Encryptor[T], len(sk))
@@ -77,7 +76,7 @@ func NewDecryptor[T tfhe.TorusInt](params Parameters[T], sk map[int]tfhe.SecretK
 	}
 }
 
-// newDecryptionBuffer allocates an empty decryptionBuffer.
+// newDecryptionBuffer creates a new decryptionBuffer.
 func newDecryptionBuffer[T tfhe.TorusInt](params Parameters[T]) decryptionBuffer[T] {
 	return decryptionBuffer[T]{
 		ptGLWE: tfhe.NewGLWEPlaintext(params.singleKeyParameters),

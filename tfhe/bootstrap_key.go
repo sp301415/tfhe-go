@@ -11,7 +11,7 @@ type EvaluationKey[T TorusInt] struct {
 	KeySwitchKey LWEKeySwitchKey[T]
 }
 
-// NewEvaluationKey allocates an empty EvaluationKey.
+// NewEvaluationKey creates a new EvaluationKey.
 func NewEvaluationKey[T TorusInt](params Parameters[T]) EvaluationKey[T] {
 	return EvaluationKey[T]{
 		BlindRotateKey: NewBlindRotateKey(params),
@@ -19,7 +19,7 @@ func NewEvaluationKey[T TorusInt](params Parameters[T]) EvaluationKey[T] {
 	}
 }
 
-// NewEvaluationKeyCustom allocates an empty EvaluationKey with custom parameters.
+// NewEvaluationKeyCustom creates a new EvaluationKey with custom parameters.
 func NewEvaluationKeyCustom[T TorusInt](lweDimension, glweRank, polyDegree int, blindRotateParams, keySwitchParams GadgetParameters[T]) EvaluationKey[T] {
 	return EvaluationKey[T]{
 		BlindRotateKey: NewBlindRotateKeyCustom(lweDimension, glweRank, polyDegree, blindRotateParams),
@@ -57,7 +57,7 @@ type BlindRotateKey[T TorusInt] struct {
 	Value []FourierGGSWCiphertext[T]
 }
 
-// NewBlindRotateKey allocates an empty BlindRotateKey.
+// NewBlindRotateKey creates a new BlindRotateKey.
 func NewBlindRotateKey[T TorusInt](params Parameters[T]) BlindRotateKey[T] {
 	brk := make([]FourierGGSWCiphertext[T], params.lweDimension)
 	for i := 0; i < params.lweDimension; i++ {
@@ -66,7 +66,7 @@ func NewBlindRotateKey[T TorusInt](params Parameters[T]) BlindRotateKey[T] {
 	return BlindRotateKey[T]{Value: brk, GadgetParameters: params.blindRotateParameters}
 }
 
-// NewBlindRotateKeyCustom allocates an empty BlindRotateKey with custom parameters.
+// NewBlindRotateKeyCustom creates a new BlindRotateKey with custom parameters.
 func NewBlindRotateKeyCustom[T TorusInt](lweDimension, glweRank, polyDegree int, gadgetParams GadgetParameters[T]) BlindRotateKey[T] {
 	brk := make([]FourierGGSWCiphertext[T], lweDimension)
 	for i := 0; i < lweDimension; i++ {

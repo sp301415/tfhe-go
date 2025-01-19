@@ -8,7 +8,7 @@ type LWEKeySwitchKey[T TorusInt] struct {
 	Value []LevCiphertext[T]
 }
 
-// NewLWEKeySwitchKey allocates an empty LWEKeySwitchingKey.
+// NewLWEKeySwitchKey creates a new LWEKeySwitchingKey.
 func NewLWEKeySwitchKey[T TorusInt](params Parameters[T], inputDimension int, gadgetParams GadgetParameters[T]) LWEKeySwitchKey[T] {
 	ksk := make([]LevCiphertext[T], inputDimension)
 	for i := 0; i < inputDimension; i++ {
@@ -17,7 +17,7 @@ func NewLWEKeySwitchKey[T TorusInt](params Parameters[T], inputDimension int, ga
 	return LWEKeySwitchKey[T]{Value: ksk, GadgetParameters: gadgetParams}
 }
 
-// NewLWEKeySwitchKeyCustom allocates an empty LWEKeySwitchingKey with custom parameters.
+// NewLWEKeySwitchKeyCustom creates a new LWEKeySwitchingKey with custom parameters.
 func NewLWEKeySwitchKeyCustom[T TorusInt](inputDimension, outputDimension int, gadgetParams GadgetParameters[T]) LWEKeySwitchKey[T] {
 	ksk := make([]LevCiphertext[T], inputDimension)
 	for i := 0; i < inputDimension; i++ {
@@ -26,12 +26,12 @@ func NewLWEKeySwitchKeyCustom[T TorusInt](inputDimension, outputDimension int, g
 	return LWEKeySwitchKey[T]{Value: ksk, GadgetParameters: gadgetParams}
 }
 
-// NewKeySwitchKeyForBootstrap allocates an empty LWEKeySwitchingKey for bootstrapping.
+// NewKeySwitchKeyForBootstrap creates a new LWEKeySwitchingKey for bootstrapping.
 func NewKeySwitchKeyForBootstrap[T TorusInt](params Parameters[T]) LWEKeySwitchKey[T] {
 	return NewLWEKeySwitchKeyCustom(params.glweDimension-params.lweDimension, params.lweDimension, params.keySwitchParameters)
 }
 
-// NewKeySwitchKeyForBootstrapCustom allocates an empty LWEKeySwitchingKey with custom parameters.
+// NewKeySwitchKeyForBootstrapCustom creates a new LWEKeySwitchingKey with custom parameters.
 func NewKeySwitchKeyForBootstrapCustom[T TorusInt](lweDimension, glweRank, polyDegree int, gadgetParams GadgetParameters[T]) LWEKeySwitchKey[T] {
 	return NewLWEKeySwitchKeyCustom(glweRank*polyDegree-lweDimension, lweDimension, gadgetParams)
 }
@@ -73,7 +73,7 @@ type GLWEKeySwitchKey[T TorusInt] struct {
 	Value []FourierGLevCiphertext[T]
 }
 
-// NewGLWEKeySwitchKey allocates an empty GLWEKeySwitchingKey.
+// NewGLWEKeySwitchKey creates a new GLWEKeySwitchingKey.
 func NewGLWEKeySwitchKey[T TorusInt](params Parameters[T], inputGLWERank int, gadgetParams GadgetParameters[T]) GLWEKeySwitchKey[T] {
 	ksk := make([]FourierGLevCiphertext[T], inputGLWERank)
 	for i := 0; i < inputGLWERank; i++ {
@@ -82,7 +82,7 @@ func NewGLWEKeySwitchKey[T TorusInt](params Parameters[T], inputGLWERank int, ga
 	return GLWEKeySwitchKey[T]{Value: ksk, GadgetParameters: gadgetParams}
 }
 
-// NewGLWEKeySwitchKeyCustom allocates an empty GLWEKeySwitchingKey with custom parameters.
+// NewGLWEKeySwitchKeyCustom creates a new GLWEKeySwitchingKey with custom parameters.
 func NewGLWEKeySwitchKeyCustom[T TorusInt](inputGLWERank, outputGLWERank, polyDegree int, gadgetParams GadgetParameters[T]) GLWEKeySwitchKey[T] {
 	ksk := make([]FourierGLevCiphertext[T], inputGLWERank)
 	for i := 0; i < inputGLWERank; i++ {

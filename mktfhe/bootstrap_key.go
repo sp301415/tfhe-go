@@ -12,7 +12,7 @@ type EvaluationKey[T tfhe.TorusInt] struct {
 	RelinKey FourierUniEncryption[T]
 }
 
-// NewEvaluationKey allocates an empty EvaluationKey.
+// NewEvaluationKey creates a new EvaluationKey.
 func NewEvaluationKey[T tfhe.TorusInt](params Parameters[T]) EvaluationKey[T] {
 	return EvaluationKey[T]{
 		EvaluationKey: tfhe.NewEvaluationKey(params.singleKeyParameters),
@@ -21,7 +21,7 @@ func NewEvaluationKey[T tfhe.TorusInt](params Parameters[T]) EvaluationKey[T] {
 	}
 }
 
-// NewEvaluationKeyCustom allocates an empty EvaluationKey with custom parameters.
+// NewEvaluationKeyCustom creates a new EvaluationKey with custom parameters.
 func NewEvaluationKeyCustom[T tfhe.TorusInt](lweDimension, polyDegree int, blindRotateParams, keySwitchParams, relinParams tfhe.GadgetParameters[T]) EvaluationKey[T] {
 	return EvaluationKey[T]{
 		EvaluationKey: tfhe.NewEvaluationKeyCustom(lweDimension, 1, polyDegree, blindRotateParams, keySwitchParams),

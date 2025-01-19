@@ -56,11 +56,10 @@ type Evaluator[T num.Integer] struct {
 	// Equivalent to BitReverse([-1, 3, 7, ..., 2N-3]).
 	twMonoIdx []int
 
-	// buffer is the buffer values for this Evaluator.
 	buffer evaluationBuffer[T]
 }
 
-// evaluationBuffer contains buffer values for Evaluator.
+// evaluationBuffer is a buffer for Evaluator.
 type evaluationBuffer[T num.Integer] struct {
 	// pOut is the intermediate output polynomial for InPlace operations.
 	pOut Poly[T]
@@ -78,7 +77,7 @@ type evaluationBuffer[T num.Integer] struct {
 	fpShortSplit []FourierPoly
 }
 
-// NewEvaluator allocates an empty Evaluator with degree N.
+// NewEvaluator creates a new Evaluator with degree N.
 //
 // Panics when N is not a power of two, or when N is smaller than MinDegree or larger than MaxDegree.
 func NewEvaluator[T num.Integer](N int) *Evaluator[T] {
@@ -165,7 +164,7 @@ func splitParametersShort[T num.Integer](N int) (splitBits T, splitCount int) {
 	return
 }
 
-// newFourierBuffer allocates an empty fourierBuffer.
+// newFourierBuffer creates a new fourierBuffer.
 func newFourierBuffer[T num.Integer](N int) evaluationBuffer[T] {
 	_, splitCount := splitParametersShort[T](N)
 
@@ -207,12 +206,12 @@ func (e *Evaluator[T]) Degree() int {
 	return e.degree
 }
 
-// NewPoly allocates an empty polynomial with the same degree as the evaluator.
+// NewPoly creates a new polynomial with the same degree as the evaluator.
 func (e *Evaluator[T]) NewPoly() Poly[T] {
 	return Poly[T]{Coeffs: make([]T, e.degree)}
 }
 
-// NewFourierPoly allocates an empty fourier polynomial with the same degree as the evaluator.
+// NewFourierPoly creates a new fourier polynomial with the same degree as the evaluator.
 func (e *Evaluator[T]) NewFourierPoly() FourierPoly {
 	return FourierPoly{Coeffs: make([]float64, e.degree)}
 }

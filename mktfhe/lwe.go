@@ -11,12 +11,12 @@ type LWECiphertext[T tfhe.TorusInt] struct {
 	Value []T
 }
 
-// NewLWECiphertext allocates an empty LWE ciphertext.
+// NewLWECiphertext creates a new LWE ciphertext.
 func NewLWECiphertext[T tfhe.TorusInt](params Parameters[T]) LWECiphertext[T] {
 	return LWECiphertext[T]{Value: make([]T, params.DefaultLWEDimension()+1)}
 }
 
-// NewLWECiphertextCustom allocates an empty LWE ciphertext with given dimension.
+// NewLWECiphertextCustom creates a new LWE ciphertext with given dimension.
 func NewLWECiphertextCustom[T tfhe.TorusInt](lweDimension int) LWECiphertext[T] {
 	return LWECiphertext[T]{Value: make([]T, lweDimension+1)}
 }

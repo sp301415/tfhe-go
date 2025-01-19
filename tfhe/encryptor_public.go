@@ -35,11 +35,10 @@ type PublicEncryptor[T TorusInt] struct {
 	// PublicKey is the public key for this PublicEncryptor.
 	PublicKey PublicKey[T]
 
-	// buffer is the buffer values for this PublicEncryptor.
 	buffer publicEncryptionBuffer[T]
 }
 
-// publicEncryptionBuffer contains buffer values for PublicEncryptor.
+// publicEncryptionBuffer is a buffer for PublicEncryptor.
 type publicEncryptionBuffer[T TorusInt] struct {
 	// ptGLWE is the GLWE plaintext for GLWE encryption / decryptions.
 	ptGLWE GLWEPlaintext[T]

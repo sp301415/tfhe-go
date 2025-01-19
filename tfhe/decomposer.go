@@ -14,11 +14,10 @@ type Decomposer[T TorusInt] struct {
 	// PolyEvaluator is a PolyEvaluator for this Decomposer.
 	PolyEvaluator *poly.Evaluator[T]
 
-	// buffer is the buffer values for this Decomposer.
 	buffer decompositionBuffer[T]
 }
 
-// decompositionBuffer contains buffer values for Decomposer.
+// decompositionBuffer is a buffer for Decomposer.
 type decompositionBuffer[T TorusInt] struct {
 	// scalarDecomposed is the scalarDecomposed scalar.
 	scalarDecomposed []T

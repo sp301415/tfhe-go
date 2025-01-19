@@ -13,7 +13,7 @@ type GLWECiphertext[T tfhe.TorusInt] struct {
 	Value []poly.Poly[T]
 }
 
-// NewGLWECiphertext allocates an empty GLWE ciphertext.
+// NewGLWECiphertext creates a new GLWE ciphertext.
 func NewGLWECiphertext[T tfhe.TorusInt](params Parameters[T]) GLWECiphertext[T] {
 	ct := make([]poly.Poly[T], params.GLWERank()+1)
 	for i := 0; i < params.GLWERank()+1; i++ {
@@ -22,7 +22,7 @@ func NewGLWECiphertext[T tfhe.TorusInt](params Parameters[T]) GLWECiphertext[T] 
 	return GLWECiphertext[T]{Value: ct}
 }
 
-// NewGLWECiphertextCustom allocates an empty GLWE ciphertext with given dimension and partyCount.
+// NewGLWECiphertextCustom creates a new GLWE ciphertext with given dimension and partyCount.
 func NewGLWECiphertextCustom[T tfhe.TorusInt](glweRank, polyDegree int) GLWECiphertext[T] {
 	ct := make([]poly.Poly[T], glweRank+1)
 	for i := 0; i < glweRank+1; i++ {
@@ -101,7 +101,7 @@ type UniEncryption[T tfhe.TorusInt] struct {
 	Value []tfhe.GLevCiphertext[T]
 }
 
-// NewUniEncryption allocates an empty UniEncryption.
+// NewUniEncryption creates a new UniEncryption.
 func NewUniEncryption[T tfhe.TorusInt](params Parameters[T], gadgetParams tfhe.GadgetParameters[T]) UniEncryption[T] {
 	return UniEncryption[T]{
 		GadgetParameters: gadgetParams,
@@ -112,7 +112,7 @@ func NewUniEncryption[T tfhe.TorusInt](params Parameters[T], gadgetParams tfhe.G
 	}
 }
 
-// NewUniEncryptionCustom allocates an empty UniEncryption with given polyDegree and partyCount.
+// NewUniEncryptionCustom creates a new UniEncryption with given polyDegree and partyCount.
 func NewUniEncryptionCustom[T tfhe.TorusInt](polyDegree int, gadgetParams tfhe.GadgetParameters[T]) UniEncryption[T] {
 	return UniEncryption[T]{
 		GadgetParameters: gadgetParams,
