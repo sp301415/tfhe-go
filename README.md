@@ -11,7 +11,7 @@
 > TFHE-go is still under heavy development. There may be backward-incompatible changes at any time.
 
 **TFHE-go** is a Go implementation of TFHE[[CGGI16](https://eprint.iacr.org/2016/870)] and Multi-Key TFHE[[KMS22](https://eprint.iacr.org/2022/1460)] scheme. It provides:
-- Support for binary and integer TFHE and its multi-key variant, as well as advanced algorithms such as BFV-style evaluation, PBSManyLUT[[CLOT21](https://eprint.iacr.org/2021/729)], Circuit Bootstrapping[[WHS+24](https://eprint.iacr.org/2024/1318)] and LMKCDEY (FHEW)[[LMK+22](https://eprint.iacr.org/2022/198)]
+- Support for binary and integer TFHE and its multi-key variant, as well as advanced algorithms such as BFV-style evaluation, PBSManyLUT[[CLOT21](https://eprint.iacr.org/2021/729)], Circuit Bootstrapping[[WHS+24](https://eprint.iacr.org/2024/1318)] and LMKCDEY[[LMK+22](https://eprint.iacr.org/2022/198)]
 - Pure Go implementation, along with SIMD-accelerated Go Assembly on amd64 platforms
 - Comparable performance to state-of-the-art C++/Rust libraries
 - Readable code and user-friendly API using modern Go features like generics
