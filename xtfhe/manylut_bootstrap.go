@@ -39,7 +39,7 @@ func (e *ManyLUTEvaluator[T]) GenLookUpTableFull(f []func(int) T) tfhe.LookUpTab
 //
 // Panics if len(f) > LUTCount.
 func (e *ManyLUTEvaluator[T]) GenLookUpTableFullAssign(f []func(int) T, lutOut tfhe.LookUpTable[T]) {
-	e.GenLookUpTableFullCustomAssign(f, e.Parameters.baseParameters.MessageModulus(), lutOut)
+	e.GenLookUpTableCustomFullAssign(f, e.Parameters.baseParameters.MessageModulus(), lutOut)
 }
 
 // GenLookUpTableCustom generates a lookup table based on function f using custom messageModulus and scale.
@@ -62,24 +62,24 @@ func (e *ManyLUTEvaluator[T]) GenLookUpTableCustomAssign(f []func(int) int, mess
 		j := i
 		ff[i] = func(x int) T { return e.EncodeLWECustom(f[j](x), messageModulus, scale).Value }
 	}
-	e.GenLookUpTableFullCustomAssign(ff, messageModulus, lutOut)
+	e.GenLookUpTableCustomFullAssign(ff, messageModulus, lutOut)
 }
 
-// GenLookUpTableFullCustom generates a lookup table based on function f using custom messageModulus and scale.
+// GenLookUpTableCustomFull generates a lookup table based on function f using custom messageModulus.
 // Output of f is encoded as-is.
 //
 // Panics if len(f) > LUTCount.
-func (e *ManyLUTEvaluator[T]) GenLookUpTableFullCustom(f []func(int) T, messageModulus, scale T) tfhe.LookUpTable[T] {
+func (e *ManyLUTEvaluator[T]) GenLookUpTableCustomFull(f []func(int) T, messageModulus T) tfhe.LookUpTable[T] {
 	lutOut := tfhe.NewLookUpTable(e.Parameters.baseParameters)
-	e.GenLookUpTableFullCustomAssign(f, messageModulus, lutOut)
+	e.GenLookUpTableCustomFullAssign(f, messageModulus, lutOut)
 	return lutOut
 }
 
-// GenLookUpTableFullCustomAssign generates a lookup table based on function f using custom messageModulus and scale and writes it to lutOut.
+// GenLookUpTableCustomFullAssign generates a lookup table based on function f using custom messageModulus and scale and writes it to lutOut.
 // Output of f is encoded as-is.
 //
 // Panics if len(f) > LUTCount.
-func (e *ManyLUTEvaluator[T]) GenLookUpTableFullCustomAssign(f []func(int) T, messageModulus T, lutOut tfhe.LookUpTable[T]) {
+func (e *ManyLUTEvaluator[T]) GenLookUpTableCustomFullAssign(f []func(int) T, messageModulus T, lutOut tfhe.LookUpTable[T]) {
 	if len(f) > e.Parameters.lutCount {
 		panic("Number of functions exceeds LUTCount")
 	}
