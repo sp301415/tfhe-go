@@ -55,7 +55,7 @@ func (e *FHEWEvaluator[T]) BlindRotate(ct tfhe.LWECiphertext[T], lut tfhe.LookUp
 func (e *FHEWEvaluator[T]) BlindRotateAssign(ct tfhe.LWECiphertext[T], lut tfhe.LookUpTable[T], ctOut tfhe.GLWECiphertext[T]) {
 	polyDecomposed := e.Decomposer.PolyDecomposedBuffer(e.Parameters.baseParameters.BlindRotateParameters())
 
-	ctAutIdxMap := make(map[int][]int)
+	ctAutIdxMap := make(map[int][]int, e.Parameters.baseParameters.PolyDegree())
 	for i := 0; i < e.Parameters.baseParameters.LWEDimension(); i++ {
 		a2N := e.ModSwitch(-ct.Value[i+1])
 		a2NAutIdx := e.autIdxMap[a2N]

@@ -3,9 +3,9 @@ package xtfhe
 import "github.com/sp301415/tfhe-go/tfhe"
 
 var (
-	// ParamsBinaryCircuitBootstrapMedium is a default circuit bootstrapping parameter set for binary TFHE
+	// ParamsCircuitBootstrapMedium is a default circuit bootstrapping parameter set for binary TFHE
 	// with max depth 1194.
-	ParamsBinaryCircuitBootstrapMedium = CircuitBootstrapParametersLiteral[uint64]{
+	ParamsCircuitBootstrapMedium = CircuitBootstrapParametersLiteral[uint64]{
 		ManyLUTParametersLiteral: ManyLUTParametersLiteral[uint64]{
 			BaseParametersLiteral: tfhe.ParametersLiteral[uint64]{
 				LWEDimension: 571,
@@ -46,9 +46,9 @@ var (
 		},
 	}
 
-	// ParamsBinaryCircuitBootstrapLarge is a default circuit bootstrapping parameter set for binary TFHE
+	// ParamsCircuitBootstrapLarge is a default circuit bootstrapping parameter set for binary TFHE
 	// with max depth 13410.
-	ParamsBinaryCircuitBootstrapLarge = CircuitBootstrapParametersLiteral[uint64]{
+	ParamsCircuitBootstrapLarge = CircuitBootstrapParametersLiteral[uint64]{
 		ManyLUTParametersLiteral: ManyLUTParametersLiteral[uint64]{
 			BaseParametersLiteral: tfhe.ParametersLiteral[uint64]{
 				LWEDimension: 571,

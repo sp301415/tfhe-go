@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	cbParams = xtfhe.ParamsBinaryCircuitBootstrapMedium.Compile()
+	cbParams = xtfhe.ParamsCircuitBootstrapMedium.Compile()
 	cbEnc    = tfhe.NewEncryptor(cbParams.BaseParameters())
 	cbKeyGen = xtfhe.NewCircuitBootstrapKeyGenerator(cbParams, cbEnc.SecretKey)
 	cbEval   = xtfhe.NewCircuitBootstrapper(cbParams, cbEnc.GenEvaluationKeyParallel(), cbKeyGen.GenCircuitBootstrapKey())
