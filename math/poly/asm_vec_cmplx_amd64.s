@@ -49,14 +49,14 @@ loop_end:
 	RET
 
 // func negCmplxAssignAVX2(v0 []float64, vOut []float64)
-// Requires: AVX, AVX512F, AVX512VL
+// Requires: AVX, AVX2
 TEXT ·negCmplxAssignAVX2(SB), NOSPLIT, $0-48
-	MOVQ   v0_base+0(FP), AX
-	MOVQ   vOut_base+24(FP), CX
-	MOVQ   vOut_len+32(FP), DX
-	VPXORD Y0, Y0, Y0
-	XORQ   BX, BX
-	JMP    loop_end
+	MOVQ  v0_base+0(FP), AX
+	MOVQ  vOut_base+24(FP), CX
+	MOVQ  vOut_len+32(FP), DX
+	VPXOR Y0, Y0, Y0
+	XORQ  BX, BX
+	JMP   loop_end
 
 loop_body:
 	VMOVUPD (AX)(BX*8), Y1
