@@ -6,6 +6,7 @@ import (
 	"golang.org/x/sys/cpu"
 )
 
+//go:noescape
 func addCmplxAssignAVX2(v0, v1, vOut []float64)
 
 // addCmplxAssign computes vOut = v0 + v1.
@@ -20,6 +21,7 @@ func addCmplxAssign(v0, v1, vOut []float64) {
 	}
 }
 
+//go:noescape
 func subCmplxAssignAVX2(v0, v1, vOut []float64)
 
 // subCmplxAssign computes vOut = v0 - v1.
@@ -34,6 +36,7 @@ func subCmplxAssign(v0, v1, vOut []float64) {
 	}
 }
 
+//go:noescape
 func negCmplxAssignAVX2(v0, vOut []float64)
 
 // negCmplxAssign computes vOut = -v0.
@@ -48,6 +51,7 @@ func negCmplxAssign(v0, vOut []float64) {
 	}
 }
 
+//go:noescape
 func floatMulCmplxAssignAVX2(v0 []float64, c float64, vOut []float64)
 
 // floatMulCmplxAssign computes vOut = c * v0.
@@ -62,6 +66,7 @@ func floatMulCmplxAssign(v0 []float64, c float64, vOut []float64) {
 	}
 }
 
+//go:noescape
 func floatMulAddCmplxAssignAVX2(v0 []float64, c float64, vOut []float64)
 
 // floatMulAddCmplxAssign computes vOut += c * v0.
@@ -76,6 +81,7 @@ func floatMulAddCmplxAssign(v0 []float64, c float64, vOut []float64) {
 	}
 }
 
+//go:noescape
 func floatMulSubCmplxAssignAVX2(v0 []float64, c float64, vOut []float64)
 
 // floatMulSubCmplxAssign computes vOut -= c * v0.
@@ -90,6 +96,7 @@ func floatMulSubCmplxAssign(v0 []float64, c float64, vOut []float64) {
 	}
 }
 
+//go:noescape
 func cmplxMulCmplxAssignAVX2(v0 []float64, c complex128, vOut []float64)
 
 // cmplxMulCmplxAssign computes vOut = c * v0.
@@ -115,6 +122,7 @@ func cmplxMulCmplxAssign(v0 []float64, c complex128, vOut []float64) {
 	}
 }
 
+//go:noescape
 func cmplxMulAddCmplxAssignAVX2(v0 []float64, c complex128, vOut []float64)
 
 // cmplxMulAddCmplxAssign computes vOut += c * v0.
@@ -140,6 +148,7 @@ func cmplxMulAddCmplxAssign(v0 []float64, c complex128, vOut []float64) {
 	}
 }
 
+//go:noescape
 func cmplxMulSubCmplxAssignAVX2(v0 []float64, c complex128, vOut []float64)
 
 // cmplxMulSubCmplxAssign computes vOut -= c * v0.
@@ -165,6 +174,7 @@ func cmplxMulSubCmplxAssign(v0 []float64, c complex128, vOut []float64) {
 	}
 }
 
+//go:noescape
 func elementWiseMulCmplxAssignAVX2(v0, v1, vOut []float64)
 
 // elementWiseMulCmplxAssign computes vOut = v0 * v1.
@@ -201,6 +211,7 @@ func elementWiseMulCmplxAssign(v0, v1, vOut []float64) {
 	}
 }
 
+//go:noescape
 func elementWiseMulAddCmplxAssignAVX2(v0, v1, vOut []float64)
 
 // elementWiseMulAddCmplxAssign computes vOut += v0 * v1.
@@ -237,6 +248,7 @@ func elementWiseMulAddCmplxAssign(v0, v1, vOut []float64) {
 	}
 }
 
+//go:noescape
 func elementWiseMulSubCmplxAssignAVX2(v0, v1, vOut []float64)
 
 // elementWiseMulSubCmplxAssign computes vOut -= v0 * v1.

@@ -92,9 +92,9 @@ func convertPolyToFourierPolyAssign[T num.Integer](p []T, fpOut []float64) {
 // floatModQInPlace computes coeffs mod Q in place.
 func floatModQInPlace(coeffs []float64, Q float64) {
 	for i := range coeffs {
-		coeffs[i] = coeffs[i] / Q
-		coeffs[i] = coeffs[i] - math.Round(coeffs[i])
-		coeffs[i] = math.Round(coeffs[i] * Q)
+		cQuo := coeffs[i] / Q
+		cRem := cQuo - math.Round(cQuo)
+		coeffs[i] = math.Round(cRem * Q)
 	}
 }
 
