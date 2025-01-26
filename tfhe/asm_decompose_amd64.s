@@ -52,9 +52,15 @@ level_loop_body:
 	SUBQ    $0x03, R8
 
 level_loop_end:
-	CMPQ DI, $0x00
-	JGE  level_loop_body
-	ADDQ $0x08, SI
+	CMPQ    DI, $0x01
+	JGE     level_loop_body
+	VANDPD  Y4, Y6, Y6
+	VANDPD  Y0, Y6, Y7
+	VPSLLD  $0x01, Y7, Y7
+	VPSUBD  Y7, Y6, Y6
+	MOVQ    (CX), DI
+	VMOVDQU Y6, (DI)(SI*4)
+	ADDQ    $0x08, SI
 
 N_loop_end:
 	CMPQ SI, DX
@@ -106,9 +112,15 @@ level_loop_body:
 	SUBQ    $0x03, R8
 
 level_loop_end:
-	CMPQ DI, $0x00
-	JGE  level_loop_body
-	ADDQ $0x04, SI
+	CMPQ    DI, $0x01
+	JGE     level_loop_body
+	VANDPD  Y4, Y6, Y6
+	VANDPD  Y0, Y6, Y7
+	VPSLLQ  $0x01, Y7, Y7
+	VPSUBQ  Y7, Y6, Y6
+	MOVQ    (CX), DI
+	VMOVDQU Y6, (DI)(SI*8)
+	ADDQ    $0x04, SI
 
 N_loop_end:
 	CMPQ SI, DX

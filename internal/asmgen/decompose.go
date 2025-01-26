@@ -79,8 +79,20 @@ func decomposePolyAssignUint32AVX2() {
 	SUBQ(Imm(3), jj)
 
 	Label("level_loop_end")
-	CMPQ(j, Imm(0))
+	CMPQ(j, Imm(1))
 	JGE(LabelRef("level_loop_body"))
+
+	u = YMM()
+	VANDPD(baseMask, c, u)
+
+	uCarry = YMM()
+	VANDPD(baseHalf, u, uCarry)
+	VPSLLD(Imm(1), uCarry, uCarry)
+	VPSUBD(uCarry, u, u)
+
+	decomposedOut0 := GP64()
+	MOVQ(Mem{Base: decomposedOut}, decomposedOut0)
+	VMOVDQU(u, Mem{Base: decomposedOut0, Index: i, Scale: 4})
 
 	ADDQ(Imm(8), i)
 
@@ -159,8 +171,20 @@ func decomposePolyAssignUint64AVX2() {
 	SUBQ(Imm(3), jj)
 
 	Label("level_loop_end")
-	CMPQ(j, Imm(0))
+	CMPQ(j, Imm(1))
 	JGE(LabelRef("level_loop_body"))
+
+	u = YMM()
+	VANDPD(baseMask, c, u)
+
+	uCarry = YMM()
+	VANDPD(baseHalf, u, uCarry)
+	VPSLLQ(Imm(1), uCarry, uCarry)
+	VPSUBQ(uCarry, u, u)
+
+	decomposedOut0 := GP64()
+	MOVQ(Mem{Base: decomposedOut}, decomposedOut0)
+	VMOVDQU(u, Mem{Base: decomposedOut0, Index: i, Scale: 8})
 
 	ADDQ(Imm(4), i)
 
