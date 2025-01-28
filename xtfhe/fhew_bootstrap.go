@@ -68,13 +68,13 @@ func (e *FHEWEvaluator[T]) BlindRotateAssign(ct tfhe.LWECiphertext[T], lut tfhe.
 		ctOut.Value[i].Clear()
 	}
 
-	var nSkip int
+	var skipCnt int
 	for i := e.Parameters.baseParameters.PolyDegree()/2 - 1; i > 0; i-- {
 		if _, ok := ctAutIdxMap[-i]; ok {
-			if nSkip != 0 {
-				e.PermuteGLWEAssign(ctOut, num.ModExp(5, nSkip, 2*e.Parameters.baseParameters.PolyDegree()), e.buffer.ctPermute)
-				e.KeySwitchGLWEAssign(e.buffer.ctPermute, e.EvaluationKey.GaloisKey[nSkip], ctOut)
-				nSkip = 0
+			if skipCnt != 0 {
+				e.PermuteGLWEAssign(ctOut, num.ModExp(5, skipCnt, 2*e.Parameters.baseParameters.PolyDegree()), e.buffer.ctPermute)
+				e.KeySwitchGLWEAssign(e.buffer.ctPermute, e.EvaluationKey.GaloisKey[skipCnt], ctOut)
+				skipCnt = 0
 			}
 
 			for _, j := range ctAutIdxMap[-i] {
@@ -91,12 +91,12 @@ func (e *FHEWEvaluator[T]) BlindRotateAssign(ct tfhe.LWECiphertext[T], lut tfhe.
 				}
 			}
 		}
-		nSkip++
+		skipCnt++
 
-		if nSkip == e.Parameters.windowSize || i == 1 {
-			e.PermuteGLWEAssign(ctOut, num.ModExp(5, nSkip, 2*e.Parameters.baseParameters.PolyDegree()), e.buffer.ctPermute)
-			e.KeySwitchGLWEAssign(e.buffer.ctPermute, e.EvaluationKey.GaloisKey[nSkip], ctOut)
-			nSkip = 0
+		if skipCnt == e.Parameters.windowSize || i == 1 {
+			e.PermuteGLWEAssign(ctOut, num.ModExp(5, skipCnt, 2*e.Parameters.baseParameters.PolyDegree()), e.buffer.ctPermute)
+			e.KeySwitchGLWEAssign(e.buffer.ctPermute, e.EvaluationKey.GaloisKey[skipCnt], ctOut)
+			skipCnt = 0
 		}
 	}
 
@@ -117,14 +117,14 @@ func (e *FHEWEvaluator[T]) BlindRotateAssign(ct tfhe.LWECiphertext[T], lut tfhe.
 	}
 
 	e.PermuteGLWEAssign(ctOut, -5, e.buffer.ctPermute)
-	e.KeySwitchGLWEAssign(e.buffer.ctPermute, e.EvaluationKey.GaloisKey[nSkip], ctOut)
+	e.KeySwitchGLWEAssign(e.buffer.ctPermute, e.EvaluationKey.GaloisKey[skipCnt], ctOut)
 
 	for i := e.Parameters.baseParameters.PolyDegree()/2 - 1; i > 0; i-- {
 		if _, ok := ctAutIdxMap[i]; ok {
-			if nSkip != 0 {
-				e.PermuteGLWEAssign(ctOut, num.ModExp(5, nSkip, 2*e.Parameters.baseParameters.PolyDegree()), e.buffer.ctPermute)
-				e.KeySwitchGLWEAssign(e.buffer.ctPermute, e.EvaluationKey.GaloisKey[nSkip], ctOut)
-				nSkip = 0
+			if skipCnt != 0 {
+				e.PermuteGLWEAssign(ctOut, num.ModExp(5, skipCnt, 2*e.Parameters.baseParameters.PolyDegree()), e.buffer.ctPermute)
+				e.KeySwitchGLWEAssign(e.buffer.ctPermute, e.EvaluationKey.GaloisKey[skipCnt], ctOut)
+				skipCnt = 0
 			}
 
 			for _, j := range ctAutIdxMap[i] {
@@ -141,12 +141,12 @@ func (e *FHEWEvaluator[T]) BlindRotateAssign(ct tfhe.LWECiphertext[T], lut tfhe.
 				}
 			}
 		}
-		nSkip++
+		skipCnt++
 
-		if nSkip == e.Parameters.windowSize || i == 1 {
-			e.PermuteGLWEAssign(ctOut, num.ModExp(5, nSkip, 2*e.Parameters.baseParameters.PolyDegree()), e.buffer.ctPermute)
-			e.KeySwitchGLWEAssign(e.buffer.ctPermute, e.EvaluationKey.GaloisKey[nSkip], ctOut)
-			nSkip = 0
+		if skipCnt == e.Parameters.windowSize || i == 1 {
+			e.PermuteGLWEAssign(ctOut, num.ModExp(5, skipCnt, 2*e.Parameters.baseParameters.PolyDegree()), e.buffer.ctPermute)
+			e.KeySwitchGLWEAssign(e.buffer.ctPermute, e.EvaluationKey.GaloisKey[skipCnt], ctOut)
+			skipCnt = 0
 		}
 	}
 
