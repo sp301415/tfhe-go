@@ -7,6 +7,8 @@ import (
 
 func addCmplxAssignAVX2() {
 	TEXT("addCmplxAssignAVX2", NOSPLIT, "func(v0, v1, vOut []float64)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
@@ -38,6 +40,8 @@ func addCmplxAssignAVX2() {
 
 func subCmplxAssignAVX2() {
 	TEXT("subCmplxAssignAVX2", NOSPLIT, "func(v0, v1, vOut []float64)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
@@ -69,6 +73,8 @@ func subCmplxAssignAVX2() {
 
 func negCmplxAssignAVX2() {
 	TEXT("negCmplxAssignAVX2", NOSPLIT, "func(v0, vOut []float64)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
@@ -100,6 +106,8 @@ func negCmplxAssignAVX2() {
 
 func floatMulCmplxAssignAVX2() {
 	TEXT("floatMulCmplxAssignAVX2", NOSPLIT, "func(v0 []float64, c float64, vOut []float64)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
@@ -131,6 +139,8 @@ func floatMulCmplxAssignAVX2() {
 
 func floatMulAddCmplxAssignAVX2() {
 	TEXT("floatMulAddCmplxAssignAVX2", NOSPLIT, "func(v0 []float64, c float64, vOut []float64)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
@@ -163,6 +173,8 @@ func floatMulAddCmplxAssignAVX2() {
 
 func floatMulSubCmplxAssignAVX2() {
 	TEXT("floatMulSubCmplxAssignAVX2", NOSPLIT, "func(v0 []float64, c float64, vOut []float64)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
@@ -195,6 +207,8 @@ func floatMulSubCmplxAssignAVX2() {
 
 func cmplxMulCmplxAssignAVX2() {
 	TEXT("cmplxMulCmplxAssignAVX2", NOSPLIT, "func(v0 []float64, c complex128, vOut []float64)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
@@ -234,6 +248,8 @@ func cmplxMulCmplxAssignAVX2() {
 
 func cmplxMulAddCmplxAssignAVX2() {
 	TEXT("cmplxMulAddCmplxAssignAVX2", NOSPLIT, "func(v0 []float64, c complex128, vOut []float64)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
@@ -274,6 +290,8 @@ func cmplxMulAddCmplxAssignAVX2() {
 
 func cmplxMulSubCmplxAssignAVX2() {
 	TEXT("cmplxMulSubCmplxAssignAVX2", NOSPLIT, "func(v0 []float64, c complex128, vOut []float64)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
@@ -314,6 +332,8 @@ func cmplxMulSubCmplxAssignAVX2() {
 
 func elementWiseMulCmplxAssignAVX2() {
 	TEXT("elementWiseMulCmplxAssignAVX2", NOSPLIT, "func(v0, v1, vOut []float64)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
@@ -353,6 +373,8 @@ func elementWiseMulCmplxAssignAVX2() {
 
 func elementWiseMulAddCmplxAssignAVX2() {
 	TEXT("elementWiseMulAddCmplxAssignAVX2", NOSPLIT, "func(v0, v1, vOut []float64)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
@@ -393,6 +415,8 @@ func elementWiseMulAddCmplxAssignAVX2() {
 
 func elementWiseMulSubCmplxAssignAVX2() {
 	TEXT("elementWiseMulSubCmplxAssignAVX2", NOSPLIT, "func(v0, v1, vOut []float64)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())

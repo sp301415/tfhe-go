@@ -10,9 +10,6 @@ import (
 	"golang.org/x/sys/cpu"
 )
 
-func convertPolyToFourierPolyAssignUint32AVX2(p []uint32, fpOut []float64)
-func convertPolyToFourierPolyAssignUint64AVX2(p []uint64, fpOut []float64)
-
 // convertPolyToFourierPolyAssign converts and folds p to fpOut.
 func convertPolyToFourierPolyAssign[T num.Integer](p []T, fpOut []float64) {
 	if cpu.X86.HasAVX2 {
@@ -106,8 +103,6 @@ func convertPolyToFourierPolyAssign[T num.Integer](p []T, fpOut []float64) {
 	}
 }
 
-func floatModQInPlaceAVX2(coeffs []float64, Q, QInv float64)
-
 // floatModQInPlace computes coeffs mod Q in place.
 func floatModQInPlace(coeffs []float64, Q float64) {
 	if cpu.X86.HasAVX2 {
@@ -119,9 +114,6 @@ func floatModQInPlace(coeffs []float64, Q float64) {
 		coeffs[i] = math.Round(coeffs[i] - Q*math.Round(coeffs[i]/Q))
 	}
 }
-
-func convertFourierPolyToPolyAssignUint32AVX2(fp []float64, pOut []uint32)
-func convertFourierPolyToPolyAssignUint64AVX2(fp []float64, pOut []uint64)
 
 // convertFourierPolyToPolyAssign converts and unfolds fp to pOut.
 func convertFourierPolyToPolyAssign[T num.Integer](fp []float64, pOut []T) {
@@ -152,9 +144,6 @@ func convertFourierPolyToPolyAssign[T num.Integer](fp []float64, pOut []T) {
 	}
 }
 
-func convertFourierPolyToPolyAddAssignUint32AVX2(fp []float64, pOut []uint32)
-func convertFourierPolyToPolyAddAssignUint64AVX2(fp []float64, pOut []uint64)
-
 // convertFourierPolyToPolyAddAssign converts and unfolds fp and adds it to pOut.
 func convertFourierPolyToPolyAddAssign[T num.Integer](fp []float64, pOut []T) {
 	if cpu.X86.HasAVX2 {
@@ -183,9 +172,6 @@ func convertFourierPolyToPolyAddAssign[T num.Integer](fp []float64, pOut []T) {
 		pOut[jj+3+N/2] += T(int64(fp[j+7]))
 	}
 }
-
-func convertFourierPolyToPolySubAssignUint32AVX2(fp []float64, pOut []uint32)
-func convertFourierPolyToPolySubAssignUint64AVX2(fp []float64, pOut []uint64)
 
 // convertFourierPolyToPolySubAssign converts and unfolds fp and subtracts it from pOut.
 func convertFourierPolyToPolySubAssign[T num.Integer](fp []float64, pOut []T) {

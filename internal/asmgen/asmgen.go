@@ -1,8 +1,8 @@
-//go:generate go run . -convert -out ../../math/poly/asm_convert_amd64.s
-//go:generate go run . -fft -out ../../math/poly/asm_fft_amd64.s
-//go:generate go run . -vec_cmplx -out ../../math/poly/asm_vec_cmplx_amd64.s
-//go:generate go run . -vec -out ../../math/vec/asm_vec_amd64.s
-//go:generate go run . -decompose -out ../../tfhe/asm_decompose_amd64.s
+//go:generate go run . -convert -out ../../math/poly/asm_convert_amd64.s -stubs ../../math/poly/asm_convert_stub_amd64.go -pkg=poly
+//go:generate go run . -fft -out ../../math/poly/asm_fft_amd64.s -stubs ../../math/poly/asm_fft_stub_amd64.go -pkg=poly
+//go:generate go run . -vec_cmplx -out ../../math/poly/asm_vec_cmplx_amd64.s -stubs ../../math/poly/asm_vec_cmplx_stub_amd64.go -pkg=poly
+//go:generate go run . -vec -out ../../math/vec/asm_vec_amd64.s -stubs ../../math/vec/asm_vec_stub_amd64.go -pkg=vec
+//go:generate go run . -decompose -out ../../tfhe/asm_decompose_amd64.s -stubs ../../tfhe/asm_decompose_stub_amd64.go -pkg=tfhe
 package main
 
 import (

@@ -21,6 +21,8 @@ func convertConstants() {
 
 func convertPolyToFourierPolyAssignUint32AVX2() {
 	TEXT("convertPolyToFourierPolyAssignUint32AVX2", NOSPLIT, "func(p []uint32, fpOut []float64)")
+	Pragma("noescape")
+
 	p := Load(Param("p").Base(), GP64())
 	fpOut := Load(Param("fpOut").Base(), GP64())
 	N := Load(Param("fpOut").Len(), GP64())
@@ -73,7 +75,9 @@ func convertInt64ToFloat64(cvtConst [3]reg.VecVirtual, c, cOut reg.VecVirtual) {
 }
 
 func convertPolyToFourierPolyAssignUint64AVX2() {
-	TEXT("convertPolyToFourierPolyAssignUint64AVX2", NOSPLIT, "func(p []uint32, fpOut []float64)")
+	TEXT("convertPolyToFourierPolyAssignUint64AVX2", NOSPLIT, "func(p []uint64, fpOut []float64)")
+	Pragma("noescape")
+
 	p := Load(Param("p").Base(), GP64())
 	fpOut := Load(Param("fpOut").Base(), GP64())
 	N := Load(Param("fpOut").Len(), GP64())
@@ -119,6 +123,8 @@ func convertPolyToFourierPolyAssignUint64AVX2() {
 
 func floatModQInPlaceAVX2() {
 	TEXT("floatModQInPlaceAVX2", NOSPLIT, "func(coeffs []float64, Q, QInv float64)")
+	Pragma("noescape")
+
 	coeffs := Load(Param("coeffs").Base(), GP64())
 	N := Load(Param("coeffs").Len(), GP64())
 
@@ -156,6 +162,8 @@ func floatModQInPlaceAVX2() {
 
 func convertFourierPolyToPolyAssignUint32AVX2() {
 	TEXT("convertFourierPolyToPolyAssignUint32AVX2", NOSPLIT, "func(fp []float64, pOut []uint32)")
+	Pragma("noescape")
+
 	fp := Load(Param("fp").Base(), GP64())
 	pOut := Load(Param("pOut").Base(), GP64())
 	N := Load(Param("fp").Len(), GP64())
@@ -195,6 +203,8 @@ func convertFourierPolyToPolyAssignUint32AVX2() {
 
 func convertFourierPolyToPolyAddAssignUint32AVX2() {
 	TEXT("convertFourierPolyToPolyAddAssignUint32AVX2", NOSPLIT, "func(fp []float64, pOut []uint32)")
+	Pragma("noescape")
+
 	fp := Load(Param("fp").Base(), GP64())
 	pOut := Load(Param("pOut").Base(), GP64())
 	N := Load(Param("fp").Len(), GP64())
@@ -241,6 +251,8 @@ func convertFourierPolyToPolyAddAssignUint32AVX2() {
 
 func convertFourierPolyToPolySubAssignUint32AVX2() {
 	TEXT("convertFourierPolyToPolySubAssignUint32AVX2", NOSPLIT, "func(fp []float64, pOut []uint32)")
+	Pragma("noescape")
+
 	fp := Load(Param("fp").Base(), GP64())
 	pOut := Load(Param("pOut").Base(), GP64())
 	N := Load(Param("fp").Len(), GP64())
@@ -313,6 +325,8 @@ func convertFloat64ToInt64(cvtConst [5]reg.VecVirtual, c, cOut reg.VecVirtual) {
 
 func convertFourierPolyToPolyAssignUint64AVX2() {
 	TEXT("convertFourierPolyToPolyAssignUint64AVX2", NOSPLIT, "func(fp []float64, pOut []uint64)")
+	Pragma("noescape")
+
 	fp := Load(Param("fp").Base(), GP64())
 	pOut := Load(Param("pOut").Base(), GP64())
 	N := Load(Param("fp").Len(), GP64())
@@ -363,6 +377,8 @@ func convertFourierPolyToPolyAssignUint64AVX2() {
 
 func convertFourierPolyToPolyAddAssignUint64AVX2() {
 	TEXT("convertFourierPolyToPolyAddAssignUint64AVX2", NOSPLIT, "func(fp []float64, pOut []uint64)")
+	Pragma("noescape")
+
 	fp := Load(Param("fp").Base(), GP64())
 	pOut := Load(Param("pOut").Base(), GP64())
 	N := Load(Param("fp").Len(), GP64())
@@ -419,6 +435,8 @@ func convertFourierPolyToPolyAddAssignUint64AVX2() {
 
 func convertFourierPolyToPolySubAssignUint64AVX2() {
 	TEXT("convertFourierPolyToPolySubAssignUint64AVX2", NOSPLIT, "func(fp []float64, pOut []uint64)")
+	Pragma("noescape")
+
 	fp := Load(Param("fp").Base(), GP64())
 	pOut := Load(Param("pOut").Base(), GP64())
 	N := Load(Param("fp").Len(), GP64())

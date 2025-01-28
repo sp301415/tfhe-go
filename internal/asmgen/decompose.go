@@ -11,6 +11,8 @@ func decomposeConstants() {
 
 func decomposePolyAssignUint32AVX2() {
 	TEXT("decomposePolyAssignUint32AVX2", NOSPLIT, "func(p []uint32, base uint32, logBase uint32, logLastBaseQ uint32, decomposedOut [][]uint32)")
+	Pragma("noescape")
+
 	p := Load(Param("p").Base(), GP64())
 	decomposedOut := Load(Param("decomposedOut").Base(), GP64())
 
@@ -105,6 +107,8 @@ func decomposePolyAssignUint32AVX2() {
 
 func decomposePolyAssignUint64AVX2() {
 	TEXT("decomposePolyAssignUint64AVX2", NOSPLIT, "func(p []uint64, base uint64, logBase uint64, logLastBaseQ uint64, decomposedOut [][]uint64)")
+	Pragma("noescape")
+
 	p := Load(Param("p").Base(), GP64())
 	decomposedOut := Load(Param("decomposedOut").Base(), GP64())
 

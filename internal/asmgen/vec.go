@@ -8,6 +8,8 @@ import (
 
 func addAssignUint32AVX2() {
 	TEXT("addAssignUint32AVX2", NOSPLIT, "func(v0, v1, vOut []uint32)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
@@ -60,6 +62,8 @@ func addAssignUint32AVX2() {
 
 func subAssignUint32AVX2() {
 	TEXT("subAssignUint32AVX2", NOSPLIT, "func(v0, v1, vOut []uint32)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
@@ -112,6 +116,8 @@ func subAssignUint32AVX2() {
 
 func addAssignUint64AVX2() {
 	TEXT("addAssignUint64AVX2", NOSPLIT, "func(v0, v1, vOut []uint64)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
@@ -164,6 +170,8 @@ func addAssignUint64AVX2() {
 
 func subAssignUint64AVX2() {
 	TEXT("subAssignUint64AVX2", NOSPLIT, "func(v0, v1, vOut []uint64)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
@@ -216,6 +224,8 @@ func subAssignUint64AVX2() {
 
 func scalarMulAssignUint32AVX2() {
 	TEXT("scalarMulAssignUint32AVX2", NOSPLIT, "func(v0 []uint32, c uint32, vOut []uint32)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
@@ -270,6 +280,8 @@ func scalarMulAssignUint32AVX2() {
 
 func scalarMulAddAssignUint32AVX2() {
 	TEXT("scalarMulAddAssignUint32AVX2", NOSPLIT, "func(v0 []uint32, c uint32, vOut []uint32)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
@@ -329,6 +341,8 @@ func scalarMulAddAssignUint32AVX2() {
 
 func scalarMulSubAssignUint32AVX2() {
 	TEXT("scalarMulSubAssignUint32AVX2", NOSPLIT, "func(v0 []uint32, c uint32, vOut []uint32)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
@@ -388,6 +402,8 @@ func scalarMulSubAssignUint32AVX2() {
 
 func elementWiseMulAssignUint32AVX2() {
 	TEXT("elementWiseMulAssignUint32AVX2", NOSPLIT, "func(v0, v1, vOut []uint32)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
@@ -442,6 +458,8 @@ func elementWiseMulAssignUint32AVX2() {
 
 func elementWiseMulAddAssignUint32AVX2() {
 	TEXT("elementWiseMulAddAssignUint32AVX2", NOSPLIT, "func(v0, v1, vOut []uint32)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
@@ -501,6 +519,8 @@ func elementWiseMulAddAssignUint32AVX2() {
 
 func elementWiseMulSubAssignUint32AVX2() {
 	TEXT("elementWiseMulSubAssignUint32AVX2", NOSPLIT, "func(v0, v1, vOut []uint32)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
@@ -581,6 +601,8 @@ func mulUint64(x0, x0Swap, x1, xOut reg.VecVirtual) {
 
 func scalarMulAssignUint64AVX2() {
 	TEXT("scalarMulAssignUint64AVX2", NOSPLIT, "func(v0 []uint64, c uint64, vOut []uint64)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
@@ -637,6 +659,8 @@ func scalarMulAssignUint64AVX2() {
 
 func scalarMulAddAssignUint64AVX2() {
 	TEXT("scalarMulAddAssignUint64AVX2", NOSPLIT, "func(v0 []uint64, c uint64, vOut []uint64)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
@@ -698,6 +722,8 @@ func scalarMulAddAssignUint64AVX2() {
 
 func scalarMulSubAssignUint64AVX2() {
 	TEXT("scalarMulSubAssignUint64AVX2", NOSPLIT, "func(v0 []uint64, c uint64, vOut []uint64)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
@@ -759,6 +785,8 @@ func scalarMulSubAssignUint64AVX2() {
 
 func elementWiseMulAssignUint64AVX2() {
 	TEXT("elementWiseMulAssignUint64AVX2", NOSPLIT, "func(v0, v1, vOut []uint64)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
@@ -816,6 +844,8 @@ func elementWiseMulAssignUint64AVX2() {
 
 func elementWiseMulAddAssignUint64AVX2() {
 	TEXT("elementWiseMulAddAssignUint64AVX2", NOSPLIT, "func(v0, v1, vOut []uint64)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
@@ -878,6 +908,8 @@ func elementWiseMulAddAssignUint64AVX2() {
 
 func elementWiseMulSubAssignUint64AVX2() {
 	TEXT("elementWiseMulSubAssignUint64AVX2", NOSPLIT, "func(v0, v1, vOut []uint64)")
+	Pragma("noescape")
+
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())

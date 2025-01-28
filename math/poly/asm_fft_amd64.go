@@ -6,8 +6,6 @@ import (
 	"golang.org/x/sys/cpu"
 )
 
-func fftInPlaceAVX2(coeffs []float64, tw []complex128)
-
 // fftInPlace is a top-level function for FFT.
 // All internal FFT implementations calls this function for performance.
 func fftInPlace(coeffs []float64, tw []complex128) {
@@ -207,8 +205,6 @@ func fftInPlace(coeffs []float64, tw []complex128) {
 		coeffs[j+7] = Ui1 - Vi1W
 	}
 }
-
-func invFFTInPlaceAVX2(coeffs []float64, twInv []complex128, scale float64)
 
 // invfftInPlace is a top-level function for inverse FFT.
 // All internal inverse FFT implementations calls this function for performance.

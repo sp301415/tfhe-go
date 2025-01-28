@@ -7,6 +7,8 @@ import (
 
 func fftInPlaceAVX2() {
 	TEXT("fftInPlaceAVX2", NOSPLIT, "func(coeffs []float64, tw []complex128)")
+	Pragma("noescape")
+
 	coeffs := Load(Param("coeffs").Base(), GP64())
 	tw := Load(Param("tw").Base(), GP64())
 	N := Load(Param("coeffs").Len(), GP64())
@@ -269,6 +271,8 @@ func fftInPlaceAVX2() {
 
 func invFFTInPlaceAVX2() {
 	TEXT("invFFTInPlaceAVX2", NOSPLIT, "func(coeffs []float64, twInv []complex128, scale float64)")
+	Pragma("noescape")
+
 	coeffs := Load(Param("coeffs").Base(), GP64())
 	twInv := Load(Param("twInv").Base(), GP64())
 	N := Load(Param("coeffs").Len(), GP64())

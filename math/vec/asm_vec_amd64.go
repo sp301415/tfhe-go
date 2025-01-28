@@ -9,10 +9,6 @@ import (
 	"golang.org/x/sys/cpu"
 )
 
-func addAssignUint32AVX2(v0, v1, vOut []uint32)
-
-func addAssignUint64AVX2(v0, v1, vOut []uint64)
-
 // AddAssign computes vOut = v0 + v1.
 func AddAssign[T num.Number](v0, v1, vOut []T) {
 	if cpu.X86.HasAVX2 {
@@ -40,10 +36,6 @@ func AddAssign[T num.Number](v0, v1, vOut []T) {
 		vOut[i] = v0[i] + v1[i]
 	}
 }
-
-func subAssignUint32AVX2(v0, v1, vOut []uint32)
-
-func subAssignUint64AVX2(v0, v1, vOut []uint64)
 
 // SubAssign computes vOut = v0 - v1.
 func SubAssign[T num.Number](v0, v1, vOut []T) {
@@ -73,10 +65,6 @@ func SubAssign[T num.Number](v0, v1, vOut []T) {
 	}
 }
 
-func scalarMulAssignUint32AVX2(v0 []uint32, c uint32, vOut []uint32)
-
-func scalarMulAssignUint64AVX2(v0 []uint64, c uint64, vOut []uint64)
-
 // ScalarMulAssign computes vOut = c * v0.
 func ScalarMulAssign[T num.Number](v0 []T, c T, vOut []T) {
 	if cpu.X86.HasAVX2 {
@@ -104,10 +92,6 @@ func ScalarMulAssign[T num.Number](v0 []T, c T, vOut []T) {
 		vOut[i] = c * v0[i]
 	}
 }
-
-func scalarMulAddAssignUint32AVX2(v0 []uint32, c uint32, vOut []uint32)
-
-func scalarMulAddAssignUint64AVX2(v0 []uint64, c uint64, vOut []uint64)
 
 // ScalarMulAddAssign computes vOut += c * v0.
 func ScalarMulAddAssign[T num.Number](v0 []T, c T, vOut []T) {
@@ -137,10 +121,6 @@ func ScalarMulAddAssign[T num.Number](v0 []T, c T, vOut []T) {
 	}
 }
 
-func scalarMulSubAssignUint32AVX2(v0 []uint32, c uint32, vOut []uint32)
-
-func scalarMulSubAssignUint64AVX2(v0 []uint64, c uint64, vOut []uint64)
-
 // ScalarMulSubAssign computes vOut -= c * v0.
 func ScalarMulSubAssign[T num.Number](v0 []T, c T, vOut []T) {
 	if cpu.X86.HasAVX2 {
@@ -168,10 +148,6 @@ func ScalarMulSubAssign[T num.Number](v0 []T, c T, vOut []T) {
 		vOut[i] -= c * v0[i]
 	}
 }
-
-func elementWiseMulAssignUint32AVX2(v0, v1, vOut []uint32)
-
-func elementWiseMulAssignUint64AVX2(v0, v1, vOut []uint64)
 
 // ElementWiseMulAssign computes vOut = v0 * v1, where * is an elementwise multiplication.
 func ElementWiseMulAssign[T num.Number](v0, v1, vOut []T) {
@@ -201,10 +177,6 @@ func ElementWiseMulAssign[T num.Number](v0, v1, vOut []T) {
 	}
 }
 
-func elementWiseMulAddAssignUint32AVX2(v0, v1, vOut []uint32)
-
-func elementWiseMulAddAssignUint64AVX2(v0, v1, vOut []uint64)
-
 // ElementWiseMulAddAssign computes vOut += v0 * v1, where * is an elementwise multiplication.
 func ElementWiseMulAddAssign[T num.Number](v0, v1, vOut []T) {
 	if cpu.X86.HasAVX2 {
@@ -232,10 +204,6 @@ func ElementWiseMulAddAssign[T num.Number](v0, v1, vOut []T) {
 		vOut[i] += v0[i] * v1[i]
 	}
 }
-
-func elementWiseMulSubAssignUint32AVX2(v0, v1, vOut []uint32)
-
-func elementWiseMulSubAssignUint64AVX2(v0, v1, vOut []uint64)
 
 // ElementWiseMulSubAssign computes vOut -= v0 * v1, where * is an elementwise multiplication.
 func ElementWiseMulSubAssign[T num.Number](v0, v1, vOut []T) {
