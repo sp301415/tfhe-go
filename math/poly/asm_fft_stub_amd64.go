@@ -8,4 +8,4 @@ package poly
 func fftInPlaceAVX2(coeffs []float64, tw []complex128)
 
 //go:noescape
-func invFFTInPlaceAVX2(coeffs []float64, twInv []complex128, scale float64)
+func ifftInPlaceAVX2(coeffs []float64, twInv []complex128, scale float64)

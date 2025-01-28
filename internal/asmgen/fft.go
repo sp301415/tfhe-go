@@ -269,8 +269,8 @@ func fftInPlaceAVX2() {
 	RET()
 }
 
-func invFFTInPlaceAVX2() {
-	TEXT("invFFTInPlaceAVX2", NOSPLIT, "func(coeffs []float64, twInv []complex128, scale float64)")
+func ifftInPlaceAVX2() {
+	TEXT("ifftInPlaceAVX2", NOSPLIT, "func(coeffs []float64, twInv []complex128, scale float64)")
 	Pragma("noescape")
 
 	coeffs := Load(Param("coeffs").Base(), GP64())

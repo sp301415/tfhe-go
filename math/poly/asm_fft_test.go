@@ -93,7 +93,7 @@ func TestFFTAssembly(t *testing.T) {
 
 	t.Run("InvFFT", func(t *testing.T) {
 		vec.CmplxToFloat4Assign(coeffs, coeffsAVX2)
-		invFFTInPlace(coeffsAVX2, twInv)
+		ifftInPlace(coeffsAVX2, twInv)
 		vec.Float4ToCmplxAssign(coeffsAVX2, coeffsAVX2Out)
 
 		invFFTInPlaceRef(coeffs, twInvRef)

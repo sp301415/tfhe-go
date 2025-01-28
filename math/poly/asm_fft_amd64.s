@@ -158,9 +158,9 @@ last_loop_1_end:
 	JL   last_loop_1_body
 	RET
 
-// func invFFTInPlaceAVX2(coeffs []float64, twInv []complex128, scale float64)
+// func ifftInPlaceAVX2(coeffs []float64, twInv []complex128, scale float64)
 // Requires: AVX, FMA3
-TEXT ·invFFTInPlaceAVX2(SB), NOSPLIT, $0-56
+TEXT ·ifftInPlaceAVX2(SB), NOSPLIT, $0-56
 	MOVQ coeffs_base+0(FP), AX
 	MOVQ twInv_base+24(FP), CX
 	MOVQ coeffs_len+8(FP), DX

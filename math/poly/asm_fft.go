@@ -197,9 +197,9 @@ func fftInPlace(coeffs []float64, tw []complex128) {
 	}
 }
 
-// invfftInPlace is a top-level function for inverse FFT.
+// ifftInPlace is a top-level function for inverse FFT.
 // All internal inverse FFT implementations calls this function for performance.
-func invFFTInPlace(coeffs []float64, twInv []complex128) {
+func ifftInPlace(coeffs []float64, twInv []complex128) {
 	N := len(coeffs)
 	w := 0
 
