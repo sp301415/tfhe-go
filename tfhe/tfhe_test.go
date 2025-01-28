@@ -445,16 +445,20 @@ func BenchmarkProgrammableBootstrap(b *testing.B) {
 }
 
 func ExampleEncryptor() {
-	params := tfhe.ParamsUint4.Compile() // Parameters must be compiled before use.
+	// Parameters must be compiled before use.
+	params := tfhe.ParamsUint4.Compile()
 
-	enc := tfhe.NewEncryptor(params) // Set up Encryptor.
+	enc := tfhe.NewEncryptor(params)
 
 	ctLWE := enc.EncryptLWE(4)
 	ctGLWE := enc.EncryptGLWE([]int{1, 2, 3, 4})
 
 	// Decrypt Everything!
-	fmt.Println(enc.DecryptLWE(ctLWE))       // 4
-	fmt.Println(enc.DecryptGLWE(ctGLWE)[:4]) // [1, 2, 3, 4]
+	fmt.Println(enc.DecryptLWE(ctLWE))
+	fmt.Println(enc.DecryptGLWE(ctGLWE)[:4])
+	// Output:
+	// 4
+	// [1 2 3 4]
 }
 
 func ExampleEvaluator_CMux() {
@@ -474,7 +478,9 @@ func ExampleEvaluator_CMux() {
 	eval := tfhe.NewEvaluator(params, tfhe.EvaluationKey[uint64]{})
 
 	ctOut := eval.CMux(ctFlag, ct0, ct1)
-	fmt.Println(enc.DecryptGLWE(ctOut)[0]) // 5
+	fmt.Println(enc.DecryptGLWE(ctOut)[0])
+	// Output:
+	// 5
 }
 
 func ExampleEvaluator_BootstrapFunc() {
@@ -487,5 +493,7 @@ func ExampleEvaluator_BootstrapFunc() {
 	eval := tfhe.NewEvaluator(params, enc.GenEvaluationKeyParallel())
 
 	ctOut := eval.BootstrapFunc(ct, func(x int) int { return 2*x + 1 })
-	fmt.Println(enc.DecryptLWE(ctOut)) // 7 = 2*3+1
+	fmt.Println(enc.DecryptLWE(ctOut))
+	// Output:
+	// 7
 }

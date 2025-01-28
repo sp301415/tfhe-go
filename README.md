@@ -31,15 +31,17 @@ TFHE-go uses Go Assembly for SIMD operations on amd64 platforms. To disable this
 // Parameters must be compiled before use.
 params := tfhe.ParamsUint4.Compile()
 
-// Set up Encryptor.
 enc := tfhe.NewEncryptor(params)
 
 ctLWE := enc.EncryptLWE(4)
 ctGLWE := enc.EncryptGLWE([]int{1, 2, 3, 4})
 
 // Decrypt Everything!
-fmt.Println(enc.DecryptLWE(ctLWE))       // 4
-fmt.Println(enc.DecryptGLWE(ctGLWE)[:4]) // [1, 2, 3, 4]
+fmt.Println(enc.DecryptLWE(ctLWE))
+fmt.Println(enc.DecryptGLWE(ctGLWE)[:4])
+// Output:
+// 4
+// [1 2 3 4]
 ```
 
 ### CMUX
@@ -56,12 +58,13 @@ ct0 := enc.EncryptGLWE([]int{2})
 ct1 := enc.EncryptGLWE([]int{5})
 ctFlag := enc.EncryptFourierGGSW([]int{1}, gadgetParams)
 
-// Set up Evaluator.
-// Note that we don't need evaluation key for CMUX.
+// We don't need evaluation key for CMUX.
 eval := tfhe.NewEvaluator(params, tfhe.EvaluationKey[uint64]{})
 
 ctOut := eval.CMux(ctFlag, ct0, ct1)
-fmt.Println(enc.DecryptGLWE(ctOut)[0]) // 5
+fmt.Println(enc.DecryptGLWE(ctOut)[0])
+// Output:
+// 5
 ```
 
 ### Programmable Bootstrapping
@@ -72,11 +75,12 @@ enc := tfhe.NewEncryptor(params)
 
 ct := enc.EncryptLWE(3)
 
-// Set up Evaluator with EvaluationKey.
 eval := tfhe.NewEvaluator(params, enc.GenEvaluationKeyParallel())
 
 ctOut := eval.BootstrapFunc(ct, func(x int) int { return 2*x + 1 })
-fmt.Println(enc.DecryptLWE(ctOut)) // 7 = 2*3+1
+fmt.Println(enc.DecryptLWE(ctOut))
+// Output:
+// 7
 ```
 
 ### Comparison using Binary TFHE
@@ -85,7 +89,6 @@ params := tfhe.ParamsBinary.Compile()
 
 enc := tfhe.NewBinaryEncryptor(params)
 
-// Change these values yourself!
 bits := 16
 ct0 := enc.EncryptLWEBits(3, bits)
 ct1 := enc.EncryptLWEBits(3, bits)
@@ -99,7 +102,9 @@ for i := 1; i < bits; i++ {
 	eval.ANDAssign(ctXNOR, ctOut, ctOut)
 }
 
-fmt.Println(enc.DecryptLWEBool(ctOut)) // true
+fmt.Println(enc.DecryptLWEBool(ctOut))
+// Output:
+// true
 ```
 
 ### Multi-Key TFHE
@@ -137,7 +142,9 @@ eval := mktfhe.NewBinaryEvaluator(params, map[int]mktfhe.EvaluationKey[uint64]{
 // Execute AND operation in parallel.
 ctOut := eval.ANDParallel(ct0, ct1)
 
-fmt.Println(dec.DecryptLWEBool(ctOut)) // false
+fmt.Println(dec.DecryptLWEBool(ctOut))
+// Output:
+// false
 ```
 
 ## Benchmarks

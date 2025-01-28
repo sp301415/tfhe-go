@@ -1,6 +1,7 @@
 package tfhe_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/sp301415/tfhe-go/tfhe"
@@ -110,4 +111,27 @@ func BenchmarkGateBootstrap(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		evalBinary.ANDAssign(ct0, ct1, ctOut)
 	}
+}
+
+func ExampleBinaryEvaluator() {
+	params := tfhe.ParamsBinary.Compile()
+
+	enc := tfhe.NewBinaryEncryptor(params)
+
+	bits := 16
+	ct0 := enc.EncryptLWEBits(3, bits)
+	ct1 := enc.EncryptLWEBits(3, bits)
+
+	eval := tfhe.NewBinaryEvaluator(params, enc.GenEvaluationKeyParallel())
+
+	ctXNOR := tfhe.NewLWECiphertext(params)
+	ctOut := eval.XNOR(ct0[0], ct1[0])
+	for i := 1; i < bits; i++ {
+		eval.XNORAssign(ct0[i], ct1[i], ctXNOR)
+		eval.ANDAssign(ctXNOR, ctOut, ctOut)
+	}
+
+	fmt.Println(enc.DecryptLWEBool(ctOut))
+	// Output:
+	// true
 }

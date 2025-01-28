@@ -1,6 +1,8 @@
 package mktfhe_test
 
 import (
+	"crypto/rand"
+	"fmt"
 	"testing"
 
 	"github.com/sp301415/tfhe-go/mktfhe"
@@ -165,4 +167,43 @@ func BenchmarkGateBootstrapParallel(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		evalBinary.ANDParallelAssign(ct0, ct1, ctOut)
 	}
+}
+
+func ExampleBinaryEvaluator() {
+	// This parameters can take up to two parties.
+	params := mktfhe.ParamsBinaryParty2.Compile()
+
+	// Sample a seed for CRS.
+	seed := make([]byte, 512)
+	rand.Read(seed)
+
+	// Each Encryptor should be marked with index.
+	enc0 := mktfhe.NewBinaryEncryptor(params, 0, seed)
+	enc1 := mktfhe.NewBinaryEncryptor(params, 1, seed)
+
+	// Set up Decryptor.
+	// In practice, one should use a distributed decryption protocol
+	// to decrypt multi-key ciphertexts.
+	// However, in multi-key TFHE, this procedure is very difficult and slow.
+	// Therefore, we use a trusted third party for decryption.
+	dec := mktfhe.NewBinaryDecryptor(params, map[int]tfhe.SecretKey[uint64]{
+		0: enc0.BaseEncryptor.SecretKey,
+		1: enc1.BaseEncryptor.SecretKey,
+	})
+
+	ct0 := enc0.EncryptLWEBool(true)
+	ct1 := enc1.EncryptLWEBool(false)
+
+	// Set up Evaluator.
+	eval := mktfhe.NewBinaryEvaluator(params, map[int]mktfhe.EvaluationKey[uint64]{
+		0: enc0.GenEvaluationKeyParallel(),
+		1: enc1.GenEvaluationKeyParallel(),
+	})
+
+	// Execute AND operation in parallel.
+	ctOut := eval.ANDParallel(ct0, ct1)
+
+	fmt.Println(dec.DecryptLWEBool(ctOut))
+	// Output:
+	// false
 }
