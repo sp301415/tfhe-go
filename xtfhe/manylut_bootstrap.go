@@ -245,9 +245,9 @@ func (e *ManyLUTEvaluator[T]) blindRotateOriginalAssign(ct tfhe.LWECiphertext[T]
 		e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[k], e.buffer.ctAccFourierDecomposed[0][k])
 	}
 
-	e.GadgetProductFourierDecomposedFourierGLWEAssign(e.EvaluationKey.BlindRotateKey.Value[0].Value[0], e.buffer.ctAccFourierDecomposed[0], e.buffer.ctFourierAcc)
+	e.GadgetProductFourierDecomposedFourierGLWEAssign(e.EvaluationKey.BlindRotateKey.Value[0].Value[0], e.buffer.ctAccFourierDecomposed[0], e.buffer.ctBlockFourierAcc)
 	e.PolyEvaluator.MonomialSubOneToFourierPolyAssign(-e.ModSwitch(ct.Value[1]), e.buffer.fMono)
-	e.FourierPolyMulFourierGLWEAssign(e.buffer.ctFourierAcc, e.buffer.fMono, e.buffer.ctFourierAcc)
+	e.FourierPolyMulFourierGLWEAssign(e.buffer.ctBlockFourierAcc, e.buffer.fMono, e.buffer.ctFourierAcc)
 	for j := 0; j < e.Parameters.baseParameters.GLWERank()+1; j++ {
 		e.PolyEvaluator.ToPolyAddAssignUnsafe(e.buffer.ctFourierAcc.Value[j], ctOut.Value[j])
 	}
@@ -260,9 +260,9 @@ func (e *ManyLUTEvaluator[T]) blindRotateOriginalAssign(ct tfhe.LWECiphertext[T]
 			}
 		}
 
-		e.ExternalProductFourierDecomposedFourierGLWEAssign(e.EvaluationKey.BlindRotateKey.Value[i], e.buffer.ctAccFourierDecomposed, e.buffer.ctFourierAcc)
+		e.ExternalProductFourierDecomposedFourierGLWEAssign(e.EvaluationKey.BlindRotateKey.Value[i], e.buffer.ctAccFourierDecomposed, e.buffer.ctBlockFourierAcc)
 		e.PolyEvaluator.MonomialSubOneToFourierPolyAssign(-e.ModSwitch(ct.Value[i+1]), e.buffer.fMono)
-		e.FourierPolyMulFourierGLWEAssign(e.buffer.ctFourierAcc, e.buffer.fMono, e.buffer.ctFourierAcc)
+		e.FourierPolyMulFourierGLWEAssign(e.buffer.ctBlockFourierAcc, e.buffer.fMono, e.buffer.ctFourierAcc)
 
 		for j := 0; j < e.Parameters.baseParameters.GLWERank()+1; j++ {
 			e.PolyEvaluator.ToPolyAddAssignUnsafe(e.buffer.ctFourierAcc.Value[j], ctOut.Value[j])
