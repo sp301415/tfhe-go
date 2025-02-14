@@ -116,7 +116,7 @@ func (e *Encryptor[T]) GenKeySwitchKeyForBootstrap() LWEKeySwitchKey[T] {
 		for j := 0; j < e.Parameters.keySwitchParameters.level; j++ {
 			ksk.Value[i].Value[j].Value[0] = skIn.Value[i] << e.Parameters.keySwitchParameters.LogBaseQ(j)
 
-			e.UniformSampler.SampleSliceAssign(ksk.Value[i].Value[j].Value[1:])
+			e.UniformSampler.SampleVecAssign(ksk.Value[i].Value[j].Value[1:])
 			ksk.Value[i].Value[j].Value[0] += -vec.Dot(ksk.Value[i].Value[j].Value[1:], e.SecretKey.LWEKey.Value)
 			ksk.Value[i].Value[j].Value[0] += e.GaussianSampler.Sample(e.Parameters.LWEStdDevQ())
 		}
@@ -157,7 +157,7 @@ func (e *Encryptor[T]) GenKeySwitchKeyForBootstrapParallel() LWEKeySwitchKey[T] 
 			for jobs := range jobs {
 				i, j := jobs[0], jobs[1]
 				ksk.Value[i].Value[j].Value[0] = skIn.Value[i] << eIdx.Parameters.keySwitchParameters.LogBaseQ(j)
-				eIdx.UniformSampler.SampleSliceAssign(ksk.Value[i].Value[j].Value[1:])
+				eIdx.UniformSampler.SampleVecAssign(ksk.Value[i].Value[j].Value[1:])
 				ksk.Value[i].Value[j].Value[0] += -vec.Dot(ksk.Value[i].Value[j].Value[1:], eIdx.SecretKey.LWEKey.Value)
 				ksk.Value[i].Value[j].Value[0] += eIdx.GaussianSampler.Sample(eIdx.Parameters.LWEStdDevQ())
 			}

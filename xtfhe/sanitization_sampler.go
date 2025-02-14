@@ -82,8 +82,8 @@ func (s *CDTSampler[T]) Sample() T {
 	return T(int64(x) + s.offset)
 }
 
-// SampleSliceAssign samples Gaussian values and writes it to vOut.
-func (s *CDTSampler[T]) SampleSliceAssign(vOut []T) {
+// SampleVecAssign samples Gaussian values and writes it to vOut.
+func (s *CDTSampler[T]) SampleVecAssign(vOut []T) {
 	for i := range vOut {
 		vOut[i] = s.Sample()
 	}
@@ -91,7 +91,7 @@ func (s *CDTSampler[T]) SampleSliceAssign(vOut []T) {
 
 // SamplePolyAssign samples Gaussian values and writes it to pOut.
 func (s *CDTSampler[T]) SamplePolyAssign(pOut poly.Poly[T]) {
-	s.SampleSliceAssign(pOut.Coeffs)
+	s.SampleVecAssign(pOut.Coeffs)
 }
 
 // SamplePolyAddAssign samples Gaussian values and adds to pOut.

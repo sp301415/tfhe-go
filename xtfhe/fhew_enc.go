@@ -71,7 +71,7 @@ func (e *FHEWEncryptor[T]) ShallowCopy() *FHEWEncryptor[T] {
 func (e *FHEWEncryptor[T]) GenSecretKey() tfhe.SecretKey[T] {
 	sk := tfhe.NewSecretKey(e.Parameters.baseParameters)
 
-	e.GaussianSampler.SampleSliceAssign(e.Parameters.SecretKeyStdDevQ(), sk.LWELargeKey.Value)
+	e.GaussianSampler.SampleVecAssign(e.Parameters.SecretKeyStdDevQ(), sk.LWELargeKey.Value)
 	e.ToFourierGLWESecretKeyAssign(sk.GLWEKey, sk.FourierGLWEKey)
 
 	return sk

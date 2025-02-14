@@ -31,7 +31,7 @@ func (e *Encryptor[T]) EncryptLWEPlaintextAssign(pt LWEPlaintext[T], ctOut LWECi
 // EncryptLWEBody encrypts the value in the body of LWE ciphertext and overrides it.
 // This avoids the need for most buffers.
 func (e *Encryptor[T]) EncryptLWEBody(ct LWECiphertext[T]) {
-	e.UniformSampler.SampleSliceAssign(ct.Value[1:])
+	e.UniformSampler.SampleVecAssign(ct.Value[1:])
 	ct.Value[0] += -vec.Dot(ct.Value[1:], e.DefaultLWESecretKey().Value)
 	ct.Value[0] += e.GaussianSampler.Sample(e.Parameters.DefaultLWEStdDevQ())
 }

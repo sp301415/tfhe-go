@@ -91,11 +91,11 @@ func (s *GaussianSampler[T]) Sample(stdDev float64) T {
 	return T(int64(math.Round(s.normFloat() * stdDev)))
 }
 
-// SampleSliceAssign samples rounded gaussian values
+// SampleVecAssign samples rounded gaussian values
 // with standard deviation stdDev, and writes it to vOut.
 //
 // Panics when stdDev < 0.
-func (s *GaussianSampler[T]) SampleSliceAssign(stdDev float64, vOut []T) {
+func (s *GaussianSampler[T]) SampleVecAssign(stdDev float64, vOut []T) {
 	if stdDev < 0 {
 		panic("standard deviation not positive")
 	}
@@ -110,7 +110,7 @@ func (s *GaussianSampler[T]) SampleSliceAssign(stdDev float64, vOut []T) {
 //
 // Panics when stdDev < 0.
 func (s *GaussianSampler[T]) SamplePolyAssign(stdDev float64, pOut poly.Poly[T]) {
-	s.SampleSliceAssign(stdDev, pOut.Coeffs)
+	s.SampleVecAssign(stdDev, pOut.Coeffs)
 }
 
 // SamplePolyAddAssign samples rounded gaussian values

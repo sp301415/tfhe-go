@@ -105,8 +105,8 @@ func (s *UniformSampler[T]) SampleN(N T) T {
 	}
 }
 
-// SampleSliceAssign samples uniform values to vOut.
-func (s *UniformSampler[T]) SampleSliceAssign(vOut []T) {
+// SampleVecAssign samples uniform values to vOut.
+func (s *UniformSampler[T]) SampleVecAssign(vOut []T) {
 	for i := range vOut {
 		vOut[i] = s.Sample()
 	}
@@ -114,5 +114,5 @@ func (s *UniformSampler[T]) SampleSliceAssign(vOut []T) {
 
 // SamplePolyAssign samples uniform values to p.
 func (s *UniformSampler[T]) SamplePolyAssign(pOut poly.Poly[T]) {
-	s.SampleSliceAssign(pOut.Coeffs)
+	s.SampleVecAssign(pOut.Coeffs)
 }

@@ -141,10 +141,10 @@ func (e *Encryptor[T]) GenSecretKey() SecretKey[T] {
 	sk := NewSecretKey(e.Parameters)
 
 	if e.Parameters.blockSize == 1 {
-		e.BinarySampler.SampleSliceAssign(sk.LWELargeKey.Value)
+		e.BinarySampler.SampleVecAssign(sk.LWELargeKey.Value)
 	} else {
-		e.BinarySampler.SampleBlockSliceAssign(e.Parameters.blockSize, sk.LWELargeKey.Value[:e.Parameters.lweDimension])
-		e.BinarySampler.SampleSliceAssign(sk.LWELargeKey.Value[e.Parameters.lweDimension:])
+		e.BinarySampler.SampleBlockVecAssign(e.Parameters.blockSize, sk.LWELargeKey.Value[:e.Parameters.lweDimension])
+		e.BinarySampler.SampleVecAssign(sk.LWELargeKey.Value[e.Parameters.lweDimension:])
 	}
 
 	e.ToFourierGLWESecretKeyAssign(sk.GLWEKey, sk.FourierGLWEKey)

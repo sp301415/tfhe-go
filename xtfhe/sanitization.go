@@ -171,7 +171,7 @@ func (s *Sanitizer[T]) SanitizeLUTAssign(ct tfhe.LWECiphertext[T], lut tfhe.Look
 	s.BlindRotateAssign(s.buffer.ctKeySwitchForBootstrap, lut, s.buffer.ctRotate)
 
 	s.buffer.pGaussian.Coeffs[0] = s.LinEvalGaussianSampler[1].Sample()
-	s.LinEvalGaussianSampler[0].SampleSliceAssign(s.buffer.pGaussian.Coeffs[1:])
+	s.LinEvalGaussianSampler[0].SampleVecAssign(s.buffer.pGaussian.Coeffs[1:])
 	s.PolyEvaluator.ScalarMulPolyAssign(s.buffer.pGaussian, 2*s.Parameters.baseParameters.MessageModulus(), s.buffer.pGaussian)
 	s.buffer.pGaussian.Coeffs[0] += 1
 	s.PolyEvaluator.MonomialMulPolyInPlace(s.buffer.pGaussian, -s.ModSwitch(reRandBody))
