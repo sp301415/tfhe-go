@@ -96,9 +96,9 @@ func NewEvaluator[T num.Integer](N int) *Evaluator[T] {
 	tw, twInv := genTwiddleFactors(N / 2)
 
 	twMono := make([]complex128, 2*N)
-	for j := 0; j < 2*N; j++ {
-		e := -math.Pi * float64(j) / float64(N)
-		twMono[j] = cmplx.Exp(complex(0, e))
+	for i := 0; i < 2*N; i++ {
+		e := -math.Pi * float64(i) / float64(N)
+		twMono[i] = cmplx.Exp(complex(0, e))
 	}
 
 	twMonoIdx := make([]int, N/2)
@@ -125,10 +125,10 @@ func NewEvaluator[T num.Integer](N int) *Evaluator[T] {
 func genTwiddleFactors(N int) (tw, twInv []complex128) {
 	twFFT := make([]complex128, N/2)
 	twInvFFT := make([]complex128, N/2)
-	for j := 0; j < N/2; j++ {
-		e := -2 * math.Pi * float64(j) / float64(N)
-		twFFT[j] = cmplx.Exp(complex(0, e))
-		twInvFFT[j] = cmplx.Exp(-complex(0, e))
+	for i := 0; i < N/2; i++ {
+		e := -2 * math.Pi * float64(i) / float64(N)
+		twFFT[i] = cmplx.Exp(complex(0, e))
+		twInvFFT[i] = cmplx.Exp(-complex(0, e))
 	}
 	vec.BitReverseInPlace(twFFT)
 	vec.BitReverseInPlace(twInvFFT)
@@ -136,16 +136,16 @@ func genTwiddleFactors(N int) (tw, twInv []complex128) {
 	tw = make([]complex128, 0, N-1)
 	twInv = make([]complex128, 0, N-1)
 
-	for m, t := 1, N/2; m < N; m, t = m<<1, t>>1 {
+	for m, t := 1, N/2; m <= N/2; m, t = m<<1, t>>1 {
 		twFold := cmplx.Exp(complex(0, 2*math.Pi*float64(t)/float64(4*N)))
 		for i := 0; i < m; i++ {
 			tw = append(tw, twFFT[i]*twFold)
 		}
 	}
 
-	for m, t := N, 1; m > 1; m, t = m>>1, t<<1 {
+	for m, t := N/2, 1; m >= 1; m, t = m>>1, t<<1 {
 		twInvFold := cmplx.Exp(complex(0, -2*math.Pi*float64(t)/float64(4*N)))
-		for i := 0; i < m/2; i++ {
+		for i := 0; i < m; i++ {
 			twInv = append(twInv, twInvFFT[i]*twInvFold)
 		}
 	}
