@@ -4,6 +4,7 @@ import (
 	"math"
 
 	"github.com/sp301415/tfhe-go/math/num"
+	"github.com/sp301415/tfhe-go/math/poly"
 	"github.com/sp301415/tfhe-go/tfhe"
 )
 
@@ -33,6 +34,8 @@ type SanitizationParametersLiteral[T tfhe.TorusInt] struct {
 func (p SanitizationParametersLiteral[T]) Compile() SanitizationParameters[T] {
 	baseParameters := p.BaseParametersLiteral.Compile()
 
+	logQ := float64(baseParameters.LogQ())
+	logTailCut := math.Log2(GaussianTailCut)
 	switch {
 	case baseParameters.GLWERank() != 1:
 		panic("GLWERank not 1")
@@ -48,6 +51,10 @@ func (p SanitizationParametersLiteral[T]) Compile() SanitizationParameters[T] {
 		panic("LinEvalSigma smaller than zero")
 	case p.LinEvalTau <= 0:
 		panic("LinEvalTau smaller than zero")
+	case math.Log2(p.RandSigma)+logQ+logTailCut > poly.ShortLogBound:
+		panic("RandSigma too large")
+	case math.Log2(p.LinEvalSigma)+logQ+logTailCut > poly.ShortLogBound:
+		panic("LinEvalSigma too large")
 	}
 
 	return SanitizationParameters[T]{

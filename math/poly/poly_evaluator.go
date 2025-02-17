@@ -10,18 +10,18 @@ import (
 
 const (
 	// MinDegree is the minimum degree of polynomial that Evaluator can handle.
-	// Currently, this is set to 16 = 2^4, because AVX2 implementation of FFT and inverse FFT
+	// Currently, this is set to 2^4, because AVX2 implementation of FFT and inverse FFT
 	// handles first/last two loops separately.
 	MinDegree = 1 << 4
 
-	// ShortPolyBound is a maximum bound for the coefficients of "short" polynomials
-	// used in ShortFourierPolyMulPoly functions.
-	// Currently, this is set to 256 = 2^8.
-	ShortPolyBound = 1 << 8
+	// ShortLogBound is a maximum bound for the coefficients of "short" polynomials
+	// used in [*Evaluator.ShortFourierPolyMulPoly] functions.
+	// Currently, this is set to 2^16.
+	ShortLogBound = 16
 
-	// splitBound is denotes the maximum bits of N*B1*B2, where B1, B2 is the splitting bound of polynomial multiplication.
+	// splitLogBound is denotes the maximum bits of N*B1*B2, where B1, B2 is the splitting bound of polynomial multiplication.
 	// Currently, this is set to 48, which gives failure rate less than 2^-284.
-	splitBound = 48
+	splitLogBound = 48
 )
 
 // Evaluator computes polynomial operations over the N-th cyclotomic ring.
@@ -155,14 +155,14 @@ func genTwiddleFactors(N int) (tw, twInv []complex128) {
 
 // splitParameters generates splitBits and splitCount for [*Evaluator.MulPoly].
 func splitParameters[T num.Integer](N int) (splitBits T, splitCount int) {
-	splitBits = T(splitBound-num.Log2(N)) / 2
+	splitBits = T(splitLogBound-num.Log2(N)) / 2
 	splitCount = int(math.Ceil(float64(num.SizeT[T]()) / float64(splitBits)))
 	return
 }
 
 // splitParametersShort generates splitBits and splitCount for [*Evaluator.ShortFourierPolyMulPoly].
 func splitParametersShort[T num.Integer](N int) (splitBits T, splitCount int) {
-	splitBits = T(splitBound - ShortPolyBound - num.Log2(N))
+	splitBits = T(splitLogBound - ShortLogBound - num.Log2(N))
 	splitCount = int(math.Ceil(float64(num.SizeT[T]()) / float64(splitBits)))
 	return
 }

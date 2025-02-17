@@ -35,6 +35,8 @@ type Sanitizer[T tfhe.TorusInt] struct {
 type sanitizationBuffer[T tfhe.TorusInt] struct {
 	// pGaussian is a buffer for Gaussian polynomial.
 	pGaussian poly.Poly[T]
+	// fpGaussion is a fourier transformed Gaussian polynomial.
+	fpGaussian poly.FourierPoly
 
 	// ctRandGLWE is a buffer for GLWE ciphertext.
 	ctRandGLWE tfhe.GLWECiphertext[T]
@@ -75,7 +77,8 @@ func NewSanitizer[T tfhe.TorusInt](params SanitizationParameters[T], pk tfhe.Pub
 // newSanitizationBuffer creates a new sanitizationBuffer.
 func newSanitizationBuffer[T tfhe.TorusInt](params SanitizationParameters[T]) sanitizationBuffer[T] {
 	return sanitizationBuffer[T]{
-		pGaussian: poly.NewPoly[T](params.baseParameters.PolyDegree()),
+		pGaussian:  poly.NewPoly[T](params.baseParameters.PolyDegree()),
+		fpGaussian: poly.NewFourierPoly(params.baseParameters.PolyDegree()),
 
 		ctRandGLWE: tfhe.NewGLWECiphertext(params.baseParameters),
 		ctRandLWE:  tfhe.NewLWECiphertext(params.baseParameters),
@@ -113,9 +116,10 @@ func (s *Sanitizer[T]) ReRandGLWEAssign(ct, ctOut tfhe.GLWECiphertext[T]) {
 	ctOut.CopyFrom(ct)
 
 	s.RandGaussianSampler.SamplePolyAssign(s.buffer.pGaussian)
+	s.PolyEvaluator.ToFourierPolyAssign(s.buffer.pGaussian, s.buffer.fpGaussian)
 
-	s.PolyEvaluator.MulPolyAssign(s.buffer.pGaussian, s.PublicKey.GLWEKey.Value[0].Value[0], s.buffer.ctRandGLWE.Value[0])
-	s.PolyEvaluator.MulPolyAssign(s.buffer.pGaussian, s.PublicKey.GLWEKey.Value[0].Value[1], s.buffer.ctRandGLWE.Value[1])
+	s.PolyEvaluator.ShortFourierPolyMulPolyAssign(s.PublicKey.GLWEKey.Value[0].Value[0], s.buffer.fpGaussian, s.buffer.ctRandGLWE.Value[0])
+	s.PolyEvaluator.ShortFourierPolyMulPolyAssign(s.PublicKey.GLWEKey.Value[0].Value[1], s.buffer.fpGaussian, s.buffer.ctRandGLWE.Value[1])
 
 	s.RandGaussianSampler.SamplePolyAddAssign(s.buffer.ctRandGLWE.Value[1])
 	s.RoundedGaussianSampler.SamplePolyAddAssign(s.Parameters.RandTauQ(), s.buffer.ctRandGLWE.Value[0])
@@ -129,11 +133,10 @@ func (s *Sanitizer[T]) ReRandLWEAssign(ct, ctOut tfhe.LWECiphertext[T]) {
 	ctOut.CopyFrom(ct)
 
 	s.RandGaussianSampler.SamplePolyAssign(s.buffer.pGaussian)
+	s.PolyEvaluator.ToFourierPolyAssign(s.buffer.pGaussian, s.buffer.fpGaussian)
 
-	s.RandGaussianSampler.SamplePolyAssign(s.buffer.pGaussian)
-
-	s.PolyEvaluator.MulPolyAssign(s.buffer.pGaussian, s.PublicKey.GLWEKey.Value[0].Value[0], s.buffer.ctRandGLWE.Value[0])
-	s.PolyEvaluator.MulPolyAssign(s.buffer.pGaussian, s.PublicKey.GLWEKey.Value[0].Value[1], s.buffer.ctRandGLWE.Value[1])
+	s.PolyEvaluator.ShortFourierPolyMulPolyAssign(s.PublicKey.GLWEKey.Value[0].Value[0], s.buffer.fpGaussian, s.buffer.ctRandGLWE.Value[0])
+	s.PolyEvaluator.ShortFourierPolyMulPolyAssign(s.PublicKey.GLWEKey.Value[0].Value[1], s.buffer.fpGaussian, s.buffer.ctRandGLWE.Value[1])
 
 	s.RandGaussianSampler.SamplePolyAddAssign(s.buffer.ctRandGLWE.Value[1])
 	s.buffer.ctRandGLWE.ToLWECiphertextAssign(0, s.buffer.ctRandLWE)
@@ -175,8 +178,9 @@ func (s *Sanitizer[T]) SanitizeLUTAssign(ct tfhe.LWECiphertext[T], lut tfhe.Look
 	s.PolyEvaluator.ScalarMulPolyAssign(s.buffer.pGaussian, 2*s.Parameters.baseParameters.MessageModulus(), s.buffer.pGaussian)
 	s.buffer.pGaussian.Coeffs[0] += 1
 	s.PolyEvaluator.MonomialMulPolyInPlace(s.buffer.pGaussian, -s.ModSwitch(reRandBody))
+	s.PolyEvaluator.ToFourierPolyAssign(s.buffer.pGaussian, s.buffer.fpGaussian)
 	for i := 0; i < s.Parameters.baseParameters.GLWERank()+1; i++ {
-		s.PolyEvaluator.MulPolyAssign(s.buffer.pGaussian, s.buffer.ctRotate.Value[i], s.buffer.ctRotate.Value[i])
+		s.PolyEvaluator.ShortFourierPolyMulPolyAssign(s.buffer.ctRotate.Value[i], s.buffer.fpGaussian, s.buffer.ctRotate.Value[i])
 	}
 
 	s.buffer.ctRotate.ToLWECiphertextAssign(0, ctOut)

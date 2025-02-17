@@ -28,6 +28,8 @@ type FHEWParametersLiteral[T tfhe.TorusInt] struct {
 func (p FHEWParametersLiteral[T]) Compile() FHEWParameters[T] {
 	baseParameters := p.BaseParametersLiteral.Compile()
 
+	logQ := float64(baseParameters.LogQ())
+	logTailCut := math.Log2(GaussianTailCut)
 	switch {
 	case baseParameters.BlockSize() != 1:
 		panic("BlockSize not 1")
@@ -35,7 +37,7 @@ func (p FHEWParametersLiteral[T]) Compile() FHEWParameters[T] {
 		panic("PolyDegree does not equal LookUpTableSize")
 	case p.SecretKeyStdDev <= 0:
 		panic("SecretKeyStdDev smaller than or equal to 0")
-	case p.SecretKeyStdDev*math.Exp2(float64(baseParameters.LogQ())) > poly.ShortPolyBound>>3:
+	case math.Log2(p.SecretKeyStdDev)+logQ+logTailCut > poly.ShortLogBound:
 		panic("SecretKeyStdDev too large")
 	case p.WindowSize < 0:
 		panic("WindowSize smaller than 0")
