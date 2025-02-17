@@ -8,192 +8,263 @@ func fftInPlace(coeffs []float64, tw []complex128) {
 	N := len(coeffs)
 	w := 0
 
-	// First Loop
-	Wr := real(tw[w])
-	Wi := imag(tw[w])
+	wReal := real(tw[w])
+	wImag := imag(tw[w])
 	w++
 	for j := 0; j < N/2; j += 8 {
-		Ur0 := coeffs[j+0]
-		Ur1 := coeffs[j+1]
-		Ur2 := coeffs[j+2]
-		Ur3 := coeffs[j+3]
+		uReal0 := coeffs[j+0]
+		uReal1 := coeffs[j+1]
+		uReal2 := coeffs[j+2]
+		uReal3 := coeffs[j+3]
 
-		Ui0 := coeffs[j+4]
-		Ui1 := coeffs[j+5]
-		Ui2 := coeffs[j+6]
-		Ui3 := coeffs[j+7]
+		uImag0 := coeffs[j+4]
+		uImag1 := coeffs[j+5]
+		uImag2 := coeffs[j+6]
+		uImag3 := coeffs[j+7]
 
-		Vr0 := coeffs[j+N/2+0]
-		Vr1 := coeffs[j+N/2+1]
-		Vr2 := coeffs[j+N/2+2]
-		Vr3 := coeffs[j+N/2+3]
+		vReal0 := coeffs[j+N/2+0]
+		vReal1 := coeffs[j+N/2+1]
+		vReal2 := coeffs[j+N/2+2]
+		vReal3 := coeffs[j+N/2+3]
 
-		Vi0 := coeffs[j+N/2+4]
-		Vi1 := coeffs[j+N/2+5]
-		Vi2 := coeffs[j+N/2+6]
-		Vi3 := coeffs[j+N/2+7]
+		vImag0 := coeffs[j+N/2+4]
+		vImag1 := coeffs[j+N/2+5]
+		vImag2 := coeffs[j+N/2+6]
+		vImag3 := coeffs[j+N/2+7]
 
-		Vr0W := Vr0*Wr - Vi0*Wi
-		Vr1W := Vr1*Wr - Vi1*Wi
-		Vr2W := Vr2*Wr - Vi2*Wi
-		Vr3W := Vr3*Wr - Vi3*Wi
+		vwReal0 := vReal0*wReal - vImag0*wImag
+		vwReal1 := vReal1*wReal - vImag1*wImag
+		vwReal2 := vReal2*wReal - vImag2*wImag
+		vwReal3 := vReal3*wReal - vImag3*wImag
 
-		Vi0W := Vr0*Wi + Vi0*Wr
-		Vi1W := Vr1*Wi + Vi1*Wr
-		Vi2W := Vr2*Wi + Vi2*Wr
-		Vi3W := Vr3*Wi + Vi3*Wr
+		vwImag0 := vReal0*wImag + vImag0*wReal
+		vwImag1 := vReal1*wImag + vImag1*wReal
+		vwImag2 := vReal2*wImag + vImag2*wReal
+		vwImag3 := vReal3*wImag + vImag3*wReal
 
-		coeffs[j+0] = Ur0 + Vr0W
-		coeffs[j+1] = Ur1 + Vr1W
-		coeffs[j+2] = Ur2 + Vr2W
-		coeffs[j+3] = Ur3 + Vr3W
+		uOutReal0 := uReal0 + vwReal0
+		uOutReal1 := uReal1 + vwReal1
+		uOutReal2 := uReal2 + vwReal2
+		uOutReal3 := uReal3 + vwReal3
 
-		coeffs[j+4] = Ui0 + Vi0W
-		coeffs[j+5] = Ui1 + Vi1W
-		coeffs[j+6] = Ui2 + Vi2W
-		coeffs[j+7] = Ui3 + Vi3W
+		uOutImag0 := uImag0 + vwImag0
+		uOutImag1 := uImag1 + vwImag1
+		uOutImag2 := uImag2 + vwImag2
+		uOutImag3 := uImag3 + vwImag3
 
-		coeffs[j+N/2+0] = Ur0 - Vr0W
-		coeffs[j+N/2+1] = Ur1 - Vr1W
-		coeffs[j+N/2+2] = Ur2 - Vr2W
-		coeffs[j+N/2+3] = Ur3 - Vr3W
+		vOutReal0 := uReal0 - vwReal0
+		vOutReal1 := uReal1 - vwReal1
+		vOutReal2 := uReal2 - vwReal2
+		vOutReal3 := uReal3 - vwReal3
 
-		coeffs[j+N/2+4] = Ui0 - Vi0W
-		coeffs[j+N/2+5] = Ui1 - Vi1W
-		coeffs[j+N/2+6] = Ui2 - Vi2W
-		coeffs[j+N/2+7] = Ui3 - Vi3W
+		vOutImag0 := uImag0 - vwImag0
+		vOutImag1 := uImag1 - vwImag1
+		vOutImag2 := uImag2 - vwImag2
+		vOutImag3 := uImag3 - vwImag3
+
+		coeffs[j+0] = uOutReal0
+		coeffs[j+1] = uOutReal1
+		coeffs[j+2] = uOutReal2
+		coeffs[j+3] = uOutReal3
+
+		coeffs[j+4] = uOutImag0
+		coeffs[j+5] = uOutImag1
+		coeffs[j+6] = uOutImag2
+		coeffs[j+7] = uOutImag3
+
+		coeffs[j+N/2+0] = vOutReal0
+		coeffs[j+N/2+1] = vOutReal1
+		coeffs[j+N/2+2] = vOutReal2
+		coeffs[j+N/2+3] = vOutReal3
+
+		coeffs[j+N/2+4] = vOutImag0
+		coeffs[j+N/2+5] = vOutImag1
+		coeffs[j+N/2+6] = vOutImag2
+		coeffs[j+N/2+7] = vOutImag3
+
 	}
 
-	// Main Loop
 	t := N / 2
-	for m := 2; m < N/8; m <<= 1 {
+	for m := 2; m <= N/16; m <<= 1 {
 		t >>= 1
 		for i := 0; i < m; i++ {
-			j1 := i * t << 1
+			j1 := 2 * i * t
 			j2 := j1 + t
 
-			Wr := real(tw[w])
-			Wi := imag(tw[w])
+			wReal := real(tw[w])
+			wImag := imag(tw[w])
 			w++
 
 			for j := j1; j < j2; j += 8 {
-				Ur0 := coeffs[j+0]
-				Ur1 := coeffs[j+1]
-				Ur2 := coeffs[j+2]
-				Ur3 := coeffs[j+3]
+				uReal0 := coeffs[j+0]
+				uReal1 := coeffs[j+1]
+				uReal2 := coeffs[j+2]
+				uReal3 := coeffs[j+3]
 
-				Ui0 := coeffs[j+4]
-				Ui1 := coeffs[j+5]
-				Ui2 := coeffs[j+6]
-				Ui3 := coeffs[j+7]
+				uImag0 := coeffs[j+4]
+				uImag1 := coeffs[j+5]
+				uImag2 := coeffs[j+6]
+				uImag3 := coeffs[j+7]
 
-				Vr0 := coeffs[j+t+0]
-				Vr1 := coeffs[j+t+1]
-				Vr2 := coeffs[j+t+2]
-				Vr3 := coeffs[j+t+3]
+				vReal0 := coeffs[j+t+0]
+				vReal1 := coeffs[j+t+1]
+				vReal2 := coeffs[j+t+2]
+				vReal3 := coeffs[j+t+3]
 
-				Vi0 := coeffs[j+t+4]
-				Vi1 := coeffs[j+t+5]
-				Vi2 := coeffs[j+t+6]
-				Vi3 := coeffs[j+t+7]
+				vImag0 := coeffs[j+t+4]
+				vImag1 := coeffs[j+t+5]
+				vImag2 := coeffs[j+t+6]
+				vImag3 := coeffs[j+t+7]
 
-				Vr0W := Vr0*Wr - Vi0*Wi
-				Vr1W := Vr1*Wr - Vi1*Wi
-				Vr2W := Vr2*Wr - Vi2*Wi
-				Vr3W := Vr3*Wr - Vi3*Wi
+				vwReal0 := vReal0*wReal - vImag0*wImag
+				vwReal1 := vReal1*wReal - vImag1*wImag
+				vwReal2 := vReal2*wReal - vImag2*wImag
+				vwReal3 := vReal3*wReal - vImag3*wImag
 
-				Vi0W := Vr0*Wi + Vi0*Wr
-				Vi1W := Vr1*Wi + Vi1*Wr
-				Vi2W := Vr2*Wi + Vi2*Wr
-				Vi3W := Vr3*Wi + Vi3*Wr
+				vwImag0 := vReal0*wImag + vImag0*wReal
+				vwImag1 := vReal1*wImag + vImag1*wReal
+				vwImag2 := vReal2*wImag + vImag2*wReal
+				vwImag3 := vReal3*wImag + vImag3*wReal
 
-				coeffs[j+0] = Ur0 + Vr0W
-				coeffs[j+1] = Ur1 + Vr1W
-				coeffs[j+2] = Ur2 + Vr2W
-				coeffs[j+3] = Ur3 + Vr3W
+				uOutReal0 := uReal0 + vwReal0
+				uOutReal1 := uReal1 + vwReal1
+				uOutReal2 := uReal2 + vwReal2
+				uOutReal3 := uReal3 + vwReal3
 
-				coeffs[j+4] = Ui0 + Vi0W
-				coeffs[j+5] = Ui1 + Vi1W
-				coeffs[j+6] = Ui2 + Vi2W
-				coeffs[j+7] = Ui3 + Vi3W
+				uOutImag0 := uImag0 + vwImag0
+				uOutImag1 := uImag1 + vwImag1
+				uOutImag2 := uImag2 + vwImag2
+				uOutImag3 := uImag3 + vwImag3
 
-				coeffs[j+t+0] = Ur0 - Vr0W
-				coeffs[j+t+1] = Ur1 - Vr1W
-				coeffs[j+t+2] = Ur2 - Vr2W
-				coeffs[j+t+3] = Ur3 - Vr3W
+				vOutReal0 := uReal0 - vwReal0
+				vOutReal1 := uReal1 - vwReal1
+				vOutReal2 := uReal2 - vwReal2
+				vOutReal3 := uReal3 - vwReal3
 
-				coeffs[j+t+4] = Ui0 - Vi0W
-				coeffs[j+t+5] = Ui1 - Vi1W
-				coeffs[j+t+6] = Ui2 - Vi2W
-				coeffs[j+t+7] = Ui3 - Vi3W
+				vOutImag0 := uImag0 - vwImag0
+				vOutImag1 := uImag1 - vwImag1
+				vOutImag2 := uImag2 - vwImag2
+				vOutImag3 := uImag3 - vwImag3
+
+				coeffs[j+0] = uOutReal0
+				coeffs[j+1] = uOutReal1
+				coeffs[j+2] = uOutReal2
+				coeffs[j+3] = uOutReal3
+
+				coeffs[j+4] = uOutImag0
+				coeffs[j+5] = uOutImag1
+				coeffs[j+6] = uOutImag2
+				coeffs[j+7] = uOutImag3
+
+				coeffs[j+t+0] = vOutReal0
+				coeffs[j+t+1] = vOutReal1
+				coeffs[j+t+2] = vOutReal2
+				coeffs[j+t+3] = vOutReal3
+
+				coeffs[j+t+4] = vOutImag0
+				coeffs[j+t+5] = vOutImag1
+				coeffs[j+t+6] = vOutImag2
+				coeffs[j+t+7] = vOutImag3
 			}
 		}
 	}
 
-	// Stride 2
 	for j := 0; j < N; j += 8 {
-		Wr := real(tw[w])
-		Wi := imag(tw[w])
+		wReal := real(tw[w])
+		wImag := imag(tw[w])
 		w++
 
-		Ur0 := coeffs[j+0]
-		Ur1 := coeffs[j+1]
-		Vr0 := coeffs[j+2]
-		Vr1 := coeffs[j+3]
+		uReal0 := coeffs[j+0]
+		uReal1 := coeffs[j+1]
 
-		Ui0 := coeffs[j+4]
-		Ui1 := coeffs[j+5]
-		Vi0 := coeffs[j+6]
-		Vi1 := coeffs[j+7]
+		vReal0 := coeffs[j+2]
+		vReal1 := coeffs[j+3]
 
-		Vr0W := Vr0*Wr - Vi0*Wi
-		Vr1W := Vr1*Wr - Vi1*Wi
-		Vi0W := Vr0*Wi + Vi0*Wr
-		Vi1W := Vr1*Wi + Vi1*Wr
+		uImag0 := coeffs[j+4]
+		uImag1 := coeffs[j+5]
 
-		coeffs[j+0] = Ur0 + Vr0W
-		coeffs[j+1] = Ur1 + Vr1W
-		coeffs[j+2] = Ur0 - Vr0W
-		coeffs[j+3] = Ur1 - Vr1W
+		vImag0 := coeffs[j+6]
+		vImag1 := coeffs[j+7]
 
-		coeffs[j+4] = Ui0 + Vi0W
-		coeffs[j+5] = Ui1 + Vi1W
-		coeffs[j+6] = Ui0 - Vi0W
-		coeffs[j+7] = Ui1 - Vi1W
+		vwReal0 := vReal0*wReal - vImag0*wImag
+		vwReal1 := vReal1*wReal - vImag1*wImag
+
+		vwImag0 := vReal0*wImag + vImag0*wReal
+		vwImag1 := vReal1*wImag + vImag1*wReal
+
+		uOutReal0 := uReal0 + vwReal0
+		uOutReal1 := uReal1 + vwReal1
+
+		vOutReal0 := uReal0 - vwReal0
+		vOutReal1 := uReal1 - vwReal1
+
+		uOutImag0 := uImag0 + vwImag0
+		uOutImag1 := uImag1 + vwImag1
+
+		vOutImag0 := uImag0 - vwImag0
+		vOutImag1 := uImag1 - vwImag1
+
+		coeffs[j+0] = uOutReal0
+		coeffs[j+1] = uOutReal1
+
+		coeffs[j+2] = vOutReal0
+		coeffs[j+3] = vOutReal1
+
+		coeffs[j+4] = uOutImag0
+		coeffs[j+5] = uOutImag1
+
+		coeffs[j+6] = vOutImag0
+		coeffs[j+7] = vOutImag1
 	}
 
-	// Stride 1
 	for j := 0; j < N; j += 8 {
-		Wr0 := real(tw[w])
-		Wi0 := imag(tw[w])
-		Wr1 := real(tw[w+1])
-		Wi1 := imag(tw[w+1])
+		wReal0 := real(tw[w])
+		wImag0 := imag(tw[w])
+		wReal1 := real(tw[w+1])
+		wImag1 := imag(tw[w+1])
 		w += 2
 
-		Ur0 := coeffs[j+0]
-		Vr0 := coeffs[j+1]
-		Ur1 := coeffs[j+2]
-		Vr1 := coeffs[j+3]
+		uReal0 := coeffs[j+0]
+		vReal0 := coeffs[j+1]
 
-		Ui0 := coeffs[j+4]
-		Vi0 := coeffs[j+5]
-		Ui1 := coeffs[j+6]
-		Vi1 := coeffs[j+7]
+		uReal1 := coeffs[j+2]
+		vReal1 := coeffs[j+3]
 
-		Vr0W := Vr0*Wr0 - Vi0*Wi0
-		Vi0W := Vr0*Wi0 + Vi0*Wr0
-		Vr1W := Vr1*Wr1 - Vi1*Wi1
-		Vi1W := Vr1*Wi1 + Vi1*Wr1
+		uImag0 := coeffs[j+4]
+		vImag0 := coeffs[j+5]
 
-		coeffs[j+0] = Ur0 + Vr0W
-		coeffs[j+1] = Ur0 - Vr0W
-		coeffs[j+2] = Ur1 + Vr1W
-		coeffs[j+3] = Ur1 - Vr1W
+		uImag1 := coeffs[j+6]
+		vImag1 := coeffs[j+7]
 
-		coeffs[j+4] = Ui0 + Vi0W
-		coeffs[j+5] = Ui0 - Vi0W
-		coeffs[j+6] = Ui1 + Vi1W
-		coeffs[j+7] = Ui1 - Vi1W
+		vwReal0 := vReal0*wReal0 - vImag0*wImag0
+		vwImag0 := vReal0*wImag0 + vImag0*wReal0
+
+		vwReal1 := vReal1*wReal1 - vImag1*wImag1
+		vwImag1 := vReal1*wImag1 + vImag1*wReal1
+
+		uOutReal0 := uReal0 + vwReal0
+		vOutReal0 := uReal0 - vwReal0
+
+		uOutReal1 := uReal1 + vwReal1
+		vOutReal1 := uReal1 - vwReal1
+
+		uOutImag0 := uImag0 + vwImag0
+		vOutImag0 := uImag0 - vwImag0
+
+		uOutImag1 := uImag1 + vwImag1
+		vOutImag1 := uImag1 - vwImag1
+
+		coeffs[j+0] = uOutReal0
+		coeffs[j+1] = vOutReal0
+
+		coeffs[j+2] = uOutReal1
+		coeffs[j+3] = vOutReal1
+
+		coeffs[j+4] = uOutImag0
+		coeffs[j+5] = vOutImag0
+
+		coeffs[j+6] = uOutImag1
+		coeffs[j+7] = vOutImag1
 	}
 }
 
@@ -203,227 +274,262 @@ func ifftInPlace(coeffs []float64, twInv []complex128) {
 	N := len(coeffs)
 	w := 0
 
-	// Stride 1
 	for j := 0; j < N; j += 8 {
-		Wr0 := real(twInv[w])
-		Wi0 := imag(twInv[w])
-		Wr1 := real(twInv[w+1])
-		Wi1 := imag(twInv[w+1])
+		wReal0 := real(twInv[w])
+		wImag0 := imag(twInv[w])
+		wReal1 := real(twInv[w+1])
+		wImag1 := imag(twInv[w+1])
 		w += 2
 
-		Ur0 := coeffs[j+0]
-		Vr0 := coeffs[j+1]
-		Ur1 := coeffs[j+2]
-		Vr1 := coeffs[j+3]
+		uReal0 := coeffs[j+0]
+		vReal0 := coeffs[j+1]
 
-		Ui0 := coeffs[j+4]
-		Vi0 := coeffs[j+5]
-		Ui1 := coeffs[j+6]
-		Vi1 := coeffs[j+7]
+		uReal1 := coeffs[j+2]
+		vReal1 := coeffs[j+3]
 
-		coeffs[j+0] = Ur0 + Vr0
-		coeffs[j+2] = Ur1 + Vr1
+		uImag0 := coeffs[j+4]
+		vImag0 := coeffs[j+5]
 
-		coeffs[j+4] = Ui0 + Vi0
-		coeffs[j+6] = Ui1 + Vi1
+		uImag1 := coeffs[j+6]
+		vImag1 := coeffs[j+7]
 
-		UVr0 := Ur0 - Vr0
-		UVi0 := Ui0 - Vi0
-		UVr1 := Ur1 - Vr1
-		UVi1 := Ui1 - Vi1
+		uOutReal0 := uReal0 + vReal0
+		uOutReal1 := uReal1 + vReal1
 
-		UVr0W := UVr0*Wr0 - UVi0*Wi0
-		UVi0W := UVr0*Wi0 + UVi0*Wr0
-		UVr1W := UVr1*Wr1 - UVi1*Wi1
-		UVi1W := UVr1*Wi1 + UVi1*Wr1
+		uOutImag0 := uImag0 + vImag0
+		uOutImag1 := uImag1 + vImag1
 
-		coeffs[j+1] = UVr0W
-		coeffs[j+3] = UVr1W
+		vOutReal0 := uReal0 - vReal0
+		vOutReal1 := uReal1 - vReal1
 
-		coeffs[j+5] = UVi0W
-		coeffs[j+7] = UVi1W
+		vOutImag0 := uImag0 - vImag0
+		vOutImag1 := uImag1 - vImag1
+
+		vwOutReal0 := vOutReal0*wReal0 - vOutImag0*wImag0
+		vwOutReal1 := vOutReal1*wReal1 - vOutImag1*wImag1
+
+		vwOutImag0 := vOutReal0*wImag0 + vOutImag0*wReal0
+		vwOutImag1 := vOutReal1*wImag1 + vOutImag1*wReal1
+
+		coeffs[j+0] = uOutReal0
+		coeffs[j+1] = vwOutReal0
+
+		coeffs[j+2] = uOutReal1
+		coeffs[j+3] = vwOutReal1
+
+		coeffs[j+4] = uOutImag0
+		coeffs[j+5] = vwOutImag0
+
+		coeffs[j+6] = uOutImag1
+		coeffs[j+7] = vwOutImag1
 	}
 
-	// Stride 2
 	for j := 0; j < N; j += 8 {
-		Wr := real(twInv[w])
-		Wi := imag(twInv[w])
+		wReal := real(twInv[w])
+		wImag := imag(twInv[w])
 		w++
 
-		Ur0 := coeffs[j+0]
-		Ur1 := coeffs[j+1]
-		Vr0 := coeffs[j+2]
-		Vr1 := coeffs[j+3]
+		uReal0 := coeffs[j+0]
+		uReal1 := coeffs[j+1]
 
-		Ui0 := coeffs[j+4]
-		Ui1 := coeffs[j+5]
-		Vi0 := coeffs[j+6]
-		Vi1 := coeffs[j+7]
+		vReal0 := coeffs[j+2]
+		vReal1 := coeffs[j+3]
 
-		coeffs[j+0] = Ur0 + Vr0
-		coeffs[j+1] = Ur1 + Vr1
+		uImag0 := coeffs[j+4]
+		uImag1 := coeffs[j+5]
 
-		coeffs[j+4] = Ui0 + Vi0
-		coeffs[j+5] = Ui1 + Vi1
+		vImag0 := coeffs[j+6]
+		vImag1 := coeffs[j+7]
 
-		UVr0 := Ur0 - Vr0
-		UVr1 := Ur1 - Vr1
-		UVi0 := Ui0 - Vi0
-		UVi1 := Ui1 - Vi1
+		uOutReal0 := uReal0 + vReal0
+		uOutReal1 := uReal1 + vReal1
 
-		UVr0W := UVr0*Wr - UVi0*Wi
-		UVr1W := UVr1*Wr - UVi1*Wi
-		UVi0W := UVr0*Wi + UVi0*Wr
-		UVi1W := UVr1*Wi + UVi1*Wr
+		uOutImag0 := uImag0 + vImag0
+		uOutImag1 := uImag1 + vImag1
 
-		coeffs[j+2] = UVr0W
-		coeffs[j+3] = UVr1W
+		vOutReal0 := uReal0 - vReal0
+		vOutReal1 := uReal1 - vReal1
 
-		coeffs[j+6] = UVi0W
-		coeffs[j+7] = UVi1W
+		vOutImag0 := uImag0 - vImag0
+		vOutImag1 := uImag1 - vImag1
+
+		vwOutReal0 := vOutReal0*wReal - vOutImag0*wImag
+		vwOutReal1 := vOutReal1*wReal - vOutImag1*wImag
+
+		vwOutImag0 := vOutReal0*wImag + vOutImag0*wReal
+		vwOutImag1 := vOutReal1*wImag + vOutImag1*wReal
+
+		coeffs[j+0] = uOutReal0
+		coeffs[j+1] = uOutReal1
+
+		coeffs[j+2] = vwOutReal0
+		coeffs[j+3] = vwOutReal1
+
+		coeffs[j+4] = uOutImag0
+		coeffs[j+5] = uOutImag1
+
+		coeffs[j+6] = vwOutImag0
+		coeffs[j+7] = vwOutImag1
 	}
 
-	// Main Loop
 	t := 8
-	for m := N / 8; m > 2; m >>= 1 {
-		j1 := 0
-		h := m >> 1
-		for i := 0; i < h; i++ {
+	for m := N / 16; m >= 2; m >>= 1 {
+		for i := 0; i < m; i++ {
+			j1 := 2 * i * t
 			j2 := j1 + t
 
-			Wr := real(twInv[w])
-			Wi := imag(twInv[w])
+			wReal := real(twInv[w])
+			wImag := imag(twInv[w])
 			w++
 
 			for j := j1; j < j2; j += 8 {
-				Ur0 := coeffs[j+0]
-				Ur1 := coeffs[j+1]
-				Ur2 := coeffs[j+2]
-				Ur3 := coeffs[j+3]
+				uReal0 := coeffs[j+0]
+				uReal1 := coeffs[j+1]
+				uReal2 := coeffs[j+2]
+				uReal3 := coeffs[j+3]
 
-				Ui0 := coeffs[j+4]
-				Ui1 := coeffs[j+5]
-				Ui2 := coeffs[j+6]
-				Ui3 := coeffs[j+7]
+				uImag0 := coeffs[j+4]
+				uImag1 := coeffs[j+5]
+				uImag2 := coeffs[j+6]
+				uImag3 := coeffs[j+7]
 
-				Vr0 := coeffs[j+t+0]
-				Vr1 := coeffs[j+t+1]
-				Vr2 := coeffs[j+t+2]
-				Vr3 := coeffs[j+t+3]
+				vReal0 := coeffs[j+t+0]
+				vReal1 := coeffs[j+t+1]
+				vReal2 := coeffs[j+t+2]
+				vReal3 := coeffs[j+t+3]
 
-				Vi0 := coeffs[j+t+4]
-				Vi1 := coeffs[j+t+5]
-				Vi2 := coeffs[j+t+6]
-				Vi3 := coeffs[j+t+7]
+				vImag0 := coeffs[j+t+4]
+				vImag1 := coeffs[j+t+5]
+				vImag2 := coeffs[j+t+6]
+				vImag3 := coeffs[j+t+7]
 
-				coeffs[j+0] = Ur0 + Vr0
-				coeffs[j+1] = Ur1 + Vr1
-				coeffs[j+2] = Ur2 + Vr2
-				coeffs[j+3] = Ur3 + Vr3
+				uOutReal0 := uReal0 + vReal0
+				uOutReal1 := uReal1 + vReal1
+				uOutReal2 := uReal2 + vReal2
+				uOutReal3 := uReal3 + vReal3
 
-				coeffs[j+4] = Ui0 + Vi0
-				coeffs[j+5] = Ui1 + Vi1
-				coeffs[j+6] = Ui2 + Vi2
-				coeffs[j+7] = Ui3 + Vi3
+				uOutImag0 := uImag0 + vImag0
+				uOutImag1 := uImag1 + vImag1
+				uOutImag2 := uImag2 + vImag2
+				uOutImag3 := uImag3 + vImag3
 
-				UVr0 := Ur0 - Vr0
-				UVr1 := Ur1 - Vr1
-				UVr2 := Ur2 - Vr2
-				UVr3 := Ur3 - Vr3
+				vOutReal0 := uReal0 - vReal0
+				vOutReal1 := uReal1 - vReal1
+				vOutReal2 := uReal2 - vReal2
+				vOutReal3 := uReal3 - vReal3
 
-				UVi0 := Ui0 - Vi0
-				UVi1 := Ui1 - Vi1
-				UVi2 := Ui2 - Vi2
-				UVi3 := Ui3 - Vi3
+				vOutImag0 := uImag0 - vImag0
+				vOutImag1 := uImag1 - vImag1
+				vOutImag2 := uImag2 - vImag2
+				vOutImag3 := uImag3 - vImag3
 
-				UVr0W := UVr0*Wr - UVi0*Wi
-				UVr1W := UVr1*Wr - UVi1*Wi
-				UVr2W := UVr2*Wr - UVi2*Wi
-				UVr3W := UVr3*Wr - UVi3*Wi
+				vwOutReal0 := vOutReal0*wReal - vOutImag0*wImag
+				vwOutReal1 := vOutReal1*wReal - vOutImag1*wImag
+				vwOutReal2 := vOutReal2*wReal - vOutImag2*wImag
+				vwOutReal3 := vOutReal3*wReal - vOutImag3*wImag
 
-				UVi0W := UVr0*Wi + UVi0*Wr
-				UVi1W := UVr1*Wi + UVi1*Wr
-				UVi2W := UVr2*Wi + UVi2*Wr
-				UVi3W := UVr3*Wi + UVi3*Wr
+				vwOutImag0 := vOutReal0*wImag + vOutImag0*wReal
+				vwOutImag1 := vOutReal1*wImag + vOutImag1*wReal
+				vwOutImag2 := vOutReal2*wImag + vOutImag2*wReal
+				vwOutImag3 := vOutReal3*wImag + vOutImag3*wReal
 
-				coeffs[j+t+0] = UVr0W
-				coeffs[j+t+1] = UVr1W
-				coeffs[j+t+2] = UVr2W
-				coeffs[j+t+3] = UVr3W
+				coeffs[j+0] = uOutReal0
+				coeffs[j+1] = uOutReal1
+				coeffs[j+2] = uOutReal2
+				coeffs[j+3] = uOutReal3
 
-				coeffs[j+t+4] = UVi0W
-				coeffs[j+t+5] = UVi1W
-				coeffs[j+t+6] = UVi2W
-				coeffs[j+t+7] = UVi3W
+				coeffs[j+4] = uOutImag0
+				coeffs[j+5] = uOutImag1
+				coeffs[j+6] = uOutImag2
+				coeffs[j+7] = uOutImag3
+
+				coeffs[j+t+0] = vwOutReal0
+				coeffs[j+t+1] = vwOutReal1
+				coeffs[j+t+2] = vwOutReal2
+				coeffs[j+t+3] = vwOutReal3
+
+				coeffs[j+t+4] = vwOutImag0
+				coeffs[j+t+5] = vwOutImag1
+				coeffs[j+t+6] = vwOutImag2
+				coeffs[j+t+7] = vwOutImag3
 			}
-			j1 += t << 1
 		}
 		t <<= 1
 	}
 
 	// Last Loop
 	scale := float64(N / 2)
-	Wr := real(twInv[w])
-	Wi := imag(twInv[w])
+	wReal := real(twInv[w])
+	wImag := imag(twInv[w])
 	for j := 0; j < N/2; j += 8 {
-		Ur0 := coeffs[j+0]
-		Ur1 := coeffs[j+1]
-		Ur2 := coeffs[j+2]
-		Ur3 := coeffs[j+3]
+		uReal0 := coeffs[j+0]
+		uReal1 := coeffs[j+1]
+		uReal2 := coeffs[j+2]
+		uReal3 := coeffs[j+3]
 
-		Ui0 := coeffs[j+4]
-		Ui1 := coeffs[j+5]
-		Ui2 := coeffs[j+6]
-		Ui3 := coeffs[j+7]
+		uImag0 := coeffs[j+4]
+		uImag1 := coeffs[j+5]
+		uImag2 := coeffs[j+6]
+		uImag3 := coeffs[j+7]
 
-		Vr0 := coeffs[j+N/2+0]
-		Vr1 := coeffs[j+N/2+1]
-		Vr2 := coeffs[j+N/2+2]
-		Vr3 := coeffs[j+N/2+3]
+		vReal0 := coeffs[j+N/2+0]
+		vReal1 := coeffs[j+N/2+1]
+		vReal2 := coeffs[j+N/2+2]
+		vReal3 := coeffs[j+N/2+3]
 
-		Vi0 := coeffs[j+N/2+4]
-		Vi1 := coeffs[j+N/2+5]
-		Vi2 := coeffs[j+N/2+6]
-		Vi3 := coeffs[j+N/2+7]
+		vImag0 := coeffs[j+N/2+4]
+		vImag1 := coeffs[j+N/2+5]
+		vImag2 := coeffs[j+N/2+6]
+		vImag3 := coeffs[j+N/2+7]
 
-		coeffs[j+0] = (Ur0 + Vr0) / scale
-		coeffs[j+1] = (Ur1 + Vr1) / scale
-		coeffs[j+2] = (Ur2 + Vr2) / scale
-		coeffs[j+3] = (Ur3 + Vr3) / scale
+		uOutReal0 := uReal0 + vReal0
+		uOutReal1 := uReal1 + vReal1
+		uOutReal2 := uReal2 + vReal2
+		uOutReal3 := uReal3 + vReal3
 
-		coeffs[j+4] = (Ui0 + Vi0) / scale
-		coeffs[j+5] = (Ui1 + Vi1) / scale
-		coeffs[j+6] = (Ui2 + Vi2) / scale
-		coeffs[j+7] = (Ui3 + Vi3) / scale
+		uOutImag0 := uImag0 + vImag0
+		uOutImag1 := uImag1 + vImag1
+		uOutImag2 := uImag2 + vImag2
+		uOutImag3 := uImag3 + vImag3
 
-		UVr0 := Ur0 - Vr0
-		UVr1 := Ur1 - Vr1
-		UVr2 := Ur2 - Vr2
-		UVr3 := Ur3 - Vr3
+		vOutReal0 := uReal0 - vReal0
+		vOutReal1 := uReal1 - vReal1
+		vOutReal2 := uReal2 - vReal2
+		vOutReal3 := uReal3 - vReal3
 
-		UVi0 := Ui0 - Vi0
-		UVi1 := Ui1 - Vi1
-		UVi2 := Ui2 - Vi2
-		UVi3 := Ui3 - Vi3
+		vOutImag0 := uImag0 - vImag0
+		vOutImag1 := uImag1 - vImag1
+		vOutImag2 := uImag2 - vImag2
+		vOutImag3 := uImag3 - vImag3
 
-		UVr0W := UVr0*Wr - UVi0*Wi
-		UVr1W := UVr1*Wr - UVi1*Wi
-		UVr2W := UVr2*Wr - UVi2*Wi
-		UVr3W := UVr3*Wr - UVi3*Wi
+		vwOutReal0 := vOutReal0*wReal - vOutImag0*wImag
+		vwOutReal1 := vOutReal1*wReal - vOutImag1*wImag
+		vwOutReal2 := vOutReal2*wReal - vOutImag2*wImag
+		vwOutReal3 := vOutReal3*wReal - vOutImag3*wImag
 
-		UVi0W := UVr0*Wi + UVi0*Wr
-		UVi1W := UVr1*Wi + UVi1*Wr
-		UVi2W := UVr2*Wi + UVi2*Wr
-		UVi3W := UVr3*Wi + UVi3*Wr
+		vwOutImag0 := vOutReal0*wImag + vOutImag0*wReal
+		vwOutImag1 := vOutReal1*wImag + vOutImag1*wReal
+		vwOutImag2 := vOutReal2*wImag + vOutImag2*wReal
+		vwOutImag3 := vOutReal3*wImag + vOutImag3*wReal
 
-		coeffs[j+N/2+0] = UVr0W / scale
-		coeffs[j+N/2+1] = UVr1W / scale
-		coeffs[j+N/2+2] = UVr2W / scale
-		coeffs[j+N/2+3] = UVr3W / scale
+		coeffs[j+0] = uOutReal0 / scale
+		coeffs[j+1] = uOutReal1 / scale
+		coeffs[j+2] = uOutReal2 / scale
+		coeffs[j+3] = uOutReal3 / scale
 
-		coeffs[j+N/2+4] = UVi0W / scale
-		coeffs[j+N/2+5] = UVi1W / scale
-		coeffs[j+N/2+6] = UVi2W / scale
-		coeffs[j+N/2+7] = UVi3W / scale
+		coeffs[j+4] = uOutImag0 / scale
+		coeffs[j+5] = uOutImag1 / scale
+		coeffs[j+6] = uOutImag2 / scale
+		coeffs[j+7] = uOutImag3 / scale
+
+		coeffs[j+N/2+0] = vwOutReal0 / scale
+		coeffs[j+N/2+1] = vwOutReal1 / scale
+		coeffs[j+N/2+2] = vwOutReal2 / scale
+		coeffs[j+N/2+3] = vwOutReal3 / scale
+
+		coeffs[j+N/2+4] = vwOutImag0 / scale
+		coeffs[j+N/2+5] = vwOutImag1 / scale
+		coeffs[j+N/2+6] = vwOutImag2 / scale
+		coeffs[j+N/2+7] = vwOutImag3 / scale
 	}
 }

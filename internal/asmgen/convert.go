@@ -27,34 +27,34 @@ func convertPolyToFourierPolyAssignUint32AVX2() {
 	fpOut := Load(Param("fpOut").Base(), GP64())
 	N := Load(Param("fpOut").Len(), GP64())
 
-	N_2 := GP64()
-	MOVQ(N, N_2)
-	SHRQ(U8(1), N_2)
+	NMul2 := GP64()
+	MOVQ(N, NMul2)
+	SHRQ(U8(1), NMul2)
 
-	j, jj0, jj1 := GP64(), GP64(), GP64()
-	XORQ(j, j)
-	XORQ(jj0, jj0)
-	MOVQ(N_2, jj1)
+	i, ii0, ii1 := GP64(), GP64(), GP64()
+	XORQ(i, i)
+	XORQ(ii0, ii0)
+	MOVQ(NMul2, ii1)
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
 	c0, c1 := XMM(), XMM()
-	VMOVDQU(Mem{Base: p, Index: jj0, Scale: 4}, c0)
-	VMOVDQU(Mem{Base: p, Index: jj1, Scale: 4}, c1)
+	VMOVDQU(Mem{Base: p, Index: ii0, Scale: 4}, c0)
+	VMOVDQU(Mem{Base: p, Index: ii1, Scale: 4}, c1)
 
 	cOut0, cOut1 := YMM(), YMM()
 	VCVTDQ2PD(c0, cOut0)
 	VCVTDQ2PD(c1, cOut1)
 
-	VMOVUPD(cOut0, Mem{Base: fpOut, Index: j, Scale: 8})
-	VMOVUPD(cOut1, Mem{Base: fpOut, Index: j, Scale: 8, Disp: 32})
+	VMOVUPD(cOut0, Mem{Base: fpOut, Index: i, Scale: 8})
+	VMOVUPD(cOut1, Mem{Base: fpOut, Index: i, Scale: 8, Disp: 32})
 
-	ADDQ(Imm(8), j)
-	ADDQ(Imm(4), jj0)
-	ADDQ(Imm(4), jj1)
+	ADDQ(Imm(8), i)
+	ADDQ(Imm(4), ii0)
+	ADDQ(Imm(4), ii1)
 
 	Label("loop_end")
-	CMPQ(j, N)
+	CMPQ(i, N)
 	JL(LabelRef("loop_body"))
 
 	RET()
@@ -82,9 +82,9 @@ func convertPolyToFourierPolyAssignUint64AVX2() {
 	fpOut := Load(Param("fpOut").Base(), GP64())
 	N := Load(Param("fpOut").Len(), GP64())
 
-	N_2 := GP64()
-	MOVQ(N, N_2)
-	SHRQ(U8(1), N_2)
+	NMul2 := GP64()
+	MOVQ(N, NMul2)
+	SHRQ(U8(1), NMul2)
 
 	exp2_52, exp2_84_63, exp2_84_63_52 := YMM(), YMM(), YMM()
 	VBROADCASTSD(NewDataAddr(NewStaticSymbol("EXP2_52"), 0), exp2_52)
@@ -92,30 +92,30 @@ func convertPolyToFourierPolyAssignUint64AVX2() {
 	VBROADCASTSD(NewDataAddr(NewStaticSymbol("EXP2_84_63_52"), 0), exp2_84_63_52)
 	cvtConst := [3]reg.VecVirtual{exp2_52, exp2_84_63, exp2_84_63_52}
 
-	j, jj0, jj1 := GP64(), GP64(), GP64()
-	XORQ(j, j)
-	XORQ(jj0, jj0)
-	MOVQ(N_2, jj1)
+	i, ii0, ii1 := GP64(), GP64(), GP64()
+	XORQ(i, i)
+	XORQ(ii0, ii0)
+	MOVQ(NMul2, ii1)
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
 	c0, c1 := YMM(), YMM()
-	VMOVDQU(Mem{Base: p, Index: jj0, Scale: 8}, c0)
-	VMOVDQU(Mem{Base: p, Index: jj1, Scale: 8}, c1)
+	VMOVDQU(Mem{Base: p, Index: ii0, Scale: 8}, c0)
+	VMOVDQU(Mem{Base: p, Index: ii1, Scale: 8}, c1)
 
 	cOut0, cOut1 := YMM(), YMM()
 	convertInt64ToFloat64(cvtConst, c0, cOut0)
 	convertInt64ToFloat64(cvtConst, c1, cOut1)
 
-	VMOVUPD(cOut0, Mem{Base: fpOut, Index: j, Scale: 8})
-	VMOVUPD(cOut1, Mem{Base: fpOut, Index: j, Scale: 8, Disp: 32})
+	VMOVUPD(cOut0, Mem{Base: fpOut, Index: i, Scale: 8})
+	VMOVUPD(cOut1, Mem{Base: fpOut, Index: i, Scale: 8, Disp: 32})
 
-	ADDQ(Imm(8), j)
-	ADDQ(Imm(4), jj0)
-	ADDQ(Imm(4), jj1)
+	ADDQ(Imm(8), i)
+	ADDQ(Imm(4), ii0)
+	ADDQ(Imm(4), ii1)
 
 	Label("loop_end")
-	CMPQ(j, N)
+	CMPQ(i, N)
 	JL(LabelRef("loop_body"))
 
 	RET()
@@ -168,34 +168,34 @@ func convertFourierPolyToPolyAssignUint32AVX2() {
 	pOut := Load(Param("pOut").Base(), GP64())
 	N := Load(Param("fp").Len(), GP64())
 
-	N_2 := GP64()
-	MOVQ(N, N_2)
-	SHRQ(U8(1), N_2)
+	NMul2 := GP64()
+	MOVQ(N, NMul2)
+	SHRQ(U8(1), NMul2)
 
-	j, jj0, jj1 := GP64(), GP64(), GP64()
-	XORQ(j, j)
-	XORQ(jj0, jj0)
-	MOVQ(N_2, jj1)
+	i, ii0, ii1 := GP64(), GP64(), GP64()
+	XORQ(i, i)
+	XORQ(ii0, ii0)
+	MOVQ(NMul2, ii1)
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
 	c0, c1 := YMM(), YMM()
-	VMOVUPD(Mem{Base: fp, Index: j, Scale: 8}, c0)
-	VMOVUPD(Mem{Base: fp, Index: j, Scale: 8, Disp: 32}, c1)
+	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8}, c0)
+	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8, Disp: 32}, c1)
 
 	c0Out, c1Out := XMM(), XMM()
 	VCVTPD2DQY(c0, c0Out)
 	VCVTPD2DQY(c1, c1Out)
 
-	VMOVDQU(c0Out, Mem{Base: pOut, Index: jj0, Scale: 4})
-	VMOVDQU(c1Out, Mem{Base: pOut, Index: jj1, Scale: 4})
+	VMOVDQU(c0Out, Mem{Base: pOut, Index: ii0, Scale: 4})
+	VMOVDQU(c1Out, Mem{Base: pOut, Index: ii1, Scale: 4})
 
-	ADDQ(Imm(8), j)
-	ADDQ(Imm(4), jj0)
-	ADDQ(Imm(4), jj1)
+	ADDQ(Imm(8), i)
+	ADDQ(Imm(4), ii0)
+	ADDQ(Imm(4), ii1)
 
 	Label("loop_end")
-	CMPQ(j, N)
+	CMPQ(i, N)
 	JL(LabelRef("loop_body"))
 
 	RET()
@@ -209,24 +209,24 @@ func convertFourierPolyToPolyAddAssignUint32AVX2() {
 	pOut := Load(Param("pOut").Base(), GP64())
 	N := Load(Param("fp").Len(), GP64())
 
-	N_2 := GP64()
-	MOVQ(N, N_2)
-	SHRQ(U8(1), N_2)
+	NMul2 := GP64()
+	MOVQ(N, NMul2)
+	SHRQ(U8(1), NMul2)
 
-	j, jj0, jj1 := GP64(), GP64(), GP64()
-	XORQ(j, j)
-	XORQ(jj0, jj0)
-	MOVQ(N_2, jj1)
+	i, ii0, ii1 := GP64(), GP64(), GP64()
+	XORQ(i, i)
+	XORQ(ii0, ii0)
+	MOVQ(NMul2, ii1)
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
 	c0, c1 := YMM(), YMM()
-	VMOVUPD(Mem{Base: fp, Index: j, Scale: 8}, c0)
-	VMOVUPD(Mem{Base: fp, Index: j, Scale: 8, Disp: 32}, c1)
+	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8}, c0)
+	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8, Disp: 32}, c1)
 
 	c0Out, c1Out := XMM(), XMM()
-	VMOVUPD(Mem{Base: pOut, Index: jj0, Scale: 4}, c0Out)
-	VMOVUPD(Mem{Base: pOut, Index: jj1, Scale: 4}, c1Out)
+	VMOVUPD(Mem{Base: pOut, Index: ii0, Scale: 4}, c0Out)
+	VMOVUPD(Mem{Base: pOut, Index: ii1, Scale: 4}, c1Out)
 
 	c0Cvt, c1Cvt := XMM(), XMM()
 	VCVTPD2DQY(c0, c0Cvt)
@@ -235,15 +235,15 @@ func convertFourierPolyToPolyAddAssignUint32AVX2() {
 	VPADDD(c0Cvt, c0Out, c0Out)
 	VPADDD(c1Cvt, c1Out, c1Out)
 
-	VMOVDQU(c0Out, Mem{Base: pOut, Index: jj0, Scale: 4})
-	VMOVDQU(c1Out, Mem{Base: pOut, Index: jj1, Scale: 4})
+	VMOVDQU(c0Out, Mem{Base: pOut, Index: ii0, Scale: 4})
+	VMOVDQU(c1Out, Mem{Base: pOut, Index: ii1, Scale: 4})
 
-	ADDQ(Imm(8), j)
-	ADDQ(Imm(4), jj0)
-	ADDQ(Imm(4), jj1)
+	ADDQ(Imm(8), i)
+	ADDQ(Imm(4), ii0)
+	ADDQ(Imm(4), ii1)
 
 	Label("loop_end")
-	CMPQ(j, N)
+	CMPQ(i, N)
 	JL(LabelRef("loop_body"))
 
 	RET()
@@ -257,24 +257,24 @@ func convertFourierPolyToPolySubAssignUint32AVX2() {
 	pOut := Load(Param("pOut").Base(), GP64())
 	N := Load(Param("fp").Len(), GP64())
 
-	N_2 := GP64()
-	MOVQ(N, N_2)
-	SHRQ(U8(1), N_2)
+	NMul2 := GP64()
+	MOVQ(N, NMul2)
+	SHRQ(U8(1), NMul2)
 
-	j, jj0, jj1 := GP64(), GP64(), GP64()
-	XORQ(j, j)
-	XORQ(jj0, jj0)
-	MOVQ(N_2, jj1)
+	i, ii0, ii1 := GP64(), GP64(), GP64()
+	XORQ(i, i)
+	XORQ(ii0, ii0)
+	MOVQ(NMul2, ii1)
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
 	c0, c1 := YMM(), YMM()
-	VMOVUPD(Mem{Base: fp, Index: j, Scale: 8}, c0)
-	VMOVUPD(Mem{Base: fp, Index: j, Scale: 8, Disp: 32}, c1)
+	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8}, c0)
+	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8, Disp: 32}, c1)
 
 	c0Out, c1Out := XMM(), XMM()
-	VMOVUPD(Mem{Base: pOut, Index: jj0, Scale: 4}, c0Out)
-	VMOVUPD(Mem{Base: pOut, Index: jj1, Scale: 4}, c1Out)
+	VMOVUPD(Mem{Base: pOut, Index: ii0, Scale: 4}, c0Out)
+	VMOVUPD(Mem{Base: pOut, Index: ii1, Scale: 4}, c1Out)
 
 	c0Cvt, c1Cvt := XMM(), XMM()
 	VCVTPD2DQY(c0, c0Cvt)
@@ -283,15 +283,15 @@ func convertFourierPolyToPolySubAssignUint32AVX2() {
 	VPSUBD(c0Cvt, c0Out, c0Out)
 	VPSUBD(c1Cvt, c1Out, c1Out)
 
-	VMOVDQU(c0Out, Mem{Base: pOut, Index: jj0, Scale: 4})
-	VMOVDQU(c1Out, Mem{Base: pOut, Index: jj1, Scale: 4})
+	VMOVDQU(c0Out, Mem{Base: pOut, Index: ii0, Scale: 4})
+	VMOVDQU(c1Out, Mem{Base: pOut, Index: ii1, Scale: 4})
 
-	ADDQ(Imm(8), j)
-	ADDQ(Imm(4), jj0)
-	ADDQ(Imm(4), jj1)
+	ADDQ(Imm(8), i)
+	ADDQ(Imm(4), ii0)
+	ADDQ(Imm(4), ii1)
 
 	Label("loop_end")
-	CMPQ(j, N)
+	CMPQ(i, N)
 	JL(LabelRef("loop_body"))
 
 	RET()
@@ -331,9 +331,9 @@ func convertFourierPolyToPolyAssignUint64AVX2() {
 	pOut := Load(Param("pOut").Base(), GP64())
 	N := Load(Param("fp").Len(), GP64())
 
-	N_2 := GP64()
-	MOVQ(N, N_2)
-	SHRQ(U8(1), N_2)
+	NMul2 := GP64()
+	MOVQ(N, NMul2)
+	SHRQ(U8(1), NMul2)
 
 	mantMask, bitMantMask, expMask, expShift := YMM(), YMM(), YMM(), YMM()
 	VBROADCASTSD(NewDataAddr(NewStaticSymbol("MANT_MASK"), 0), mantMask)
@@ -346,30 +346,30 @@ func convertFourierPolyToPolyAssignUint64AVX2() {
 
 	cvtConst := [5]reg.VecVirtual{mantMask, bitMantMask, expMask, expShift, zero}
 
-	j, jj0, jj1 := GP64(), GP64(), GP64()
-	XORQ(j, j)
-	XORQ(jj0, jj0)
-	MOVQ(N_2, jj1)
+	i, ii0, ii1 := GP64(), GP64(), GP64()
+	XORQ(i, i)
+	XORQ(ii0, ii0)
+	MOVQ(NMul2, ii1)
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
 	c0, c1 := YMM(), YMM()
-	VMOVUPD(Mem{Base: fp, Index: j, Scale: 8}, c0)
-	VMOVUPD(Mem{Base: fp, Index: j, Scale: 8, Disp: 32}, c1)
+	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8}, c0)
+	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8, Disp: 32}, c1)
 
 	c0Out, c1Out := YMM(), YMM()
 	convertFloat64ToInt64(cvtConst, c0, c0Out)
 	convertFloat64ToInt64(cvtConst, c1, c1Out)
 
-	VMOVDQU(c0Out, Mem{Base: pOut, Index: jj0, Scale: 8})
-	VMOVDQU(c1Out, Mem{Base: pOut, Index: jj1, Scale: 8})
+	VMOVDQU(c0Out, Mem{Base: pOut, Index: ii0, Scale: 8})
+	VMOVDQU(c1Out, Mem{Base: pOut, Index: ii1, Scale: 8})
 
-	ADDQ(Imm(8), j)
-	ADDQ(Imm(4), jj0)
-	ADDQ(Imm(4), jj1)
+	ADDQ(Imm(8), i)
+	ADDQ(Imm(4), ii0)
+	ADDQ(Imm(4), ii1)
 
 	Label("loop_end")
-	CMPQ(j, N)
+	CMPQ(i, N)
 	JL(LabelRef("loop_body"))
 
 	RET()
@@ -383,9 +383,9 @@ func convertFourierPolyToPolyAddAssignUint64AVX2() {
 	pOut := Load(Param("pOut").Base(), GP64())
 	N := Load(Param("fp").Len(), GP64())
 
-	N_2 := GP64()
-	MOVQ(N, N_2)
-	SHRQ(U8(1), N_2)
+	NMul2 := GP64()
+	MOVQ(N, NMul2)
+	SHRQ(U8(1), NMul2)
 
 	mantMask, bitMantMask, expMask, expShift := YMM(), YMM(), YMM(), YMM()
 	VBROADCASTSD(NewDataAddr(NewStaticSymbol("MANT_MASK"), 0), mantMask)
@@ -398,19 +398,19 @@ func convertFourierPolyToPolyAddAssignUint64AVX2() {
 
 	cvtConst := [5]reg.VecVirtual{mantMask, bitMantMask, expMask, expShift, zero}
 
-	j, jj0, jj1 := GP64(), GP64(), GP64()
-	XORQ(j, j)
-	XORQ(jj0, jj0)
-	MOVQ(N_2, jj1)
+	i, ii0, ii1 := GP64(), GP64(), GP64()
+	XORQ(i, i)
+	XORQ(ii0, ii0)
+	MOVQ(NMul2, ii1)
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
 	c0, c1 := YMM(), YMM()
-	VMOVUPD(Mem{Base: fp, Index: j, Scale: 8}, c0)
-	VMOVUPD(Mem{Base: fp, Index: j, Scale: 8, Disp: 32}, c1)
+	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8}, c0)
+	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8, Disp: 32}, c1)
 	c0Out, c1Out := YMM(), YMM()
-	VMOVDQU(Mem{Base: pOut, Index: jj0, Scale: 8}, c0Out)
-	VMOVDQU(Mem{Base: pOut, Index: jj1, Scale: 8}, c1Out)
+	VMOVDQU(Mem{Base: pOut, Index: ii0, Scale: 8}, c0Out)
+	VMOVDQU(Mem{Base: pOut, Index: ii1, Scale: 8}, c1Out)
 
 	c0Cvt, c1Cvt := YMM(), YMM()
 	convertFloat64ToInt64(cvtConst, c0, c0Cvt)
@@ -419,15 +419,15 @@ func convertFourierPolyToPolyAddAssignUint64AVX2() {
 	VPADDQ(c0Cvt, c0Out, c0Out)
 	VPADDQ(c1Cvt, c1Out, c1Out)
 
-	VMOVDQU(c0Out, Mem{Base: pOut, Index: jj0, Scale: 8})
-	VMOVDQU(c1Out, Mem{Base: pOut, Index: jj1, Scale: 8})
+	VMOVDQU(c0Out, Mem{Base: pOut, Index: ii0, Scale: 8})
+	VMOVDQU(c1Out, Mem{Base: pOut, Index: ii1, Scale: 8})
 
-	ADDQ(Imm(8), j)
-	ADDQ(Imm(4), jj0)
-	ADDQ(Imm(4), jj1)
+	ADDQ(Imm(8), i)
+	ADDQ(Imm(4), ii0)
+	ADDQ(Imm(4), ii1)
 
 	Label("loop_end")
-	CMPQ(j, N)
+	CMPQ(i, N)
 	JL(LabelRef("loop_body"))
 
 	RET()
@@ -441,9 +441,9 @@ func convertFourierPolyToPolySubAssignUint64AVX2() {
 	pOut := Load(Param("pOut").Base(), GP64())
 	N := Load(Param("fp").Len(), GP64())
 
-	N_2 := GP64()
-	MOVQ(N, N_2)
-	SHRQ(U8(1), N_2)
+	NMul2 := GP64()
+	MOVQ(N, NMul2)
+	SHRQ(U8(1), NMul2)
 
 	mantMask, bitMantMask, expMask, expShift := YMM(), YMM(), YMM(), YMM()
 	VBROADCASTSD(NewDataAddr(NewStaticSymbol("MANT_MASK"), 0), mantMask)
@@ -456,19 +456,19 @@ func convertFourierPolyToPolySubAssignUint64AVX2() {
 
 	cvtConst := [5]reg.VecVirtual{mantMask, bitMantMask, expMask, expShift, zero}
 
-	j, jj0, jj1 := GP64(), GP64(), GP64()
-	XORQ(j, j)
-	XORQ(jj0, jj0)
-	MOVQ(N_2, jj1)
+	i, ii0, ii1 := GP64(), GP64(), GP64()
+	XORQ(i, i)
+	XORQ(ii0, ii0)
+	MOVQ(NMul2, ii1)
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
 	c0, c1 := YMM(), YMM()
-	VMOVUPD(Mem{Base: fp, Index: j, Scale: 8}, c0)
-	VMOVUPD(Mem{Base: fp, Index: j, Scale: 8, Disp: 32}, c1)
+	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8}, c0)
+	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8, Disp: 32}, c1)
 	c0Out, c1Out := YMM(), YMM()
-	VMOVDQU(Mem{Base: pOut, Index: jj0, Scale: 8}, c0Out)
-	VMOVDQU(Mem{Base: pOut, Index: jj1, Scale: 8}, c1Out)
+	VMOVDQU(Mem{Base: pOut, Index: ii0, Scale: 8}, c0Out)
+	VMOVDQU(Mem{Base: pOut, Index: ii1, Scale: 8}, c1Out)
 
 	c0Cvt, c1Cvt := YMM(), YMM()
 	convertFloat64ToInt64(cvtConst, c0, c0Cvt)
@@ -477,15 +477,15 @@ func convertFourierPolyToPolySubAssignUint64AVX2() {
 	VPSUBQ(c0Cvt, c0Out, c0Out)
 	VPSUBQ(c1Cvt, c1Out, c1Out)
 
-	VMOVDQU(c0Out, Mem{Base: pOut, Index: jj0, Scale: 8})
-	VMOVDQU(c1Out, Mem{Base: pOut, Index: jj1, Scale: 8})
+	VMOVDQU(c0Out, Mem{Base: pOut, Index: ii0, Scale: 8})
+	VMOVDQU(c1Out, Mem{Base: pOut, Index: ii1, Scale: 8})
 
-	ADDQ(Imm(8), j)
-	ADDQ(Imm(4), jj0)
-	ADDQ(Imm(4), jj1)
+	ADDQ(Imm(8), i)
+	ADDQ(Imm(4), ii0)
+	ADDQ(Imm(4), ii1)
 
 	Label("loop_end")
-	CMPQ(j, N)
+	CMPQ(i, N)
 	JL(LabelRef("loop_body"))
 
 	RET()

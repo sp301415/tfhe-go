@@ -44,11 +44,11 @@ first_loop_end:
 	CMPQ DI, SI
 	JL   first_loop_body
 	MOVQ DX, DI
-	SHRQ $0x03, DI
+	SHRQ $0x04, DI
 	MOVQ $0x0000000000000002, R8
-	JMP  main_loop_end
+	JMP  m_loop_end
 
-main_loop_body:
+m_loop_body:
 	SHRQ $0x01, SI
 	XORQ R9, R9
 	JMP  i_loop_end
@@ -95,33 +95,33 @@ i_loop_end:
 	JL   i_loop_body
 	SHLQ $0x01, R8
 
-main_loop_end:
+m_loop_end:
 	CMPQ R8, DI
-	JL   main_loop_body
+	JLE  m_loop_body
 	XORQ SI, SI
 	JMP  last_loop_2_end
 
 last_loop_2_body:
 	VMOVUPD      (CX)(BX*8), X0
-	VSHUFPD      $0x00, X0, X0, X1
-	VSHUFPD      $0x03, X0, X0, X0
+	VSHUFPD      $0x03, X0, X0, X1
+	VSHUFPD      $0x00, X0, X0, X0
 	ADDQ         $0x02, BX
 	VMOVUPD      (AX)(SI*8), X2
 	VMOVUPD      16(AX)(SI*8), X3
 	VMOVUPD      32(AX)(SI*8), X4
 	VMOVUPD      48(AX)(SI*8), X5
-	VMULPD       X1, X3, X6
-	VFNMADD231PD X0, X5, X6
-	VMULPD       X0, X3, X0
-	VFMADD231PD  X1, X5, X0
-	VADDPD       X6, X2, X1
+	VMULPD       X0, X3, X6
+	VFNMADD231PD X1, X5, X6
+	VMULPD       X1, X3, X1
+	VFMADD231PD  X0, X5, X1
+	VADDPD       X6, X2, X0
 	VSUBPD       X6, X2, X2
-	VADDPD       X0, X4, X3
-	VSUBPD       X0, X4, X0
-	VMOVUPD      X1, (AX)(SI*8)
+	VADDPD       X1, X4, X3
+	VSUBPD       X1, X4, X1
+	VMOVUPD      X0, (AX)(SI*8)
 	VMOVUPD      X2, 16(AX)(SI*8)
 	VMOVUPD      X3, 32(AX)(SI*8)
-	VMOVUPD      X0, 48(AX)(SI*8)
+	VMOVUPD      X1, 48(AX)(SI*8)
 	ADDQ         $0x08, SI
 
 last_loop_2_end:
@@ -197,8 +197,8 @@ first_loop_1_end:
 
 first_loop_2_body:
 	VMOVUPD      (CX)(BX*8), X0
-	VSHUFPD      $0x00, X0, X0, X1
-	VSHUFPD      $0x03, X0, X0, X0
+	VSHUFPD      $0x03, X0, X0, X1
+	VSHUFPD      $0x00, X0, X0, X0
 	ADDQ         $0x02, BX
 	VMOVUPD      (AX)(SI*8), X2
 	VMOVUPD      16(AX)(SI*8), X3
@@ -208,14 +208,14 @@ first_loop_2_body:
 	VADDPD       X5, X4, X7
 	VSUBPD       X3, X2, X2
 	VSUBPD       X5, X4, X3
-	VMULPD       X1, X2, X4
-	VFNMADD231PD X0, X3, X4
-	VMULPD       X0, X2, X0
-	VFMADD231PD  X1, X3, X0
+	VMULPD       X0, X2, X4
+	VFNMADD231PD X1, X3, X4
+	VMULPD       X1, X2, X1
+	VFMADD231PD  X0, X3, X1
 	VMOVUPD      X6, (AX)(SI*8)
 	VMOVUPD      X4, 16(AX)(SI*8)
 	VMOVUPD      X7, 32(AX)(SI*8)
-	VMOVUPD      X0, 48(AX)(SI*8)
+	VMOVUPD      X1, 48(AX)(SI*8)
 	ADDQ         $0x08, SI
 
 first_loop_2_end:
@@ -223,31 +223,30 @@ first_loop_2_end:
 	JL   first_loop_2_body
 	MOVQ $0x0000000000000008, SI
 	MOVQ DX, DI
-	SHRQ $0x03, DI
+	SHRQ $0x04, DI
 	JMP  m_loop_end
 
 m_loop_body:
 	XORQ R8, R8
-	MOVQ DI, R9
-	SHRQ $0x01, R9
-	XORQ R10, R10
 	JMP  i_loop_end
 
 i_loop_body:
-	MOVQ         R8, R11
-	ADDQ         SI, R11
+	MOVQ         SI, R9
+	IMULQ        R8, R9
+	SHLQ         $0x01, R9
+	MOVQ         R9, R10
+	ADDQ         SI, R10
 	VBROADCASTSD (CX)(BX*8), Y0
 	VBROADCASTSD 8(CX)(BX*8), Y1
 	ADDQ         $0x02, BX
-	MOVQ         R8, R12
-	MOVQ         R11, R13
+	MOVQ         R10, R11
 	JMP          j_loop_end
 
 j_loop_body:
-	VMOVUPD      (AX)(R12*8), Y2
-	VMOVUPD      32(AX)(R12*8), Y3
-	VMOVUPD      (AX)(R13*8), Y4
-	VMOVUPD      32(AX)(R13*8), Y5
+	VMOVUPD      (AX)(R9*8), Y2
+	VMOVUPD      32(AX)(R9*8), Y3
+	VMOVUPD      (AX)(R11*8), Y4
+	VMOVUPD      32(AX)(R11*8), Y5
 	VADDPD       Y4, Y2, Y6
 	VADDPD       Y5, Y3, Y7
 	VSUBPD       Y4, Y2, Y2
@@ -256,29 +255,27 @@ j_loop_body:
 	VFNMADD231PD Y1, Y3, Y4
 	VMULPD       Y1, Y2, Y2
 	VFMADD231PD  Y0, Y3, Y2
-	VMOVUPD      Y6, (AX)(R12*8)
-	VMOVUPD      Y7, 32(AX)(R12*8)
-	VMOVUPD      Y4, (AX)(R13*8)
-	VMOVUPD      Y2, 32(AX)(R13*8)
-	ADDQ         $0x08, R12
-	ADDQ         $0x08, R13
+	VMOVUPD      Y6, (AX)(R9*8)
+	VMOVUPD      Y7, 32(AX)(R9*8)
+	VMOVUPD      Y4, (AX)(R11*8)
+	VMOVUPD      Y2, 32(AX)(R11*8)
+	ADDQ         $0x08, R9
+	ADDQ         $0x08, R11
 
 j_loop_end:
-	CMPQ R12, R11
+	CMPQ R9, R10
 	JL   j_loop_body
-	ADDQ SI, R8
-	ADDQ SI, R8
-	ADDQ $0x01, R10
+	ADDQ $0x01, R8
 
 i_loop_end:
-	CMPQ R10, R9
+	CMPQ R8, DI
 	JL   i_loop_body
 	SHLQ $0x01, SI
 	SHRQ $0x01, DI
 
 m_loop_end:
 	CMPQ         DI, $0x02
-	JG           m_loop_body
+	JGE          m_loop_body
 	VBROADCASTSD scale+48(FP), Y0
 	VBROADCASTSD (CX)(BX*8), Y1
 	VBROADCASTSD 8(CX)(BX*8), Y2
