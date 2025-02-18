@@ -41,35 +41,35 @@ func fftInPlace(coeffs []float64, tw []complex128) {
 		vImag2 := coeffs[j+N/2+6]
 		vImag3 := coeffs[j+N/2+7]
 
-		vwReal0 := vReal0*wReal - vImag0*wImag
-		vwReal1 := vReal1*wReal - vImag1*wImag
-		vwReal2 := vReal2*wReal - vImag2*wImag
-		vwReal3 := vReal3*wReal - vImag3*wImag
+		vTwReal0 := vReal0*wReal - vImag0*wImag
+		vTwReal1 := vReal1*wReal - vImag1*wImag
+		vTwReal2 := vReal2*wReal - vImag2*wImag
+		vTwReal3 := vReal3*wReal - vImag3*wImag
 
-		vwImag0 := vReal0*wImag + vImag0*wReal
-		vwImag1 := vReal1*wImag + vImag1*wReal
-		vwImag2 := vReal2*wImag + vImag2*wReal
-		vwImag3 := vReal3*wImag + vImag3*wReal
+		vTwImag0 := vReal0*wImag + vImag0*wReal
+		vTwImag1 := vReal1*wImag + vImag1*wReal
+		vTwImag2 := vReal2*wImag + vImag2*wReal
+		vTwImag3 := vReal3*wImag + vImag3*wReal
 
-		uOutReal0 := uReal0 + vwReal0
-		uOutReal1 := uReal1 + vwReal1
-		uOutReal2 := uReal2 + vwReal2
-		uOutReal3 := uReal3 + vwReal3
+		uOutReal0 := uReal0 + vTwReal0
+		uOutReal1 := uReal1 + vTwReal1
+		uOutReal2 := uReal2 + vTwReal2
+		uOutReal3 := uReal3 + vTwReal3
 
-		uOutImag0 := uImag0 + vwImag0
-		uOutImag1 := uImag1 + vwImag1
-		uOutImag2 := uImag2 + vwImag2
-		uOutImag3 := uImag3 + vwImag3
+		uOutImag0 := uImag0 + vTwImag0
+		uOutImag1 := uImag1 + vTwImag1
+		uOutImag2 := uImag2 + vTwImag2
+		uOutImag3 := uImag3 + vTwImag3
 
-		vOutReal0 := uReal0 - vwReal0
-		vOutReal1 := uReal1 - vwReal1
-		vOutReal2 := uReal2 - vwReal2
-		vOutReal3 := uReal3 - vwReal3
+		vOutReal0 := uReal0 - vTwReal0
+		vOutReal1 := uReal1 - vTwReal1
+		vOutReal2 := uReal2 - vTwReal2
+		vOutReal3 := uReal3 - vTwReal3
 
-		vOutImag0 := uImag0 - vwImag0
-		vOutImag1 := uImag1 - vwImag1
-		vOutImag2 := uImag2 - vwImag2
-		vOutImag3 := uImag3 - vwImag3
+		vOutImag0 := uImag0 - vTwImag0
+		vOutImag1 := uImag1 - vTwImag1
+		vOutImag2 := uImag2 - vTwImag2
+		vOutImag3 := uImag3 - vTwImag3
 
 		coeffs[j+0] = uOutReal0
 		coeffs[j+1] = uOutReal1
@@ -125,35 +125,35 @@ func fftInPlace(coeffs []float64, tw []complex128) {
 				vImag2 := coeffs[j+t+6]
 				vImag3 := coeffs[j+t+7]
 
-				vwReal0 := vReal0*wReal - vImag0*wImag
-				vwReal1 := vReal1*wReal - vImag1*wImag
-				vwReal2 := vReal2*wReal - vImag2*wImag
-				vwReal3 := vReal3*wReal - vImag3*wImag
+				vTwReal0 := vReal0*wReal - vImag0*wImag
+				vTwReal1 := vReal1*wReal - vImag1*wImag
+				vTwReal2 := vReal2*wReal - vImag2*wImag
+				vTwReal3 := vReal3*wReal - vImag3*wImag
 
-				vwImag0 := vReal0*wImag + vImag0*wReal
-				vwImag1 := vReal1*wImag + vImag1*wReal
-				vwImag2 := vReal2*wImag + vImag2*wReal
-				vwImag3 := vReal3*wImag + vImag3*wReal
+				vTwImag0 := vReal0*wImag + vImag0*wReal
+				vTwImag1 := vReal1*wImag + vImag1*wReal
+				vTwImag2 := vReal2*wImag + vImag2*wReal
+				vTwImag3 := vReal3*wImag + vImag3*wReal
 
-				uOutReal0 := uReal0 + vwReal0
-				uOutReal1 := uReal1 + vwReal1
-				uOutReal2 := uReal2 + vwReal2
-				uOutReal3 := uReal3 + vwReal3
+				uOutReal0 := uReal0 + vTwReal0
+				uOutReal1 := uReal1 + vTwReal1
+				uOutReal2 := uReal2 + vTwReal2
+				uOutReal3 := uReal3 + vTwReal3
 
-				uOutImag0 := uImag0 + vwImag0
-				uOutImag1 := uImag1 + vwImag1
-				uOutImag2 := uImag2 + vwImag2
-				uOutImag3 := uImag3 + vwImag3
+				uOutImag0 := uImag0 + vTwImag0
+				uOutImag1 := uImag1 + vTwImag1
+				uOutImag2 := uImag2 + vTwImag2
+				uOutImag3 := uImag3 + vTwImag3
 
-				vOutReal0 := uReal0 - vwReal0
-				vOutReal1 := uReal1 - vwReal1
-				vOutReal2 := uReal2 - vwReal2
-				vOutReal3 := uReal3 - vwReal3
+				vOutReal0 := uReal0 - vTwReal0
+				vOutReal1 := uReal1 - vTwReal1
+				vOutReal2 := uReal2 - vTwReal2
+				vOutReal3 := uReal3 - vTwReal3
 
-				vOutImag0 := uImag0 - vwImag0
-				vOutImag1 := uImag1 - vwImag1
-				vOutImag2 := uImag2 - vwImag2
-				vOutImag3 := uImag3 - vwImag3
+				vOutImag0 := uImag0 - vTwImag0
+				vOutImag1 := uImag1 - vTwImag1
+				vOutImag2 := uImag2 - vTwImag2
+				vOutImag3 := uImag3 - vTwImag3
 
 				coeffs[j+0] = uOutReal0
 				coeffs[j+1] = uOutReal1
@@ -195,23 +195,23 @@ func fftInPlace(coeffs []float64, tw []complex128) {
 		vImag0 := coeffs[j+6]
 		vImag1 := coeffs[j+7]
 
-		vwReal0 := vReal0*wReal - vImag0*wImag
-		vwReal1 := vReal1*wReal - vImag1*wImag
+		vTwReal0 := vReal0*wReal - vImag0*wImag
+		vTwReal1 := vReal1*wReal - vImag1*wImag
 
-		vwImag0 := vReal0*wImag + vImag0*wReal
-		vwImag1 := vReal1*wImag + vImag1*wReal
+		vTwImag0 := vReal0*wImag + vImag0*wReal
+		vTwImag1 := vReal1*wImag + vImag1*wReal
 
-		uOutReal0 := uReal0 + vwReal0
-		uOutReal1 := uReal1 + vwReal1
+		uOutReal0 := uReal0 + vTwReal0
+		uOutReal1 := uReal1 + vTwReal1
 
-		vOutReal0 := uReal0 - vwReal0
-		vOutReal1 := uReal1 - vwReal1
+		vOutReal0 := uReal0 - vTwReal0
+		vOutReal1 := uReal1 - vTwReal1
 
-		uOutImag0 := uImag0 + vwImag0
-		uOutImag1 := uImag1 + vwImag1
+		uOutImag0 := uImag0 + vTwImag0
+		uOutImag1 := uImag1 + vTwImag1
 
-		vOutImag0 := uImag0 - vwImag0
-		vOutImag1 := uImag1 - vwImag1
+		vOutImag0 := uImag0 - vTwImag0
+		vOutImag1 := uImag1 - vTwImag1
 
 		coeffs[j+0] = uOutReal0
 		coeffs[j+1] = uOutReal1
@@ -245,23 +245,23 @@ func fftInPlace(coeffs []float64, tw []complex128) {
 		uImag1 := coeffs[j+6]
 		vImag1 := coeffs[j+7]
 
-		vwReal0 := vReal0*wReal0 - vImag0*wImag0
-		vwImag0 := vReal0*wImag0 + vImag0*wReal0
+		vTwReal0 := vReal0*wReal0 - vImag0*wImag0
+		vTwImag0 := vReal0*wImag0 + vImag0*wReal0
 
-		vwReal1 := vReal1*wReal1 - vImag1*wImag1
-		vwImag1 := vReal1*wImag1 + vImag1*wReal1
+		vTwReal1 := vReal1*wReal1 - vImag1*wImag1
+		vTwImag1 := vReal1*wImag1 + vImag1*wReal1
 
-		uOutReal0 := uReal0 + vwReal0
-		vOutReal0 := uReal0 - vwReal0
+		uOutReal0 := uReal0 + vTwReal0
+		vOutReal0 := uReal0 - vTwReal0
 
-		uOutReal1 := uReal1 + vwReal1
-		vOutReal1 := uReal1 - vwReal1
+		uOutReal1 := uReal1 + vTwReal1
+		vOutReal1 := uReal1 - vTwReal1
 
-		uOutImag0 := uImag0 + vwImag0
-		vOutImag0 := uImag0 - vwImag0
+		uOutImag0 := uImag0 + vTwImag0
+		vOutImag0 := uImag0 - vTwImag0
 
-		uOutImag1 := uImag1 + vwImag1
-		vOutImag1 := uImag1 - vwImag1
+		uOutImag1 := uImag1 + vTwImag1
+		vOutImag1 := uImag1 - vTwImag1
 
 		coeffs[j+0] = uOutReal0
 		coeffs[j+1] = vOutReal0
@@ -319,23 +319,23 @@ func ifftInPlace(coeffs []float64, twInv []complex128) {
 		vOutImag0 := uImag0 - vImag0
 		vOutImag1 := uImag1 - vImag1
 
-		vwOutReal0 := vOutReal0*wReal0 - vOutImag0*wImag0
-		vwOutReal1 := vOutReal1*wReal1 - vOutImag1*wImag1
+		vTwOutReal0 := vOutReal0*wReal0 - vOutImag0*wImag0
+		vTwOutReal1 := vOutReal1*wReal1 - vOutImag1*wImag1
 
-		vwOutImag0 := vOutReal0*wImag0 + vOutImag0*wReal0
-		vwOutImag1 := vOutReal1*wImag1 + vOutImag1*wReal1
+		vTwOutImag0 := vOutReal0*wImag0 + vOutImag0*wReal0
+		vTwOutImag1 := vOutReal1*wImag1 + vOutImag1*wReal1
 
 		coeffs[j+0] = uOutReal0
-		coeffs[j+1] = vwOutReal0
+		coeffs[j+1] = vTwOutReal0
 
 		coeffs[j+2] = uOutReal1
-		coeffs[j+3] = vwOutReal1
+		coeffs[j+3] = vTwOutReal1
 
 		coeffs[j+4] = uOutImag0
-		coeffs[j+5] = vwOutImag0
+		coeffs[j+5] = vTwOutImag0
 
 		coeffs[j+6] = uOutImag1
-		coeffs[j+7] = vwOutImag1
+		coeffs[j+7] = vTwOutImag1
 	}
 
 	for j := 0; j < N; j += 8 {
@@ -367,23 +367,23 @@ func ifftInPlace(coeffs []float64, twInv []complex128) {
 		vOutImag0 := uImag0 - vImag0
 		vOutImag1 := uImag1 - vImag1
 
-		vwOutReal0 := vOutReal0*wReal - vOutImag0*wImag
-		vwOutReal1 := vOutReal1*wReal - vOutImag1*wImag
+		vTwOutReal0 := vOutReal0*wReal - vOutImag0*wImag
+		vTwOutReal1 := vOutReal1*wReal - vOutImag1*wImag
 
-		vwOutImag0 := vOutReal0*wImag + vOutImag0*wReal
-		vwOutImag1 := vOutReal1*wImag + vOutImag1*wReal
+		vTwOutImag0 := vOutReal0*wImag + vOutImag0*wReal
+		vTwOutImag1 := vOutReal1*wImag + vOutImag1*wReal
 
 		coeffs[j+0] = uOutReal0
 		coeffs[j+1] = uOutReal1
 
-		coeffs[j+2] = vwOutReal0
-		coeffs[j+3] = vwOutReal1
+		coeffs[j+2] = vTwOutReal0
+		coeffs[j+3] = vTwOutReal1
 
 		coeffs[j+4] = uOutImag0
 		coeffs[j+5] = uOutImag1
 
-		coeffs[j+6] = vwOutImag0
-		coeffs[j+7] = vwOutImag1
+		coeffs[j+6] = vTwOutImag0
+		coeffs[j+7] = vTwOutImag1
 	}
 
 	t := 8
@@ -437,15 +437,15 @@ func ifftInPlace(coeffs []float64, twInv []complex128) {
 				vOutImag2 := uImag2 - vImag2
 				vOutImag3 := uImag3 - vImag3
 
-				vwOutReal0 := vOutReal0*wReal - vOutImag0*wImag
-				vwOutReal1 := vOutReal1*wReal - vOutImag1*wImag
-				vwOutReal2 := vOutReal2*wReal - vOutImag2*wImag
-				vwOutReal3 := vOutReal3*wReal - vOutImag3*wImag
+				vTwOutReal0 := vOutReal0*wReal - vOutImag0*wImag
+				vTwOutReal1 := vOutReal1*wReal - vOutImag1*wImag
+				vTwOutReal2 := vOutReal2*wReal - vOutImag2*wImag
+				vTwOutReal3 := vOutReal3*wReal - vOutImag3*wImag
 
-				vwOutImag0 := vOutReal0*wImag + vOutImag0*wReal
-				vwOutImag1 := vOutReal1*wImag + vOutImag1*wReal
-				vwOutImag2 := vOutReal2*wImag + vOutImag2*wReal
-				vwOutImag3 := vOutReal3*wImag + vOutImag3*wReal
+				vTwOutImag0 := vOutReal0*wImag + vOutImag0*wReal
+				vTwOutImag1 := vOutReal1*wImag + vOutImag1*wReal
+				vTwOutImag2 := vOutReal2*wImag + vOutImag2*wReal
+				vTwOutImag3 := vOutReal3*wImag + vOutImag3*wReal
 
 				coeffs[j+0] = uOutReal0
 				coeffs[j+1] = uOutReal1
@@ -457,15 +457,15 @@ func ifftInPlace(coeffs []float64, twInv []complex128) {
 				coeffs[j+6] = uOutImag2
 				coeffs[j+7] = uOutImag3
 
-				coeffs[j+t+0] = vwOutReal0
-				coeffs[j+t+1] = vwOutReal1
-				coeffs[j+t+2] = vwOutReal2
-				coeffs[j+t+3] = vwOutReal3
+				coeffs[j+t+0] = vTwOutReal0
+				coeffs[j+t+1] = vTwOutReal1
+				coeffs[j+t+2] = vTwOutReal2
+				coeffs[j+t+3] = vTwOutReal3
 
-				coeffs[j+t+4] = vwOutImag0
-				coeffs[j+t+5] = vwOutImag1
-				coeffs[j+t+6] = vwOutImag2
-				coeffs[j+t+7] = vwOutImag3
+				coeffs[j+t+4] = vTwOutImag0
+				coeffs[j+t+5] = vTwOutImag1
+				coeffs[j+t+6] = vTwOutImag2
+				coeffs[j+t+7] = vTwOutImag3
 			}
 		}
 		t <<= 1
@@ -516,15 +516,15 @@ func ifftInPlace(coeffs []float64, twInv []complex128) {
 		vOutImag2 := uImag2 - vImag2
 		vOutImag3 := uImag3 - vImag3
 
-		vwOutReal0 := vOutReal0*wReal - vOutImag0*wImag
-		vwOutReal1 := vOutReal1*wReal - vOutImag1*wImag
-		vwOutReal2 := vOutReal2*wReal - vOutImag2*wImag
-		vwOutReal3 := vOutReal3*wReal - vOutImag3*wImag
+		vTwOutReal0 := vOutReal0*wReal - vOutImag0*wImag
+		vTwOutReal1 := vOutReal1*wReal - vOutImag1*wImag
+		vTwOutReal2 := vOutReal2*wReal - vOutImag2*wImag
+		vTwOutReal3 := vOutReal3*wReal - vOutImag3*wImag
 
-		vwOutImag0 := vOutReal0*wImag + vOutImag0*wReal
-		vwOutImag1 := vOutReal1*wImag + vOutImag1*wReal
-		vwOutImag2 := vOutReal2*wImag + vOutImag2*wReal
-		vwOutImag3 := vOutReal3*wImag + vOutImag3*wReal
+		vTwOutImag0 := vOutReal0*wImag + vOutImag0*wReal
+		vTwOutImag1 := vOutReal1*wImag + vOutImag1*wReal
+		vTwOutImag2 := vOutReal2*wImag + vOutImag2*wReal
+		vTwOutImag3 := vOutReal3*wImag + vOutImag3*wReal
 
 		coeffs[j+0] = uOutReal0 / scale
 		coeffs[j+1] = uOutReal1 / scale
@@ -536,14 +536,14 @@ func ifftInPlace(coeffs []float64, twInv []complex128) {
 		coeffs[j+6] = uOutImag2 / scale
 		coeffs[j+7] = uOutImag3 / scale
 
-		coeffs[j+N/2+0] = vwOutReal0 / scale
-		coeffs[j+N/2+1] = vwOutReal1 / scale
-		coeffs[j+N/2+2] = vwOutReal2 / scale
-		coeffs[j+N/2+3] = vwOutReal3 / scale
+		coeffs[j+N/2+0] = vTwOutReal0 / scale
+		coeffs[j+N/2+1] = vTwOutReal1 / scale
+		coeffs[j+N/2+2] = vTwOutReal2 / scale
+		coeffs[j+N/2+3] = vTwOutReal3 / scale
 
-		coeffs[j+N/2+4] = vwOutImag0 / scale
-		coeffs[j+N/2+5] = vwOutImag1 / scale
-		coeffs[j+N/2+6] = vwOutImag2 / scale
-		coeffs[j+N/2+7] = vwOutImag3 / scale
+		coeffs[j+N/2+4] = vTwOutImag0 / scale
+		coeffs[j+N/2+5] = vTwOutImag1 / scale
+		coeffs[j+N/2+6] = vTwOutImag2 / scale
+		coeffs[j+N/2+7] = vTwOutImag3 / scale
 	}
 }
