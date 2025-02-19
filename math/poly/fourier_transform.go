@@ -28,8 +28,6 @@ func (e *Evaluator[T]) ToFourierPolySubAssign(p Poly[T], fpOut FourierPoly) {
 }
 
 // MonomialToFourierPoly transforms X^d to FourierPoly.
-//
-// d should be positive.
 func (e *Evaluator[T]) MonomialToFourierPoly(d int) FourierPoly {
 	fpOut := NewFourierPoly(e.degree)
 	e.MonomialToFourierPolyAssign(d, fpOut)
@@ -122,7 +120,7 @@ func (e *Evaluator[T]) ToPolySubAssign(fp FourierPoly, pOut Poly[T]) {
 
 // ToPolyAssignUnsafe transforms FourierPoly to Poly and writes it to pOut.
 //
-// This method is slightly faster than ToPolyAssign, but it modifies fp directly.
+// This method is slightly faster than [*Evaluator.ToPolyAssign], but it modifies fp directly.
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
 func (e *Evaluator[T]) ToPolyAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
 	ifftInPlace(fp.Coeffs, e.twInv)
@@ -132,7 +130,7 @@ func (e *Evaluator[T]) ToPolyAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
 
 // ToPolyAddAssignUnsafe transforms FourierPoly to Poly and adds it to pOut.
 //
-// This method is slightly faster than ToPolyAddAssign, but it modifies fp directly.
+// This method is slightly faster than [*Evaluator.ToPolyAddAssign], but it modifies fp directly.
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
 func (e *Evaluator[T]) ToPolyAddAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
 	ifftInPlace(fp.Coeffs, e.twInv)
@@ -142,7 +140,7 @@ func (e *Evaluator[T]) ToPolyAddAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
 
 // ToPolySubAssignUnsafe transforms FourierPoly to Poly and subtracts it from pOut.
 //
-// This method is slightly faster than ToPolySubAssign, but it modifies fp directly.
+// This method is slightly faster than [*Evaluator.ToPolySubAssign], but it modifies fp directly.
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
 func (e *Evaluator[T]) ToPolySubAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
 	ifftInPlace(fp.Coeffs, e.twInv)

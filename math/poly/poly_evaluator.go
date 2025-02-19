@@ -117,7 +117,7 @@ func NewEvaluator[T num.Integer](N int) *Evaluator[T] {
 		twMono:    twMono,
 		twMonoIdx: twMonoIdx,
 
-		buffer: newFourierBuffer[T](N),
+		buffer: newEvaluationBuffer[T](N),
 	}
 }
 
@@ -167,8 +167,8 @@ func splitParametersShort[T num.Integer](N int) (splitBits T, splitCount int) {
 	return
 }
 
-// newFourierBuffer creates a new fourierBuffer.
-func newFourierBuffer[T num.Integer](N int) evaluationBuffer[T] {
+// newEvaluationBuffer creates a new evaluationBuffer.
+func newEvaluationBuffer[T num.Integer](N int) evaluationBuffer[T] {
 	_, splitCount := splitParametersShort[T](N)
 
 	fpShortSplit := make([]FourierPoly, splitCount)
@@ -200,7 +200,7 @@ func (e *Evaluator[T]) ShallowCopy() *Evaluator[T] {
 		twMono:    e.twMono,
 		twMonoIdx: e.twMonoIdx,
 
-		buffer: newFourierBuffer[T](e.degree),
+		buffer: newEvaluationBuffer[T](e.degree),
 	}
 }
 

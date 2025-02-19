@@ -44,7 +44,7 @@ func invFFTInPlaceRef(coeffs, twInv []complex128) {
 }
 
 func TestFFTAssembly(t *testing.T) {
-	N := 16
+	N := 64
 	eps := 1e-10
 
 	coeffs := make([]complex128, N)
