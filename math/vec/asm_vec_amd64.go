@@ -11,7 +11,7 @@ import (
 
 // AddAssign computes vOut = v0 + v1.
 func AddAssign[T num.Number](v0, v1, vOut []T) {
-	if cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		var z T
 		switch any(z).(type) {
 		case uint32:
@@ -39,7 +39,7 @@ func AddAssign[T num.Number](v0, v1, vOut []T) {
 
 // SubAssign computes vOut = v0 - v1.
 func SubAssign[T num.Number](v0, v1, vOut []T) {
-	if cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		var z T
 		switch any(z).(type) {
 		case uint32:
@@ -67,7 +67,7 @@ func SubAssign[T num.Number](v0, v1, vOut []T) {
 
 // ScalarMulAssign computes vOut = c * v0.
 func ScalarMulAssign[T num.Number](v0 []T, c T, vOut []T) {
-	if cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		var z T
 		switch any(z).(type) {
 		case uint32:
@@ -95,7 +95,7 @@ func ScalarMulAssign[T num.Number](v0 []T, c T, vOut []T) {
 
 // ScalarMulAddAssign computes vOut += c * v0.
 func ScalarMulAddAssign[T num.Number](v0 []T, c T, vOut []T) {
-	if cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		var z T
 		switch any(z).(type) {
 		case uint32:
@@ -123,7 +123,7 @@ func ScalarMulAddAssign[T num.Number](v0 []T, c T, vOut []T) {
 
 // ScalarMulSubAssign computes vOut -= c * v0.
 func ScalarMulSubAssign[T num.Number](v0 []T, c T, vOut []T) {
-	if cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		var z T
 		switch any(z).(type) {
 		case uint32:
@@ -151,7 +151,7 @@ func ScalarMulSubAssign[T num.Number](v0 []T, c T, vOut []T) {
 
 // ElementWiseMulAssign computes vOut = v0 * v1, where * is an elementwise multiplication.
 func ElementWiseMulAssign[T num.Number](v0, v1, vOut []T) {
-	if cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		var z T
 		switch any(z).(type) {
 		case uint32:
@@ -179,7 +179,7 @@ func ElementWiseMulAssign[T num.Number](v0, v1, vOut []T) {
 
 // ElementWiseMulAddAssign computes vOut += v0 * v1, where * is an elementwise multiplication.
 func ElementWiseMulAddAssign[T num.Number](v0, v1, vOut []T) {
-	if cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		var z T
 		switch any(z).(type) {
 		case uint32:
@@ -207,7 +207,7 @@ func ElementWiseMulAddAssign[T num.Number](v0, v1, vOut []T) {
 
 // ElementWiseMulSubAssign computes vOut -= v0 * v1, where * is an elementwise multiplication.
 func ElementWiseMulSubAssign[T num.Number](v0, v1, vOut []T) {
-	if cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		var z T
 		switch any(z).(type) {
 		case uint32:

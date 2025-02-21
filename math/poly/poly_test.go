@@ -14,6 +14,8 @@ var (
 )
 
 func BenchmarkOps(b *testing.B) {
+	r := rand.New(rand.NewSource(0))
+
 	for _, logN := range LogN {
 		N := 1 << logN
 
@@ -24,8 +26,8 @@ func BenchmarkOps(b *testing.B) {
 		pOut := pev.NewPoly()
 
 		for i := 0; i < pev.Degree(); i++ {
-			p0.Coeffs[i] = rand.Uint64()
-			p1.Coeffs[i] = rand.Uint64()
+			p0.Coeffs[i] = r.Uint64()
+			p1.Coeffs[i] = r.Uint64()
 		}
 
 		fp := pev.ToFourierPoly(p0)
@@ -57,6 +59,8 @@ func BenchmarkOps(b *testing.B) {
 }
 
 func BenchmarkFourierOps(b *testing.B) {
+	r := rand.New(rand.NewSource(0))
+
 	for _, logN := range LogN {
 		N := 1 << logN
 
@@ -67,8 +71,8 @@ func BenchmarkFourierOps(b *testing.B) {
 		fpOut := pev.NewFourierPoly()
 
 		for i := 0; i < pev.Degree(); i++ {
-			fp0.Coeffs[i] = (2*rand.Float64() - 1.0) * math.Exp(63)
-			fp1.Coeffs[i] = (2*rand.Float64() - 1.0) * math.Exp(63)
+			fp0.Coeffs[i] = (2*r.Float64() - 1.0) * math.Exp(63)
+			fp1.Coeffs[i] = (2*r.Float64() - 1.0) * math.Exp(63)
 		}
 
 		b.Run(fmt.Sprintf("LogN=%v/op=Add", logN), func(b *testing.B) {
@@ -92,6 +96,8 @@ func BenchmarkFourierOps(b *testing.B) {
 }
 
 func BenchmarkFourierTransform(b *testing.B) {
+	r := rand.New(rand.NewSource(0))
+
 	for _, logN := range LogN {
 		N := 1 << logN
 
@@ -101,7 +107,7 @@ func BenchmarkFourierTransform(b *testing.B) {
 		fp := pev.NewFourierPoly()
 
 		for i := 0; i < pev.Degree(); i++ {
-			p.Coeffs[i] = rand.Uint64()
+			p.Coeffs[i] = r.Uint64()
 		}
 
 		b.Run(fmt.Sprintf("LogN=%v/op=ToFourierPoly", logN), func(b *testing.B) {

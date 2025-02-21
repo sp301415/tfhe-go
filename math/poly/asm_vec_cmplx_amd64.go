@@ -8,7 +8,7 @@ import (
 
 // addCmplxAssign computes vOut = v0 + v1.
 func addCmplxAssign(v0, v1, vOut []float64) {
-	if cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		addCmplxAssignAVX2(v0, v1, vOut)
 		return
 	}
@@ -20,7 +20,7 @@ func addCmplxAssign(v0, v1, vOut []float64) {
 
 // subCmplxAssign computes vOut = v0 - v1.
 func subCmplxAssign(v0, v1, vOut []float64) {
-	if cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		subCmplxAssignAVX2(v0, v1, vOut)
 		return
 	}
@@ -32,7 +32,7 @@ func subCmplxAssign(v0, v1, vOut []float64) {
 
 // negCmplxAssign computes vOut = -v0.
 func negCmplxAssign(v0, vOut []float64) {
-	if cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		negCmplxAssignAVX2(v0, vOut)
 		return
 	}

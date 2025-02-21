@@ -201,7 +201,7 @@ func fftInPlaceAVX2() {
 	JL(LabelRef("last_loop_2_body"))
 
 	zero := YMM()
-	VPXOR(zero, zero, zero)
+	VXORPD(zero, zero, zero)
 
 	j = GP64()
 	XORQ(j, j)

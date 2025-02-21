@@ -12,7 +12,7 @@ import (
 
 // decomposePolyAssign decomposes p with respect to gadgetParams and writes it to decomposedOut.
 func decomposePolyAssign[T TorusInt](p poly.Poly[T], gadgetParams GadgetParameters[T], decomposedOut []poly.Poly[T]) {
-	if cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		var z T
 		switch any(z).(type) {
 		case uint32:

@@ -9,6 +9,8 @@ import (
 )
 
 func TestVec(t *testing.T) {
+	r := rand.New(rand.NewSource(0))
+
 	N := 687
 
 	v0 := make([]uint32, N)
@@ -17,8 +19,8 @@ func TestVec(t *testing.T) {
 	vOutAVX := make([]uint32, N)
 
 	for i := 0; i < N; i++ {
-		v0[i] = rand.Uint32()
-		v1[i] = rand.Uint32()
+		v0[i] = r.Uint32()
+		v1[i] = r.Uint32()
 	}
 
 	w0 := make([]uint64, N)
@@ -27,8 +29,8 @@ func TestVec(t *testing.T) {
 	wOutAVX := make([]uint64, N)
 
 	for i := 0; i < N; i++ {
-		w0[i] = rand.Uint64()
-		w1[i] = rand.Uint64()
+		w0[i] = r.Uint64()
+		w1[i] = r.Uint64()
 	}
 
 	t.Run("AddAssign", func(t *testing.T) {

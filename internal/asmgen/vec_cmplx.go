@@ -80,7 +80,7 @@ func negCmplxAssignAVX2() {
 	N := Load(Param("vOut").Len(), GP64())
 
 	zero := YMM()
-	VPXOR(zero, zero, zero)
+	VXORPD(zero, zero, zero)
 
 	i := GP64()
 	XORQ(i, i)

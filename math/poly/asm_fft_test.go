@@ -44,12 +44,14 @@ func invFFTInPlaceRef(coeffs, twInv []complex128) {
 }
 
 func TestFFTAssembly(t *testing.T) {
+	r := rand.New(rand.NewSource(0))
+
 	N := 64
 	eps := 1e-10
 
 	coeffs := make([]complex128, N)
 	for i := 0; i < N; i++ {
-		coeffs[i] = complex(rand.Float64(), rand.Float64())
+		coeffs[i] = complex(r.Float64(), r.Float64())
 	}
 	coeffsAVX2 := vec.CmplxToFloat4(coeffs)
 	coeffsAVX2Out := make([]complex128, N)

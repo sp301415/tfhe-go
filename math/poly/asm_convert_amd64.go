@@ -12,7 +12,7 @@ import (
 
 // convertPolyToFourierPolyAssign converts and folds p to fpOut.
 func convertPolyToFourierPolyAssign[T num.Integer](p []T, fpOut []float64) {
-	if cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		var z T
 		switch any(z).(type) {
 		case uint32:
@@ -105,7 +105,7 @@ func convertPolyToFourierPolyAssign[T num.Integer](p []T, fpOut []float64) {
 
 // floatModQInPlace computes coeffs mod Q in place.
 func floatModQInPlace(coeffs []float64, Q float64) {
-	if cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		floatModQInPlaceAVX2(coeffs, Q, 1/Q)
 		return
 	}
@@ -118,7 +118,7 @@ func floatModQInPlace(coeffs []float64, Q float64) {
 
 // convertFourierPolyToPolyAssign converts and unfolds fp to pOut.
 func convertFourierPolyToPolyAssign[T num.Integer](fp []float64, pOut []T) {
-	if cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		var z T
 		switch any(z).(type) {
 		case uint32:
@@ -147,7 +147,7 @@ func convertFourierPolyToPolyAssign[T num.Integer](fp []float64, pOut []T) {
 
 // convertFourierPolyToPolyAddAssign converts and unfolds fp and adds it to pOut.
 func convertFourierPolyToPolyAddAssign[T num.Integer](fp []float64, pOut []T) {
-	if cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		var z T
 		switch any(z).(type) {
 		case uint32:
@@ -176,7 +176,7 @@ func convertFourierPolyToPolyAddAssign[T num.Integer](fp []float64, pOut []T) {
 
 // convertFourierPolyToPolySubAssign converts and unfolds fp and subtracts it from pOut.
 func convertFourierPolyToPolySubAssign[T num.Integer](fp []float64, pOut []T) {
-	if cpu.X86.HasAVX2 {
+	if cpu.X86.HasAVX2 && cpu.X86.HasFMA {
 		var z T
 		switch any(z).(type) {
 		case uint32:

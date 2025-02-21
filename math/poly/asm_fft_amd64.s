@@ -5,7 +5,7 @@
 #include "textflag.h"
 
 // func fftInPlaceAVX2(coeffs []float64, tw []complex128)
-// Requires: AVX, AVX2, FMA3
+// Requires: AVX, FMA3
 TEXT ·fftInPlaceAVX2(SB), NOSPLIT, $0-48
 	MOVQ         coeffs_base+0(FP), AX
 	MOVQ         tw_base+24(FP), CX
@@ -125,11 +125,11 @@ last_loop_2_body:
 	ADDQ         $0x08, SI
 
 last_loop_2_end:
-	CMPQ  SI, DX
-	JL    last_loop_2_body
-	VPXOR Y0, Y0, Y0
-	XORQ  SI, SI
-	JMP   last_loop_1_end
+	CMPQ   SI, DX
+	JL     last_loop_2_body
+	VXORPD Y0, Y0, Y0
+	XORQ   SI, SI
+	JMP    last_loop_1_end
 
 last_loop_1_body:
 	VMOVUPD        (CX)(BX*8), Y1
