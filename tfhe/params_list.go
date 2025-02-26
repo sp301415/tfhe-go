@@ -20,8 +20,8 @@ var (
 			Level: 3,
 		},
 		KeySwitchParameters: GadgetParametersLiteral[uint32]{
-			Base:  1 << 3,
-			Level: 4,
+			Base:  1 << 4,
+			Level: 3,
 		},
 
 		BootstrapOrder: OrderBlindRotateKeySwitch,
@@ -238,7 +238,7 @@ var (
 		LWEDimension:    1160,
 		GLWERank:        1,
 		PolyDegree:      2048,
-		LookUpTableSize: 20480,
+		LookUpTableSize: 18432,
 
 		LWEStdDev:  0.000000003704451841947947,
 		GLWEStdDev: 0.0000000000000003472576015484159,
