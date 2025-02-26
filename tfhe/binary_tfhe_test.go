@@ -2,6 +2,7 @@ package tfhe_test
 
 import (
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/sp301415/tfhe-go/tfhe"
@@ -15,16 +16,42 @@ var (
 )
 
 func TestBinaryParams(t *testing.T) {
-	t.Run("ParamsBinary", func(t *testing.T) {
+	t.Run("Compile/ParamsBinary", func(t *testing.T) {
 		assert.NotPanics(t, func() { tfhe.ParamsBinary.Compile() })
 	})
 
-	t.Run("ParamsBinaryCompact", func(t *testing.T) {
+	t.Run("Compile/ParamsBinaryCompact", func(t *testing.T) {
 		assert.NotPanics(t, func() { tfhe.ParamsBinaryCompact.Compile() })
 	})
 
-	t.Run("ParamsBinaryOriginal", func(t *testing.T) {
+	t.Run("Compile/ParamsBinaryOriginal", func(t *testing.T) {
 		assert.NotPanics(t, func() { tfhe.ParamsBinaryOriginal.Compile() })
+	})
+
+	t.Run("FailureProbability/ParamsBinary", func(t *testing.T) {
+		params := tfhe.ParamsBinary.Compile()
+
+		msStdDev := params.EstimateModSwitchStdDev()
+		brStdDev := params.EstimateBlindRotateStdDev()
+		ksStdDev := params.EstimateKeySwitchForBootstrapStdDev()
+		maxErrorStdDev := math.Sqrt(msStdDev*msStdDev + 4*brStdDev*brStdDev + 4*ksStdDev*ksStdDev)
+
+		bound := math.Exp2(float64(params.LogQ())) / 16
+		failureProbability := math.Erfc(bound / (math.Sqrt2 * maxErrorStdDev))
+		assert.LessOrEqual(t, math.Log2(failureProbability), -64.0)
+	})
+
+	t.Run("FailureProbability/ParamsBinaryCompact", func(t *testing.T) {
+		params := tfhe.ParamsBinaryCompact.Compile()
+
+		msStdDev := params.EstimateModSwitchStdDev()
+		ksStdDev := params.EstimateKeySwitchForBootstrapStdDev()
+		brStdDev := params.EstimateBlindRotateStdDev()
+		maxErrorStdDev := math.Sqrt(msStdDev*msStdDev + ksStdDev*ksStdDev + 4*brStdDev*brStdDev)
+
+		bound := math.Exp2(float64(params.LogQ())) / 16
+		failureProbability := math.Erfc(bound / (math.Sqrt2 * maxErrorStdDev))
+		assert.LessOrEqual(t, math.Log2(failureProbability), -64.0)
 	})
 }
 

@@ -3,6 +3,7 @@ package tfhe_test
 import (
 	"bytes"
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/sp301415/tfhe-go/math/num"
@@ -30,8 +31,14 @@ var (
 
 func TestParams(t *testing.T) {
 	for _, params := range paramsList {
-		t.Run(fmt.Sprintf("ParamsUint%v", num.Log2(params.MessageModulus)), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Compile/ParamsUint%v", num.Log2(params.MessageModulus)), func(t *testing.T) {
 			assert.NotPanics(t, func() { params.Compile() })
+		})
+	}
+
+	for _, params := range paramsList {
+		t.Run(fmt.Sprintf("FailureProbability/ParamsUint%v", num.Log2(params.MessageModulus)), func(t *testing.T) {
+			assert.LessOrEqual(t, math.Log2(params.Compile().EstimateFailureProbability()), -64.0)
 		})
 	}
 }

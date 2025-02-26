@@ -20,8 +20,8 @@ var (
 			Level: 3,
 		},
 		KeySwitchParameters: GadgetParametersLiteral[uint32]{
-			Base:  1 << 4,
-			Level: 3,
+			Base:  1 << 3,
+			Level: 4,
 		},
 
 		BootstrapOrder: OrderBlindRotateKeySwitch,

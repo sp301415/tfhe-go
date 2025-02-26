@@ -639,6 +639,72 @@ func (p Parameters[T]) Literal() ParametersLiteral[T] {
 	}
 }
 
+// EstimateModSwitchStdDev returns an estimated standard deviation of error from modulus switching.
+func (p Parameters[T]) EstimateModSwitchStdDev() float64 {
+	L := float64(p.lookUpTableSize)
+	q := p.floatQ
+
+	h := float64(p.blockCount) * (float64(p.blockSize)) / (float64(p.blockSize + 1))
+
+	modSwitchVar := ((h + 1) * q * q) / (48 * L * L)
+
+	return math.Sqrt(modSwitchVar)
+}
+
+// EstimateBlindRotateStdDev returns an estimated standard deviation of error from Blind Rotation.
+func (p Parameters[T]) EstimateBlindRotateStdDev() float64 {
+	n := float64(p.lweDimension)
+	k := float64(p.glweRank)
+	N := float64(p.polyDegree)
+	beta := p.GLWEStdDevQ()
+	q := p.floatQ
+
+	h := float64(p.blockCount) * (float64(p.blockSize)) / (float64(p.blockSize + 1))
+
+	Bbr := float64(p.blindRotateParameters.Base())
+	Lbr := float64(p.blindRotateParameters.Level())
+
+	blindRotateVar1 := h * (h + (k*N-n)/2 + 1) * (q * q) / (6 * math.Pow(Bbr, 2*Lbr))
+	blindRotateVar2 := n * (Lbr * (k + 1) * N * beta * beta * Bbr * Bbr) / 6
+	blindRotateFFTVar := n * math.Exp2(-106.6) * (k*N + 1) * N * (q * q) * Lbr * (Bbr * Bbr)
+	blindRotateVar := blindRotateVar1 + blindRotateVar2 + blindRotateFFTVar
+
+	return math.Sqrt(blindRotateVar)
+}
+
+// EstimateKeySwitchForBootstrapStdDev returns an estimated standard deviation of error from Key Switching for bootstrapping.
+func (p Parameters[T]) EstimateKeySwitchForBootstrapStdDev() float64 {
+	n := float64(p.lweDimension)
+	k := float64(p.glweRank)
+	N := float64(p.polyDegree)
+	alpha := p.LWEStdDevQ()
+	q := p.floatQ
+
+	Bks := float64(p.keySwitchParameters.Base())
+	Lks := float64(p.keySwitchParameters.Level())
+
+	keySwitchVar1 := (q * q) / (12 * math.Pow(Bks, 2*Lks)) * (k*N - n) / 2
+	keySwitchVar2 := (alpha * alpha * Lks * Bks * Bks * (k*N - n)) / 12
+	keySwitchVar := keySwitchVar1 + keySwitchVar2
+
+	return math.Sqrt(keySwitchVar)
+}
+
+// EstimateMaxErrorStdDev returns an estimated standard deviation of maximum possible error.
+func (p Parameters[T]) EstimateMaxErrorStdDev() float64 {
+	modSwitchStdDev := p.EstimateModSwitchStdDev()
+	blindRotateStdDev := p.EstimateBlindRotateStdDev()
+	keySwitchStdDev := p.EstimateKeySwitchForBootstrapStdDev()
+
+	return math.Sqrt(modSwitchStdDev*modSwitchStdDev + blindRotateStdDev*blindRotateStdDev + keySwitchStdDev*keySwitchStdDev)
+}
+
+// EstimateFailureProbability returns the failure probability of bootstrapping.
+func (p Parameters[T]) EstimateFailureProbability() float64 {
+	bound := p.floatQ / (4 * float64(p.messageModulus))
+	return math.Erfc(bound / (math.Sqrt2 * p.EstimateMaxErrorStdDev()))
+}
+
 // ByteSize returns the byte size of the parameters.
 func (p Parameters[T]) ByteSize() int {
 	return 8*8 + p.blindRotateParameters.ByteSize() + p.keySwitchParameters.ByteSize() + 1
