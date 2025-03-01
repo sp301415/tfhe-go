@@ -19,7 +19,7 @@ const (
 	// Currently, this is set to 16 bits.
 	ShortLogBound = 16
 
-	// splitLogBound is denotes the maximum bits of N*B1*B2, where B1, B2 is the splitting bound of polynomial multiplication.
+	// splitLogBound is denotes the maximum bits of N*B1^2*B2^2, where B1, B2 is the splitting bound of polynomial multiplication.
 	// Currently, this is set to 48, which gives failure rate less than 2^-284.
 	splitLogBound = 48
 )
@@ -155,14 +155,14 @@ func genTwiddleFactors(N int) (tw, twInv []complex128) {
 
 // splitParameters generates splitBits and splitCount for [*Evaluator.MulPoly].
 func splitParameters[T num.Integer](N int) (splitBits T, splitCount int) {
-	splitBits = T(splitLogBound-num.Log2(N)) / 2
+	splitBits = T(splitLogBound-num.Log2(N)) / 4
 	splitCount = int(math.Ceil(float64(num.SizeT[T]()) / float64(splitBits)))
 	return
 }
 
 // splitParametersShort generates splitBits and splitCount for [*Evaluator.ShortFourierPolyMulPoly].
 func splitParametersShort[T num.Integer](N int) (splitBits T, splitCount int) {
-	splitBits = T(splitLogBound - ShortLogBound - num.Log2(N))
+	splitBits = T(splitLogBound-2*ShortLogBound-num.Log2(N)) / 2
 	splitCount = int(math.Ceil(float64(num.SizeT[T]()) / float64(splitBits)))
 	return
 }
