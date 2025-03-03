@@ -56,7 +56,7 @@ func NewEncryptor[T TorusInt](params Parameters[T]) *Encryptor[T] {
 	// Fill samplers to call encryptor.GenSecretKey()
 	encryptor := Encryptor[T]{
 		Encoder:         NewEncoder(params),
-		GLWETransformer: NewGLWETransformer(params),
+		GLWETransformer: NewGLWETransformer[T](params.polyDegree),
 
 		Parameters: params,
 
@@ -79,7 +79,7 @@ func NewEncryptor[T TorusInt](params Parameters[T]) *Encryptor[T] {
 func NewEncryptorWithKey[T TorusInt](params Parameters[T], sk SecretKey[T]) *Encryptor[T] {
 	return &Encryptor[T]{
 		Encoder:         NewEncoder(params),
-		GLWETransformer: NewGLWETransformer(params),
+		GLWETransformer: NewGLWETransformer[T](params.polyDegree),
 
 		Parameters: params,
 

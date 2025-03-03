@@ -65,7 +65,7 @@ func NewEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte
 
 	return &Encryptor[T]{
 		Encoder:            tfhe.NewEncoder(params.singleKeyParameters),
-		GLWETransformer:    NewGLWETransformer(params),
+		GLWETransformer:    NewGLWETransformer[T](params.PolyDegree()),
 		SingleKeyEncryptor: enc,
 
 		Parameters: params,
@@ -96,7 +96,7 @@ func NewEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed
 
 	return &Encryptor[T]{
 		Encoder:            tfhe.NewEncoder(params.singleKeyParameters),
-		GLWETransformer:    NewGLWETransformer(params),
+		GLWETransformer:    NewGLWETransformer[T](params.PolyDegree()),
 		SingleKeyEncryptor: tfhe.NewEncryptorWithKey(params.singleKeyParameters, sk),
 
 		Parameters: params,

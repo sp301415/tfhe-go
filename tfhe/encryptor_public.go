@@ -62,7 +62,7 @@ func NewPublicEncryptor[T TorusInt](params Parameters[T], pk PublicKey[T]) *Publ
 
 	return &PublicEncryptor[T]{
 		Encoder:         NewEncoder(params),
-		GLWETransformer: NewGLWETransformer(params),
+		GLWETransformer: NewGLWETransformer[T](params.polyDegree),
 
 		Parameters: params,
 

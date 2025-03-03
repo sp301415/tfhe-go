@@ -64,7 +64,7 @@ func NewDecryptor[T tfhe.TorusInt](params Parameters[T], sk map[int]tfhe.SecretK
 
 	return &Decryptor[T]{
 		Encoder:             tfhe.NewEncoder(params.singleKeyParameters),
-		GLWETransformer:     NewGLWETransformer(params),
+		GLWETransformer:     NewGLWETransformer[T](params.PolyDegree()),
 		SingleKeyDecryptors: singleEncs,
 
 		Parameters:  params,

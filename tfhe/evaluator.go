@@ -83,7 +83,7 @@ func NewEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *Evalu
 
 	return &Evaluator[T]{
 		Encoder:         NewEncoder(params),
-		GLWETransformer: NewGLWETransformer(params),
+		GLWETransformer: NewGLWETransformer[T](params.polyDegree),
 
 		Parameters: params,
 
