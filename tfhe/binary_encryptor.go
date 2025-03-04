@@ -109,7 +109,7 @@ func (e *BinaryEncryptor[T]) PublicEncryptor() *BinaryPublicEncryptor[T] {
 // GenEvaluationKey samples a new evaluation key for bootstrapping.
 //
 // This can take a long time.
-// Use [*BinaryEncryptor[T].GenEvaluationKeyParallel] for better key generation performance.
+// Use [*BinaryEncryptor.GenEvaluationKeyParallel] for better key generation performance.
 func (e *BinaryEncryptor[T]) GenEvaluationKey() EvaluationKey[T] {
 	return e.BaseEncryptor.GenEvaluationKey()
 }

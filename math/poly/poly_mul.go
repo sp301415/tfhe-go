@@ -211,7 +211,7 @@ func (e *Evaluator[T]) MulSubPolyAssign(p0, p1, pOut Poly[T]) {
 }
 
 // ShortFourierPolyMulPoly returns p0 * fpShort, under the assumption that fpShort is a short polynomial.
-// (i.e., all coefficients are bounded by [ShortPolyBound].)
+// (i.e., all coefficients are bounded by [ShortLogBound] bits.)
 // This is faster than [*Evaluator.MulPoly], and the result is exact unlike [*Evaluator.FourierPolyMulPoly].
 func (e *Evaluator[T]) ShortFourierPolyMulPoly(p0 Poly[T], fpShort FourierPoly) Poly[T] {
 	pOut := e.NewPoly()
@@ -220,7 +220,7 @@ func (e *Evaluator[T]) ShortFourierPolyMulPoly(p0 Poly[T], fpShort FourierPoly) 
 }
 
 // ShortFourierPolyMulPolyAssign computes pOut = p0 * fpShort, under the assumption that fpShort is a short polynomial.
-// (i.e., all coefficients are bounded by [ShortPolyBound].)
+// (i.e., all coefficients are bounded by [ShortLogBound] bits.)
 // This is faster than [*Evaluator.MulPolyAssign], and the result is exact unlike [*Evaluator.FourierPolyMulPolyAssign].
 func (e *Evaluator[T]) ShortFourierPolyMulPolyAssign(p0 Poly[T], fpShort FourierPoly, pOut Poly[T]) {
 	splitBits, splitCount := splitParametersShort[T](e.degree)
@@ -265,7 +265,7 @@ func (e *Evaluator[T]) ShortFourierPolyMulPolyAssign(p0 Poly[T], fpShort Fourier
 }
 
 // ShortFourierPolyMulAddPolyAssign computes pOut += p0 * fpShort, under the assumption that fpShort is a short polynomial.
-// (i.e., all coefficients are bounded by [ShortPolyBound].)
+// (i.e., all coefficients are bounded by [ShortLogBound] bits.)
 // This is faster than [*Evaluator.MulAddPolyAssign], and the result is exact unlike [*Evaluator.FourierPolyMulAddPolyAssign].
 func (e *Evaluator[T]) ShortFourierPolyMulAddPolyAssign(p0 Poly[T], fpShort FourierPoly, pOut Poly[T]) {
 	splitBits, splitCount := splitParametersShort[T](e.degree)
@@ -310,7 +310,7 @@ func (e *Evaluator[T]) ShortFourierPolyMulAddPolyAssign(p0 Poly[T], fpShort Four
 }
 
 // ShortFourierPolyMulSubPolyAssign computes pOut -= p0 * fpShort, under the assumption that fpShort is a short polynomial.
-// (i.e., all coefficients are bounded by [ShortPolyBound].)
+// (i.e., all coefficients are bounded by [ShortLogBound] bits.)
 // This is faster than [*Evaluator.MulSubPolyAssign], and the result is exact unlike [*Evaluator.FourierPolyMulSubPolyAssign].
 func (e *Evaluator[T]) ShortFourierPolyMulSubPolyAssign(p0 Poly[T], fpShort FourierPoly, pOut Poly[T]) {
 	splitBits, splitCount := splitParametersShort[T](e.degree)
