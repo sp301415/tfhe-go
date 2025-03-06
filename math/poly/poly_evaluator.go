@@ -16,8 +16,8 @@ const (
 
 	// ShortLogBound is a maximum bound for the coefficients of "short" polynomials
 	// used in [*Evaluator.ShortFourierPolyMulPoly] functions.
-	// Currently, this is set to 16 bits.
-	ShortLogBound = 16
+	// Currently, this is set to 8 bits.
+	ShortLogBound = 8
 
 	// splitLogBound is denotes the maximum bits of N*B1^2*B2^2, where B1, B2 is the splitting bound of polynomial multiplication.
 	// Currently, this is set to 48, which gives failure rate less than 2^-284.
