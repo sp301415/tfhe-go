@@ -92,7 +92,7 @@ func NewEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *Evalu
 
 		EvaluationKey: evk,
 
-		modSwitchConstant: float64(params.polyExtendFactor) / math.Exp2(float64(params.logQ-params.logPolyDegree-1)),
+		modSwitchConstant: float64(2*params.lookUpTableSize) / math.Exp2(float64(params.logQ)),
 
 		buffer: newEvaluationBuffer(params),
 	}
