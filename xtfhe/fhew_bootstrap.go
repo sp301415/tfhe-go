@@ -2,7 +2,6 @@ package xtfhe
 
 import (
 	"github.com/sp301415/tfhe-go/math/num"
-	"github.com/sp301415/tfhe-go/math/poly"
 	"github.com/sp301415/tfhe-go/tfhe"
 )
 
@@ -62,7 +61,7 @@ func (e *FHEWEvaluator[T]) BlindRotateAssign(ct tfhe.LWECiphertext[T], lut tfhe.
 		ctAutIdxMap[a2NAutIdx] = append(ctAutIdxMap[a2NAutIdx], i)
 	}
 
-	e.PolyEvaluator.PermutePolyAssign(poly.Poly[T]{Coeffs: lut.Value}, -5, ctOut.Value[0])
+	e.PolyEvaluator.PermutePolyAssign(lut.Value[0], -5, ctOut.Value[0])
 	e.PolyEvaluator.MonomialMulPolyInPlace(ctOut.Value[0], -5*e.ModSwitch(-ct.Value[0]))
 	for i := 1; i < e.Parameters.baseParameters.GLWERank()+1; i++ {
 		ctOut.Value[i].Clear()

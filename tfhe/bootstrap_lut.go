@@ -2,38 +2,58 @@ package tfhe
 
 import (
 	"github.com/sp301415/tfhe-go/math/num"
+	"github.com/sp301415/tfhe-go/math/poly"
 	"github.com/sp301415/tfhe-go/math/vec"
 )
 
 // LookUpTable is a polynomial that is the lookup table
 // for function evaluations during programmable bootstrapping.
 type LookUpTable[T TorusInt] struct {
-	Value []T
+	// Value has length polyExtendFactor.
+	Value []poly.Poly[T]
 }
 
 // NewLookUpTable creates a new lookup table.
 func NewLookUpTable[T TorusInt](params Parameters[T]) LookUpTable[T] {
-	return LookUpTable[T]{Value: make([]T, params.lookUpTableSize)}
+	lut := make([]poly.Poly[T], params.polyExtendFactor)
+	for i := 0; i < params.polyExtendFactor; i++ {
+		lut[i] = poly.NewPoly[T](params.polyDegree)
+	}
+
+	return LookUpTable[T]{Value: lut}
 }
 
 // NewLookUpTableCustom creates a new lookup table with custom size.
-func NewLookUpTableCustom[T TorusInt](lutSize int) LookUpTable[T] {
-	return LookUpTable[T]{Value: make([]T, lutSize)}
+func NewLookUpTableCustom[T TorusInt](extendFactor, polyDegree int) LookUpTable[T] {
+	lut := make([]poly.Poly[T], extendFactor)
+	for i := 0; i < extendFactor; i++ {
+		lut[i] = poly.NewPoly[T](polyDegree)
+	}
+
+	return LookUpTable[T]{Value: lut}
 }
 
 // Copy returns a copy of the LUT.
 func (lut LookUpTable[T]) Copy() LookUpTable[T] {
-	return LookUpTable[T]{Value: vec.Copy(lut.Value)}
+	lutCopy := make([]poly.Poly[T], len(lut.Value))
+	for i := 0; i < len(lut.Value); i++ {
+		lutCopy[i] = lut.Value[i].Copy()
+	}
+	return LookUpTable[T]{Value: lutCopy}
 }
 
 // CopyFrom copies values from the LUT.
 func (lut *LookUpTable[T]) CopyFrom(lutIn LookUpTable[T]) {
-	vec.CopyAssign(lutIn.Value, lut.Value)
+	for i := 0; i < len(lut.Value); i++ {
+		lut.Value[i].CopyFrom(lutIn.Value[i])
+	}
 }
 
 // Clear clears the LUT.
 func (lut *LookUpTable[T]) Clear() {
-	vec.Fill(lut.Value, 0)
+	for i := 0; i < len(lut.Value); i++ {
+		lut.Value[i].Clear()
+	}
 }
 
 // GenLookUpTable generates a lookup table based on function f.
@@ -94,13 +114,19 @@ func (e *Evaluator[T]) GenLookUpTableCustomFullAssign(f func(int) T, messageModu
 		end := num.DivRound((x+1)*e.Parameters.lookUpTableSize, int(messageModulus))
 		y := f(x)
 		for xx := start; xx < end; xx++ {
-			lutOut.Value[xx] = y
+			e.buffer.lutRaw[xx] = y
 		}
 	}
 
 	offset := num.DivRound(e.Parameters.lookUpTableSize, int(2*messageModulus))
-	vec.RotateInPlace(lutOut.Value, -offset)
+	vec.RotateInPlace(e.buffer.lutRaw, -offset)
 	for i := e.Parameters.lookUpTableSize - offset; i < e.Parameters.lookUpTableSize; i++ {
-		lutOut.Value[i] = -lutOut.Value[i]
+		e.buffer.lutRaw[i] = -e.buffer.lutRaw[i]
+	}
+
+	for i := 0; i < e.Parameters.polyExtendFactor; i++ {
+		for j := 0; j < e.Parameters.polyDegree; j++ {
+			lutOut.Value[i].Coeffs[j] = e.buffer.lutRaw[j*e.Parameters.polyExtendFactor+i]
+		}
 	}
 }

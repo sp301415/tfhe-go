@@ -20,8 +20,8 @@ type BinaryEvaluator[T tfhe.TorusInt] struct {
 // NewBinaryEvaluator creates a new BinaryEvaluator based on parameters.
 // This does not copy evaluation keys, since they are large.
 func NewBinaryEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationKey[T]) *BinaryEvaluator[T] {
-	signLUT := tfhe.NewLookUpTableCustom[T](params.PolyDegree())
-	vec.Fill(signLUT.Value, 1<<(params.LogQ()-3))
+	signLUT := tfhe.NewLookUpTable(params.singleKeyParameters)
+	vec.Fill(signLUT.Value[0].Coeffs, 1<<(params.LogQ()-3))
 
 	return &BinaryEvaluator[T]{
 		BinaryEncoder: tfhe.NewBinaryEncoder(params.singleKeyParameters),

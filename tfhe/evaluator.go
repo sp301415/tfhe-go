@@ -71,6 +71,8 @@ type evaluationBuffer[T TorusInt] struct {
 
 	// lut is an empty lut, used for BlindRotateFunc.
 	lut LookUpTable[T]
+	// lutRaw is an full-sized LUT.
+	lutRaw []T
 }
 
 // NewEvaluator creates a new Evaluator based on parameters.
@@ -137,7 +139,8 @@ func newEvaluationBuffer[T TorusInt](params Parameters[T]) evaluationBuffer[T] {
 		ctExtract:               NewLWECiphertextCustom[T](params.glweDimension),
 		ctKeySwitchForBootstrap: NewLWECiphertextCustom[T](params.lweDimension),
 
-		lut: NewLookUpTable(params),
+		lut:    NewLookUpTable(params),
+		lutRaw: make([]T, params.lookUpTableSize),
 	}
 }
 

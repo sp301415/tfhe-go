@@ -94,15 +94,15 @@ func (e *ManyLUTEvaluator[T]) GenLookUpTableCustomFullAssign(f []func(int) T, me
 		}
 		for xx := start; xx < end; xx += e.Parameters.lutCount {
 			for i := 0; i < e.Parameters.lutCount; i++ {
-				lutOut.Value[xx+i] = y[i]
+				lutOut.Value[0].Coeffs[xx+i] = y[i]
 			}
 		}
 	}
 
 	offset := num.DivRound(e.Parameters.baseParameters.LookUpTableSize(), int(2*messageModulus))
-	vec.RotateInPlace(lutOut.Value, -offset)
+	vec.RotateInPlace(lutOut.Value[0].Coeffs, -offset)
 	for i := e.Parameters.baseParameters.LookUpTableSize() - offset; i < e.Parameters.baseParameters.LookUpTableSize(); i++ {
-		lutOut.Value[i] = -lutOut.Value[i]
+		lutOut.Value[0].Coeffs[i] = -lutOut.Value[0].Coeffs[i]
 	}
 }
 
@@ -182,8 +182,7 @@ func (e *ManyLUTEvaluator[T]) BlindRotateAssign(ct tfhe.LWECiphertext[T], lut tf
 func (e *ManyLUTEvaluator[T]) blindRotateBlockAssign(ct tfhe.LWECiphertext[T], lut tfhe.LookUpTable[T], ctOut tfhe.GLWECiphertext[T]) {
 	polyDecomposed := e.Decomposer.PolyDecomposedBuffer(e.Parameters.baseParameters.BlindRotateParameters())
 
-	vec.CopyAssign(lut.Value, ctOut.Value[0].Coeffs)
-	e.PolyEvaluator.MonomialMulPolyInPlace(ctOut.Value[0], -e.ModSwitch(ct.Value[0]))
+	e.PolyEvaluator.MonomialMulPolyAssign(lut.Value[0], -e.ModSwitch(ct.Value[0]), ctOut.Value[0])
 	for i := 1; i < e.Parameters.baseParameters.GLWERank()+1; i++ {
 		ctOut.Value[i].Clear()
 	}
@@ -234,8 +233,7 @@ func (e *ManyLUTEvaluator[T]) blindRotateBlockAssign(ct tfhe.LWECiphertext[T], l
 func (e *ManyLUTEvaluator[T]) blindRotateOriginalAssign(ct tfhe.LWECiphertext[T], lut tfhe.LookUpTable[T], ctOut tfhe.GLWECiphertext[T]) {
 	polyDecomposed := e.Decomposer.PolyDecomposedBuffer(e.Parameters.baseParameters.BlindRotateParameters())
 
-	vec.CopyAssign(lut.Value, ctOut.Value[0].Coeffs)
-	e.PolyEvaluator.MonomialMulPolyInPlace(ctOut.Value[0], -e.ModSwitch(ct.Value[0]))
+	e.PolyEvaluator.MonomialMulPolyAssign(lut.Value[0], -e.ModSwitch(ct.Value[0]), ctOut.Value[0])
 	for i := 1; i < e.Parameters.baseParameters.GLWERank()+1; i++ {
 		ctOut.Value[i].Clear()
 	}
