@@ -71,19 +71,14 @@ func (e *Evaluator[T]) blindRotateExtendedAssign(ct LWECiphertext[T], lut LookUp
 	b2N := 2*e.Parameters.lookUpTableSize - e.ModSwitch(ct.Value[0])
 	b2NMono, b2NIdx := b2N/e.Parameters.polyExtendFactor, b2N%e.Parameters.polyExtendFactor
 
-	for i := 0; i < e.Parameters.polyExtendFactor; i++ {
-		ii := (i + b2N) % e.Parameters.polyExtendFactor
-		e.buffer.ctAcc[ii].Value[0].CopyFrom(lut.Value[i])
+	for i, ii := 0, e.Parameters.polyExtendFactor-b2NIdx; i < b2NIdx; i, ii = i+1, ii+1 {
+		e.PolyEvaluator.MonomialMulPolyAssign(lut.Value[i], b2NMono+1, e.buffer.ctAcc[ii].Value[0])
+	}
+	for i, ii := b2NIdx, 0; i < e.Parameters.polyExtendFactor; i, ii = i+1, ii+1 {
+		e.PolyEvaluator.MonomialMulPolyAssign(lut.Value[i], b2NMono, e.buffer.ctAcc[ii].Value[0])
 	}
 
-	for i := 0; i < b2NIdx; i++ {
-		e.PolyEvaluator.MonomialMulPolyInPlace(e.buffer.ctAcc[i].Value[0], b2NMono+1)
-		for j := 1; j < e.Parameters.glweRank+1; j++ {
-			e.buffer.ctAcc[i].Value[j].Clear()
-		}
-	}
-	for i := b2NIdx; i < e.Parameters.polyExtendFactor; i++ {
-		e.PolyEvaluator.MonomialMulPolyInPlace(e.buffer.ctAcc[i].Value[0], b2NMono)
+	for i := 0; i < e.Parameters.polyExtendFactor; i++ {
 		for j := 1; j < e.Parameters.glweRank+1; j++ {
 			e.buffer.ctAcc[i].Value[j].Clear()
 		}
