@@ -115,7 +115,7 @@ func (e *Encryptor[T]) DecryptGLevAssign(ct GLevCiphertext[T], messagesOut []int
 
 	length := num.Min(e.Parameters.polyDegree, len(messagesOut))
 	for i := 0; i < length; i++ {
-		messagesOut[i] = int(num.DivRoundBits(e.buffer.ptGLWE.Value.Coeffs[i], ct.GadgetParameters.LogLastBaseQ()) % e.Parameters.messageModulus)
+		messagesOut[i] = int(e.buffer.ptGLWE.Value.Coeffs[i] % e.Parameters.messageModulus)
 	}
 }
 
@@ -128,8 +128,10 @@ func (e *Encryptor[T]) DecryptGLevPlaintext(ct GLevCiphertext[T]) GLWEPlaintext[
 
 // DecryptGLevPlaintextAssign decrypts GLev ciphertext to GLWE plaintext and writes it to ptOut.
 func (e *Encryptor[T]) DecryptGLevPlaintextAssign(ct GLevCiphertext[T], ptOut GLWEPlaintext[T]) {
-	ctLastLevel := ct.Value[ct.GadgetParameters.level-1]
-	e.DecryptGLWEPlaintextAssign(ctLastLevel, ptOut)
+	e.DecryptGLWEPlaintextAssign(ct.Value[0], ptOut)
+	for i := 0; i < e.Parameters.polyDegree; i++ {
+		ptOut.Value.Coeffs[i] = num.DivRoundBits(ptOut.Value.Coeffs[i], ct.GadgetParameters.LogFirstBaseQ())
+	}
 }
 
 // EncryptGGSW encrypts integer message to GGSW ciphertext.
