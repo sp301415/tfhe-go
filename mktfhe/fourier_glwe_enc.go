@@ -66,7 +66,7 @@ func (e *Encryptor[T]) FourierUniDecryptAssign(ct FourierUniEncryption[T], messa
 
 	length := num.Min(e.Parameters.PolyDegree(), len(messagesOut))
 	for i := 0; i < length; i++ {
-		messagesOut[i] = int(num.DivRoundBits(e.buffer.ptGLWE.Value.Coeffs[i], ct.GadgetParameters.LogLastBaseQ()) % e.Parameters.MessageModulus())
+		messagesOut[i] = int(e.buffer.ptGLWE.Value.Coeffs[i] % e.Parameters.MessageModulus())
 	}
 }
 
@@ -81,11 +81,14 @@ func (e *Encryptor[T]) FourierUniDecryptPlaintext(ct FourierUniEncryption[T]) tf
 func (e *Encryptor[T]) FourierUniDecryptPlaintextAssign(ct FourierUniEncryption[T], ptOut tfhe.GLWEPlaintext[T]) {
 	e.SingleKeyEncryptor.DecryptFourierGLevPlaintextAssign(ct.Value[1], tfhe.GLWEPlaintext[T]{Value: e.buffer.auxKey.Value[0]})
 	for i := 0; i < e.Parameters.PolyDegree(); i++ {
-		e.buffer.auxKey.Value[0].Coeffs[i] = num.DivRoundBits(e.buffer.auxKey.Value[0].Coeffs[i], ct.GadgetParameters.LogLastBaseQ()) & (1<<ct.GadgetParameters.LogBase() - 1)
+		e.buffer.auxKey.Value[0].Coeffs[i] %= ct.GadgetParameters.Base()
 	}
 	e.SingleKeyEncryptor.ToFourierGLWESecretKeyAssign(e.buffer.auxKey, e.buffer.auxFourierKey)
 
-	e.SingleKeyEncryptor.ToGLWECiphertextAssign(ct.Value[0].Value[ct.GadgetParameters.Level()-1], e.buffer.ctGLWESingle)
+	e.SingleKeyEncryptor.ToGLWECiphertextAssign(ct.Value[0].Value[0], e.buffer.ctGLWESingle)
 	ptOut.Value.CopyFrom(e.buffer.ctGLWESingle.Value[0])
 	e.SingleKeyEncryptor.PolyEvaluator.ShortFourierPolyMulSubPolyAssign(e.buffer.ctGLWESingle.Value[1], e.buffer.auxFourierKey.Value[0], ptOut.Value)
+	for i := 0; i < e.Parameters.PolyDegree(); i++ {
+		ptOut.Value.Coeffs[i] = num.DivRoundBits(ptOut.Value.Coeffs[i], ct.GadgetParameters.LogFirstBaseQ())
+	}
 }
