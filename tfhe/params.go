@@ -666,7 +666,7 @@ func (p Parameters[T]) EstimateBlindRotateStdDev() float64 {
 
 	blindRotateVar1 := h * (h + (k*N-n)/2 + 1) * (q * q) / (6 * math.Pow(Bbr, 2*Lbr))
 	blindRotateVar2 := n * (Lbr * (k + 1) * N * beta * beta * Bbr * Bbr) / 6
-	blindRotateFFTVar := n * math.Exp2(-106.6) * (k*N + 1) * N * (q * q) * Lbr * (Bbr * Bbr)
+	blindRotateFFTVar := n * math.Exp2(-106.6) * (h + (k*N-n)/2 + 1) * N * (q * q) * Lbr * (Bbr * Bbr)
 	blindRotateVar := blindRotateVar1 + blindRotateVar2 + blindRotateFFTVar
 
 	return math.Sqrt(blindRotateVar)
@@ -683,8 +683,8 @@ func (p Parameters[T]) EstimateKeySwitchForBootstrapStdDev() float64 {
 	Bks := float64(p.keySwitchParameters.Base())
 	Lks := float64(p.keySwitchParameters.Level())
 
-	keySwitchVar1 := (q * q) / (12 * math.Pow(Bks, 2*Lks)) * (k*N - n) / 2
-	keySwitchVar2 := (alpha * alpha * Lks * Bks * Bks * (k*N - n)) / 12
+	keySwitchVar1 := ((k*N - n) / 2) * (q * q) / (12 * math.Pow(Bks, 2*Lks))
+	keySwitchVar2 := (k*N - n) * (alpha * alpha * Lks * Bks * Bks) / 12
 	keySwitchVar := keySwitchVar1 + keySwitchVar2
 
 	return math.Sqrt(keySwitchVar)
