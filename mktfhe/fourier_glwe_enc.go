@@ -80,9 +80,6 @@ func (e *Encryptor[T]) FourierUniDecryptPlaintext(ct FourierUniEncryption[T]) tf
 // FourierUniDecryptPlaintextAssign decrypts FourierUniEncryption to GLWE plaintext and writes it to ptOut.
 func (e *Encryptor[T]) FourierUniDecryptPlaintextAssign(ct FourierUniEncryption[T], ptOut tfhe.GLWEPlaintext[T]) {
 	e.SingleKeyEncryptor.DecryptFourierGLevPlaintextAssign(ct.Value[1], tfhe.GLWEPlaintext[T]{Value: e.buffer.auxKey.Value[0]})
-	for i := 0; i < e.Parameters.PolyDegree(); i++ {
-		e.buffer.auxKey.Value[0].Coeffs[i] %= ct.GadgetParameters.Base()
-	}
 	e.SingleKeyEncryptor.ToFourierGLWESecretKeyAssign(e.buffer.auxKey, e.buffer.auxFourierKey)
 
 	e.SingleKeyEncryptor.ToGLWECiphertextAssign(ct.Value[0].Value[0], e.buffer.ctGLWESingle)

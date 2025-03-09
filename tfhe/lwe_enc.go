@@ -83,7 +83,7 @@ func (e *Encryptor[T]) DecryptLev(ct LevCiphertext[T]) int {
 // DecryptLevPlaintext decrypts Lev ciphertext to LWE plaintext.
 func (e *Encryptor[T]) DecryptLevPlaintext(ct LevCiphertext[T]) LWEPlaintext[T] {
 	pt := e.DecryptLWEPlaintext(ct.Value[0])
-	return LWEPlaintext[T]{Value: num.DivRoundBits(pt.Value, ct.GadgetParameters.LogFirstBaseQ())}
+	return LWEPlaintext[T]{Value: num.DivRoundBits(pt.Value, ct.GadgetParameters.LogFirstBaseQ()) % ct.GadgetParameters.base}
 }
 
 // EncryptGSW encrypts integer message to GSW ciphertext.

@@ -77,9 +77,6 @@ func (e *Encryptor[T]) UniDecryptPlaintext(ct UniEncryption[T]) tfhe.GLWEPlainte
 // UniDecryptPlaintextAssign decrypts UniEncryption to GLWE plaintext and writes it to ptOut.
 func (e *Encryptor[T]) UniDecryptPlaintextAssign(ct UniEncryption[T], ptOut tfhe.GLWEPlaintext[T]) {
 	e.SingleKeyEncryptor.DecryptGLevPlaintextAssign(ct.Value[1], tfhe.GLWEPlaintext[T]{Value: e.buffer.auxKey.Value[0]})
-	for i := 0; i < e.Parameters.PolyDegree(); i++ {
-		e.buffer.auxKey.Value[0].Coeffs[i] %= ct.GadgetParameters.Base()
-	}
 	e.SingleKeyEncryptor.ToFourierGLWESecretKeyAssign(e.buffer.auxKey, e.buffer.auxFourierKey)
 
 	ptOut.Value.CopyFrom(ct.Value[0].Value[0].Value[0])
