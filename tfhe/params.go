@@ -666,7 +666,7 @@ func (p Parameters[T]) EstimateBlindRotateStdDev() float64 {
 
 	blindRotateVar1 := h * (h + (k*N-n)/2 + 1) * (q * q) / (6 * math.Pow(Bbr, 2*Lbr))
 	blindRotateVar2 := n * (Lbr * (k + 1) * N * beta * beta * Bbr * Bbr) / 6
-	blindRotateFFTVar := n * math.Exp2(-106.6) * (h + (k*N-n)/2 + 1) * N * (q * q) * Lbr * (Bbr * Bbr)
+	blindRotateFFTVar := n * math.Exp2(-106.6) * (k + 1) * (h + (k*N-n)/2 + 1) * N * (q * q) * Lbr * (Bbr * Bbr)
 	blindRotateVar := blindRotateVar1 + blindRotateVar2 + blindRotateFFTVar
 
 	return math.Sqrt(blindRotateVar)
