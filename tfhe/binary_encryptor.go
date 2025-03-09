@@ -59,7 +59,7 @@ func (e *BinaryEncryptor[T]) EncryptLWEBoolAssign(message bool, ct LWECiphertext
 
 // DecryptLWEBool decrypts LWE ciphertext to boolean value.
 func (e *BinaryEncryptor[T]) DecryptLWEBool(ct LWECiphertext[T]) bool {
-	return e.DecodeLWEBool(e.BaseEncryptor.DecryptLWEPlaintext(ct))
+	return e.DecodeLWEBool(e.BaseEncryptor.DecryptLWEPhase(ct))
 }
 
 // EncryptLWEBits encrypts each bits of an integer message.

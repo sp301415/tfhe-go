@@ -56,5 +56,5 @@ func (e *Encryptor[T]) GenCRSPublicKey() tfhe.FourierGLevCiphertext[T] {
 
 // GenRelinKey samples a new relinearization key.
 func (e *Encryptor[T]) GenRelinKey() FourierUniEncryption[T] {
-	return e.FourierUniEncryptPlaintext(tfhe.GLWEPlaintext[T]{Value: e.SingleKeyEncryptor.SecretKey.GLWEKey.Value[0]}, e.Parameters.relinKeyParameters)
+	return e.FourierUniEncryptPoly(e.SingleKeyEncryptor.SecretKey.GLWEKey.Value[0], e.Parameters.relinKeyParameters)
 }

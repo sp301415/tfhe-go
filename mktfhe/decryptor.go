@@ -161,7 +161,7 @@ func (d *Decryptor[T]) DecryptGLWEPlaintextAssign(ct GLWECiphertext[T], ptOut tf
 	for i, ok := range d.PartyBitMap {
 		if ok {
 			d.buffer.ctGLWESingle.Value[1].CopyFrom(ct.Value[1+i])
-			d.SingleKeyDecryptors[i].DecryptGLWEPlaintextAssign(d.buffer.ctGLWESingle, tfhe.GLWEPlaintext[T]{Value: d.buffer.ctGLWESingle.Value[0]})
+			d.SingleKeyDecryptors[i].DecryptGLWEPhaseAssign(d.buffer.ctGLWESingle, tfhe.GLWEPlaintext[T]{Value: d.buffer.ctGLWESingle.Value[0]})
 		}
 	}
 	ptOut.Value.CopyFrom(d.buffer.ctGLWESingle.Value[0])

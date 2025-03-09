@@ -2,6 +2,7 @@ package mktfhe
 
 import (
 	"github.com/sp301415/tfhe-go/math/num"
+	"github.com/sp301415/tfhe-go/math/poly"
 	"github.com/sp301415/tfhe-go/math/vec"
 	"github.com/sp301415/tfhe-go/tfhe"
 )
@@ -21,24 +22,24 @@ func (e *Encryptor[T]) FourierUniEncryptAssign(messages []int, gadgetParams tfhe
 	}
 	vec.Fill(e.buffer.ptGLWE.Value.Coeffs[length:], 0)
 
-	e.FourierUniEncryptPlaintextAssign(e.buffer.ptGLWE, ctOut)
+	e.FourierUniEncryptPolyAssign(e.buffer.ptGLWE.Value, ctOut)
 }
 
-// FourierUniEncryptPlaintext encrypts GLWE plaintext to FourierUniEncryption.
-func (e *Encryptor[T]) FourierUniEncryptPlaintext(pt tfhe.GLWEPlaintext[T], gadgetParams tfhe.GadgetParameters[T]) FourierUniEncryption[T] {
-	ct := NewFourierUniEncryption(e.Parameters, gadgetParams)
-	e.FourierUniEncryptPlaintextAssign(pt, ct)
-	return ct
+// FourierUniEncryptPoly encrypts polynomial to FourierUniEncryption.
+func (e *Encryptor[T]) FourierUniEncryptPoly(p poly.Poly[T], gadgetParams tfhe.GadgetParameters[T]) FourierUniEncryption[T] {
+	ctOut := NewFourierUniEncryption(e.Parameters, gadgetParams)
+	e.FourierUniEncryptPolyAssign(p, ctOut)
+	return ctOut
 }
 
-// FourierUniEncryptPlaintextAssign encrypts GLWE plaintext to FourierUniEncryption and writes it to ctOut.
-func (e *Encryptor[T]) FourierUniEncryptPlaintextAssign(pt tfhe.GLWEPlaintext[T], ctOut FourierUniEncryption[T]) {
+// FourierUniEncryptPolyAssign encrypts polynomial to FourierUniEncryption and writes it to ctOut.
+func (e *Encryptor[T]) FourierUniEncryptPolyAssign(p poly.Poly[T], ctOut FourierUniEncryption[T]) {
 	e.SingleKeyEncryptor.BinarySampler.SamplePolyAssign(e.buffer.auxKey.Value[0])
 	e.SingleKeyEncryptor.ToFourierGLWESecretKeyAssign(e.buffer.auxKey, e.buffer.auxFourierKey)
 
 	for i := 0; i < ctOut.GadgetParameters.Level(); i++ {
 		e.buffer.ctGLWESingle.Value[1].CopyFrom(e.CRS[i])
-		e.SingleKeyEncryptor.PolyEvaluator.ScalarMulPolyAssign(pt.Value, ctOut.GadgetParameters.BaseQ(i), e.buffer.ctGLWESingle.Value[0])
+		e.SingleKeyEncryptor.PolyEvaluator.ScalarMulPolyAssign(p, ctOut.GadgetParameters.BaseQ(i), e.buffer.ctGLWESingle.Value[0])
 
 		e.SingleKeyEncryptor.PolyEvaluator.ShortFourierPolyMulAddPolyAssign(e.buffer.ctGLWESingle.Value[1], e.buffer.auxFourierKey.Value[0], e.buffer.ctGLWESingle.Value[0])
 		e.SingleKeyEncryptor.GaussianSampler.SamplePolyAddAssign(e.Parameters.GLWEStdDevQ(), e.buffer.ctGLWESingle.Value[0])
@@ -62,7 +63,7 @@ func (e *Encryptor[T]) FourierUniDecrypt(ct FourierUniEncryption[T]) []int {
 
 // FourierUniDecryptAssign decrypts FourierUniEncryption to integer messages and writes it to messagesOut.
 func (e *Encryptor[T]) FourierUniDecryptAssign(ct FourierUniEncryption[T], messagesOut []int) {
-	e.FourierUniDecryptPlaintextAssign(ct, e.buffer.ptGLWE)
+	e.FourierUniDecryptPolyAssign(ct, e.buffer.ptGLWE.Value)
 
 	length := num.Min(e.Parameters.PolyDegree(), len(messagesOut))
 	for i := 0; i < length; i++ {
@@ -70,22 +71,22 @@ func (e *Encryptor[T]) FourierUniDecryptAssign(ct FourierUniEncryption[T], messa
 	}
 }
 
-// FourierUniDecryptPlaintext decrypts FourierUniEncryption to GLWE plaintext.
-func (e *Encryptor[T]) FourierUniDecryptPlaintext(ct FourierUniEncryption[T]) tfhe.GLWEPlaintext[T] {
-	pt := tfhe.NewGLWEPlaintext(e.Parameters.singleKeyParameters)
-	e.FourierUniDecryptPlaintextAssign(ct, pt)
-	return pt
+// FourierUniDecryptPoly decrypts FourierUniEncryption to polynomial.
+func (e *Encryptor[T]) FourierUniDecryptPoly(ct FourierUniEncryption[T]) poly.Poly[T] {
+	pOut := poly.NewPoly[T](e.Parameters.PolyDegree())
+	e.FourierUniDecryptPolyAssign(ct, pOut)
+	return pOut
 }
 
-// FourierUniDecryptPlaintextAssign decrypts FourierUniEncryption to GLWE plaintext and writes it to ptOut.
-func (e *Encryptor[T]) FourierUniDecryptPlaintextAssign(ct FourierUniEncryption[T], ptOut tfhe.GLWEPlaintext[T]) {
-	e.SingleKeyEncryptor.DecryptFourierGLevPlaintextAssign(ct.Value[1], tfhe.GLWEPlaintext[T]{Value: e.buffer.auxKey.Value[0]})
+// FourierUniDecryptPolyAssign decrypts FourierUniEncryption to polynomial and writes it to pOut.
+func (e *Encryptor[T]) FourierUniDecryptPolyAssign(ct FourierUniEncryption[T], pOut poly.Poly[T]) {
+	e.SingleKeyEncryptor.DecryptFourierGLevPolyAssign(ct.Value[1], e.buffer.auxKey.Value[0])
 	e.SingleKeyEncryptor.ToFourierGLWESecretKeyAssign(e.buffer.auxKey, e.buffer.auxFourierKey)
 
 	e.SingleKeyEncryptor.ToGLWECiphertextAssign(ct.Value[0].Value[0], e.buffer.ctGLWESingle)
-	ptOut.Value.CopyFrom(e.buffer.ctGLWESingle.Value[0])
-	e.SingleKeyEncryptor.PolyEvaluator.ShortFourierPolyMulSubPolyAssign(e.buffer.ctGLWESingle.Value[1], e.buffer.auxFourierKey.Value[0], ptOut.Value)
+	pOut.CopyFrom(e.buffer.ctGLWESingle.Value[0])
+	e.SingleKeyEncryptor.PolyEvaluator.ShortFourierPolyMulSubPolyAssign(e.buffer.ctGLWESingle.Value[1], e.buffer.auxFourierKey.Value[0], pOut)
 	for i := 0; i < e.Parameters.PolyDegree(); i++ {
-		ptOut.Value.Coeffs[i] = num.DivRoundBits(ptOut.Value.Coeffs[i], ct.GadgetParameters.LogFirstBaseQ())
+		pOut.Coeffs[i] = num.DivRoundBits(pOut.Coeffs[i], ct.GadgetParameters.LogFirstBaseQ())
 	}
 }

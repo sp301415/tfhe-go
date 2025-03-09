@@ -42,7 +42,7 @@ func (kg *CircuitBootstrapKeyGenerator[T]) ShallowCopy() *CircuitBootstrapKeyGen
 func (kg *CircuitBootstrapKeyGenerator[T]) GenCircuitBootstrapKey() CircuitBootstrapKey[T] {
 	schemeSwitchKey := make([]tfhe.FourierGGSWCiphertext[T], kg.Parameters.BaseParameters().GLWERank())
 	for i := 0; i < kg.Parameters.BaseParameters().GLWERank(); i++ {
-		schemeSwitchKey[i] = kg.BaseEncryptor.EncryptFourierGGSWPlaintext(tfhe.GLWEPlaintext[T]{Value: kg.BaseEncryptor.SecretKey.GLWEKey.Value[i]}, kg.Parameters.schemeSwitchParameters)
+		schemeSwitchKey[i] = kg.BaseEncryptor.EncryptFourierGGSWPoly(kg.BaseEncryptor.SecretKey.GLWEKey.Value[i], kg.Parameters.schemeSwitchParameters)
 	}
 
 	return CircuitBootstrapKey[T]{
