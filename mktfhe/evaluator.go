@@ -37,6 +37,9 @@ type Evaluator[T tfhe.TorusInt] struct {
 	// If an evaluation key does not exist for given index, it is empty.
 	EvaluationKeys []EvaluationKey[T]
 
+	// gadgetLUTs are the gadget LUT for the Blind Rotation.
+	gadgetLUTs []tfhe.LookUpTable[T]
+
 	buffer evaluationBuffer[T]
 }
 
@@ -59,8 +62,6 @@ type evaluationBuffer[T tfhe.TorusInt] struct {
 
 	// ctRotateInputs is the input of the Blind Rotation to each single evaluator.
 	ctRotateInputs []tfhe.LWECiphertext[T]
-	// gadgetLUTs is the gadget LUT for the Blind Rotation.
-	gadgetLUTs []tfhe.LookUpTable[T]
 	// ctAccs is the output of the accumulator of a single-key Blind Rotation.
 	ctAccs []tfhe.GLWECiphertext[T]
 	// ctFourierAccs is the fourier transformed ctAccs.
@@ -94,6 +95,12 @@ func NewEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationK
 	decomposer.PolyDecomposedBuffer(params.relinKeyParameters)
 	decomposer.PolyFourierDecomposedBuffer(params.relinKeyParameters)
 
+	gadgetLUTs := make([]tfhe.LookUpTable[T], params.accumulatorParameters.Level())
+	for i := 0; i < params.accumulatorParameters.Level(); i++ {
+		gadgetLUTs[i] = tfhe.NewLookUpTable(params.singleKeyParameters)
+		gadgetLUTs[i].Value[0].Coeffs[0] = params.accumulatorParameters.BaseQ(i)
+	}
+
 	return &Evaluator[T]{
 		Encoder:         tfhe.NewEncoder(params.singleKeyParameters),
 		GLWETransformer: NewGLWETransformer[T](params.PolyDegree()),
@@ -110,6 +117,8 @@ func NewEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationK
 
 		EvaluationKeys: singleKeys,
 
+		gadgetLUTs: gadgetLUTs,
+
 		buffer: newEvaluationBuffer(params),
 	}
 }
@@ -125,12 +134,6 @@ func newEvaluationBuffer[T tfhe.TorusInt](params Parameters[T]) evaluationBuffer
 	ctRotateInputs := make([]tfhe.LWECiphertext[T], params.partyCount)
 	for i := 0; i < params.partyCount; i++ {
 		ctRotateInputs[i] = tfhe.NewLWECiphertextCustom[T](params.singleKeyParameters.LWEDimension())
-	}
-
-	gadgetLUTs := make([]tfhe.LookUpTable[T], params.accumulatorParameters.Level())
-	for i := 0; i < params.accumulatorParameters.Level(); i++ {
-		gadgetLUTs[i] = tfhe.NewLookUpTable(params.singleKeyParameters)
-		gadgetLUTs[i].Value[0].Coeffs[0] = params.accumulatorParameters.BaseQ(i)
 	}
 
 	ctAccs := make([]tfhe.GLWECiphertext[T], params.partyCount)
@@ -151,7 +154,6 @@ func newEvaluationBuffer[T tfhe.TorusInt](params Parameters[T]) evaluationBuffer
 		ctRelinTransposed: ctRelinTransposed,
 
 		ctRotateInputs: ctRotateInputs,
-		gadgetLUTs:     gadgetLUTs,
 		ctAccs:         ctAccs,
 		ctFourierAccs:  ctFourierAccs,
 
@@ -195,6 +197,8 @@ func (e *Evaluator[T]) ShallowCopy() *Evaluator[T] {
 		PartyBitMap: vec.Copy(e.PartyBitMap),
 
 		EvaluationKeys: vec.Copy(e.EvaluationKeys),
+
+		gadgetLUTs: e.gadgetLUTs,
 
 		buffer: newEvaluationBuffer(e.Parameters),
 	}
