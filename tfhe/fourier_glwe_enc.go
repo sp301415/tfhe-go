@@ -42,12 +42,12 @@ func (e *Encryptor[T]) DecryptFourierGLWEAssign(ct FourierGLWECiphertext[T], mes
 // DecryptFourierGLWEPhase decrypts FourierGLWE ciphertext to GLWE plaintext including errors.
 func (e *Encryptor[T]) DecryptFourierGLWEPhase(ct FourierGLWECiphertext[T]) GLWEPlaintext[T] {
 	ptOut := NewGLWEPlaintext(e.Parameters)
-	e.DecryptFourierGLWEPolyAssign(ct, ptOut)
+	e.DecryptFourierGLWEPhaseAssign(ct, ptOut)
 	return ptOut
 }
 
-// DecryptFourierGLWEPolyAssign decrypts FourierGLWE ciphertext to GLWE plaintext including errors and writes it to ptOut.
-func (e *Encryptor[T]) DecryptFourierGLWEPolyAssign(ct FourierGLWECiphertext[T], ptOut GLWEPlaintext[T]) {
+// DecryptFourierGLWEPhaseAssign decrypts FourierGLWE ciphertext to GLWE plaintext including errors and writes it to ptOut.
+func (e *Encryptor[T]) DecryptFourierGLWEPhaseAssign(ct FourierGLWECiphertext[T], ptOut GLWEPlaintext[T]) {
 	e.ToGLWECiphertextAssign(ct, e.buffer.ctGLWE)
 	e.DecryptGLWEPhaseAssign(e.buffer.ctGLWE, ptOut)
 }
@@ -112,7 +112,7 @@ func (e *Encryptor[T]) DecryptFourierGLevPoly(ct FourierGLevCiphertext[T]) poly.
 
 // DecryptFourierGLevPolyAssign decrypts FourierGLev ciphertext to polynomial and writes it to pOut.
 func (e *Encryptor[T]) DecryptFourierGLevPolyAssign(ct FourierGLevCiphertext[T], pOut poly.Poly[T]) {
-	e.DecryptFourierGLWEPolyAssign(ct.Value[0], GLWEPlaintext[T]{Value: pOut})
+	e.DecryptFourierGLWEPhaseAssign(ct.Value[0], GLWEPlaintext[T]{Value: pOut})
 	for i := 0; i < e.Parameters.polyDegree; i++ {
 		pOut.Coeffs[i] = num.DivRoundBits(pOut.Coeffs[i], ct.GadgetParameters.LogFirstBaseQ()) % ct.GadgetParameters.base
 	}
