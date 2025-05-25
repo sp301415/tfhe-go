@@ -8,8 +8,8 @@ var (
 		PolyDegree:      512,
 		LookUpTableSize: 512,
 
-		LWEStdDev:  0.00002024849643226141,
-		GLWEStdDev: 0.0000000444843247619562,
+		LWEStdDev:  0.00002120846893069971872305794214,
+		GLWEStdDev: 0.00000002685935683878752834630074,
 
 		BlockSize: 3,
 
@@ -35,8 +35,8 @@ var (
 		PolyDegree:      512,
 		LookUpTableSize: 512,
 
-		LWEStdDev:  0.00002024849643226141,
-		GLWEStdDev: 0.0000000444843247619562,
+		LWEStdDev:  0.00002120846893069971872305794214,
+		GLWEStdDev: 0.00000002685935683878752834630074,
 
 		BlockSize: 3,
 
@@ -84,8 +84,8 @@ var (
 		PolyDegree:      512,
 		LookUpTableSize: 512,
 
-		LWEStdDev:  0.000020524870466164442,
-		GLWEStdDev: 0.000000000003916278475726331,
+		LWEStdDev:  0.00002120846893069971872305794214,
+		GLWEStdDev: 0.00000000000231841227527049948463,
 
 		BlockSize: 3,
 
@@ -105,13 +105,13 @@ var (
 
 	// ParamsUint3 is a parameter set with 3 bits of message space.
 	ParamsUint3 = ParametersLiteral[uint64]{
-		LWEDimension:    804,
+		LWEDimension:    820,
 		GLWERank:        2,
 		PolyDegree:      1024,
 		LookUpTableSize: 1024,
 
-		LWEStdDev:  0.000002433797421598353,
-		GLWEStdDev: 0.0000000000000003472576015484159,
+		LWEStdDev:  0.00000251676160959795544987084234,
+		GLWEStdDev: 0.00000000000000022204460492503131,
 
 		BlockSize: 4,
 
@@ -131,13 +131,13 @@ var (
 
 	// ParamsUint4 is a parameter set with 4 bits of message space.
 	ParamsUint4 = ParametersLiteral[uint64]{
-		LWEDimension:    804,
+		LWEDimension:    820,
 		GLWERank:        1,
 		PolyDegree:      2048,
 		LookUpTableSize: 2048,
 
-		LWEStdDev:  0.000002433797421598353,
-		GLWEStdDev: 0.0000000000000003472576015484159,
+		LWEStdDev:  0.00000251676160959795544987084234,
+		GLWEStdDev: 0.00000000000000022204460492503131,
 
 		BlockSize: 4,
 
@@ -157,15 +157,15 @@ var (
 
 	// ParamsUint5 is a parameter set with 5 bits of message space.
 	ParamsUint5 = ParametersLiteral[uint64]{
-		LWEDimension:    978,
+		LWEDimension:    1071,
 		GLWERank:        1,
 		PolyDegree:      2048,
 		LookUpTableSize: 2048,
 
-		LWEStdDev:  0.00000010213207908022988,
-		GLWEStdDev: 0.0000000000000003472576015484159,
+		LWEStdDev:  0.00000007088226765410429399593757,
+		GLWEStdDev: 0.00000000000000022204460492503131,
 
-		BlockSize: 6,
+		BlockSize: 7,
 
 		MessageModulus: 1 << 5,
 
@@ -188,8 +188,8 @@ var (
 		PolyDegree:      2048,
 		LookUpTableSize: 4096,
 
-		LWEStdDev:  0.000000018754870581971254,
-		GLWEStdDev: 0.0000000000000003472576015484159,
+		LWEStdDev:  0.00000007088226765410429399593757,
+		GLWEStdDev: 0.00000000000000022204460492503131,
 
 		BlockSize: 7,
 
@@ -214,8 +214,8 @@ var (
 		PolyDegree:      2048,
 		LookUpTableSize: 8192,
 
-		LWEStdDev:  0.000000003704451841947947,
-		GLWEStdDev: 0.0000000000000003472576015484159,
+		LWEStdDev:  0.00000001966220007498402695211596,
+		GLWEStdDev: 0.00000000000000022204460492503131,
 
 		BlockSize: 8,
 
@@ -240,8 +240,8 @@ var (
 		PolyDegree:      2048,
 		LookUpTableSize: 18432,
 
-		LWEStdDev:  0.000000003704451841947947,
-		GLWEStdDev: 0.0000000000000003472576015484159,
+		LWEStdDev:  0.00000001966220007498402695211596,
+		GLWEStdDev: 0.00000000000000022204460492503131,
 
 		BlockSize: 8,
 
