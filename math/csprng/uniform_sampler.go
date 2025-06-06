@@ -14,7 +14,7 @@ import (
 const bufSize = 8192
 
 // UniformSampler samples values from uniform distribution.
-// This uses blake2b as a underlying prng.
+// This uses AES-CTR as a underlying prng.
 type UniformSampler[T num.Integer] struct {
 	prng cipher.Stream
 
