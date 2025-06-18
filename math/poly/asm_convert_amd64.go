@@ -217,15 +217,15 @@ func convertFourierPolyToPolyAddAssign[T num.Integer](fp []float64, pOut []T) {
 		qOut0 := (*[4]T)(unsafe.Pointer(&pOut[ii]))
 		qOut1 := (*[4]T)(unsafe.Pointer(&pOut[ii+N/2]))
 
-		qOut0[0] -= T(int64(fq[0]))
-		qOut0[1] -= T(int64(fq[1]))
-		qOut0[2] -= T(int64(fq[2]))
-		qOut0[3] -= T(int64(fq[3]))
+		qOut0[0] += T(int64(fq[0]))
+		qOut0[1] += T(int64(fq[1]))
+		qOut0[2] += T(int64(fq[2]))
+		qOut0[3] += T(int64(fq[3]))
 
-		qOut1[0] -= T(int64(fq[4]))
-		qOut1[1] -= T(int64(fq[5]))
-		qOut1[2] -= T(int64(fq[6]))
-		qOut1[3] -= T(int64(fq[7]))
+		qOut1[0] += T(int64(fq[4]))
+		qOut1[1] += T(int64(fq[5]))
+		qOut1[2] += T(int64(fq[6]))
+		qOut1[3] += T(int64(fq[7]))
 	}
 }
 
