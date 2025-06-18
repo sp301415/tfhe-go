@@ -32,7 +32,25 @@ func AddAssign[T num.Number](v0, v1, vOut []T) {
 		}
 	}
 
-	for i := range vOut {
+	M := (len(vOut) >> 3) << 3
+
+	for i := 0; i < M; i += 8 {
+		w0 := (*[8]T)(unsafe.Pointer(&v0[i]))
+		w1 := (*[8]T)(unsafe.Pointer(&v1[i]))
+		wOut := (*[8]T)(unsafe.Pointer(&vOut[i]))
+
+		wOut[0] = w0[0] + w1[0]
+		wOut[1] = w0[1] + w1[1]
+		wOut[2] = w0[2] + w1[2]
+		wOut[3] = w0[3] + w1[3]
+
+		wOut[4] = w0[4] + w1[4]
+		wOut[5] = w0[5] + w1[5]
+		wOut[6] = w0[6] + w1[6]
+		wOut[7] = w0[7] + w1[7]
+	}
+
+	for i := M; i < len(vOut); i++ {
 		vOut[i] = v0[i] + v1[i]
 	}
 }
@@ -60,7 +78,25 @@ func SubAssign[T num.Number](v0, v1, vOut []T) {
 		}
 	}
 
-	for i := range vOut {
+	M := (len(vOut) >> 3) << 3
+
+	for i := 0; i < M; i += 8 {
+		w0 := (*[8]T)(unsafe.Pointer(&v0[i]))
+		w1 := (*[8]T)(unsafe.Pointer(&v1[i]))
+		wOut := (*[8]T)(unsafe.Pointer(&vOut[i]))
+
+		wOut[0] = w0[0] - w1[0]
+		wOut[1] = w0[1] - w1[1]
+		wOut[2] = w0[2] - w1[2]
+		wOut[3] = w0[3] - w1[3]
+
+		wOut[4] = w0[4] - w1[4]
+		wOut[5] = w0[5] - w1[5]
+		wOut[6] = w0[6] - w1[6]
+		wOut[7] = w0[7] - w1[7]
+	}
+
+	for i := M; i < len(vOut); i++ {
 		vOut[i] = v0[i] - v1[i]
 	}
 }
@@ -88,7 +124,24 @@ func ScalarMulAssign[T num.Number](v0 []T, c T, vOut []T) {
 		}
 	}
 
-	for i := range vOut {
+	M := (len(vOut) >> 3) << 3
+
+	for i := 0; i < M; i += 8 {
+		w0 := (*[8]T)(unsafe.Pointer(&v0[i]))
+		wOut := (*[8]T)(unsafe.Pointer(&vOut[i]))
+
+		wOut[0] = c * w0[0]
+		wOut[1] = c * w0[1]
+		wOut[2] = c * w0[2]
+		wOut[3] = c * w0[3]
+
+		wOut[4] = c * w0[4]
+		wOut[5] = c * w0[5]
+		wOut[6] = c * w0[6]
+		wOut[7] = c * w0[7]
+	}
+
+	for i := M; i < len(vOut); i++ {
 		vOut[i] = c * v0[i]
 	}
 }
@@ -116,7 +169,24 @@ func ScalarMulAddAssign[T num.Number](v0 []T, c T, vOut []T) {
 		}
 	}
 
-	for i := range vOut {
+	M := (len(vOut) >> 3) << 3
+
+	for i := 0; i < M; i += 8 {
+		w0 := (*[8]T)(unsafe.Pointer(&v0[i]))
+		wOut := (*[8]T)(unsafe.Pointer(&vOut[i]))
+
+		wOut[0] += c * w0[0]
+		wOut[1] += c * w0[1]
+		wOut[2] += c * w0[2]
+		wOut[3] += c * w0[3]
+
+		wOut[4] += c * w0[4]
+		wOut[5] += c * w0[5]
+		wOut[6] += c * w0[6]
+		wOut[7] += c * w0[7]
+	}
+
+	for i := M; i < len(vOut); i++ {
 		vOut[i] += c * v0[i]
 	}
 }
@@ -144,7 +214,24 @@ func ScalarMulSubAssign[T num.Number](v0 []T, c T, vOut []T) {
 		}
 	}
 
-	for i := range vOut {
+	M := (len(vOut) >> 3) << 3
+
+	for i := 0; i < M; i += 8 {
+		w0 := (*[8]T)(unsafe.Pointer(&v0[i]))
+		wOut := (*[8]T)(unsafe.Pointer(&vOut[i]))
+
+		wOut[0] -= c * w0[0]
+		wOut[1] -= c * w0[1]
+		wOut[2] -= c * w0[2]
+		wOut[3] -= c * w0[3]
+
+		wOut[4] -= c * w0[4]
+		wOut[5] -= c * w0[5]
+		wOut[6] -= c * w0[6]
+		wOut[7] -= c * w0[7]
+	}
+
+	for i := M; i < len(vOut); i++ {
 		vOut[i] -= c * v0[i]
 	}
 }
@@ -172,7 +259,25 @@ func ElementWiseMulAssign[T num.Number](v0, v1, vOut []T) {
 		}
 	}
 
-	for i := range vOut {
+	M := (len(vOut) >> 3) << 3
+
+	for i := 0; i < M; i += 8 {
+		w0 := (*[8]T)(unsafe.Pointer(&v0[i]))
+		w1 := (*[8]T)(unsafe.Pointer(&v1[i]))
+		wOut := (*[8]T)(unsafe.Pointer(&vOut[i]))
+
+		wOut[0] = w0[0] * w1[0]
+		wOut[1] = w0[1] * w1[1]
+		wOut[2] = w0[2] * w1[2]
+		wOut[3] = w0[3] * w1[3]
+
+		wOut[4] = w0[4] * w1[4]
+		wOut[5] = w0[5] * w1[5]
+		wOut[6] = w0[6] * w1[6]
+		wOut[7] = w0[7] * w1[7]
+	}
+
+	for i := M; i < len(vOut); i++ {
 		vOut[i] = v0[i] * v1[i]
 	}
 }
@@ -200,7 +305,25 @@ func ElementWiseMulAddAssign[T num.Number](v0, v1, vOut []T) {
 		}
 	}
 
-	for i := range vOut {
+	M := (len(vOut) >> 3) << 3
+
+	for i := 0; i < M; i += 8 {
+		w0 := (*[8]T)(unsafe.Pointer(&v0[i]))
+		w1 := (*[8]T)(unsafe.Pointer(&v1[i]))
+		wOut := (*[8]T)(unsafe.Pointer(&vOut[i]))
+
+		wOut[0] += w0[0] * w1[0]
+		wOut[1] += w0[1] * w1[1]
+		wOut[2] += w0[2] * w1[2]
+		wOut[3] += w0[3] * w1[3]
+
+		wOut[4] += w0[4] * w1[4]
+		wOut[5] += w0[5] * w1[5]
+		wOut[6] += w0[6] * w1[6]
+		wOut[7] += w0[7] * w1[7]
+	}
+
+	for i := M; i < len(vOut); i++ {
 		vOut[i] += v0[i] * v1[i]
 	}
 }
@@ -228,7 +351,25 @@ func ElementWiseMulSubAssign[T num.Number](v0, v1, vOut []T) {
 		}
 	}
 
-	for i := range vOut {
+	M := (len(vOut) >> 3) << 3
+
+	for i := 0; i < M; i += 8 {
+		w0 := (*[8]T)(unsafe.Pointer(&v0[i]))
+		w1 := (*[8]T)(unsafe.Pointer(&v1[i]))
+		wOut := (*[8]T)(unsafe.Pointer(&vOut[i]))
+
+		wOut[0] -= w0[0] * w1[0]
+		wOut[1] -= w0[1] * w1[1]
+		wOut[2] -= w0[2] * w1[2]
+		wOut[3] -= w0[3] * w1[3]
+
+		wOut[4] -= w0[4] * w1[4]
+		wOut[5] -= w0[5] * w1[5]
+		wOut[6] -= w0[6] * w1[6]
+		wOut[7] -= w0[7] * w1[7]
+	}
+
+	for i := M; i < len(vOut); i++ {
 		vOut[i] -= v0[i] * v1[i]
 	}
 }

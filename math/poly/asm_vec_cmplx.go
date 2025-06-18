@@ -2,185 +2,258 @@
 
 package poly
 
+import "unsafe"
+
 // addCmplxAssign computes vOut = v0 + v1.
 func addCmplxAssign(v0, v1, vOut []float64) {
-	for i := range vOut {
-		vOut[i] = v0[i] + v1[i]
+	for i := 0; i < len(vOut); i += 8 {
+		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
+		w1 := (*[8]float64)(unsafe.Pointer(&v1[i]))
+		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
+
+		wOut[0] = w0[0] + w1[0]
+		wOut[1] = w0[1] + w1[1]
+		wOut[2] = w0[2] + w1[2]
+		wOut[3] = w0[3] + w1[3]
+
+		wOut[4] = w0[4] + w1[4]
+		wOut[5] = w0[5] + w1[5]
+		wOut[6] = w0[6] + w1[6]
+		wOut[7] = w0[7] + w1[7]
 	}
 }
 
 // subCmplxAssign computes vOut = v0 - v1.
 func subCmplxAssign(v0, v1, vOut []float64) {
-	for i := range vOut {
-		vOut[i] = v0[i] - v1[i]
+	for i := 0; i < len(vOut); i += 8 {
+		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
+		w1 := (*[8]float64)(unsafe.Pointer(&v1[i]))
+		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
+
+		wOut[0] = w0[0] - w1[0]
+		wOut[1] = w0[1] - w1[1]
+		wOut[2] = w0[2] - w1[2]
+		wOut[3] = w0[3] - w1[3]
+
+		wOut[4] = w0[4] - w1[4]
+		wOut[5] = w0[5] - w1[5]
+		wOut[6] = w0[6] - w1[6]
+		wOut[7] = w0[7] - w1[7]
 	}
 }
 
 // negCmplxAssign computes vOut = -v0.
 func negCmplxAssign(v0, vOut []float64) {
-	for i := range vOut {
-		vOut[i] = -v0[i]
+	for i := 0; i < len(vOut); i += 8 {
+		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
+		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
+
+		wOut[0] = -w0[0]
+		wOut[1] = -w0[1]
+		wOut[2] = -w0[2]
+		wOut[3] = -w0[3]
+
+		wOut[4] = -w0[4]
+		wOut[5] = -w0[5]
+		wOut[6] = -w0[6]
+		wOut[7] = -w0[7]
 	}
 }
 
 // floatMulCmplxAssign computes vOut = c * v0.
 func floatMulCmplxAssign(v0 []float64, c float64, vOut []float64) {
-	for i := range vOut {
-		vOut[i] = c * v0[i]
+	for i := 0; i < len(vOut); i += 8 {
+		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
+		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
+
+		wOut[0] = c * w0[0]
+		wOut[1] = c * w0[1]
+		wOut[2] = c * w0[2]
+		wOut[3] = c * w0[3]
+
+		wOut[4] = c * w0[4]
+		wOut[5] = c * w0[5]
+		wOut[6] = c * w0[6]
+		wOut[7] = c * w0[7]
 	}
 }
 
 // floatMulAddCmplxAssign computes vOut += c * v0.
 func floatMulAddCmplxAssign(v0 []float64, c float64, vOut []float64) {
-	for i := range vOut {
-		vOut[i] += c * v0[i]
+	for i := 0; i < len(vOut); i += 8 {
+		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
+		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
+
+		wOut[0] += c * w0[0]
+		wOut[1] += c * w0[1]
+		wOut[2] += c * w0[2]
+		wOut[3] += c * w0[3]
+
+		wOut[4] += c * w0[4]
+		wOut[5] += c * w0[5]
+		wOut[6] += c * w0[6]
+		wOut[7] += c * w0[7]
 	}
 }
 
 // floatMulSubCmplxAssign computes vOut -= c * v0.
 func floatMulSubCmplxAssign(v0 []float64, c float64, vOut []float64) {
-	for i := range vOut {
-		vOut[i] -= c * v0[i]
+	for i := 0; i < len(vOut); i += 8 {
+		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
+		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
+
+		wOut[0] -= c * w0[0]
+		wOut[1] -= c * w0[1]
+		wOut[2] -= c * w0[2]
+		wOut[3] -= c * w0[3]
+
+		wOut[4] -= c * w0[4]
+		wOut[5] -= c * w0[5]
+		wOut[6] -= c * w0[6]
+		wOut[7] -= c * w0[7]
 	}
 }
 
 // cmplxMulCmplxAssign computes vOut = c * v0.
 func cmplxMulCmplxAssign(v0 []float64, c complex128, vOut []float64) {
+	cR, cI := real(c), imag(c)
 	for i := 0; i < len(vOut); i += 8 {
-		v0Tmp := v0[i : i+8 : i+8]
-		vOutTmp := vOut[i : i+8 : i+8]
+		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
+		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
 
-		vOutTmp[0] = v0Tmp[0]*real(c) - v0Tmp[4]*imag(c)
-		vOutTmp[1] = v0Tmp[1]*real(c) - v0Tmp[5]*imag(c)
-		vOutTmp[2] = v0Tmp[2]*real(c) - v0Tmp[6]*imag(c)
-		vOutTmp[3] = v0Tmp[3]*real(c) - v0Tmp[7]*imag(c)
+		wOut[0] = w0[0]*cR - w0[4]*cI
+		wOut[1] = w0[1]*cR - w0[5]*cI
+		wOut[2] = w0[2]*cR - w0[6]*cI
+		wOut[3] = w0[3]*cR - w0[7]*cI
 
-		vOutTmp[4] = v0Tmp[0]*imag(c) + v0Tmp[4]*real(c)
-		vOutTmp[5] = v0Tmp[1]*imag(c) + v0Tmp[5]*real(c)
-		vOutTmp[6] = v0Tmp[2]*imag(c) + v0Tmp[6]*real(c)
-		vOutTmp[7] = v0Tmp[3]*imag(c) + v0Tmp[7]*real(c)
+		wOut[4] = w0[0]*cI + w0[4]*cR
+		wOut[5] = w0[1]*cI + w0[5]*cR
+		wOut[6] = w0[2]*cI + w0[6]*cR
+		wOut[7] = w0[3]*cI + w0[7]*cR
 	}
 }
 
 // cmplxMulAddCmplxAssign computes vOut += c * v0.
 func cmplxMulAddCmplxAssign(v0 []float64, c complex128, vOut []float64) {
+	cR, cI := real(c), imag(c)
 	for i := 0; i < len(vOut); i += 8 {
-		v0Tmp := v0[i : i+8 : i+8]
-		vOutTmp := vOut[i : i+8 : i+8]
+		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
+		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
 
-		vOutTmp[0] += v0Tmp[0]*real(c) - v0Tmp[4]*imag(c)
-		vOutTmp[1] += v0Tmp[1]*real(c) - v0Tmp[5]*imag(c)
-		vOutTmp[2] += v0Tmp[2]*real(c) - v0Tmp[6]*imag(c)
-		vOutTmp[3] += v0Tmp[3]*real(c) - v0Tmp[7]*imag(c)
+		wOut[0] += w0[0]*cR - w0[4]*cI
+		wOut[1] += w0[1]*cR - w0[5]*cI
+		wOut[2] += w0[2]*cR - w0[6]*cI
+		wOut[3] += w0[3]*cR - w0[7]*cI
 
-		vOutTmp[4] += v0Tmp[0]*imag(c) + v0Tmp[4]*real(c)
-		vOutTmp[5] += v0Tmp[1]*imag(c) + v0Tmp[5]*real(c)
-		vOutTmp[6] += v0Tmp[2]*imag(c) + v0Tmp[6]*real(c)
-		vOutTmp[7] += v0Tmp[3]*imag(c) + v0Tmp[7]*real(c)
+		wOut[4] += w0[0]*cI + w0[4]*cR
+		wOut[5] += w0[1]*cI + w0[5]*cR
+		wOut[6] += w0[2]*cI + w0[6]*cR
+		wOut[7] += w0[3]*cI + w0[7]*cR
 	}
 }
 
 // cmplxMulSubCmplxAssign computes vOut -= c * v0.
 func cmplxMulSubCmplxAssign(v0 []float64, c complex128, vOut []float64) {
+	cR, cI := real(c), imag(c)
 	for i := 0; i < len(vOut); i += 8 {
-		v0Tmp := v0[i : i+8 : i+8]
-		vOutTmp := vOut[i : i+8 : i+8]
+		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
+		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
 
-		vOutTmp[0] -= v0Tmp[0]*real(c) - v0Tmp[4]*imag(c)
-		vOutTmp[1] -= v0Tmp[1]*real(c) - v0Tmp[5]*imag(c)
-		vOutTmp[2] -= v0Tmp[2]*real(c) - v0Tmp[6]*imag(c)
-		vOutTmp[3] -= v0Tmp[3]*real(c) - v0Tmp[7]*imag(c)
+		wOut[0] -= w0[0]*cR - w0[4]*cI
+		wOut[1] -= w0[1]*cR - w0[5]*cI
+		wOut[2] -= w0[2]*cR - w0[6]*cI
+		wOut[3] -= w0[3]*cR - w0[7]*cI
 
-		vOutTmp[4] -= v0Tmp[0]*imag(c) + v0Tmp[4]*real(c)
-		vOutTmp[5] -= v0Tmp[1]*imag(c) + v0Tmp[5]*real(c)
-		vOutTmp[6] -= v0Tmp[2]*imag(c) + v0Tmp[6]*real(c)
-		vOutTmp[7] -= v0Tmp[3]*imag(c) + v0Tmp[7]*real(c)
+		wOut[4] -= w0[0]*cI + w0[4]*cR
+		wOut[5] -= w0[1]*cI + w0[5]*cR
+		wOut[6] -= w0[2]*cI + w0[6]*cR
+		wOut[7] -= w0[3]*cI + w0[7]*cR
 	}
 }
 
 // elementWiseMulCmplxAssign computes vOut = v0 * v1.
 func elementWiseMulCmplxAssign(v0, v1, vOut []float64) {
 	for i := 0; i < len(vOut); i += 8 {
-		v0Tmp := v0[i+0 : i+8 : i+8]
-		v1Tmp := v1[i+0 : i+8 : i+8]
-		vOutTmp := vOut[i+0 : i+8 : i+8]
+		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
+		w1 := (*[8]float64)(unsafe.Pointer(&v1[i]))
+		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
 
-		vOut0 := v0Tmp[0]*v1Tmp[0] - v0Tmp[4]*v1Tmp[4]
-		vOut1 := v0Tmp[1]*v1Tmp[1] - v0Tmp[5]*v1Tmp[5]
-		vOut2 := v0Tmp[2]*v1Tmp[2] - v0Tmp[6]*v1Tmp[6]
-		vOut3 := v0Tmp[3]*v1Tmp[3] - v0Tmp[7]*v1Tmp[7]
+		vOut0 := w0[0]*w1[0] - w0[4]*w1[4]
+		vOut1 := w0[1]*w1[1] - w0[5]*w1[5]
+		vOut2 := w0[2]*w1[2] - w0[6]*w1[6]
+		vOut3 := w0[3]*w1[3] - w0[7]*w1[7]
 
-		vOut4 := v0Tmp[0]*v1Tmp[4] + v0Tmp[4]*v1Tmp[0]
-		vOut5 := v0Tmp[1]*v1Tmp[5] + v0Tmp[5]*v1Tmp[1]
-		vOut6 := v0Tmp[2]*v1Tmp[6] + v0Tmp[6]*v1Tmp[2]
-		vOut7 := v0Tmp[3]*v1Tmp[7] + v0Tmp[7]*v1Tmp[3]
+		vOut4 := w0[0]*w1[4] + w0[4]*w1[0]
+		vOut5 := w0[1]*w1[5] + w0[5]*w1[1]
+		vOut6 := w0[2]*w1[6] + w0[6]*w1[2]
+		vOut7 := w0[3]*w1[7] + w0[7]*w1[3]
 
-		vOutTmp[0] = vOut0
-		vOutTmp[1] = vOut1
-		vOutTmp[2] = vOut2
-		vOutTmp[3] = vOut3
+		wOut[0] = vOut0
+		wOut[1] = vOut1
+		wOut[2] = vOut2
+		wOut[3] = vOut3
 
-		vOutTmp[4] = vOut4
-		vOutTmp[5] = vOut5
-		vOutTmp[6] = vOut6
-		vOutTmp[7] = vOut7
+		wOut[4] = vOut4
+		wOut[5] = vOut5
+		wOut[6] = vOut6
+		wOut[7] = vOut7
 	}
 }
 
 // elementWiseMulAddCmplxAssign computes vOut += v0 * v1.
 func elementWiseMulAddCmplxAssign(v0, v1, vOut []float64) {
 	for i := 0; i < len(vOut); i += 8 {
-		v0Tmp := v0[i+0 : i+8 : i+8]
-		v1Tmp := v1[i+0 : i+8 : i+8]
-		vOutTmp := vOut[i+0 : i+8 : i+8]
+		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
+		w1 := (*[8]float64)(unsafe.Pointer(&v1[i]))
+		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
 
-		vOut0 := vOutTmp[0] + (v0Tmp[0]*v1Tmp[0] - v0Tmp[4]*v1Tmp[4])
-		vOut1 := vOutTmp[1] + (v0Tmp[1]*v1Tmp[1] - v0Tmp[5]*v1Tmp[5])
-		vOut2 := vOutTmp[2] + (v0Tmp[2]*v1Tmp[2] - v0Tmp[6]*v1Tmp[6])
-		vOut3 := vOutTmp[3] + (v0Tmp[3]*v1Tmp[3] - v0Tmp[7]*v1Tmp[7])
+		vOut0 := wOut[0] + (w0[0]*w1[0] - w0[4]*w1[4])
+		vOut1 := wOut[1] + (w0[1]*w1[1] - w0[5]*w1[5])
+		vOut2 := wOut[2] + (w0[2]*w1[2] - w0[6]*w1[6])
+		vOut3 := wOut[3] + (w0[3]*w1[3] - w0[7]*w1[7])
 
-		vOut4 := vOutTmp[4] + (v0Tmp[0]*v1Tmp[4] + v0Tmp[4]*v1Tmp[0])
-		vOut5 := vOutTmp[5] + (v0Tmp[1]*v1Tmp[5] + v0Tmp[5]*v1Tmp[1])
-		vOut6 := vOutTmp[6] + (v0Tmp[2]*v1Tmp[6] + v0Tmp[6]*v1Tmp[2])
-		vOut7 := vOutTmp[7] + (v0Tmp[3]*v1Tmp[7] + v0Tmp[7]*v1Tmp[3])
+		vOut4 := wOut[4] + (w0[0]*w1[4] + w0[4]*w1[0])
+		vOut5 := wOut[5] + (w0[1]*w1[5] + w0[5]*w1[1])
+		vOut6 := wOut[6] + (w0[2]*w1[6] + w0[6]*w1[2])
+		vOut7 := wOut[7] + (w0[3]*w1[7] + w0[7]*w1[3])
 
-		vOutTmp[0] = vOut0
-		vOutTmp[1] = vOut1
-		vOutTmp[2] = vOut2
-		vOutTmp[3] = vOut3
+		wOut[0] = vOut0
+		wOut[1] = vOut1
+		wOut[2] = vOut2
+		wOut[3] = vOut3
 
-		vOutTmp[4] = vOut4
-		vOutTmp[5] = vOut5
-		vOutTmp[6] = vOut6
-		vOutTmp[7] = vOut7
+		wOut[4] = vOut4
+		wOut[5] = vOut5
+		wOut[6] = vOut6
+		wOut[7] = vOut7
 	}
 }
 
 // elementWiseMulSubCmplxAssign computes vOut -= v0 * v1.
 func elementWiseMulSubCmplxAssign(v0, v1, vOut []float64) {
 	for i := 0; i < len(vOut); i += 8 {
-		v0Tmp := v0[i+0 : i+8 : i+8]
-		v1Tmp := v1[i+0 : i+8 : i+8]
-		vOutTmp := vOut[i+0 : i+8 : i+8]
+		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
+		w1 := (*[8]float64)(unsafe.Pointer(&v1[i]))
+		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
 
-		vOut0 := vOutTmp[0] - (v0Tmp[0]*v1Tmp[0] - v0Tmp[4]*v1Tmp[4])
-		vOut1 := vOutTmp[1] - (v0Tmp[1]*v1Tmp[1] - v0Tmp[5]*v1Tmp[5])
-		vOut2 := vOutTmp[2] - (v0Tmp[2]*v1Tmp[2] - v0Tmp[6]*v1Tmp[6])
-		vOut3 := vOutTmp[3] - (v0Tmp[3]*v1Tmp[3] - v0Tmp[7]*v1Tmp[7])
+		vOut0 := wOut[0] - (w0[0]*w1[0] - w0[4]*w1[4])
+		vOut1 := wOut[1] - (w0[1]*w1[1] - w0[5]*w1[5])
+		vOut2 := wOut[2] - (w0[2]*w1[2] - w0[6]*w1[6])
+		vOut3 := wOut[3] - (w0[3]*w1[3] - w0[7]*w1[7])
 
-		vOut4 := vOutTmp[4] - (v0Tmp[0]*v1Tmp[4] + v0Tmp[4]*v1Tmp[0])
-		vOut5 := vOutTmp[5] - (v0Tmp[1]*v1Tmp[5] + v0Tmp[5]*v1Tmp[1])
-		vOut6 := vOutTmp[6] - (v0Tmp[2]*v1Tmp[6] + v0Tmp[6]*v1Tmp[2])
-		vOut7 := vOutTmp[7] - (v0Tmp[3]*v1Tmp[7] + v0Tmp[7]*v1Tmp[3])
+		vOut4 := wOut[4] - (w0[0]*w1[4] + w0[4]*w1[0])
+		vOut5 := wOut[5] - (w0[1]*w1[5] + w0[5]*w1[1])
+		vOut6 := wOut[6] - (w0[2]*w1[6] + w0[6]*w1[2])
+		vOut7 := wOut[7] - (w0[3]*w1[7] + w0[7]*w1[3])
 
-		vOutTmp[0] = vOut0
-		vOutTmp[1] = vOut1
-		vOutTmp[2] = vOut2
-		vOutTmp[3] = vOut3
+		wOut[0] = vOut0
+		wOut[1] = vOut1
+		wOut[2] = vOut2
+		wOut[3] = vOut3
 
-		vOutTmp[4] = vOut4
-		vOutTmp[5] = vOut5
-		vOutTmp[6] = vOut6
-		vOutTmp[7] = vOut7
+		wOut[4] = vOut4
+		wOut[5] = vOut5
+		wOut[6] = vOut6
+		wOut[7] = vOut7
 	}
 }

@@ -71,6 +71,8 @@ func main() {
 	}
 
 	if *vec {
+		vecConstants()
+
 		addAssignUint32AVX2()
 		addAssignUint64AVX2()
 
