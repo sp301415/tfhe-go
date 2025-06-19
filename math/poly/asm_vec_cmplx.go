@@ -173,87 +173,81 @@ func cmplxMulSubCmplxAssign(v0 []float64, c complex128, vOut []float64) {
 
 // elementWiseMulCmplxAssign computes vOut = v0 * v1.
 func elementWiseMulCmplxAssign(v0, v1, vOut []float64) {
+	var vOutR, vOutI float64
+
 	for i := 0; i < len(vOut); i += 8 {
 		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
 		w1 := (*[8]float64)(unsafe.Pointer(&v1[i]))
 		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
 
-		vOut0 := w0[0]*w1[0] - w0[4]*w1[4]
-		vOut1 := w0[1]*w1[1] - w0[5]*w1[5]
-		vOut2 := w0[2]*w1[2] - w0[6]*w1[6]
-		vOut3 := w0[3]*w1[3] - w0[7]*w1[7]
+		vOutR = w0[0]*w1[0] - w0[4]*w1[4]
+		vOutI = w0[0]*w1[4] + w0[4]*w1[0]
+		wOut[0], wOut[4] = vOutR, vOutI
 
-		vOut4 := w0[0]*w1[4] + w0[4]*w1[0]
-		vOut5 := w0[1]*w1[5] + w0[5]*w1[1]
-		vOut6 := w0[2]*w1[6] + w0[6]*w1[2]
-		vOut7 := w0[3]*w1[7] + w0[7]*w1[3]
+		vOutR = w0[1]*w1[1] - w0[5]*w1[5]
+		vOutI = w0[1]*w1[5] + w0[5]*w1[1]
+		wOut[1], wOut[5] = vOutR, vOutI
 
-		wOut[0] = vOut0
-		wOut[1] = vOut1
-		wOut[2] = vOut2
-		wOut[3] = vOut3
+		vOutR = w0[2]*w1[2] - w0[6]*w1[6]
+		vOutI = w0[2]*w1[6] + w0[6]*w1[2]
+		wOut[2], wOut[6] = vOutR, vOutI
 
-		wOut[4] = vOut4
-		wOut[5] = vOut5
-		wOut[6] = vOut6
-		wOut[7] = vOut7
+		vOutR = w0[3]*w1[3] - w0[7]*w1[7]
+		vOutI = w0[3]*w1[7] + w0[7]*w1[3]
+		wOut[3], wOut[7] = vOutR, vOutI
 	}
 }
 
 // elementWiseMulAddCmplxAssign computes vOut += v0 * v1.
 func elementWiseMulAddCmplxAssign(v0, v1, vOut []float64) {
+	var vOutR, vOutI float64
+
 	for i := 0; i < len(vOut); i += 8 {
 		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
 		w1 := (*[8]float64)(unsafe.Pointer(&v1[i]))
 		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
 
-		vOut0 := wOut[0] + (w0[0]*w1[0] - w0[4]*w1[4])
-		vOut1 := wOut[1] + (w0[1]*w1[1] - w0[5]*w1[5])
-		vOut2 := wOut[2] + (w0[2]*w1[2] - w0[6]*w1[6])
-		vOut3 := wOut[3] + (w0[3]*w1[3] - w0[7]*w1[7])
+		vOutR = wOut[0] + (w0[0]*w1[0] - w0[4]*w1[4])
+		vOutI = wOut[4] + (w0[0]*w1[4] + w0[4]*w1[0])
+		wOut[0], wOut[4] = vOutR, vOutI
 
-		vOut4 := wOut[4] + (w0[0]*w1[4] + w0[4]*w1[0])
-		vOut5 := wOut[5] + (w0[1]*w1[5] + w0[5]*w1[1])
-		vOut6 := wOut[6] + (w0[2]*w1[6] + w0[6]*w1[2])
-		vOut7 := wOut[7] + (w0[3]*w1[7] + w0[7]*w1[3])
+		vOutR = wOut[1] + (w0[1]*w1[1] - w0[5]*w1[5])
+		vOutI = wOut[5] + (w0[1]*w1[5] + w0[5]*w1[1])
+		wOut[1], wOut[5] = vOutR, vOutI
 
-		wOut[0] = vOut0
-		wOut[1] = vOut1
-		wOut[2] = vOut2
-		wOut[3] = vOut3
+		vOutR = wOut[2] + (w0[2]*w1[2] - w0[6]*w1[6])
+		vOutI = wOut[6] + (w0[2]*w1[6] + w0[6]*w1[2])
+		wOut[2], wOut[6] = vOutR, vOutI
 
-		wOut[4] = vOut4
-		wOut[5] = vOut5
-		wOut[6] = vOut6
-		wOut[7] = vOut7
+		vOutR = wOut[3] + (w0[3]*w1[3] - w0[7]*w1[7])
+		vOutI = wOut[7] + (w0[3]*w1[7] + w0[7]*w1[3])
+		wOut[3], wOut[7] = vOutR, vOutI
 	}
 }
 
 // elementWiseMulSubCmplxAssign computes vOut -= v0 * v1.
 func elementWiseMulSubCmplxAssign(v0, v1, vOut []float64) {
+	var vOutR, vOutI float64
+
 	for i := 0; i < len(vOut); i += 8 {
 		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
 		w1 := (*[8]float64)(unsafe.Pointer(&v1[i]))
 		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
 
-		vOut0 := wOut[0] - (w0[0]*w1[0] - w0[4]*w1[4])
-		vOut1 := wOut[1] - (w0[1]*w1[1] - w0[5]*w1[5])
-		vOut2 := wOut[2] - (w0[2]*w1[2] - w0[6]*w1[6])
-		vOut3 := wOut[3] - (w0[3]*w1[3] - w0[7]*w1[7])
+		vOutR = wOut[0] - (w0[0]*w1[0] - w0[4]*w1[4])
+		vOutI = wOut[4] - (w0[0]*w1[4] + w0[4]*w1[0])
+		wOut[0], wOut[4] = vOutR, vOutI
 
-		vOut4 := wOut[4] - (w0[0]*w1[4] + w0[4]*w1[0])
-		vOut5 := wOut[5] - (w0[1]*w1[5] + w0[5]*w1[1])
-		vOut6 := wOut[6] - (w0[2]*w1[6] + w0[6]*w1[2])
-		vOut7 := wOut[7] - (w0[3]*w1[7] + w0[7]*w1[3])
+		vOutR = wOut[1] - (w0[1]*w1[1] - w0[5]*w1[5])
+		vOutI = wOut[5] - (w0[1]*w1[5] + w0[5]*w1[1])
+		wOut[1], wOut[5] = vOutR, vOutI
 
-		wOut[0] = vOut0
-		wOut[1] = vOut1
-		wOut[2] = vOut2
-		wOut[3] = vOut3
+		vOutR = wOut[2] - (w0[2]*w1[2] - w0[6]*w1[6])
+		vOutI = wOut[6] - (w0[2]*w1[6] + w0[6]*w1[2])
+		wOut[2], wOut[6] = vOutR, vOutI
 
-		wOut[4] = vOut4
-		wOut[5] = vOut5
-		wOut[6] = vOut6
-		wOut[7] = vOut7
+		vOutR = wOut[3] - (w0[3]*w1[3] - w0[7]*w1[7])
+		vOutI = wOut[7] - (w0[3]*w1[7] + w0[7]*w1[3])
+		wOut[3], wOut[7] = vOutR, vOutI
 	}
 }
