@@ -155,10 +155,16 @@ fmt.Println(dec.DecryptLWEBool(ctOut))
 ## Benchmarks
 All benchmarks were measured on a machine equipped with Intel Xeon Platinum 8268 CPU @ 2.90GHz and 384GB of RAM.
 
-|Operation|TFHE-go|TFHE-rs (v1.2.0)|
-|---------|-------|-------|
-|Gate Bootstrapping|9.20ms|14.80ms|
-|Programmable Bootstrapping (6 bits)|21.84ms|102.69ms|
+|Precision|TFHE-go|
+|---------|-------|
+|Binary|9.295ms|
+|Uint2|7.187ms|
+|Uint3|10.25ms|
+|Uint4|12.47ms|
+|Uint5|14.23ms|
+|Uint6|21.88ms|
+|Uint7|36.60ms|
+|Uint8|78.88ms|
 
 You can use the standard go test tool to reproduce benchmarks:
 ```
