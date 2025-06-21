@@ -155,7 +155,7 @@ fmt.Println(dec.DecryptLWEBool(ctOut))
 ## Benchmarks
 All benchmarks were measured on a machine equipped with Intel Xeon Platinum 8268 CPU @ 2.90GHz and 384GB of RAM.
 
-|Precision|TFHE-go|
+|Precision|Bootstrapping Time|
 |---------|-------|
 |Binary|9.295ms|
 |Uint2|7.187ms|
