@@ -57,7 +57,7 @@ type evaluationBuffer[T TorusInt] struct {
 	ctBlockFourierAcc []FourierGLWECiphertext[T]
 	// ctAccFourierDecomposed is the decomposed ctAcc in Blind Rotation.
 	// In case of BlindRotateBlock and BlindRotateOriginal, only the first element is used.
-	// This has length PolyExpandFactor.
+	// This has length PolyExtendFactor.
 	ctAccFourierDecomposed [][][]poly.FourierPoly
 	// fMono is the fourier transformed monomial in Blind Rotation.
 	fMono poly.FourierPoly
