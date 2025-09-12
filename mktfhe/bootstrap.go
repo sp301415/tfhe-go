@@ -139,7 +139,7 @@ func (e *Evaluator[T]) BlindRotateParallelAssign(ct LWECiphertext[T], lut tfhe.L
 // Input ciphertext should be of length GLWEDimension + 1.
 // Output ciphertext will be of length LWEDimension + 1.
 func (e *Evaluator[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[T] {
-	ctOut := NewLWECiphertextCustom[T](e.Parameters.singleKeyParameters.LWEDimension())
+	ctOut := NewLWECiphertextCustom[T](e.Parameters.LWEDimension())
 	e.KeySwitchForBootstrapAssign(ct, ctOut)
 	return ctOut
 }
