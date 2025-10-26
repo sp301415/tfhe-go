@@ -9,7 +9,7 @@ import (
 // according to the gadget parameters.
 //
 // Decomposer is not safe for concurrent use.
-// Use [*Decomposer.ShallowCopy] to get a safe copy.
+// Use [*Decomposer.SafeCopy] to get a safe copy.
 type Decomposer[T TorusInt] struct {
 	// PolyEvaluator is a PolyEvaluator for this Decomposer.
 	PolyEvaluator *poly.Evaluator[T]
@@ -36,9 +36,8 @@ func NewDecomposer[T TorusInt](N int) *Decomposer[T] {
 	}
 }
 
-// ShallowCopy returns a shallow copy of this Decomposer.
-// Returned Decomposer is safe for concurrent use.
-func (d *Decomposer[T]) ShallowCopy() *Decomposer[T] {
+// SafeCopy returns a thread-safe copy.
+func (d *Decomposer[T]) SafeCopy() *Decomposer[T] {
 	bufCopy := decomposerBuffer[T]{
 		cDcmp:  make([]T, len(d.buf.cDcmp)),
 		pDcmp:  make([]poly.Poly[T], len(d.buf.pDcmp)),
@@ -53,7 +52,7 @@ func (d *Decomposer[T]) ShallowCopy() *Decomposer[T] {
 	}
 
 	return &Decomposer[T]{
-		PolyEvaluator: d.PolyEvaluator.ShallowCopy(),
+		PolyEvaluator: d.PolyEvaluator.SafeCopy(),
 
 		buf: bufCopy,
 	}

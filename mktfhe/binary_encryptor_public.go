@@ -21,13 +21,12 @@ func NewBinaryPublicEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, pk
 	}
 }
 
-// ShallowCopy returns a shallow copy of this BinaryPublicEncryptor.
-// Returned BinaryPublicEncryptor is safe for concurrent use.
-func (e *BinaryPublicEncryptor[T]) ShallowCopy() *BinaryPublicEncryptor[T] {
+// SafeCopy returns a thread-safe copy.
+func (e *BinaryPublicEncryptor[T]) SafeCopy() *BinaryPublicEncryptor[T] {
 	return &BinaryPublicEncryptor[T]{
 		BinaryEncoder: e.BinaryEncoder,
 		Params:        e.Params,
-		Encryptor:     e.Encryptor.ShallowCopy(),
+		Encryptor:     e.Encryptor.SafeCopy(),
 	}
 }
 

@@ -56,11 +56,10 @@ func newFHEWEncryptorBuffer[T tfhe.TorusInt](params FHEWParameters[T]) fhewEncry
 	}
 }
 
-// ShallowCopy returns a shallow copy of this Encryptor.
-// Returned Encryptor is safe for concurrent use.
-func (e *FHEWEncryptor[T]) ShallowCopy() *FHEWEncryptor[T] {
+// SafeCopy returns a thread-safe copy.
+func (e *FHEWEncryptor[T]) SafeCopy() *FHEWEncryptor[T] {
 	return &FHEWEncryptor[T]{
-		Encryptor: e.Encryptor.ShallowCopy(),
+		Encryptor: e.Encryptor.SafeCopy(),
 		Params:    e.Params,
 		buf:       newFHEWEncryptorBuffer(e.Params),
 	}

@@ -9,7 +9,7 @@ import (
 // This is meant to be public, usually for servers.
 //
 // BinaryEvaluator is not safe for concurrent use.
-// Use [*BinaryEvaluator.ShallowCopy] to get a safe copy.
+// Use [*BinaryEvaluator.SafeCopy] to get a safe copy.
 type BinaryEvaluator[T TorusInt] struct {
 	// BinaryEncoder is an embedded encoder for this BinaryEvaluator.
 	*BinaryEncoder[T]
@@ -37,13 +37,12 @@ func NewBinaryEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) 
 	}
 }
 
-// ShallowCopy returns a shallow copy of this BinaryEvaluator.
-// Returned BinaryEvaluator is safe for concurrent use.
-func (e *BinaryEvaluator[T]) ShallowCopy() *BinaryEvaluator[T] {
+// SafeCopy returns a thread-safe copy.
+func (e *BinaryEvaluator[T]) SafeCopy() *BinaryEvaluator[T] {
 	return &BinaryEvaluator[T]{
 		BinaryEncoder: e.BinaryEncoder,
 		Params:        e.Params,
-		Evaluator:     e.Evaluator.ShallowCopy(),
+		Evaluator:     e.Evaluator.SafeCopy(),
 		signLUT:       e.signLUT,
 	}
 }

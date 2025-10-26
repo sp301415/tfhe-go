@@ -10,7 +10,7 @@ import (
 // For more details, see https://eprint.iacr.org/2025/216.
 //
 // Sanitizer is not safe for concurrent use.
-// Use [*Sanitizer.ShallowCopy] to get a safe copy.
+// Use [*Sanitizer.SafeCopy] to get a safe copy.
 type Sanitizer[T tfhe.TorusInt] struct {
 	// Evaluator is an embedded Evaluator for this Sanitizer.
 	*tfhe.Evaluator[T]
@@ -88,10 +88,10 @@ func newSanitizerBuffer[T tfhe.TorusInt](params SanitizationParameters[T]) sanit
 	}
 }
 
-// ShallowCopy creates a shallow copy of this Sanitizer.
-func (s *Sanitizer[T]) ShallowCopy() *Sanitizer[T] {
+// SafeCopy creates a shallow copy of this Sanitizer.
+func (s *Sanitizer[T]) SafeCopy() *Sanitizer[T] {
 	return &Sanitizer[T]{
-		Evaluator: s.Evaluator.ShallowCopy(),
+		Evaluator: s.Evaluator.SafeCopy(),
 
 		Params: s.Params,
 

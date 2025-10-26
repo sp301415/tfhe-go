@@ -10,7 +10,7 @@ import (
 // This is meant to be public, usually for servers.
 //
 // Evaluator is not safe for concurrent use.
-// Use [*Evaluator.ShallowCopy] to get a safe copy.
+// Use [*Evaluator.SafeCopy] to get a safe copy.
 type Evaluator[T TorusInt] struct {
 	// Encoder is an embedded encoder for this Evaluator.
 	*Encoder[T]
@@ -144,17 +144,16 @@ func newEvaluatorBuffer[T TorusInt](params Parameters[T]) evaluatorBuffer[T] {
 	}
 }
 
-// ShallowCopy returns a shallow copy of this Evaluator.
-// Returned Evaluator is safe for concurrent use.
-func (e *Evaluator[T]) ShallowCopy() *Evaluator[T] {
+// SafeCopy returns a thread-safe copy.
+func (e *Evaluator[T]) SafeCopy() *Evaluator[T] {
 	return &Evaluator[T]{
 		Encoder:         e.Encoder,
-		GLWETransformer: e.GLWETransformer.ShallowCopy(),
+		GLWETransformer: e.GLWETransformer.SafeCopy(),
 
 		Params: e.Params,
 
-		Decomposer:    e.Decomposer.ShallowCopy(),
-		PolyEvaluator: e.PolyEvaluator.ShallowCopy(),
+		Decomposer:    e.Decomposer.SafeCopy(),
+		PolyEvaluator: e.PolyEvaluator.SafeCopy(),
 
 		EvalKey: e.EvalKey,
 

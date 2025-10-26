@@ -62,7 +62,7 @@ func (e *Encryptor[T]) GenBlindRotateKeyParallel() BlindRotateKey[T] {
 
 	encryptorPool := make([]*Encryptor[T], chunkCount)
 	for i := range encryptorPool {
-		encryptorPool[i] = e.ShallowCopy()
+		encryptorPool[i] = e.SafeCopy()
 	}
 
 	jobs := make(chan [2]int)
@@ -136,7 +136,7 @@ func (e *Encryptor[T]) GenDefaultKeySwitchKeyParallel() LWEKeySwitchKey[T] {
 
 	encryptorPool := make([]*Encryptor[T], chunkCount)
 	for i := range encryptorPool {
-		encryptorPool[i] = e.ShallowCopy()
+		encryptorPool[i] = e.SafeCopy()
 	}
 
 	jobs := make(chan [2]int)

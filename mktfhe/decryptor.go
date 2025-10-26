@@ -13,7 +13,7 @@ import (
 // Therefore, we provide a all-knowing decryptor for simplicity.
 //
 // Decryptor is not safe for concurrent use.
-// Use [*Decryptor.ShallowCopy] to get a safe copy.
+// Use [*Decryptor.SafeCopy] to get a safe copy.
 type Decryptor[T tfhe.TorusInt] struct {
 	// Encoder is an embedded Encoder for this Decryptor.
 	*tfhe.Encoder[T]
@@ -95,19 +95,18 @@ func (d *Decryptor[T]) AddSecretKey(idx int, sk tfhe.SecretKey[T]) {
 	d.PartyBitMap[idx] = true
 }
 
-// ShallowCopy returns a shallow copy of this Decryptor.
-// Returned Decryptor is safe for concurrent use.
-func (d *Decryptor[T]) ShallowCopy() *Decryptor[T] {
+// SafeCopy returns a thread-safe copy.
+func (d *Decryptor[T]) SafeCopy() *Decryptor[T] {
 	decCopy := make([]*tfhe.Encryptor[T], d.Params.partyCount)
 	for i, dec := range d.SubDecryptors {
 		if dec != nil {
-			decCopy[i] = dec.ShallowCopy()
+			decCopy[i] = dec.SafeCopy()
 		}
 	}
 
 	return &Decryptor[T]{
 		Encoder:         d.Encoder,
-		GLWETransformer: d.GLWETransformer.ShallowCopy(),
+		GLWETransformer: d.GLWETransformer.SafeCopy(),
 		SubDecryptors:   decCopy,
 
 		Params:      d.Params,

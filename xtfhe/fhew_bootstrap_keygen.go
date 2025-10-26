@@ -88,7 +88,7 @@ func (e *FHEWEncryptor[T]) GenBlindRotateKeyParallel() tfhe.BlindRotateKey[T] {
 
 	encryptorPool := make([]*FHEWEncryptor[T], chunkCount)
 	for i := range encryptorPool {
-		encryptorPool[i] = e.ShallowCopy()
+		encryptorPool[i] = e.SafeCopy()
 	}
 
 	jobs := make(chan [2]int)

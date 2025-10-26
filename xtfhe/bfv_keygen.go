@@ -17,7 +17,7 @@ type BFVEvaluationKey[T tfhe.TorusInt] struct {
 // BFVKeyGenerator generates keyswitching keys for BFV type operations.
 //
 // BFVKeyGenerator is not safe for concurrent use.
-// Use [*BFVKeyGenerator.ShallowCopy] to get a safe copy.
+// Use [*BFVKeyGenerator.SafeCopy] to get a safe copy.
 type BFVKeyGenerator[T tfhe.TorusInt] struct {
 	// BaseEncryptor is a base encryptor for this BFVKeyGenerator.
 	BaseEncryptor *tfhe.Encryptor[T]
@@ -37,11 +37,11 @@ func NewBFVKeyGenerator[T tfhe.TorusInt](params tfhe.Parameters[T], sk tfhe.Secr
 	}
 }
 
-// ShallowCopy creates a shallow copy of this BFVKeyGenerator.
-func (kg *BFVKeyGenerator[T]) ShallowCopy() *BFVKeyGenerator[T] {
+// SafeCopy creates a shallow copy of this BFVKeyGenerator.
+func (kg *BFVKeyGenerator[T]) SafeCopy() *BFVKeyGenerator[T] {
 	return &BFVKeyGenerator[T]{
-		BaseEncryptor: kg.BaseEncryptor.ShallowCopy(),
-		PolyEvaluator: kg.PolyEvaluator.ShallowCopy(),
+		BaseEncryptor: kg.BaseEncryptor.SafeCopy(),
+		PolyEvaluator: kg.PolyEvaluator.SafeCopy(),
 		Params:        kg.Params,
 	}
 }

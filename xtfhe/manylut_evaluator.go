@@ -9,7 +9,7 @@ import (
 // For more details, see https://eprint.iacr.org/2021/729.
 //
 // ManyLUTEvaluator is not safe for concurrent use.
-// Use [*ManyLUTEvaluator.ShallowCopy] to get a safe copy.
+// Use [*ManyLUTEvaluator.SafeCopy] to get a safe copy.
 type ManyLUTEvaluator[T tfhe.TorusInt] struct {
 	// Evaluator is an embedded Evaluator for this ManyLUTEvaluator.
 	*tfhe.Evaluator[T]
@@ -77,11 +77,10 @@ func newManyLUTEvaluatorBuffer[T tfhe.TorusInt](params ManyLUTParameters[T]) man
 	}
 }
 
-// ShallowCopy returns a shallow copy of this Evaluator.
-// Returned Evaluator is safe for concurrent use.
-func (e *ManyLUTEvaluator[T]) ShallowCopy() *ManyLUTEvaluator[T] {
+// SafeCopy returns a thread-safe copy.
+func (e *ManyLUTEvaluator[T]) SafeCopy() *ManyLUTEvaluator[T] {
 	return &ManyLUTEvaluator[T]{
-		Evaluator: e.Evaluator.ShallowCopy(),
+		Evaluator: e.Evaluator.SafeCopy(),
 		Params:    e.Params,
 		buf:       newManyLUTEvaluatorBuffer(e.Params),
 	}

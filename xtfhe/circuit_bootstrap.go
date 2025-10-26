@@ -10,7 +10,7 @@ import (
 // For more details, see https://eprint.iacr.org/2024/1318.
 //
 // CircuitBootstrapper is not safe for concurrent use.
-// Use [*CircuitBootstrapper.ShallowCopy] to get a safe copy.
+// Use [*CircuitBootstrapper.SafeCopy] to get a safe copy.
 type CircuitBootstrapper[T tfhe.TorusInt] struct {
 	// Evaluator is an embedded Evaluator for this CircuitBootstrapper.
 	*ManyLUTEvaluator[T]
@@ -98,12 +98,12 @@ func newCircuitBootstrapBuffer[T tfhe.TorusInt](params CircuitBootstrapParameter
 	}
 }
 
-// ShallowCopy creates a shallow copy of this CircuitBootstrapper.
+// SafeCopy creates a shallow copy of this CircuitBootstrapper.
 // Returned CircuitBootstrapper is safe for concurrent use.
-func (e *CircuitBootstrapper[T]) ShallowCopy() *CircuitBootstrapper[T] {
+func (e *CircuitBootstrapper[T]) SafeCopy() *CircuitBootstrapper[T] {
 	return &CircuitBootstrapper[T]{
-		ManyLUTEvaluator: e.ManyLUTEvaluator.ShallowCopy(),
-		BFVEvaluator:     e.BFVEvaluator.ShallowCopy(),
+		ManyLUTEvaluator: e.ManyLUTEvaluator.SafeCopy(),
+		BFVEvaluator:     e.BFVEvaluator.SafeCopy(),
 
 		Params:  e.Params,
 		EvalKey: e.EvalKey,

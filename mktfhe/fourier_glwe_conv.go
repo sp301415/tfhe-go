@@ -18,11 +18,10 @@ func NewGLWETransformer[T tfhe.TorusInt](N int) *GLWETransformer[T] {
 	}
 }
 
-// ShallowCopy returns a shallow copy of this GLWE transformer.
-// Returned GLWE transformer is safe for concurrent use.
-func (e *GLWETransformer[T]) ShallowCopy() *GLWETransformer[T] {
+// SafeCopy returns a thread-safe copy.
+func (e *GLWETransformer[T]) SafeCopy() *GLWETransformer[T] {
 	return &GLWETransformer[T]{
-		PolyEvaluator: e.PolyEvaluator.ShallowCopy(),
+		PolyEvaluator: e.PolyEvaluator.SafeCopy(),
 	}
 }
 

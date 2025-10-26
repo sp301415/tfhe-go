@@ -29,11 +29,11 @@ func NewCircuitBootstrapKeyGenerator[T tfhe.TorusInt](params CircuitBootstrapPar
 	}
 }
 
-// ShallowCopy creates a shallow copy of this CircuitBootstrapKeyGenerator.
+// SafeCopy creates a shallow copy of this CircuitBootstrapKeyGenerator.
 // Returned CircuitBootstrapKeyGenerator is safe for concurrent use.
-func (kg *CircuitBootstrapKeyGenerator[T]) ShallowCopy() *CircuitBootstrapKeyGenerator[T] {
+func (kg *CircuitBootstrapKeyGenerator[T]) SafeCopy() *CircuitBootstrapKeyGenerator[T] {
 	return &CircuitBootstrapKeyGenerator[T]{
-		BFVKeyGenerator: kg.BFVKeyGenerator.ShallowCopy(),
+		BFVKeyGenerator: kg.BFVKeyGenerator.SafeCopy(),
 		Params:          kg.Params,
 	}
 }

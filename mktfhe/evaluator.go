@@ -173,25 +173,24 @@ func (e *Evaluator[T]) AddEvaluationKey(idx int, evk EvaluationKey[T]) {
 	e.PartyBitMap[idx] = true
 }
 
-// ShallowCopy returns a shallow copy of this Evaluator.
-// Returned Evaluator is safe for concurrent use.
-func (e *Evaluator[T]) ShallowCopy() *Evaluator[T] {
+// SafeCopy returns a thread-safe copy.
+func (e *Evaluator[T]) SafeCopy() *Evaluator[T] {
 	subEvalCopy := make([]*tfhe.Evaluator[T], e.Params.partyCount)
 	for i := range e.SubEvaluators {
 		if e.SubEvaluators[i] != nil {
-			subEvalCopy[i] = e.SubEvaluators[i].ShallowCopy()
+			subEvalCopy[i] = e.SubEvaluators[i].SafeCopy()
 		}
 	}
 
 	return &Evaluator[T]{
 		Encoder:         e.Encoder,
-		GLWETransformer: e.GLWETransformer.ShallowCopy(),
+		GLWETransformer: e.GLWETransformer.SafeCopy(),
 
-		subEvaluator:  e.subEvaluator.ShallowCopy(),
+		subEvaluator:  e.subEvaluator.SafeCopy(),
 		SubEvaluators: subEvalCopy,
 
-		Decomposer:    e.Decomposer.ShallowCopy(),
-		PolyEvaluator: e.PolyEvaluator.ShallowCopy(),
+		Decomposer:    e.Decomposer.SafeCopy(),
+		PolyEvaluator: e.PolyEvaluator.SafeCopy(),
 
 		Params:      e.Params,
 		PartyBitMap: vec.Copy(e.PartyBitMap),

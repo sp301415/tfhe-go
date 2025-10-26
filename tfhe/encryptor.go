@@ -10,7 +10,7 @@ import (
 // This is meant to be private, only for clients.
 //
 // Encryptor is not safe for concurrent use.
-// Use [*Encryptor.ShallowCopy] to get a safe copy.
+// Use [*Encryptor.SafeCopy] to get a safe copy.
 type Encryptor[T TorusInt] struct {
 	// Encoder is an embedded encoder for this Encryptor.
 	*Encoder[T]
@@ -104,12 +104,11 @@ func newEncryptorBuffer[T TorusInt](params Parameters[T]) encryptorBuffer[T] {
 	}
 }
 
-// ShallowCopy returns a shallow copy of this Encryptor.
-// Returned Encryptor is safe for concurrent use.
-func (e *Encryptor[T]) ShallowCopy() *Encryptor[T] {
+// SafeCopy returns a thread-safe copy.
+func (e *Encryptor[T]) SafeCopy() *Encryptor[T] {
 	return &Encryptor[T]{
 		Encoder:         e.Encoder,
-		GLWETransformer: e.GLWETransformer.ShallowCopy(),
+		GLWETransformer: e.GLWETransformer.SafeCopy(),
 
 		Params: e.Params,
 
@@ -119,7 +118,7 @@ func (e *Encryptor[T]) ShallowCopy() *Encryptor[T] {
 
 		SecretKey: e.SecretKey,
 
-		PolyEvaluator: e.PolyEvaluator.ShallowCopy(),
+		PolyEvaluator: e.PolyEvaluator.SafeCopy(),
 
 		buf: newEncryptorBuffer(e.Params),
 	}

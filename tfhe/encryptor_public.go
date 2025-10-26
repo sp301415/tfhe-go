@@ -12,7 +12,7 @@ import (
 // This means that not all parameters support public key encryption.
 //
 // PublicEncryptor is not safe for concurrent use.
-// Use [*PublicEncryptor.ShallowCopy] to get a safe copy.
+// Use [*PublicEncryptor.SafeCopy] to get a safe copy.
 type PublicEncryptor[T TorusInt] struct {
 	// Encoder is an embedded encoder for this PublicEncryptor.
 	*Encoder[T]
@@ -89,11 +89,11 @@ func newPublicEncryptorBuffer[T TorusInt](params Parameters[T]) publicEncryptorB
 	}
 }
 
-// ShallowCopy returns a shallow copy of the PublicEncryptor.
-func (e *PublicEncryptor[T]) ShallowCopy() *PublicEncryptor[T] {
+// SafeCopy returns a thread-safe copy.
+func (e *PublicEncryptor[T]) SafeCopy() *PublicEncryptor[T] {
 	return &PublicEncryptor[T]{
 		Encoder:         e.Encoder,
-		GLWETransformer: e.GLWETransformer.ShallowCopy(),
+		GLWETransformer: e.GLWETransformer.SafeCopy(),
 
 		Params: e.Params,
 
@@ -101,7 +101,7 @@ func (e *PublicEncryptor[T]) ShallowCopy() *PublicEncryptor[T] {
 		BinarySampler:   csprng.NewBinarySampler[T](),
 		GaussianSampler: csprng.NewGaussianSampler[T](),
 
-		PolyEvaluator: e.PolyEvaluator.ShallowCopy(),
+		PolyEvaluator: e.PolyEvaluator.SafeCopy(),
 
 		PublicKey: e.PublicKey,
 

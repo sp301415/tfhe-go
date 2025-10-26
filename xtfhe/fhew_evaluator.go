@@ -8,7 +8,7 @@ import (
 // FHEWEvaluator wraps around [tfhe.Evaluator] and implements FHEW blind rotation.
 //
 // FHEWEvaluator is not safe for concurrent use.
-// Use [*FHEWEvaluator.ShallowCopy] to get a safe copy.
+// Use [*FHEWEvaluator.SafeCopy] to get a safe copy.
 type FHEWEvaluator[T tfhe.TorusInt] struct {
 	// Evaluator is an embedded [tfhe.Evaluator] for this FHEWEvaluator.
 	*tfhe.Evaluator[T]
@@ -92,11 +92,11 @@ func newFHEWEvaluatorBuffer[T tfhe.TorusInt](params FHEWParameters[T]) fhewEvalu
 	}
 }
 
-// ShallowCopy creates a shallow copy of this FHEWEvaluator.
+// SafeCopy creates a shallow copy of this FHEWEvaluator.
 // Returned FHEWEvaluator is safe for concurrent use.
-func (e *FHEWEvaluator[T]) ShallowCopy() *FHEWEvaluator[T] {
+func (e *FHEWEvaluator[T]) SafeCopy() *FHEWEvaluator[T] {
 	return &FHEWEvaluator[T]{
-		Evaluator: e.Evaluator.ShallowCopy(),
+		Evaluator: e.Evaluator.SafeCopy(),
 
 		Params: e.Params,
 

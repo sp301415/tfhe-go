@@ -4,7 +4,7 @@ package tfhe
 // This is meant to be private, only for clients.
 //
 // BinaryEncryptor is not safe for concurrent use.
-// Use [*BinaryEncryptor.ShallowCopy] to get a safe copy.
+// Use [*BinaryEncryptor.SafeCopy] to get a safe copy.
 type BinaryEncryptor[T TorusInt] struct {
 	// BinaryEncoder is an embedded encoder for this BinaryEncryptor.
 	*BinaryEncoder[T]
@@ -33,13 +33,12 @@ func NewBinaryEncryptorWithKey[T TorusInt](params Parameters[T], sk SecretKey[T]
 	}
 }
 
-// ShallowCopy returns a shallow copy of this BinaryEncryptor.
-// Returned BinaryEncryptor is safe for concurrent use.
-func (e *BinaryEncryptor[T]) ShallowCopy() *BinaryEncryptor[T] {
+// SafeCopy returns a thread-safe copy.
+func (e *BinaryEncryptor[T]) SafeCopy() *BinaryEncryptor[T] {
 	return &BinaryEncryptor[T]{
 		BinaryEncoder: e.BinaryEncoder,
 		Params:        e.Params,
-		Encryptor:     e.Encryptor.ShallowCopy(),
+		Encryptor:     e.Encryptor.SafeCopy(),
 	}
 }
 

@@ -31,13 +31,12 @@ func NewBinaryEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]Evalu
 	}
 }
 
-// ShallowCopy returns a shallow copy of this BinaryEvaluator.
-// Returned BinaryEvaluator is safe for concurrent use.
-func (e *BinaryEvaluator[T]) ShallowCopy() *BinaryEvaluator[T] {
+// SafeCopy returns a thread-safe copy.
+func (e *BinaryEvaluator[T]) SafeCopy() *BinaryEvaluator[T] {
 	return &BinaryEvaluator[T]{
 		BinaryEncoder: e.BinaryEncoder,
 		Params:        e.Params,
-		Evaluator:     e.Evaluator.ShallowCopy(),
+		Evaluator:     e.Evaluator.SafeCopy(),
 		signLUT:       e.signLUT,
 	}
 }

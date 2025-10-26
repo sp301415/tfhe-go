@@ -21,13 +21,12 @@ func NewBinaryDecryptor[T tfhe.TorusInt](params Parameters[T], sk map[int]tfhe.S
 	}
 }
 
-// ShallowCopy returns a shallow copy of this BinaryDecryptor.
-// Returned BinaryDecryptor is safe for concurrent use.
-func (d *BinaryDecryptor[T]) ShallowCopy() *BinaryDecryptor[T] {
+// SafeCopy returns a thread-safe copy.
+func (d *BinaryDecryptor[T]) SafeCopy() *BinaryDecryptor[T] {
 	return &BinaryDecryptor[T]{
 		BinaryEncoder: d.BinaryEncoder,
 		Params:        d.Params,
-		Decryptor:     d.Decryptor.ShallowCopy(),
+		Decryptor:     d.Decryptor.SafeCopy(),
 	}
 }
 

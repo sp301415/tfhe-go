@@ -7,7 +7,7 @@ package tfhe
 // This means that not all parameters support public key encryption.
 //
 // BinaryEncryptor is not safe for concurrent use.
-// Use [*BinaryPublicEncryptor.ShallowCopy] to get a safe copy.
+// Use [*BinaryPublicEncryptor.SafeCopy] to get a safe copy.
 type BinaryPublicEncryptor[T TorusInt] struct {
 	// BinaryEncoder is an embedded encoder for this BinaryPublicEncryptor.
 	*BinaryEncoder[T]
@@ -26,13 +26,12 @@ func NewBinaryPublicEncryptor[T TorusInt](params Parameters[T], pk PublicKey[T])
 	}
 }
 
-// ShallowCopy returns a shallow copy of this BinaryPublicEncryptor.
-// Returned BinaryPublicEncryptor is safe for concurrent use.
-func (e *BinaryPublicEncryptor[T]) ShallowCopy() *BinaryPublicEncryptor[T] {
+// SafeCopy returns a thread-safe copy.
+func (e *BinaryPublicEncryptor[T]) SafeCopy() *BinaryPublicEncryptor[T] {
 	return &BinaryPublicEncryptor[T]{
 		BinaryEncoder: e.BinaryEncoder,
 		Params:        e.Params,
-		Encryptor:     e.Encryptor.ShallowCopy(),
+		Encryptor:     e.Encryptor.SafeCopy(),
 	}
 }
 

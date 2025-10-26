@@ -37,7 +37,7 @@ const (
 // If length mismatch happens, it may panic or produce wrong results.
 //
 // Evaluator is not safe for concurrent use.
-// Use [*Evaluator.ShallowCopy] to get a safe copy.
+// Use [*Evaluator.SafeCopy] to get a safe copy.
 type Evaluator[T num.Integer] struct {
 	// rank is the rank of polynomial that this transformer can handle.
 	rank int
@@ -188,9 +188,8 @@ func newEvaluatorBuffer[T num.Integer](N int) evaluatorBuffer[T] {
 	}
 }
 
-// ShallowCopy returns a shallow copy of this Evaluator.
-// Returned Evaluator is safe for concurrent use.
-func (e *Evaluator[T]) ShallowCopy() *Evaluator[T] {
+// SafeCopy returns a thread-safe copy.
+func (e *Evaluator[T]) SafeCopy() *Evaluator[T] {
 	return &Evaluator[T]{
 		rank: e.rank,
 		q:    e.q,

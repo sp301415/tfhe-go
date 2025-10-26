@@ -69,13 +69,12 @@ func newPublicEncryptorBuffer[T tfhe.TorusInt](params Parameters[T]) publicEncry
 	}
 }
 
-// ShallowCopy returns a shallow copy of the PublicEncryptor.
-// Returned PublicEncryptor is safe for concurrent use.
-func (e *PublicEncryptor[T]) ShallowCopy() *PublicEncryptor[T] {
+// SafeCopy returns a thread-safe copy.
+func (e *PublicEncryptor[T]) SafeCopy() *PublicEncryptor[T] {
 	return &PublicEncryptor[T]{
 		Encoder:         e.Encoder,
-		GLWETransformer: e.GLWETransformer.ShallowCopy(),
-		SubEncryptor:    e.SubEncryptor.ShallowCopy(),
+		GLWETransformer: e.GLWETransformer.SafeCopy(),
+		SubEncryptor:    e.SubEncryptor.SafeCopy(),
 
 		Params: e.Params,
 		Index:  e.Index,

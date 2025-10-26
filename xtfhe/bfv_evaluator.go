@@ -9,7 +9,7 @@ import (
 // BFVEvaluator evaluates BFV-type operations on GLWE ciphertexts.
 //
 // BFVEvaluator is not safe for concurrent use.
-// Use [*BFVEvaluator.ShallowCopy] to get a safe copy.
+// Use [*BFVEvaluator.SafeCopy] to get a safe copy.
 type BFVEvaluator[T tfhe.TorusInt] struct {
 	// Evaluator is a base evaluator for this BFVEvaluator.
 	// Note that it does not hold evaluaation keys, so bootstrapping is not supported.
@@ -66,11 +66,11 @@ func newBFVEvaluatorBuffer[T tfhe.TorusInt](params tfhe.Parameters[T]) bfvEvalua
 	}
 }
 
-// ShallowCopy creates a shallow copy of this BFVEvaluator.
-func (e *BFVEvaluator[T]) ShallowCopy() *BFVEvaluator[T] {
+// SafeCopy creates a shallow copy of this BFVEvaluator.
+func (e *BFVEvaluator[T]) SafeCopy() *BFVEvaluator[T] {
 	return &BFVEvaluator[T]{
-		Evaluator:     e.Evaluator.ShallowCopy(),
-		PolyEvaluator: e.PolyEvaluator.ShallowCopy(),
+		Evaluator:     e.Evaluator.SafeCopy(),
+		PolyEvaluator: e.PolyEvaluator.SafeCopy(),
 		Params:        e.Params,
 		EvalKey:       e.EvalKey,
 		buf:           newBFVEvaluatorBuffer(e.Params),
