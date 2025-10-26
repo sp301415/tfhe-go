@@ -41,7 +41,7 @@ type publicEncryptorBuffer[T tfhe.TorusInt] struct {
 // NewPublicEncryptor creates a new PublicEncryptor.
 func NewPublicEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, publicKey tfhe.PublicKey[T]) *PublicEncryptor[T] {
 	if idx > params.partyCount {
-		panic("index larger than PartyCount")
+		panic("NewPublicEncryptor: index larger than PartyCount")
 	}
 
 	return &PublicEncryptor[T]{
@@ -114,7 +114,7 @@ func (e *PublicEncryptor[T]) EncryptLWEBody(ct LWECiphertext[T]) {
 	e.SubEncryptor.EncryptLWEBody(e.buf.ctSubLWE)
 
 	ct.Clear()
-	ct.CopyFromSingleKey(e.buf.ctSubLWE, e.Index)
+	ct.CopyFromSubKey(e.buf.ctSubLWE, e.Index)
 }
 
 // EncryptGLWE encodes and encrypts integer messages to GLWE ciphertext.

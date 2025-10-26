@@ -51,7 +51,7 @@ type encryptorBuffer[T tfhe.TorusInt] struct {
 // NewEncryptor creates a new Encryptor.
 func NewEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte) *Encryptor[T] {
 	if idx > params.partyCount {
-		panic("index larger than PartyCount")
+		panic("NewEncryptor: index larger than PartyCount")
 	}
 
 	s := csprng.NewUniformSamplerWithSeed[T](crsSeed)
@@ -84,7 +84,7 @@ func NewEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte
 // Panics if the index is larger than PartyCount.
 func NewEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte, sk tfhe.SecretKey[T]) *Encryptor[T] {
 	if idx > params.partyCount {
-		panic("index larger than PartyCount")
+		panic("NewEncryptorWithKey: index larger than PartyCount")
 	}
 
 	s := csprng.NewUniformSamplerWithSeed[T](crsSeed)
@@ -171,7 +171,7 @@ func (e *Encryptor[T]) EncryptLWEBody(ct LWECiphertext[T]) {
 	e.SubEncryptor.EncryptLWEBody(e.buf.ctSubLWE)
 
 	ct.Clear()
-	ct.CopyFromSingleKey(e.buf.ctSubLWE, e.Index)
+	ct.CopyFromSubKey(e.buf.ctSubLWE, e.Index)
 }
 
 // EncryptGLWE encodes and encrypts integer messages to GLWE ciphertext.

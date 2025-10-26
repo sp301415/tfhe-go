@@ -6,82 +6,82 @@ import (
 	"github.com/sp301415/tfhe-go/tfhe"
 )
 
-// GenLookUpTable generates a lookup table based on function f.
+// GenLUT generates a lookup table based on function f.
 // Input and output of f is cut by MessageModulus.
 //
 // Panics if len(f) > LUTCount.
-func (e *ManyLUTEvaluator[T]) GenLookUpTable(f []func(int) int) tfhe.LookUpTable[T] {
+func (e *ManyLUTEvaluator[T]) GenLUT(f []func(int) int) tfhe.LookUpTable[T] {
 	lutOut := tfhe.NewLUT(e.Params.baseParams)
-	e.GenLookUpTableTo(lutOut, f)
+	e.GenLUTTo(lutOut, f)
 	return lutOut
 }
 
-// GenLookUpTableTo generates a lookup table based on function f and writes it to lutOut.
+// GenLUTTo generates a lookup table based on function f and writes it to lutOut.
 // Input and output of f is cut by MessageModulus.
 //
 // Panics if len(f) > LUTCount.
-func (e *ManyLUTEvaluator[T]) GenLookUpTableTo(lutOut tfhe.LookUpTable[T], f []func(int) int) {
-	e.GenLookUpTableCustomTo(lutOut, f, e.Params.baseParams.MessageModulus(), e.Params.baseParams.Scale())
+func (e *ManyLUTEvaluator[T]) GenLUTTo(lutOut tfhe.LookUpTable[T], f []func(int) int) {
+	e.GenLUTCustomTo(lutOut, f, e.Params.baseParams.MessageModulus(), e.Params.baseParams.Scale())
 }
 
-// GenLookUpTableFull generates a lookup table based on function f.
+// GenLUTFull generates a lookup table based on function f.
 // Output of f is encoded as-is.
 //
 // Panics if len(f) > LUTCount.
-func (e *ManyLUTEvaluator[T]) GenLookUpTableFull(f []func(int) T) tfhe.LookUpTable[T] {
+func (e *ManyLUTEvaluator[T]) GenLUTFull(f []func(int) T) tfhe.LookUpTable[T] {
 	lutOut := tfhe.NewLUT(e.Params.baseParams)
-	e.GenLookUpTableFullTo(lutOut, f)
+	e.GenLUTFullTo(lutOut, f)
 	return lutOut
 }
 
-// GenLookUpTableFullTo generates a lookup table based on function f and writes it to lutOut.
+// GenLUTFullTo generates a lookup table based on function f and writes it to lutOut.
 // Output of f is encoded as-is.
 //
 // Panics if len(f) > LUTCount.
-func (e *ManyLUTEvaluator[T]) GenLookUpTableFullTo(lutOut tfhe.LookUpTable[T], f []func(int) T) {
-	e.GenLookUpTableCustomFullTo(lutOut, f, e.Params.baseParams.MessageModulus())
+func (e *ManyLUTEvaluator[T]) GenLUTFullTo(lutOut tfhe.LookUpTable[T], f []func(int) T) {
+	e.GenLUTCustomFullTo(lutOut, f, e.Params.baseParams.MessageModulus())
 }
 
-// GenLookUpTableCustom generates a lookup table based on function f using custom messageModulus and scale.
+// GenLUTCustom generates a lookup table based on function f using custom messageModulus and scale.
 // Input and output of f is cut by messageModulus.
 //
 // Panics if len(f) > LUTCount.
-func (e *ManyLUTEvaluator[T]) GenLookUpTableCustom(f []func(int) int, messageModulus, scale T) tfhe.LookUpTable[T] {
+func (e *ManyLUTEvaluator[T]) GenLUTCustom(f []func(int) int, messageModulus, scale T) tfhe.LookUpTable[T] {
 	lutOut := tfhe.NewLUT(e.Params.baseParams)
-	e.GenLookUpTableCustomTo(lutOut, f, messageModulus, scale)
+	e.GenLUTCustomTo(lutOut, f, messageModulus, scale)
 	return lutOut
 }
 
-// GenLookUpTableCustomTo generates a lookup table based on function f using custom messageModulus and scale and writes it to lutOut.
+// GenLUTCustomTo generates a lookup table based on function f using custom messageModulus and scale and writes it to lutOut.
 // Input and output of f is cut by messageModulus.
 //
 // Panics if len(f) > LUTCount.
-func (e *ManyLUTEvaluator[T]) GenLookUpTableCustomTo(lutOut tfhe.LookUpTable[T], f []func(int) int, messageModulus, scale T) {
+func (e *ManyLUTEvaluator[T]) GenLUTCustomTo(lutOut tfhe.LookUpTable[T], f []func(int) int, messageModulus, scale T) {
 	ff := make([]func(int) T, len(f))
 	for i := range f {
 		j := i
 		ff[i] = func(x int) T { return e.EncodeLWECustom(f[j](x), messageModulus, scale).Value }
 	}
-	e.GenLookUpTableCustomFullTo(lutOut, ff, messageModulus)
+	e.GenLUTCustomFullTo(lutOut, ff, messageModulus)
 }
 
-// GenLookUpTableCustomFull generates a lookup table based on function f using custom messageModulus.
+// GenLUTCustomFull generates a lookup table based on function f using custom messageModulus.
 // Output of f is encoded as-is.
 //
 // Panics if len(f) > LUTCount.
-func (e *ManyLUTEvaluator[T]) GenLookUpTableCustomFull(f []func(int) T, messageModulus T) tfhe.LookUpTable[T] {
+func (e *ManyLUTEvaluator[T]) GenLUTCustomFull(f []func(int) T, messageModulus T) tfhe.LookUpTable[T] {
 	lutOut := tfhe.NewLUT(e.Params.baseParams)
-	e.GenLookUpTableCustomFullTo(lutOut, f, messageModulus)
+	e.GenLUTCustomFullTo(lutOut, f, messageModulus)
 	return lutOut
 }
 
-// GenLookUpTableCustomFullTo generates a lookup table based on function f using custom messageModulus and scale and writes it to lutOut.
+// GenLUTCustomFullTo generates a lookup table based on function f using custom messageModulus and scale and writes it to lutOut.
 // Output of f is encoded as-is.
 //
 // Panics if len(f) > LUTCount.
-func (e *ManyLUTEvaluator[T]) GenLookUpTableCustomFullTo(lutOut tfhe.LookUpTable[T], f []func(int) T, messageModulus T) {
+func (e *ManyLUTEvaluator[T]) GenLUTCustomFullTo(lutOut tfhe.LookUpTable[T], f []func(int) T, messageModulus T) {
 	if len(f) > e.Params.lutCount {
-		panic("Number of functions exceeds LUTCount")
+		panic("GenLUTCustomFullTo: Number of functions exceeds LUTCount")
 	}
 
 	y := make([]T, e.Params.lutCount)
@@ -110,7 +110,7 @@ func (e *ManyLUTEvaluator[T]) GenLookUpTableCustomFullTo(lutOut tfhe.LookUpTable
 //
 // Panics if len(f) > LUTCount.
 func (e *ManyLUTEvaluator[T]) BootstrapFunc(ct tfhe.LWECiphertext[T], f []func(int) int) []tfhe.LWECiphertext[T] {
-	e.GenLookUpTableTo(e.buf.lut, f)
+	e.GenLUTTo(e.buf.lut, f)
 	return e.BootstrapLUT(ct, e.buf.lut)
 }
 
@@ -120,7 +120,7 @@ func (e *ManyLUTEvaluator[T]) BootstrapFunc(ct tfhe.LWECiphertext[T], f []func(i
 // If len(ctOut) > LUTCount, only the first LUTCount elements are written.
 // Panics if len(ctOut) < LUTCount.
 func (e *ManyLUTEvaluator[T]) BootstrapFuncTo(ctOut []tfhe.LWECiphertext[T], ct tfhe.LWECiphertext[T], f []func(int) int) {
-	e.GenLookUpTableTo(e.buf.lut, f)
+	e.GenLUTTo(e.buf.lut, f)
 	e.BootstrapLUTTo(ctOut, ct, e.buf.lut)
 }
 

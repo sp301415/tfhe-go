@@ -123,7 +123,7 @@ type PublicKey[T TorusInt] struct {
 // Panics when the parameters do not support public key encryption.
 func NewPublicKey[T TorusInt](params Parameters[T]) PublicKey[T] {
 	if !params.IsPublicKeyEncryptable() {
-		panic("Parameters do not support public key encryption")
+		panic("NewPublicKey: Parameters do not support public key encryption")
 	}
 
 	return PublicKey[T]{

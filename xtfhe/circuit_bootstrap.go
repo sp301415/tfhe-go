@@ -135,7 +135,7 @@ func (e *CircuitBootstrapper[T]) CircuitBootstrapTo(ctOut tfhe.FFTGGSWCiphertext
 			}
 		}
 
-		e.GenLookUpTableFullTo(e.buf.lut, e.buf.fs)
+		e.GenLUTFullTo(e.buf.lut, e.buf.fs)
 		switch e.Params.Params().BootstrapOrder() {
 		case tfhe.OrderBlindRotateKeySwitch:
 			e.BlindRotateTo(e.buf.ctRotate, ct, e.buf.lut)

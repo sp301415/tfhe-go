@@ -57,7 +57,7 @@ type publicEncryptorBuffer[T TorusInt] struct {
 // Panics when the parameters do not support public key encryption.
 func NewPublicEncryptor[T TorusInt](params Parameters[T], pk PublicKey[T]) *PublicEncryptor[T] {
 	if !params.IsPublicKeyEncryptable() {
-		panic("Parameters do not support public key encryption")
+		panic("NewPublicEncryptor: Parameters do not support public key encryption")
 	}
 
 	return &PublicEncryptor[T]{
