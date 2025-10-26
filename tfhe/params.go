@@ -224,6 +224,14 @@ const (
 	OrderBlindRotateKeySwitch
 )
 
+// String implements the [fmt.Stringer] interface.
+func (o BootstrapOrder) String() string {
+	if o == OrderKeySwitchBlindRotate {
+		return "OrderKeySwitchBlindRotate"
+	}
+	return "OrderBlindRotateKeySwitch"
+}
+
 // ParametersLiteral is a structure for TFHE parameters.
 //
 // # Warning
