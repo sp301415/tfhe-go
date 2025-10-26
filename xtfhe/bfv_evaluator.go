@@ -170,17 +170,22 @@ func (e *BFVEvaluator[T]) LWEToGLWECiphertext(ct tfhe.LWECiphertext[T]) tfhe.GLW
 // LWEToGLWECiphertextTo packs a LWE ciphertext to GLWE ciphertext.
 func (e *BFVEvaluator[T]) LWEToGLWECiphertextTo(ctOut tfhe.GLWECiphertext[T], ct tfhe.LWECiphertext[T]) {
 	ctOut.Value[0].Clear()
-	ctOut.Value[0].Coeffs[0] = num.DivRoundBits(ct.Value[0], e.Params.LogPolyRank())
+	ctOut.Value[0].Coeffs[0] = ct.Value[0]
 
 	for i := 0; i < e.Params.GLWERank(); i++ {
-		ctOut.Value[1+i].Coeffs[0] = num.DivRoundBits(ct.Value[1+i*e.Params.PolyRank()], e.Params.LogPolyRank())
+		ctOut.Value[1+i].Coeffs[0] = ct.Value[1+i*e.Params.PolyRank()]
 		for j := 1; j < e.Params.PolyRank(); j++ {
-			ctOut.Value[1+i].Coeffs[e.Params.PolyRank()-j] = -num.DivRoundBits(ct.Value[1+i*e.Params.PolyRank()+j], e.Params.LogPolyRank())
+			ctOut.Value[1+i].Coeffs[e.Params.PolyRank()-j] = -ct.Value[1+i*e.Params.PolyRank()+j]
 		}
 	}
 
 	for i := 0; i < e.Params.LogPolyRank(); i++ {
-		e.PermuteTo(e.buf.ctPack, ctOut, 1<<(e.Params.LogPolyRank()-i)+1)
+		for j := 0; j < e.Params.GLWERank()+1; j++ {
+			for l := 0; l < e.Params.PolyRank(); l++ {
+				ctOut.Value[j].Coeffs[l] = num.DivRoundBits(ctOut.Value[j].Coeffs[l], 1)
+			}
+		}
+		e.PermuteTo(e.buf.ctPack, ctOut, (1<<(i+1))+1)
 		e.Evaluator.AddGLWETo(ctOut, ctOut, e.buf.ctPack)
 	}
 }

@@ -306,7 +306,7 @@ func (p Parameters[T]) ByteSize() int {
 //
 // The encoded form is as follows:
 //
-//		 SingleKeyParameters
+//		 SubParameters
 //	[ 8] PartyCount
 //	     AccumulatorParameters
 //	     RelinKeyParameters

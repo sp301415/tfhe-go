@@ -211,4 +211,5 @@ TFHE-go logo is designed by [@mlgng2010](https://www.instagram.com/mlgng2010/), 
 - Improved Programmable Bootstrapping with Larger Precision and Efficient Arithmetic Circuits for TFHE (https://eprint.iacr.org/2021/729)
 - FHEW-like Leveled Homomorphic Evaluation: Refined Workflow and Polished Building Blocks (https://eprint.iacr.org/2024/1318)
 - Efficient FHEW Bootstrapping with Small Evaluation Keys, and Applications to Threshold Homomorphic Encryption (https://eprint.iacr.org/2022/198)
-- Practical Circuit Privacy/Sanitization for TFHE (https://eprint.iacr.org/2025/216)
+- Practical TFHE Ciphertext Sanitization for Oblivious Circuit Evaluation (https://eprint.iacr.org/2025/216)
+- Homomorphic Field Trace Revisited : Breaking the Cubic Noise Barrier (https://eprint.iacr.org/2025/1088)

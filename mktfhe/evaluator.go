@@ -33,7 +33,7 @@ type Evaluator[T tfhe.TorusInt] struct {
 	PartyBitMap []bool
 
 	// EvalKey are the evaluation key for this Evaluator.
-	// This is shared with SingleKeyEvaluators.
+	// This is shared with SubEvaluators.
 	// If an evaluation key does not exist for given index, it is empty.
 	EvalKey []EvaluationKey[T]
 
@@ -52,7 +52,7 @@ type evaluatorBuffer[T tfhe.TorusInt] struct {
 
 	// sctProd is the intermediate single-key ciphertext in Hybrid Product.
 	sctProd poly.Poly[T]
-	// sfctProd is the fourier transformed ctHybridSingle in Hybrid Product.
+	// sfctProd is the fourier transformed sctProd in Hybrid Product.
 	sfctProd poly.FFTPoly
 
 	// ctRelin is the intermediate value in Generalized External Product.
@@ -81,12 +81,12 @@ type evaluatorBuffer[T tfhe.TorusInt] struct {
 // NewEvaluator creates a new Evaluator.
 // Only indices between 0 and params.PartyCount is valid for evk.
 func NewEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationKey[T]) *Evaluator[T] {
-	singleEvals := make([]*tfhe.Evaluator[T], params.partyCount)
-	singleKeys := make([]EvaluationKey[T], params.partyCount)
+	subEvals := make([]*tfhe.Evaluator[T], params.partyCount)
+	subKeys := make([]EvaluationKey[T], params.partyCount)
 	partyBitMap := make([]bool, params.partyCount)
 	for i := range evk {
-		singleEvals[i] = tfhe.NewEvaluator(params.subParams, evk[i].EvaluationKey)
-		singleKeys[i] = evk[i]
+		subEvals[i] = tfhe.NewEvaluator(params.subParams, evk[i].EvaluationKey)
+		subKeys[i] = evk[i]
 		partyBitMap[i] = true
 	}
 
@@ -106,7 +106,7 @@ func NewEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationK
 		GLWETransformer: NewGLWETransformer[T](params.PolyRank()),
 
 		subEvaluator:  tfhe.NewEvaluator(params.subParams, tfhe.EvaluationKey[T]{}),
-		SubEvaluators: singleEvals,
+		SubEvaluators: subEvals,
 
 		Decomposer:    decomposer,
 		PolyEvaluator: poly.NewEvaluator[T](params.PolyRank()),
@@ -115,7 +115,7 @@ func NewEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationK
 
 		PartyBitMap: partyBitMap,
 
-		EvalKey: singleKeys,
+		EvalKey: subKeys,
 
 		gadgetLUTs: gadgetLUTs,
 
@@ -176,10 +176,10 @@ func (e *Evaluator[T]) AddEvaluationKey(idx int, evk EvaluationKey[T]) {
 // ShallowCopy returns a shallow copy of this Evaluator.
 // Returned Evaluator is safe for concurrent use.
 func (e *Evaluator[T]) ShallowCopy() *Evaluator[T] {
-	singleEvals := make([]*tfhe.Evaluator[T], e.Params.partyCount)
+	subEvalCopy := make([]*tfhe.Evaluator[T], e.Params.partyCount)
 	for i := range e.SubEvaluators {
 		if e.SubEvaluators[i] != nil {
-			singleEvals[i] = e.SubEvaluators[i].ShallowCopy()
+			subEvalCopy[i] = e.SubEvaluators[i].ShallowCopy()
 		}
 	}
 
@@ -188,7 +188,7 @@ func (e *Evaluator[T]) ShallowCopy() *Evaluator[T] {
 		GLWETransformer: e.GLWETransformer.ShallowCopy(),
 
 		subEvaluator:  e.subEvaluator.ShallowCopy(),
-		SubEvaluators: singleEvals,
+		SubEvaluators: subEvalCopy,
 
 		Decomposer:    e.Decomposer.ShallowCopy(),
 		PolyEvaluator: e.PolyEvaluator.ShallowCopy(),

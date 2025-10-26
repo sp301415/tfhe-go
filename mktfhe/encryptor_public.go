@@ -150,7 +150,7 @@ func (e *PublicEncryptor[T]) EncryptGLWEBody(ct GLWECiphertext[T]) {
 	e.SubEncryptor.EncryptGLWEBody(e.buf.ctSubGLWE)
 
 	ct.Clear()
-	ct.CopyFromSingleKey(e.buf.ctSubGLWE, e.Index)
+	ct.CopyFromSubKey(e.buf.ctSubGLWE, e.Index)
 }
 
 // EncryptFFTGLWE encodes and encrypts integer messages to FFTGLWE ciphertext.

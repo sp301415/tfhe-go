@@ -53,24 +53,24 @@ type decryptorBuffer[T tfhe.TorusInt] struct {
 // NewDecryptor creates a new Decryptor.
 // Only indices between 0 and params.PartyCount is valid for sk.
 func NewDecryptor[T tfhe.TorusInt](params Parameters[T], sk map[int]tfhe.SecretKey[T]) *Decryptor[T] {
-	singleEncs := make([]*tfhe.Encryptor[T], len(sk))
-	singleKeys := make([]tfhe.SecretKey[T], len(sk))
+	subEncs := make([]*tfhe.Encryptor[T], len(sk))
+	subKeys := make([]tfhe.SecretKey[T], len(sk))
 	partyBitMap := make([]bool, params.PartyCount())
 	for i := range sk {
-		singleEncs[i] = tfhe.NewEncryptorWithKey(params.subParams, sk[i])
-		singleKeys[i] = sk[i]
+		subEncs[i] = tfhe.NewEncryptorWithKey(params.subParams, sk[i])
+		subKeys[i] = sk[i]
 		partyBitMap[i] = true
 	}
 
 	return &Decryptor[T]{
 		Encoder:         tfhe.NewEncoder(params.subParams),
 		GLWETransformer: NewGLWETransformer[T](params.PolyRank()),
-		SubDecryptors:   singleEncs,
+		SubDecryptors:   subEncs,
 
 		Params:      params,
 		PartyBitMap: partyBitMap,
 
-		SecretKeys: singleKeys,
+		SecretKeys: subKeys,
 
 		buf: newDecryptorBuffer(params),
 	}
@@ -98,17 +98,17 @@ func (d *Decryptor[T]) AddSecretKey(idx int, sk tfhe.SecretKey[T]) {
 // ShallowCopy returns a shallow copy of this Decryptor.
 // Returned Decryptor is safe for concurrent use.
 func (d *Decryptor[T]) ShallowCopy() *Decryptor[T] {
-	decs := make([]*tfhe.Encryptor[T], d.Params.partyCount)
+	decCopy := make([]*tfhe.Encryptor[T], d.Params.partyCount)
 	for i, dec := range d.SubDecryptors {
 		if dec != nil {
-			decs[i] = dec.ShallowCopy()
+			decCopy[i] = dec.ShallowCopy()
 		}
 	}
 
 	return &Decryptor[T]{
 		Encoder:         d.Encoder,
 		GLWETransformer: d.GLWETransformer.ShallowCopy(),
-		SubDecryptors:   decs,
+		SubDecryptors:   decCopy,
 
 		Params:      d.Params,
 		PartyBitMap: vec.Copy(d.PartyBitMap),

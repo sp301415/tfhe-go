@@ -45,10 +45,10 @@ func (ct *FFTGLWECiphertext[T]) CopyFrom(ctIn FFTGLWECiphertext[T]) {
 	}
 }
 
-// CopyFromSingleKey copies values from the single-key ciphertext.
+// CopyFromSubKey copies values from the single-key ciphertext.
 //
 // Panics if GLWERank of ctIn is not 1.
-func (ct *FFTGLWECiphertext[T]) CopyFromSingleKey(ctIn tfhe.FFTGLWECiphertext[T], idx int) {
+func (ct *FFTGLWECiphertext[T]) CopyFromSubKey(ctIn tfhe.FFTGLWECiphertext[T], idx int) {
 	if len(ctIn.Value) != 2 {
 		panic("GLWERank of ctIn must be 1")
 	}
