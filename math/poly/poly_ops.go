@@ -28,10 +28,10 @@ func (e *Evaluator[T]) SubPolyTo(pOut, p0, p1 Poly[T]) {
 	vec.SubTo(pOut.Coeffs, p0.Coeffs, p1.Coeffs)
 }
 
-// NegPoly returns pOut = -p0.
-func (e *Evaluator[T]) NegPoly(p0 Poly[T]) Poly[T] {
+// NegPoly returns pOut = -p.
+func (e *Evaluator[T]) NegPoly(p Poly[T]) Poly[T] {
 	pOut := e.NewPoly()
-	e.NegPolyTo(pOut, p0)
+	e.NegPolyTo(pOut, p)
 	return pOut
 }
 

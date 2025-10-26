@@ -11,7 +11,7 @@ type FFTGLWECiphertext[T tfhe.TorusInt] struct {
 	Value []poly.FFTPoly
 }
 
-// NewFFTGLWECiphertext creates a new Fourier GLWE ciphertext.
+// NewFFTGLWECiphertext creates a new FFT GLWE ciphertext.
 func NewFFTGLWECiphertext[T tfhe.TorusInt](params Parameters[T]) FFTGLWECiphertext[T] {
 	ct := make([]poly.FFTPoly, params.GLWERank()+1)
 	for i := 0; i < params.GLWERank()+1; i++ {
@@ -20,7 +20,7 @@ func NewFFTGLWECiphertext[T tfhe.TorusInt](params Parameters[T]) FFTGLWECipherte
 	return FFTGLWECiphertext[T]{Value: ct}
 }
 
-// NewFFTGLWECiphertextCustom creates a new Fourier GLWE ciphertext with given dimension and polyRank
+// NewFFTGLWECiphertextCustom creates a new FFT GLWE ciphertext with given dimension and polyRank
 func NewFFTGLWECiphertextCustom[T tfhe.TorusInt](glweRank, polyRank int) FFTGLWECiphertext[T] {
 	ct := make([]poly.FFTPoly, glweRank+1)
 	for i := 0; i < glweRank+1; i++ {
@@ -74,7 +74,7 @@ type FFTUniEncryption[T tfhe.TorusInt] struct {
 	Value []tfhe.FFTGLevCiphertext[T]
 }
 
-// NewFFTUniEncryption creates a new Fourier UniEncryption.
+// NewFFTUniEncryption creates a new FFT UniEncryption.
 func NewFFTUniEncryption[T tfhe.TorusInt](params Parameters[T], gadgetParams tfhe.GadgetParameters[T]) FFTUniEncryption[T] {
 	return FFTUniEncryption[T]{
 		GadgetParams: gadgetParams,
