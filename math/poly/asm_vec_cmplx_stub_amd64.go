@@ -5,37 +5,37 @@
 package poly
 
 //go:noescape
-func addCmplxAssignAVX2(v0 []float64, v1 []float64, vOut []float64)
+func addCmplxToAVX2(vOut []float64, v0 []float64, v1 []float64)
 
 //go:noescape
-func subCmplxAssignAVX2(v0 []float64, v1 []float64, vOut []float64)
+func subCmplxToAVX2(vOut []float64, v0 []float64, v1 []float64)
 
 //go:noescape
-func negCmplxAssignAVX2(v0 []float64, vOut []float64)
+func negCmplxToAVX2(vOut []float64, v []float64)
 
 //go:noescape
-func floatMulCmplxAssignAVX2(v0 []float64, c float64, vOut []float64)
+func floatMulCmplxToAVX2(vOut []float64, v []float64, c float64)
 
 //go:noescape
-func floatMulAddCmplxAssignAVX2(v0 []float64, c float64, vOut []float64)
+func floatMulAddCmplxToAVX2(vOut []float64, v []float64, c float64)
 
 //go:noescape
-func floatMulSubCmplxAssignAVX2(v0 []float64, c float64, vOut []float64)
+func floatMulSubCmplxToAVX2(vOut []float64, v []float64, c float64)
 
 //go:noescape
-func cmplxMulCmplxAssignAVX2(v0 []float64, c complex128, vOut []float64)
+func cmplxMulCmplxToAVX2(vOut []float64, v []float64, c complex128)
 
 //go:noescape
-func cmplxMulAddCmplxAssignAVX2(v0 []float64, c complex128, vOut []float64)
+func cmplxMulAddCmplxToAVX2(vOut []float64, v []float64, c complex128)
 
 //go:noescape
-func cmplxMulSubCmplxAssignAVX2(v0 []float64, c complex128, vOut []float64)
+func cmplxMulSubCmplxToAVX2(vOut []float64, v []float64, c complex128)
 
 //go:noescape
-func elementWiseMulCmplxAssignAVX2(v0 []float64, v1 []float64, vOut []float64)
+func mulCmplxToAVX2(vOut []float64, v0 []float64, v1 []float64)
 
 //go:noescape
-func elementWiseMulAddCmplxAssignAVX2(v0 []float64, v1 []float64, vOut []float64)
+func mulAddCmplxToAVX2(vOut []float64, v0 []float64, v1 []float64)
 
 //go:noescape
-func elementWiseMulSubCmplxAssignAVX2(v0 []float64, v1 []float64, vOut []float64)
+func mulSubCmplxToAVX2(vOut []float64, v0 []float64, v1 []float64)

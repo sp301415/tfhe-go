@@ -20,10 +20,10 @@ func NewEvaluationKey[T TorusInt](params Parameters[T]) EvaluationKey[T] {
 }
 
 // NewEvaluationKeyCustom creates a new EvaluationKey with custom parameters.
-func NewEvaluationKeyCustom[T TorusInt](lweDimension, glweRank, polyDegree int, blindRotateParams, keySwitchParams GadgetParameters[T]) EvaluationKey[T] {
+func NewEvaluationKeyCustom[T TorusInt](lweDimension, glweRank, polyRank int, blindRotateParams, keySwitchParams GadgetParameters[T]) EvaluationKey[T] {
 	return EvaluationKey[T]{
-		BlindRotateKey: NewBlindRotateKeyCustom(lweDimension, glweRank, polyDegree, blindRotateParams),
-		KeySwitchKey:   NewKeySwitchKeyForBootstrapCustom(lweDimension, glweRank, polyDegree, keySwitchParams),
+		BlindRotateKey: NewBlindRotateKeyCustom(lweDimension, glweRank, polyRank, blindRotateParams),
+		KeySwitchKey:   NewKeySwitchKeyForBootstrapCustom(lweDimension, glweRank, polyRank, keySwitchParams),
 	}
 }
 
@@ -54,30 +54,30 @@ type BlindRotateKey[T TorusInt] struct {
 	GadgetParameters GadgetParameters[T]
 
 	// Value has length LWEDimension.
-	Value []FourierGGSWCiphertext[T]
+	Value []FFTGGSWCiphertext[T]
 }
 
 // NewBlindRotateKey creates a new BlindRotateKey.
 func NewBlindRotateKey[T TorusInt](params Parameters[T]) BlindRotateKey[T] {
-	brk := make([]FourierGGSWCiphertext[T], params.lweDimension)
+	brk := make([]FFTGGSWCiphertext[T], params.lweDimension)
 	for i := 0; i < params.lweDimension; i++ {
-		brk[i] = NewFourierGGSWCiphertext(params, params.blindRotateParameters)
+		brk[i] = NewFFTGGSWCiphertext(params, params.blindRotateParams)
 	}
-	return BlindRotateKey[T]{Value: brk, GadgetParameters: params.blindRotateParameters}
+	return BlindRotateKey[T]{Value: brk, GadgetParameters: params.blindRotateParams}
 }
 
 // NewBlindRotateKeyCustom creates a new BlindRotateKey with custom parameters.
-func NewBlindRotateKeyCustom[T TorusInt](lweDimension, glweRank, polyDegree int, gadgetParams GadgetParameters[T]) BlindRotateKey[T] {
-	brk := make([]FourierGGSWCiphertext[T], lweDimension)
+func NewBlindRotateKeyCustom[T TorusInt](lweDimension, glweRank, polyRank int, gadgetParams GadgetParameters[T]) BlindRotateKey[T] {
+	brk := make([]FFTGGSWCiphertext[T], lweDimension)
 	for i := 0; i < lweDimension; i++ {
-		brk[i] = NewFourierGGSWCiphertextCustom(glweRank, polyDegree, gadgetParams)
+		brk[i] = NewFFTGGSWCiphertextCustom(glweRank, polyRank, gadgetParams)
 	}
 	return BlindRotateKey[T]{Value: brk, GadgetParameters: gadgetParams}
 }
 
 // Copy returns a copy of the key.
 func (brk BlindRotateKey[T]) Copy() BlindRotateKey[T] {
-	brkCopy := make([]FourierGGSWCiphertext[T], len(brk.Value))
+	brkCopy := make([]FFTGGSWCiphertext[T], len(brk.Value))
 	for i := range brk.Value {
 		brkCopy[i] = brk.Value[i].Copy()
 	}

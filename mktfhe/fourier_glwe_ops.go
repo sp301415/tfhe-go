@@ -4,203 +4,203 @@ import (
 	"github.com/sp301415/tfhe-go/math/poly"
 )
 
-// AddFourierGLWE returns ct0 + ct1.
-func (e *Evaluator[T]) AddFourierGLWE(ct0, ct1 FourierGLWECiphertext[T]) FourierGLWECiphertext[T] {
-	ctOut := NewFourierGLWECiphertext(e.Parameters)
-	e.AddFourierGLWEAssign(ct0, ct1, ctOut)
+// AddFFTGLWE returns ct0 + ct1.
+func (e *Evaluator[T]) AddFFTGLWE(ct0, ct1 FFTGLWECiphertext[T]) FFTGLWECiphertext[T] {
+	ctOut := NewFFTGLWECiphertext(e.Params)
+	e.AddFFTGLWETo(ctOut, ct0, ct1)
 	return ctOut
 }
 
-// AddFourierGLWEAssign computes ctOut = ct0 + ct1.
-func (e *Evaluator[T]) AddFourierGLWEAssign(ct0, ct1, ctOut FourierGLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
-		e.PolyEvaluator.AddFourierPolyAssign(ct0.Value[i], ct1.Value[i], ctOut.Value[i])
+// AddFFTGLWETo computes ctOut = ct0 + ct1.
+func (e *Evaluator[T]) AddFFTGLWETo(ctOut, ct0, ct1 FFTGLWECiphertext[T]) {
+	for i := 0; i < e.Params.GLWERank()+1; i++ {
+		e.PolyEvaluator.AddFFTPolyTo(ctOut.Value[i], ct0.Value[i], ct1.Value[i])
 	}
 }
 
-// SubFourierGLWE returns ct0 - ct1.
-func (e *Evaluator[T]) SubFourierGLWE(ct0, ct1 FourierGLWECiphertext[T]) FourierGLWECiphertext[T] {
-	ctOut := NewFourierGLWECiphertext(e.Parameters)
-	e.SubFourierGLWEAssign(ct0, ct1, ctOut)
+// SubFFTGLWE returns ct0 - ct1.
+func (e *Evaluator[T]) SubFFTGLWE(ct0, ct1 FFTGLWECiphertext[T]) FFTGLWECiphertext[T] {
+	ctOut := NewFFTGLWECiphertext(e.Params)
+	e.SubFFTGLWETo(ctOut, ct0, ct1)
 	return ctOut
 }
 
-// SubFourierGLWEAssign computes ctOut = ct0 - ct1.
-func (e *Evaluator[T]) SubFourierGLWEAssign(ct0, ct1, ctOut FourierGLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
-		e.PolyEvaluator.SubFourierPolyAssign(ct0.Value[i], ct1.Value[i], ctOut.Value[i])
+// SubFFTGLWETo computes ctOut = ct0 - ct1.
+func (e *Evaluator[T]) SubFFTGLWETo(ctOut, ct0, ct1 FFTGLWECiphertext[T]) {
+	for i := 0; i < e.Params.GLWERank()+1; i++ {
+		e.PolyEvaluator.SubFFTPolyTo(ctOut.Value[i], ct0.Value[i], ct1.Value[i])
 	}
 }
 
-// NegFourierGLWE returns -ct0.
-func (e *Evaluator[T]) NegFourierGLWE(ct0 FourierGLWECiphertext[T]) FourierGLWECiphertext[T] {
-	ctOut := NewFourierGLWECiphertext(e.Parameters)
-	e.NegFourierGLWEAssign(ct0, ctOut)
+// NegFFTGLWE returns -ct.
+func (e *Evaluator[T]) NegFFTGLWE(ct FFTGLWECiphertext[T]) FFTGLWECiphertext[T] {
+	ctOut := NewFFTGLWECiphertext(e.Params)
+	e.NegFFTGLWETo(ctOut, ct)
 	return ctOut
 }
 
-// NegFourierGLWEAssign computes ctOut = -ct0.
-func (e *Evaluator[T]) NegFourierGLWEAssign(ct0, ctOut FourierGLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
-		e.PolyEvaluator.NegFourierPolyAssign(ct0.Value[i], ctOut.Value[i])
+// NegFFTGLWETo computes ctOut = -ct.
+func (e *Evaluator[T]) NegFFTGLWETo(ctOut, ct FFTGLWECiphertext[T]) {
+	for i := 0; i < e.Params.GLWERank()+1; i++ {
+		e.PolyEvaluator.NegFFTPolyTo(ctOut.Value[i], ct.Value[i])
 	}
 }
 
-// FloatMulFourierGLWE returns c * ct0.
-func (e *Evaluator[T]) FloatMulFourierGLWE(ct0 FourierGLWECiphertext[T], c float64) FourierGLWECiphertext[T] {
-	ctOut := NewFourierGLWECiphertext(e.Parameters)
-	e.FloatMulFourierGLWEAssign(ct0, c, ctOut)
+// FloatMulFFTGLWE returns c * ct.
+func (e *Evaluator[T]) FloatMulFFTGLWE(ct FFTGLWECiphertext[T], c float64) FFTGLWECiphertext[T] {
+	ctOut := NewFFTGLWECiphertext(e.Params)
+	e.FloatMulFFTGLWETo(ctOut, ct, c)
 	return ctOut
 }
 
-// FloatMulFourierGLWEAssign computes ctOut = c * ct0.
-func (e *Evaluator[T]) FloatMulFourierGLWEAssign(ct0 FourierGLWECiphertext[T], c float64, ctOut FourierGLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
-		e.PolyEvaluator.FloatMulFourierPolyAssign(ct0.Value[i], c, ctOut.Value[i])
+// FloatMulFFTGLWETo computes ctOut = c * ct.
+func (e *Evaluator[T]) FloatMulFFTGLWETo(ctOut, ct FFTGLWECiphertext[T], c float64) {
+	for i := 0; i < e.Params.GLWERank()+1; i++ {
+		e.PolyEvaluator.FloatMulFFTPolyTo(ctOut.Value[i], ct.Value[i], c)
 	}
 }
 
-// FloatMulAddFourierGLWEAssign computes ctOut += c * ct0.
-func (e *Evaluator[T]) FloatMulAddFourierGLWEAssign(ct0 FourierGLWECiphertext[T], c float64, ctOut FourierGLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
-		e.PolyEvaluator.FloatMulAddFourierPolyAssign(ct0.Value[i], c, ctOut.Value[i])
+// FloatMulAddFFTGLWETo computes ctOut += c * ct.
+func (e *Evaluator[T]) FloatMulAddFFTGLWETo(ctOut, ct FFTGLWECiphertext[T], c float64) {
+	for i := 0; i < e.Params.GLWERank()+1; i++ {
+		e.PolyEvaluator.FloatMulAddFFTPolyTo(ctOut.Value[i], ct.Value[i], c)
 	}
 }
 
-// FloatMulSubFourierGLWEAssign computes ctOut -= c * ct0.
-func (e *Evaluator[T]) FloatMulSubFourierGLWEAssign(ct0 FourierGLWECiphertext[T], c float64, ctOut FourierGLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
-		e.PolyEvaluator.FloatMulSubFourierPolyAssign(ct0.Value[i], c, ctOut.Value[i])
+// FloatMulSubFFTGLWETo computes ctOut -= c * ct.
+func (e *Evaluator[T]) FloatMulSubFFTGLWETo(ctOut, ct FFTGLWECiphertext[T], c float64) {
+	for i := 0; i < e.Params.GLWERank()+1; i++ {
+		e.PolyEvaluator.FloatMulSubFFTPolyTo(ctOut.Value[i], ct.Value[i], c)
 	}
 }
 
-// CmplxMulFourierGLWE returns c * ct0.
-func (e *Evaluator[T]) CmplxMulFourierGLWE(ct0 FourierGLWECiphertext[T], c complex128) FourierGLWECiphertext[T] {
-	ctOut := NewFourierGLWECiphertext(e.Parameters)
-	e.CmplxMulFourierGLWEAssign(ct0, c, ctOut)
+// CmplxMulFFTGLWE returns c * ct.
+func (e *Evaluator[T]) CmplxMulFFTGLWE(ct FFTGLWECiphertext[T], c complex128) FFTGLWECiphertext[T] {
+	ctOut := NewFFTGLWECiphertext(e.Params)
+	e.CmplxMulFFTGLWETo(ctOut, ct, c)
 	return ctOut
 }
 
-// CmplxMulFourierGLWEAssign computes ctOut = c * ct0.
-func (e *Evaluator[T]) CmplxMulFourierGLWEAssign(ct0 FourierGLWECiphertext[T], c complex128, ctOut FourierGLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
-		e.PolyEvaluator.CmplxMulFourierPolyAssign(ct0.Value[i], c, ctOut.Value[i])
+// CmplxMulFFTGLWETo computes ctOut = c * ct.
+func (e *Evaluator[T]) CmplxMulFFTGLWETo(ctOut, ct FFTGLWECiphertext[T], c complex128) {
+	for i := 0; i < e.Params.GLWERank()+1; i++ {
+		e.PolyEvaluator.CmplxMulFFTPolyTo(ctOut.Value[i], ct.Value[i], c)
 	}
 }
 
-// CmplxMulAddFourierGLWEAssign computes ctOut += c * ct0.
-func (e *Evaluator[T]) CmplxMulAddFourierGLWEAssign(ct0 FourierGLWECiphertext[T], c complex128, ctOut FourierGLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
-		e.PolyEvaluator.CmplxMulAddFourierPolyAssign(ct0.Value[i], c, ctOut.Value[i])
+// CmplxMulAddFFTGLWETo computes ctOut += c * ct.
+func (e *Evaluator[T]) CmplxMulAddFFTGLWETo(ctOut, ct FFTGLWECiphertext[T], c complex128) {
+	for i := 0; i < e.Params.GLWERank()+1; i++ {
+		e.PolyEvaluator.CmplxMulAddFFTPolyTo(ctOut.Value[i], ct.Value[i], c)
 	}
 }
 
-// CmplxMulSubFourierGLWEAssign computes ctOut -= c * ct0.
-func (e *Evaluator[T]) CmplxMulSubFourierGLWEAssign(ct0 FourierGLWECiphertext[T], c complex128, ctOut FourierGLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
-		e.PolyEvaluator.CmplxMulSubFourierPolyAssign(ct0.Value[i], c, ctOut.Value[i])
+// CmplxMulSubFFTGLWETo computes ctOut -= c * ct.
+func (e *Evaluator[T]) CmplxMulSubFFTGLWETo(ctOut, ct FFTGLWECiphertext[T], c complex128) {
+	for i := 0; i < e.Params.GLWERank()+1; i++ {
+		e.PolyEvaluator.CmplxMulSubFFTPolyTo(ctOut.Value[i], ct.Value[i], c)
 	}
 }
 
-// PolyMulFourierGLWE returns p * ct0.
-func (e *Evaluator[T]) PolyMulFourierGLWE(ct0 FourierGLWECiphertext[T], p poly.Poly[T]) FourierGLWECiphertext[T] {
-	ctOut := NewFourierGLWECiphertext(e.Parameters)
-	e.PolyMulFourierGLWEAssign(ct0, p, ctOut)
+// PolyMulFFTGLWE returns p * ct.
+func (e *Evaluator[T]) PolyMulFFTGLWE(ct FFTGLWECiphertext[T], p poly.Poly[T]) FFTGLWECiphertext[T] {
+	ctOut := NewFFTGLWECiphertext(e.Params)
+	e.PolyMulFFTGLWETo(ctOut, ct, p)
 	return ctOut
 }
 
-// PolyMulFourierGLWEAssign computes ctOut = p * ct0.
-func (e *Evaluator[T]) PolyMulFourierGLWEAssign(ct0 FourierGLWECiphertext[T], p poly.Poly[T], ctOut FourierGLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
-		e.PolyEvaluator.PolyMulFourierPolyAssign(ct0.Value[i], p, ctOut.Value[i])
+// PolyMulFFTGLWETo computes ctOut = p * ct.
+func (e *Evaluator[T]) PolyMulFFTGLWETo(ctOut, ct FFTGLWECiphertext[T], p poly.Poly[T]) {
+	for i := 0; i < e.Params.GLWERank()+1; i++ {
+		e.PolyEvaluator.PolyMulFFTPolyTo(ctOut.Value[i], ct.Value[i], p)
 	}
 }
 
-// PolyMulAddFourierGLWEAssign computes ctOut += p * ct0.
-func (e *Evaluator[T]) PolyMulAddFourierGLWEAssign(ct0 FourierGLWECiphertext[T], p poly.Poly[T], ctOut FourierGLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
-		e.PolyEvaluator.PolyMulAddFourierPolyAssign(ct0.Value[i], p, ctOut.Value[i])
+// PolyMulAddFFTGLWETo computes ctOut += p * ct.
+func (e *Evaluator[T]) PolyMulAddFFTGLWETo(ctOut, ct FFTGLWECiphertext[T], p poly.Poly[T]) {
+	for i := 0; i < e.Params.GLWERank()+1; i++ {
+		e.PolyEvaluator.PolyMulAddFFTPolyTo(ctOut.Value[i], ct.Value[i], p)
 	}
 }
 
-// PolyMulSubFourierGLWEAssign computes ctOut -= p * ct0.
-func (e *Evaluator[T]) PolyMulSubFourierGLWEAssign(ct0 FourierGLWECiphertext[T], p poly.Poly[T], ctOut FourierGLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
-		e.PolyEvaluator.PolyMulSubFourierPolyAssign(ct0.Value[i], p, ctOut.Value[i])
+// PolyMulSubFFTGLWETo computes ctOut -= p * ct.
+func (e *Evaluator[T]) PolyMulSubFFTGLWETo(ctOut, ct FFTGLWECiphertext[T], p poly.Poly[T]) {
+	for i := 0; i < e.Params.GLWERank()+1; i++ {
+		e.PolyEvaluator.PolyMulSubFFTPolyTo(ctOut.Value[i], ct.Value[i], p)
 	}
 }
 
-// FourierPolyMulFourierGLWE returns fp * ct0.
-func (e *Evaluator[T]) FourierPolyMulFourierGLWE(ct0 FourierGLWECiphertext[T], fp poly.FourierPoly) FourierGLWECiphertext[T] {
-	ctOut := NewFourierGLWECiphertext(e.Parameters)
-	e.FourierPolyMulFourierGLWEAssign(ct0, fp, ctOut)
+// FFTPolyMulFFTGLWE returns fp * ct.
+func (e *Evaluator[T]) FFTPolyMulFFTGLWE(ct FFTGLWECiphertext[T], fp poly.FFTPoly) FFTGLWECiphertext[T] {
+	ctOut := NewFFTGLWECiphertext(e.Params)
+	e.FFTPolyMulFFTGLWETo(ctOut, ct, fp)
 	return ctOut
 }
 
-// FourierPolyMulFourierGLWEAssign computes ctOut = fp * ct0.
-func (e *Evaluator[T]) FourierPolyMulFourierGLWEAssign(ct0 FourierGLWECiphertext[T], fp poly.FourierPoly, ctOut FourierGLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
-		e.PolyEvaluator.MulFourierPolyAssign(ct0.Value[i], fp, ctOut.Value[i])
+// FFTPolyMulFFTGLWETo computes ctOut = fp * ct.
+func (e *Evaluator[T]) FFTPolyMulFFTGLWETo(ctOut, ct FFTGLWECiphertext[T], fp poly.FFTPoly) {
+	for i := 0; i < e.Params.GLWERank()+1; i++ {
+		e.PolyEvaluator.MulFFTPolyTo(ctOut.Value[i], ct.Value[i], fp)
 	}
 }
 
-// FourierPolyMulAddFourierGLWEAssign computes ctOut += fp * ct0.
-func (e *Evaluator[T]) FourierPolyMulAddFourierGLWEAssign(ct0 FourierGLWECiphertext[T], fp poly.FourierPoly, ctOut FourierGLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
-		e.PolyEvaluator.MulAddFourierPolyAssign(ct0.Value[i], fp, ctOut.Value[i])
+// FFTPolyMulAddFFTGLWETo computes ctOut += fp * ct.
+func (e *Evaluator[T]) FFTPolyMulAddFFTGLWETo(ctOut, ct FFTGLWECiphertext[T], fp poly.FFTPoly) {
+	for i := 0; i < e.Params.GLWERank()+1; i++ {
+		e.PolyEvaluator.MulAddFFTPolyTo(ctOut.Value[i], ct.Value[i], fp)
 	}
 }
 
-// FourierPolyMulSubFourierGLWEAssign computes ctOut -= fp * ct0.
-func (e *Evaluator[T]) FourierPolyMulSubFourierGLWEAssign(ct0 FourierGLWECiphertext[T], fp poly.FourierPoly, ctOut FourierGLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
-		e.PolyEvaluator.MulSubFourierPolyAssign(ct0.Value[i], fp, ctOut.Value[i])
+// FFTPolyMulSubFFTGLWETo computes ctOut -= fp * ct.
+func (e *Evaluator[T]) FFTPolyMulSubFFTGLWETo(ctOut, ct FFTGLWECiphertext[T], fp poly.FFTPoly) {
+	for i := 0; i < e.Params.GLWERank()+1; i++ {
+		e.PolyEvaluator.MulSubFFTPolyTo(ctOut.Value[i], ct.Value[i], fp)
 	}
 }
 
-// PermuteGLWEAssign computes ctOut = ct0(X^d).
+// PermuteGLWETo computes ctOut = ct(X^d).
 //
-// ct0 and ctOut should not overlap. For inplace permutation,
-// use [*Evaluator.PermuteFourierGLWEInPlace].
-//
-// Panics when d is not odd.
-// This is because the permutation is not bijective when d is even.
-func (e *Evaluator[T]) PermuteFourierGLWEAssign(ct0 FourierGLWECiphertext[T], d int, ctOut FourierGLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
-		e.PolyEvaluator.PermuteFourierPolyAssign(ct0.Value[i], d, ctOut.Value[i])
-	}
-}
-
-// PermuteGLWEInPlace computes ct0 = ct0(X^d).
+// ct and ctOut should not overlap. For inplace permutation,
+// use [*Evaluator.PermuteFFTGLWEInPlace].
 //
 // Panics when d is not odd.
 // This is because the permutation is not bijective when d is even.
-func (e *Evaluator[T]) PermuteFourierGLWEInPlace(ct0 FourierGLWECiphertext[T], d int) {
-	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
-		e.PolyEvaluator.PermuteFourierPolyInPlace(ct0.Value[i], d)
+func (e *Evaluator[T]) PermuteFFTGLWETo(ctOut, ct FFTGLWECiphertext[T], d int) {
+	for i := 0; i < e.Params.GLWERank()+1; i++ {
+		e.PolyEvaluator.PermuteFFTPolyTo(ctOut.Value[i], ct.Value[i], d)
 	}
 }
 
-// PermuteAddGLWEAssign computes ctOut += ct0(X^d).
-//
-// ct0 and ctOut should not overlap.
+// PermuteGLWEInPlace computes ct = ct(X^d).
 //
 // Panics when d is not odd.
 // This is because the permutation is not bijective when d is even.
-func (e *Evaluator[T]) PermuteAddFourierGLWEAssign(ct0 FourierGLWECiphertext[T], d int, ctOut FourierGLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
-		e.PolyEvaluator.PermuteAddFourierPolyAssign(ct0.Value[i], d, ctOut.Value[i])
+func (e *Evaluator[T]) PermuteFFTGLWEInPlace(ct FFTGLWECiphertext[T], d int) {
+	for i := 0; i < e.Params.GLWERank()+1; i++ {
+		e.PolyEvaluator.PermuteFFTPolyInPlace(ct.Value[i], d)
 	}
 }
 
-// PermuteSubGLWEAssign computes ctOut -= ct0(X^d).
+// PermuteAddGLWETo computes ctOut += ct(X^d).
 //
-// ct0 and ctOut should not overlap.
+// ct and ctOut should not overlap.
 //
 // Panics when d is not odd.
 // This is because the permutation is not bijective when d is even.
-func (e *Evaluator[T]) PermuteSubFourierGLWEAssign(ct0 FourierGLWECiphertext[T], d int, ctOut FourierGLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.GLWERank()+1; i++ {
-		e.PolyEvaluator.PermuteSubFourierPolyAssign(ct0.Value[i], d, ctOut.Value[i])
+func (e *Evaluator[T]) PermuteAddFFTGLWETo(ctOut, ct FFTGLWECiphertext[T], d int) {
+	for i := 0; i < e.Params.GLWERank()+1; i++ {
+		e.PolyEvaluator.PermuteAddFFTPolyTo(ctOut.Value[i], ct.Value[i], d)
+	}
+}
+
+// PermuteSubGLWETo computes ctOut -= ct(X^d).
+//
+// ct and ctOut should not overlap.
+//
+// Panics when d is not odd.
+// This is because the permutation is not bijective when d is even.
+func (e *Evaluator[T]) PermuteSubFFTGLWETo(ctOut, ct FFTGLWECiphertext[T], d int) {
+	for i := 0; i < e.Params.GLWERank()+1; i++ {
+		e.PolyEvaluator.PermuteSubFFTPolyTo(ctOut.Value[i], ct.Value[i], d)
 	}
 }

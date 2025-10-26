@@ -32,7 +32,7 @@ func TestGaussianSampler(t *testing.T) {
 
 	gs := csprng.NewGaussianSampler[int64]()
 	samples := make([]int64, 1024)
-	gs.SampleVecAssign(sigma, samples)
+	gs.SampleVecTo(samples, sigma)
 	samplesFloat := vec.Cast[int64, float64](samples)
 	meanSample, stdDevSample := meanStdDev(samplesFloat)
 

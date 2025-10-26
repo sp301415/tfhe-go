@@ -13,66 +13,66 @@ type Evaluator[T tfhe.TorusInt] struct {
 	// GLWETansformer is an embedded GLWETransformer for this Evaluator.
 	*GLWETransformer[T]
 
-	// BaseSingleKeyEvaluator is a single-key Evaluator for this Evaluator.
+	// subEvaluator is a single-key Evaluator for this Evaluator.
 	// This is always guaranteed to be a working, non-nil evaluator without a key.
-	BaseSingleKeyEvaluator *tfhe.Evaluator[T]
-	// SingleKeyEvaluators are single-key Evaluators for this Evaluator.
+	subEvaluator *tfhe.Evaluator[T]
+	// SubEvaluators are single-key Evaluators for this Evaluator.
 	// If an evaluation key does not exist for given index, it is nil.
-	SingleKeyEvaluators []*tfhe.Evaluator[T]
+	SubEvaluators []*tfhe.Evaluator[T]
 
 	// Decomposer is a Decomposer for this Evaluator.
 	Decomposer *tfhe.Decomposer[T]
 	// PolyEvaluator is a PolyEvaluator for this Evaluator.
 	PolyEvaluator *poly.Evaluator[T]
 
-	// Parameters is the parameters for this Evaluator.
-	Parameters Parameters[T]
+	// Params is the parameters for this Evaluator.
+	Params Parameters[T]
 
 	// PartyBitMap is a bitmap for parties.
 	// If a party of a given index exists, it is true.
 	PartyBitMap []bool
 
-	// EvaluationKeys are the evaluation key for this Evaluator.
+	// EvalKey are the evaluation key for this Evaluator.
 	// This is shared with SingleKeyEvaluators.
 	// If an evaluation key does not exist for given index, it is empty.
-	EvaluationKeys []EvaluationKey[T]
+	EvalKey []EvaluationKey[T]
 
 	// gadgetLUTs are the gadget LUT for the Blind Rotation.
 	gadgetLUTs []tfhe.LookUpTable[T]
 
-	buffer evaluationBuffer[T]
+	buf evaluatorBuffer[T]
 }
 
-// evaluationBuffer is a buffer for evaluation.
-type evaluationBuffer[T tfhe.TorusInt] struct {
+// evaluatorBuffer is a buffer for evaluation.
+type evaluatorBuffer[T tfhe.TorusInt] struct {
 	// ctProd is the intermediate value in Hybrid Product.
 	ctProd GLWECiphertext[T]
-	// ctFourierProd is the fourier transformed ctHybrid in Hybrid Product.
-	ctFourierProd FourierGLWECiphertext[T]
+	// fctProd is the fourier transformed ctHybrid in Hybrid Product.
+	fctProd FFTGLWECiphertext[T]
 
-	// ctProdSingle is the intermediate single-key ciphertext in Hybrid Product.
-	ctProdSingle poly.Poly[T]
-	// ctFourierProdSingle is the fourier transformed ctHybridSingle in Hybrid Product.
-	ctFourierProdSingle poly.FourierPoly
+	// sctProd is the intermediate single-key ciphertext in Hybrid Product.
+	sctProd poly.Poly[T]
+	// sfctProd is the fourier transformed ctHybridSingle in Hybrid Product.
+	sfctProd poly.FFTPoly
 
 	// ctRelin is the intermediate value in Generalized External Product.
 	ctRelin GLWECiphertext[T]
-	// ctRelinTransposed is a transposed version of ctRelin.
-	ctRelinTransposed []tfhe.GLWECiphertext[T]
+	// ctRelinT is a transposed version of ctRelin.
+	ctRelinT []tfhe.GLWECiphertext[T]
 
-	// ctRotateInputs is the input of the Blind Rotation to each single evaluator.
-	ctRotateInputs []tfhe.LWECiphertext[T]
+	// ctRotateIn is the input of the Blind Rotation to each single evaluator.
+	ctRotateIn []tfhe.LWECiphertext[T]
 	// ctAccs is the output of the accumulator of a single-key Blind Rotation.
 	ctAccs []tfhe.GLWECiphertext[T]
-	// ctFourierAccs is the fourier transformed ctAccs.
-	ctFourierAccs []tfhe.FourierGLevCiphertext[T]
+	// fctAccs is the fourier transformed ctAccs.
+	fctAccs []tfhe.FFTGLevCiphertext[T]
 
 	// ctRotate is the blind rotated GLWE ciphertext for bootstrapping.
 	ctRotate GLWECiphertext[T]
 	// ctExtract is the extracted LWE ciphertext after Blind Rotation.
 	ctExtract LWECiphertext[T]
-	// ctKeySwitchForBootstrap is the LWEDimension sized ciphertext from keyswitching for bootstrapping.
-	ctKeySwitchForBootstrap LWECiphertext[T]
+	// ctKeySwitc is the LWEDimension sized ciphertext from keyswitching for bootstrapping.
+	ctKeySwitc LWECiphertext[T]
 
 	// lut is an empty lut, used for BlindRotateFunc.
 	lut tfhe.LookUpTable[T]
@@ -85,101 +85,101 @@ func NewEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationK
 	singleKeys := make([]EvaluationKey[T], params.partyCount)
 	partyBitMap := make([]bool, params.partyCount)
 	for i := range evk {
-		singleEvals[i] = tfhe.NewEvaluator(params.singleKeyParameters, evk[i].EvaluationKey)
+		singleEvals[i] = tfhe.NewEvaluator(params.subParams, evk[i].EvaluationKey)
 		singleKeys[i] = evk[i]
 		partyBitMap[i] = true
 	}
 
-	decomposer := tfhe.NewDecomposer[T](params.PolyDegree())
-	decomposer.ScalarDecomposedBuffer(params.KeySwitchParameters())
-	decomposer.PolyDecomposedBuffer(params.relinKeyParameters)
-	decomposer.PolyFourierDecomposedBuffer(params.relinKeyParameters)
+	decomposer := tfhe.NewDecomposer[T](params.PolyRank())
+	decomposer.ScalarBuffer(params.KeySwitchParams())
+	decomposer.PolyBuffer(params.relinKeyParams)
+	decomposer.FFTPolyBuffer(params.relinKeyParams)
 
-	gadgetLUTs := make([]tfhe.LookUpTable[T], params.accumulatorParameters.Level())
-	for i := 0; i < params.accumulatorParameters.Level(); i++ {
-		gadgetLUTs[i] = tfhe.NewLookUpTable(params.singleKeyParameters)
-		gadgetLUTs[i].Value[0].Coeffs[0] = params.accumulatorParameters.BaseQ(i)
+	gadgetLUTs := make([]tfhe.LookUpTable[T], params.accumulatorParams.Level())
+	for i := 0; i < params.accumulatorParams.Level(); i++ {
+		gadgetLUTs[i] = tfhe.NewLUT(params.subParams)
+		gadgetLUTs[i].Value[0].Coeffs[0] = params.accumulatorParams.BaseQ(i)
 	}
 
 	return &Evaluator[T]{
-		Encoder:         tfhe.NewEncoder(params.singleKeyParameters),
-		GLWETransformer: NewGLWETransformer[T](params.PolyDegree()),
+		Encoder:         tfhe.NewEncoder(params.subParams),
+		GLWETransformer: NewGLWETransformer[T](params.PolyRank()),
 
-		BaseSingleKeyEvaluator: tfhe.NewEvaluator(params.singleKeyParameters, tfhe.EvaluationKey[T]{}),
-		SingleKeyEvaluators:    singleEvals,
+		subEvaluator:  tfhe.NewEvaluator(params.subParams, tfhe.EvaluationKey[T]{}),
+		SubEvaluators: singleEvals,
 
 		Decomposer:    decomposer,
-		PolyEvaluator: poly.NewEvaluator[T](params.PolyDegree()),
+		PolyEvaluator: poly.NewEvaluator[T](params.PolyRank()),
 
-		Parameters: params,
+		Params: params,
 
 		PartyBitMap: partyBitMap,
 
-		EvaluationKeys: singleKeys,
+		EvalKey: singleKeys,
 
 		gadgetLUTs: gadgetLUTs,
 
-		buffer: newEvaluationBuffer(params),
+		buf: newEvaluatorBuffer(params),
 	}
 }
 
-// newEvaluationBuffer creates a new evaluationBuffer.
-func newEvaluationBuffer[T tfhe.TorusInt](params Parameters[T]) evaluationBuffer[T] {
+// newEvaluatorBuffer creates a new evaluatorBuffer.
+func newEvaluatorBuffer[T tfhe.TorusInt](params Parameters[T]) evaluatorBuffer[T] {
 	ctRelin := NewGLWECiphertext(params)
-	ctRelinTransposed := make([]tfhe.GLWECiphertext[T], params.GLWERank()+1)
+	ctRelinT := make([]tfhe.GLWECiphertext[T], params.GLWERank()+1)
 	for i := 0; i < params.GLWERank()+1; i++ {
-		ctRelinTransposed[i] = tfhe.NewGLWECiphertext(params.singleKeyParameters)
+		ctRelinT[i] = tfhe.NewGLWECiphertext(params.subParams)
 	}
 
-	ctRotateInputs := make([]tfhe.LWECiphertext[T], params.partyCount)
+	ctRotateIn := make([]tfhe.LWECiphertext[T], params.partyCount)
 	for i := 0; i < params.partyCount; i++ {
-		ctRotateInputs[i] = tfhe.NewLWECiphertextCustom[T](params.singleKeyParameters.LWEDimension())
+		ctRotateIn[i] = tfhe.NewLWECiphertextCustom[T](params.subParams.LWEDimension())
 	}
 
 	ctAccs := make([]tfhe.GLWECiphertext[T], params.partyCount)
-	ctFourierAccs := make([]tfhe.FourierGLevCiphertext[T], params.partyCount)
+	fctAccs := make([]tfhe.FFTGLevCiphertext[T], params.partyCount)
 	for i := 0; i < params.partyCount; i++ {
-		ctAccs[i] = tfhe.NewGLWECiphertext(params.singleKeyParameters)
-		ctFourierAccs[i] = tfhe.NewFourierGLevCiphertext(params.singleKeyParameters, params.accumulatorParameters)
+		ctAccs[i] = tfhe.NewGLWECiphertext(params.subParams)
+		fctAccs[i] = tfhe.NewFFTGLevCiphertext(params.subParams, params.accumulatorParams)
 	}
 
-	return evaluationBuffer[T]{
-		ctProd:        NewGLWECiphertext(params),
-		ctFourierProd: NewFourierGLWECiphertext(params),
+	return evaluatorBuffer[T]{
+		ctProd:  NewGLWECiphertext(params),
+		fctProd: NewFFTGLWECiphertext(params),
 
-		ctProdSingle:        poly.NewPoly[T](params.PolyDegree()),
-		ctFourierProdSingle: poly.NewFourierPoly(params.PolyDegree()),
+		sctProd:  poly.NewPoly[T](params.PolyRank()),
+		sfctProd: poly.NewFFTPoly(params.PolyRank()),
 
-		ctRelin:           ctRelin,
-		ctRelinTransposed: ctRelinTransposed,
+		ctRelin:  ctRelin,
+		ctRelinT: ctRelinT,
 
-		ctRotateInputs: ctRotateInputs,
-		ctAccs:         ctAccs,
-		ctFourierAccs:  ctFourierAccs,
+		ctRotateIn: ctRotateIn,
+		ctAccs:     ctAccs,
+		fctAccs:    fctAccs,
 
-		ctRotate:                NewGLWECiphertext(params),
-		ctExtract:               NewLWECiphertextCustom[T](params.GLWEDimension()),
-		ctKeySwitchForBootstrap: NewLWECiphertextCustom[T](params.LWEDimension()),
+		ctRotate:   NewGLWECiphertext(params),
+		ctExtract:  NewLWECiphertextCustom[T](params.GLWEDimension()),
+		ctKeySwitc: NewLWECiphertextCustom[T](params.LWEDimension()),
 
-		lut: tfhe.NewLookUpTable(params.singleKeyParameters),
+		lut: tfhe.NewLUT(params.subParams),
 	}
 }
 
 // AddEvaluationKey adds an evaluation key for given index.
 // If an evaluation key already exists for given index, it is overwritten.
 func (e *Evaluator[T]) AddEvaluationKey(idx int, evk EvaluationKey[T]) {
-	e.SingleKeyEvaluators[idx] = tfhe.NewEvaluator(e.Parameters.singleKeyParameters, evk.EvaluationKey)
-	e.EvaluationKeys[idx] = evk
+	e.SubEvaluators[idx] = tfhe.NewEvaluator(e.Params.subParams, evk.EvaluationKey)
+	e.EvalKey[idx] = evk
 	e.PartyBitMap[idx] = true
 }
 
 // ShallowCopy returns a shallow copy of this Evaluator.
 // Returned Evaluator is safe for concurrent use.
 func (e *Evaluator[T]) ShallowCopy() *Evaluator[T] {
-	singleEvals := make([]*tfhe.Evaluator[T], e.Parameters.partyCount)
-	for i := range e.SingleKeyEvaluators {
-		if e.SingleKeyEvaluators[i] != nil {
-			singleEvals[i] = e.SingleKeyEvaluators[i].ShallowCopy()
+	singleEvals := make([]*tfhe.Evaluator[T], e.Params.partyCount)
+	for i := range e.SubEvaluators {
+		if e.SubEvaluators[i] != nil {
+			singleEvals[i] = e.SubEvaluators[i].ShallowCopy()
 		}
 	}
 
@@ -187,19 +187,19 @@ func (e *Evaluator[T]) ShallowCopy() *Evaluator[T] {
 		Encoder:         e.Encoder,
 		GLWETransformer: e.GLWETransformer.ShallowCopy(),
 
-		BaseSingleKeyEvaluator: e.BaseSingleKeyEvaluator.ShallowCopy(),
-		SingleKeyEvaluators:    singleEvals,
+		subEvaluator:  e.subEvaluator.ShallowCopy(),
+		SubEvaluators: singleEvals,
 
 		Decomposer:    e.Decomposer.ShallowCopy(),
 		PolyEvaluator: e.PolyEvaluator.ShallowCopy(),
 
-		Parameters:  e.Parameters,
+		Params:      e.Params,
 		PartyBitMap: vec.Copy(e.PartyBitMap),
 
-		EvaluationKeys: vec.Copy(e.EvaluationKeys),
+		EvalKey: vec.Copy(e.EvalKey),
 
 		gadgetLUTs: e.gadgetLUTs,
 
-		buffer: newEvaluationBuffer(e.Parameters),
+		buf: newEvaluatorBuffer(e.Params),
 	}
 }

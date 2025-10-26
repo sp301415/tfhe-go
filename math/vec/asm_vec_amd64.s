@@ -7,13 +7,13 @@
 DATA MASK_HI<>+0(SB)/8, $0xffffffff00000000
 GLOBL MASK_HI<>(SB), RODATA|NOPTR, $8
 
-// func addAssignUint32AVX2(v0 []uint32, v1 []uint32, vOut []uint32)
+// func addToUint32AVX2(vOut []uint32, v0 []uint32, v1 []uint32)
 // Requires: AVX, AVX2
-TEXT ·addAssignUint32AVX2(SB), NOSPLIT, $0-72
-	MOVQ v0_base+0(FP), AX
-	MOVQ v1_base+24(FP), CX
-	MOVQ vOut_base+48(FP), DX
-	MOVQ vOut_len+56(FP), BX
+TEXT ·addToUint32AVX2(SB), NOSPLIT, $0-72
+	MOVQ vOut_base+0(FP), AX
+	MOVQ v0_base+24(FP), CX
+	MOVQ v1_base+48(FP), DX
+	MOVQ vOut_len+8(FP), BX
 	MOVQ BX, SI
 	SHRQ $0x03, SI
 	SHLQ $0x03, SI
@@ -21,10 +21,10 @@ TEXT ·addAssignUint32AVX2(SB), NOSPLIT, $0-72
 	JMP  loop_end
 
 loop_body:
-	VMOVDQU (AX)(DI*4), Y0
-	VMOVDQU (CX)(DI*4), Y1
+	VMOVDQU (CX)(DI*4), Y0
+	VMOVDQU (DX)(DI*4), Y1
 	VPADDD  Y1, Y0, Y0
-	VMOVDQU Y0, (DX)(DI*4)
+	VMOVDQU Y0, (AX)(DI*4)
 	ADDQ    $0x08, DI
 
 loop_end:
@@ -33,10 +33,10 @@ loop_end:
 	JMP  leftover_loop_end
 
 leftover_loop_body:
-	MOVL (AX)(DI*4), SI
-	MOVL (CX)(DI*4), R8
+	MOVL (CX)(DI*4), SI
+	MOVL (DX)(DI*4), R8
 	ADDL R8, SI
-	MOVL SI, (DX)(DI*4)
+	MOVL SI, (AX)(DI*4)
 	ADDQ $0x01, DI
 
 leftover_loop_end:
@@ -44,13 +44,13 @@ leftover_loop_end:
 	JL   leftover_loop_body
 	RET
 
-// func addAssignUint64AVX2(v0 []uint64, v1 []uint64, vOut []uint64)
+// func addToUint64AVX2(vOut []uint64, v0 []uint64, v1 []uint64)
 // Requires: AVX, AVX2
-TEXT ·addAssignUint64AVX2(SB), NOSPLIT, $0-72
-	MOVQ v0_base+0(FP), AX
-	MOVQ v1_base+24(FP), CX
-	MOVQ vOut_base+48(FP), DX
-	MOVQ vOut_len+56(FP), BX
+TEXT ·addToUint64AVX2(SB), NOSPLIT, $0-72
+	MOVQ vOut_base+0(FP), AX
+	MOVQ v0_base+24(FP), CX
+	MOVQ v1_base+48(FP), DX
+	MOVQ vOut_len+8(FP), BX
 	MOVQ BX, SI
 	SHRQ $0x02, SI
 	SHLQ $0x02, SI
@@ -58,10 +58,10 @@ TEXT ·addAssignUint64AVX2(SB), NOSPLIT, $0-72
 	JMP  loop_end
 
 loop_body:
-	VMOVDQU (AX)(DI*8), Y0
-	VMOVDQU (CX)(DI*8), Y1
+	VMOVDQU (CX)(DI*8), Y0
+	VMOVDQU (DX)(DI*8), Y1
 	VPADDQ  Y1, Y0, Y0
-	VMOVDQU Y0, (DX)(DI*8)
+	VMOVDQU Y0, (AX)(DI*8)
 	ADDQ    $0x04, DI
 
 loop_end:
@@ -70,10 +70,10 @@ loop_end:
 	JMP  leftover_loop_end
 
 leftover_loop_body:
-	MOVQ (AX)(DI*8), SI
-	MOVQ (CX)(DI*8), R8
+	MOVQ (CX)(DI*8), SI
+	MOVQ (DX)(DI*8), R8
 	ADDQ R8, SI
-	MOVQ SI, (DX)(DI*8)
+	MOVQ SI, (AX)(DI*8)
 	ADDQ $0x01, DI
 
 leftover_loop_end:
@@ -81,13 +81,13 @@ leftover_loop_end:
 	JL   leftover_loop_body
 	RET
 
-// func subAssignUint32AVX2(v0 []uint32, v1 []uint32, vOut []uint32)
+// func subToUint32AVX2(vOut []uint32, v0 []uint32, v1 []uint32)
 // Requires: AVX, AVX2
-TEXT ·subAssignUint32AVX2(SB), NOSPLIT, $0-72
-	MOVQ v0_base+0(FP), AX
-	MOVQ v1_base+24(FP), CX
-	MOVQ vOut_base+48(FP), DX
-	MOVQ vOut_len+56(FP), BX
+TEXT ·subToUint32AVX2(SB), NOSPLIT, $0-72
+	MOVQ vOut_base+0(FP), AX
+	MOVQ v0_base+24(FP), CX
+	MOVQ v1_base+48(FP), DX
+	MOVQ vOut_len+8(FP), BX
 	MOVQ BX, SI
 	SHRQ $0x03, SI
 	SHLQ $0x03, SI
@@ -95,10 +95,10 @@ TEXT ·subAssignUint32AVX2(SB), NOSPLIT, $0-72
 	JMP  loop_end
 
 loop_body:
-	VMOVDQU (AX)(DI*4), Y0
-	VMOVDQU (CX)(DI*4), Y1
+	VMOVDQU (CX)(DI*4), Y0
+	VMOVDQU (DX)(DI*4), Y1
 	VPSUBD  Y1, Y0, Y0
-	VMOVDQU Y0, (DX)(DI*4)
+	VMOVDQU Y0, (AX)(DI*4)
 	ADDQ    $0x08, DI
 
 loop_end:
@@ -107,10 +107,10 @@ loop_end:
 	JMP  leftover_loop_end
 
 leftover_loop_body:
-	MOVL (AX)(DI*4), SI
-	MOVL (CX)(DI*4), R8
+	MOVL (CX)(DI*4), SI
+	MOVL (DX)(DI*4), R8
 	SUBL R8, SI
-	MOVL SI, (DX)(DI*4)
+	MOVL SI, (AX)(DI*4)
 	ADDQ $0x01, DI
 
 leftover_loop_end:
@@ -118,13 +118,13 @@ leftover_loop_end:
 	JL   leftover_loop_body
 	RET
 
-// func subAssignUint64AVX2(v0 []uint64, v1 []uint64, vOut []uint64)
+// func subToUint64AVX2(vOut []uint64, v0 []uint64, v1 []uint64)
 // Requires: AVX, AVX2
-TEXT ·subAssignUint64AVX2(SB), NOSPLIT, $0-72
-	MOVQ v0_base+0(FP), AX
-	MOVQ v1_base+24(FP), CX
-	MOVQ vOut_base+48(FP), DX
-	MOVQ vOut_len+56(FP), BX
+TEXT ·subToUint64AVX2(SB), NOSPLIT, $0-72
+	MOVQ vOut_base+0(FP), AX
+	MOVQ v0_base+24(FP), CX
+	MOVQ v1_base+48(FP), DX
+	MOVQ vOut_len+8(FP), BX
 	MOVQ BX, SI
 	SHRQ $0x02, SI
 	SHLQ $0x02, SI
@@ -132,10 +132,10 @@ TEXT ·subAssignUint64AVX2(SB), NOSPLIT, $0-72
 	JMP  loop_end
 
 loop_body:
-	VMOVDQU (AX)(DI*8), Y0
-	VMOVDQU (CX)(DI*8), Y1
+	VMOVDQU (CX)(DI*8), Y0
+	VMOVDQU (DX)(DI*8), Y1
 	VPSUBQ  Y1, Y0, Y0
-	VMOVDQU Y0, (DX)(DI*8)
+	VMOVDQU Y0, (AX)(DI*8)
 	ADDQ    $0x04, DI
 
 loop_end:
@@ -144,10 +144,10 @@ loop_end:
 	JMP  leftover_loop_end
 
 leftover_loop_body:
-	MOVQ (AX)(DI*8), SI
-	MOVQ (CX)(DI*8), R8
+	MOVQ (CX)(DI*8), SI
+	MOVQ (DX)(DI*8), R8
 	SUBQ R8, SI
-	MOVQ SI, (DX)(DI*8)
+	MOVQ SI, (AX)(DI*8)
 	ADDQ $0x01, DI
 
 leftover_loop_end:
@@ -155,35 +155,35 @@ leftover_loop_end:
 	JL   leftover_loop_body
 	RET
 
-// func scalarMulAssignUint32AVX2(v0 []uint32, c uint32, vOut []uint32)
+// func scalarMulToUint32AVX2(vOut []uint32, v []uint32, c uint32)
 // Requires: AVX, AVX2
-TEXT ·scalarMulAssignUint32AVX2(SB), NOSPLIT, $0-56
-	MOVQ         v0_base+0(FP), AX
-	MOVQ         vOut_base+32(FP), CX
-	MOVQ         vOut_len+40(FP), DX
+TEXT ·scalarMulToUint32AVX2(SB), NOSPLIT, $0-52
+	MOVQ         vOut_base+0(FP), AX
+	MOVQ         v_base+24(FP), CX
+	MOVQ         vOut_len+8(FP), DX
 	MOVQ         DX, BX
 	SHRQ         $0x03, BX
 	SHLQ         $0x03, BX
-	VPBROADCASTD c+24(FP), Y0
+	VPBROADCASTD c+48(FP), Y0
 	XORQ         SI, SI
 	JMP          loop_end
 
 loop_body:
-	VMOVDQU (AX)(SI*4), Y1
+	VMOVDQU (CX)(SI*4), Y1
 	VPMULLD Y0, Y1, Y1
-	VMOVDQU Y1, (CX)(SI*4)
+	VMOVDQU Y1, (AX)(SI*4)
 	ADDQ    $0x08, SI
 
 loop_end:
 	CMPQ SI, BX
 	JL   loop_body
-	MOVL c+24(FP), BX
+	MOVL c+48(FP), BX
 	JMP  leftover_loop_end
 
 leftover_loop_body:
-	MOVL  (AX)(SI*4), DI
+	MOVL  (CX)(SI*4), DI
 	IMULL BX, DI
-	MOVL  DI, (CX)(SI*4)
+	MOVL  DI, (AX)(SI*4)
 	ADDQ  $0x01, SI
 
 leftover_loop_end:
@@ -191,42 +191,42 @@ leftover_loop_end:
 	JL   leftover_loop_body
 	RET
 
-// func scalarMulAssignUint64AVX2(v0 []uint64, c uint64, vOut []uint64)
+// func scalarMulToUint64AVX2(vOut []uint64, v []uint64, c uint64)
 // Requires: AVX, AVX2
-TEXT ·scalarMulAssignUint64AVX2(SB), NOSPLIT, $0-56
+TEXT ·scalarMulToUint64AVX2(SB), NOSPLIT, $0-56
 	VPBROADCASTQ MASK_HI<>+0(SB), Y0
-	MOVQ         v0_base+0(FP), AX
-	MOVQ         vOut_base+32(FP), CX
-	MOVQ         vOut_len+40(FP), DX
+	MOVQ         vOut_base+0(FP), AX
+	MOVQ         v_base+24(FP), CX
+	MOVQ         vOut_len+8(FP), DX
 	MOVQ         DX, BX
 	SHRQ         $0x02, BX
 	SHLQ         $0x02, BX
-	VPBROADCASTQ c+24(FP), Y1
+	VPBROADCASTQ c+48(FP), Y1
 	VPSHUFD      $0xb1, Y1, Y2
 	XORQ         SI, SI
 	JMP          loop_end
 
 loop_body:
-	VMOVDQU  (AX)(SI*8), Y3
+	VMOVDQU  (CX)(SI*8), Y3
 	VPMULUDQ Y1, Y3, Y4
 	VPMULLD  Y2, Y3, Y3
 	VPSLLQ   $0x20, Y3, Y5
 	VPAND    Y0, Y3, Y3
 	VPADDQ   Y5, Y3, Y3
 	VPADDQ   Y4, Y3, Y3
-	VMOVDQU  Y3, (CX)(SI*8)
+	VMOVDQU  Y3, (AX)(SI*8)
 	ADDQ     $0x04, SI
 
 loop_end:
 	CMPQ SI, BX
 	JL   loop_body
-	MOVQ c+24(FP), BX
+	MOVQ c+48(FP), BX
 	JMP  leftover_loop_end
 
 leftover_loop_body:
-	MOVQ  (AX)(SI*8), DI
+	MOVQ  (CX)(SI*8), DI
 	IMULQ BX, DI
-	MOVQ  DI, (CX)(SI*8)
+	MOVQ  DI, (AX)(SI*8)
 	ADDQ  $0x01, SI
 
 leftover_loop_end:
@@ -234,39 +234,39 @@ leftover_loop_end:
 	JL   leftover_loop_body
 	RET
 
-// func scalarMulAddAssignUint32AVX2(v0 []uint32, c uint32, vOut []uint32)
+// func scalarMulAddToUint32AVX2(vOut []uint32, v []uint32, c uint32)
 // Requires: AVX, AVX2
-TEXT ·scalarMulAddAssignUint32AVX2(SB), NOSPLIT, $0-56
-	MOVQ         v0_base+0(FP), AX
-	MOVQ         vOut_base+32(FP), CX
-	MOVQ         vOut_len+40(FP), DX
+TEXT ·scalarMulAddToUint32AVX2(SB), NOSPLIT, $0-52
+	MOVQ         vOut_base+0(FP), AX
+	MOVQ         v_base+24(FP), CX
+	MOVQ         vOut_len+8(FP), DX
 	MOVQ         DX, BX
 	SHRQ         $0x03, BX
 	SHLQ         $0x03, BX
-	VPBROADCASTD c+24(FP), Y0
+	VPBROADCASTD c+48(FP), Y0
 	XORQ         SI, SI
 	JMP          loop_end
 
 loop_body:
-	VMOVDQU (AX)(SI*4), Y1
-	VMOVDQU (CX)(SI*4), Y2
+	VMOVDQU (CX)(SI*4), Y1
+	VMOVDQU (AX)(SI*4), Y2
 	VPMULLD Y0, Y1, Y1
 	VPADDD  Y1, Y2, Y2
-	VMOVDQU Y2, (CX)(SI*4)
+	VMOVDQU Y2, (AX)(SI*4)
 	ADDQ    $0x08, SI
 
 loop_end:
 	CMPQ SI, BX
 	JL   loop_body
-	MOVL c+24(FP), BX
+	MOVL c+48(FP), BX
 	JMP  leftover_loop_end
 
 leftover_loop_body:
-	MOVL  (AX)(SI*4), DI
-	MOVL  (CX)(SI*4), R8
+	MOVL  (CX)(SI*4), DI
+	MOVL  (AX)(SI*4), R8
 	IMULL BX, DI
 	ADDL  DI, R8
-	MOVL  R8, (CX)(SI*4)
+	MOVL  R8, (AX)(SI*4)
 	ADDQ  $0x01, SI
 
 leftover_loop_end:
@@ -274,24 +274,24 @@ leftover_loop_end:
 	JL   leftover_loop_body
 	RET
 
-// func scalarMulAddAssignUint64AVX2(v0 []uint64, c uint64, vOut []uint64)
+// func scalarMulAddToUint64AVX2(vOut []uint64, v []uint64, c uint64)
 // Requires: AVX, AVX2
-TEXT ·scalarMulAddAssignUint64AVX2(SB), NOSPLIT, $0-56
+TEXT ·scalarMulAddToUint64AVX2(SB), NOSPLIT, $0-56
 	VPBROADCASTQ MASK_HI<>+0(SB), Y0
-	MOVQ         v0_base+0(FP), AX
-	MOVQ         vOut_base+32(FP), CX
-	MOVQ         vOut_len+40(FP), DX
+	MOVQ         vOut_base+0(FP), AX
+	MOVQ         v_base+24(FP), CX
+	MOVQ         vOut_len+8(FP), DX
 	MOVQ         DX, BX
 	SHRQ         $0x02, BX
 	SHLQ         $0x02, BX
-	VPBROADCASTQ c+24(FP), Y1
+	VPBROADCASTQ c+48(FP), Y1
 	VPSHUFD      $0xb1, Y1, Y2
 	XORQ         SI, SI
 	JMP          loop_end
 
 loop_body:
-	VMOVDQU  (AX)(SI*8), Y3
-	VMOVDQU  (CX)(SI*8), Y4
+	VMOVDQU  (CX)(SI*8), Y3
+	VMOVDQU  (AX)(SI*8), Y4
 	VPMULUDQ Y1, Y3, Y5
 	VPMULLD  Y2, Y3, Y3
 	VPSLLQ   $0x20, Y3, Y6
@@ -299,21 +299,21 @@ loop_body:
 	VPADDQ   Y6, Y3, Y3
 	VPADDQ   Y5, Y3, Y3
 	VPADDQ   Y3, Y4, Y4
-	VMOVDQU  Y4, (CX)(SI*8)
+	VMOVDQU  Y4, (AX)(SI*8)
 	ADDQ     $0x04, SI
 
 loop_end:
 	CMPQ SI, BX
 	JL   loop_body
-	MOVQ c+24(FP), BX
+	MOVQ c+48(FP), BX
 	JMP  leftover_loop_end
 
 leftover_loop_body:
-	MOVQ  (AX)(SI*8), DI
-	MOVQ  (CX)(SI*8), R8
+	MOVQ  (CX)(SI*8), DI
+	MOVQ  (AX)(SI*8), R8
 	IMULQ BX, DI
 	ADDQ  DI, R8
-	MOVQ  R8, (CX)(SI*8)
+	MOVQ  R8, (AX)(SI*8)
 	ADDQ  $0x01, SI
 
 leftover_loop_end:
@@ -321,39 +321,39 @@ leftover_loop_end:
 	JL   leftover_loop_body
 	RET
 
-// func scalarMulSubAssignUint32AVX2(v0 []uint32, c uint32, vOut []uint32)
+// func scalarMulSubToUint32AVX2(vOut []uint32, v []uint32, c uint32)
 // Requires: AVX, AVX2
-TEXT ·scalarMulSubAssignUint32AVX2(SB), NOSPLIT, $0-56
-	MOVQ         v0_base+0(FP), AX
-	MOVQ         vOut_base+32(FP), CX
-	MOVQ         vOut_len+40(FP), DX
+TEXT ·scalarMulSubToUint32AVX2(SB), NOSPLIT, $0-52
+	MOVQ         vOut_base+0(FP), AX
+	MOVQ         v_base+24(FP), CX
+	MOVQ         vOut_len+8(FP), DX
 	MOVQ         DX, BX
 	SHRQ         $0x03, BX
 	SHLQ         $0x03, BX
-	VPBROADCASTD c+24(FP), Y0
+	VPBROADCASTD c+48(FP), Y0
 	XORQ         SI, SI
 	JMP          loop_end
 
 loop_body:
-	VMOVDQU (AX)(SI*4), Y1
-	VMOVDQU (CX)(SI*4), Y2
+	VMOVDQU (CX)(SI*4), Y1
+	VMOVDQU (AX)(SI*4), Y2
 	VPMULLD Y0, Y1, Y1
 	VPSUBD  Y1, Y2, Y2
-	VMOVDQU Y2, (CX)(SI*4)
+	VMOVDQU Y2, (AX)(SI*4)
 	ADDQ    $0x08, SI
 
 loop_end:
 	CMPQ SI, BX
 	JL   loop_body
-	MOVL c+24(FP), BX
+	MOVL c+48(FP), BX
 	JMP  leftover_loop_end
 
 leftover_loop_body:
-	MOVL  (AX)(SI*4), DI
-	MOVL  (CX)(SI*4), R8
+	MOVL  (CX)(SI*4), DI
+	MOVL  (AX)(SI*4), R8
 	IMULL BX, DI
 	SUBL  DI, R8
-	MOVL  R8, (CX)(SI*4)
+	MOVL  R8, (AX)(SI*4)
 	ADDQ  $0x01, SI
 
 leftover_loop_end:
@@ -361,24 +361,24 @@ leftover_loop_end:
 	JL   leftover_loop_body
 	RET
 
-// func scalarMulSubAssignUint64AVX2(v0 []uint64, c uint64, vOut []uint64)
+// func scalarMulSubToUint64AVX2(vOut []uint64, v []uint64, c uint64)
 // Requires: AVX, AVX2
-TEXT ·scalarMulSubAssignUint64AVX2(SB), NOSPLIT, $0-56
+TEXT ·scalarMulSubToUint64AVX2(SB), NOSPLIT, $0-56
 	VPBROADCASTQ MASK_HI<>+0(SB), Y0
-	MOVQ         v0_base+0(FP), AX
-	MOVQ         vOut_base+32(FP), CX
-	MOVQ         vOut_len+40(FP), DX
+	MOVQ         vOut_base+0(FP), AX
+	MOVQ         v_base+24(FP), CX
+	MOVQ         vOut_len+8(FP), DX
 	MOVQ         DX, BX
 	SHRQ         $0x02, BX
 	SHLQ         $0x02, BX
-	VPBROADCASTQ c+24(FP), Y1
+	VPBROADCASTQ c+48(FP), Y1
 	VPSHUFD      $0xb1, Y1, Y2
 	XORQ         SI, SI
 	JMP          loop_end
 
 loop_body:
-	VMOVDQU  (AX)(SI*8), Y3
-	VMOVDQU  (CX)(SI*8), Y4
+	VMOVDQU  (CX)(SI*8), Y3
+	VMOVDQU  (AX)(SI*8), Y4
 	VPMULUDQ Y1, Y3, Y5
 	VPMULLD  Y2, Y3, Y3
 	VPSLLQ   $0x20, Y3, Y6
@@ -386,21 +386,21 @@ loop_body:
 	VPADDQ   Y6, Y3, Y3
 	VPADDQ   Y5, Y3, Y3
 	VPSUBQ   Y3, Y4, Y4
-	VMOVDQU  Y4, (CX)(SI*8)
+	VMOVDQU  Y4, (AX)(SI*8)
 	ADDQ     $0x04, SI
 
 loop_end:
 	CMPQ SI, BX
 	JL   loop_body
-	MOVQ c+24(FP), BX
+	MOVQ c+48(FP), BX
 	JMP  leftover_loop_end
 
 leftover_loop_body:
-	MOVQ  (AX)(SI*8), DI
-	MOVQ  (CX)(SI*8), R8
+	MOVQ  (CX)(SI*8), DI
+	MOVQ  (AX)(SI*8), R8
 	IMULQ BX, DI
 	SUBQ  DI, R8
-	MOVQ  R8, (CX)(SI*8)
+	MOVQ  R8, (AX)(SI*8)
 	ADDQ  $0x01, SI
 
 leftover_loop_end:
@@ -408,13 +408,13 @@ leftover_loop_end:
 	JL   leftover_loop_body
 	RET
 
-// func elementWiseMulAssignUint32AVX2(v0 []uint32, v1 []uint32, vOut []uint32)
+// func mulToUint32AVX2(vOut []uint32, v0 []uint32, v1 []uint32)
 // Requires: AVX, AVX2
-TEXT ·elementWiseMulAssignUint32AVX2(SB), NOSPLIT, $0-72
-	MOVQ v0_base+0(FP), AX
-	MOVQ v1_base+24(FP), CX
-	MOVQ vOut_base+48(FP), DX
-	MOVQ vOut_len+56(FP), BX
+TEXT ·mulToUint32AVX2(SB), NOSPLIT, $0-72
+	MOVQ vOut_base+0(FP), AX
+	MOVQ v0_base+24(FP), CX
+	MOVQ v1_base+48(FP), DX
+	MOVQ vOut_len+8(FP), BX
 	MOVQ BX, SI
 	SHRQ $0x03, SI
 	SHLQ $0x03, SI
@@ -422,10 +422,10 @@ TEXT ·elementWiseMulAssignUint32AVX2(SB), NOSPLIT, $0-72
 	JMP  loop_end
 
 loop_body:
-	VMOVDQU (AX)(DI*4), Y0
-	VMOVDQU (CX)(DI*4), Y1
+	VMOVDQU (CX)(DI*4), Y0
+	VMOVDQU (DX)(DI*4), Y1
 	VPMULLD Y1, Y0, Y0
-	VMOVDQU Y0, (DX)(DI*4)
+	VMOVDQU Y0, (AX)(DI*4)
 	ADDQ    $0x08, DI
 
 loop_end:
@@ -434,10 +434,10 @@ loop_end:
 	JMP  leftover_loop_end
 
 leftover_loop_body:
-	MOVL  (AX)(DI*4), SI
-	MOVL  (CX)(DI*4), R8
+	MOVL  (CX)(DI*4), SI
+	MOVL  (DX)(DI*4), R8
 	IMULL R8, SI
-	MOVL  SI, (DX)(DI*4)
+	MOVL  SI, (AX)(DI*4)
 	ADDQ  $0x01, DI
 
 leftover_loop_end:
@@ -445,14 +445,14 @@ leftover_loop_end:
 	JL   leftover_loop_body
 	RET
 
-// func elementWiseMulAssignUint64AVX2(v0 []uint64, v1 []uint64, vOut []uint64)
+// func mulToUint64AVX2(vOut []uint64, v0 []uint64, v1 []uint64)
 // Requires: AVX, AVX2
-TEXT ·elementWiseMulAssignUint64AVX2(SB), NOSPLIT, $0-72
+TEXT ·mulToUint64AVX2(SB), NOSPLIT, $0-72
 	VPBROADCASTQ MASK_HI<>+0(SB), Y0
-	MOVQ         v0_base+0(FP), AX
-	MOVQ         v1_base+24(FP), CX
-	MOVQ         vOut_base+48(FP), DX
-	MOVQ         vOut_len+56(FP), BX
+	MOVQ         vOut_base+0(FP), AX
+	MOVQ         v0_base+24(FP), CX
+	MOVQ         v1_base+48(FP), DX
+	MOVQ         vOut_len+8(FP), BX
 	MOVQ         BX, SI
 	SHRQ         $0x02, SI
 	SHLQ         $0x02, SI
@@ -460,8 +460,8 @@ TEXT ·elementWiseMulAssignUint64AVX2(SB), NOSPLIT, $0-72
 	JMP          loop_end
 
 loop_body:
-	VMOVDQU  (AX)(DI*8), Y1
-	VMOVDQU  (CX)(DI*8), Y2
+	VMOVDQU  (CX)(DI*8), Y1
+	VMOVDQU  (DX)(DI*8), Y2
 	VPSHUFD  $0xb1, Y1, Y3
 	VPMULUDQ Y1, Y2, Y1
 	VPMULLD  Y3, Y2, Y2
@@ -469,7 +469,7 @@ loop_body:
 	VPAND    Y0, Y2, Y2
 	VPADDQ   Y3, Y2, Y2
 	VPADDQ   Y1, Y2, Y2
-	VMOVDQU  Y2, (DX)(DI*8)
+	VMOVDQU  Y2, (AX)(DI*8)
 	ADDQ     $0x04, DI
 
 loop_end:
@@ -478,10 +478,10 @@ loop_end:
 	JMP  leftover_loop_end
 
 leftover_loop_body:
-	MOVQ  (AX)(DI*8), SI
-	MOVQ  (CX)(DI*8), R8
+	MOVQ  (CX)(DI*8), SI
+	MOVQ  (DX)(DI*8), R8
 	IMULQ R8, SI
-	MOVQ  SI, (DX)(DI*8)
+	MOVQ  SI, (AX)(DI*8)
 	ADDQ  $0x01, DI
 
 leftover_loop_end:
@@ -489,13 +489,13 @@ leftover_loop_end:
 	JL   leftover_loop_body
 	RET
 
-// func elementWiseMulAddAssignUint32AVX2(v0 []uint32, v1 []uint32, vOut []uint32)
+// func mulAddToUint32AVX2(vOut []uint32, v0 []uint32, v1 []uint32)
 // Requires: AVX, AVX2
-TEXT ·elementWiseMulAddAssignUint32AVX2(SB), NOSPLIT, $0-72
-	MOVQ v0_base+0(FP), AX
-	MOVQ v1_base+24(FP), CX
-	MOVQ vOut_base+48(FP), DX
-	MOVQ vOut_len+56(FP), BX
+TEXT ·mulAddToUint32AVX2(SB), NOSPLIT, $0-72
+	MOVQ vOut_base+0(FP), AX
+	MOVQ v0_base+24(FP), CX
+	MOVQ v1_base+48(FP), DX
+	MOVQ vOut_len+8(FP), BX
 	MOVQ BX, SI
 	SHRQ $0x03, SI
 	SHLQ $0x03, SI
@@ -503,12 +503,12 @@ TEXT ·elementWiseMulAddAssignUint32AVX2(SB), NOSPLIT, $0-72
 	JMP  loop_end
 
 loop_body:
-	VMOVDQU (AX)(DI*4), Y0
-	VMOVDQU (CX)(DI*4), Y1
-	VMOVDQU (DX)(DI*4), Y2
+	VMOVDQU (CX)(DI*4), Y0
+	VMOVDQU (DX)(DI*4), Y1
+	VMOVDQU (AX)(DI*4), Y2
 	VPMULLD Y1, Y0, Y0
 	VPADDD  Y0, Y2, Y2
-	VMOVDQU Y2, (DX)(DI*4)
+	VMOVDQU Y2, (AX)(DI*4)
 	ADDQ    $0x08, DI
 
 loop_end:
@@ -517,12 +517,12 @@ loop_end:
 	JMP  leftover_loop_end
 
 leftover_loop_body:
-	MOVL  (AX)(DI*4), SI
-	MOVL  (CX)(DI*4), R8
-	MOVL  (DX)(DI*4), R9
+	MOVL  (CX)(DI*4), SI
+	MOVL  (DX)(DI*4), R8
+	MOVL  (AX)(DI*4), R9
 	IMULL R8, SI
 	ADDL  SI, R9
-	MOVL  R9, (DX)(DI*4)
+	MOVL  R9, (AX)(DI*4)
 	ADDQ  $0x01, DI
 
 leftover_loop_end:
@@ -530,14 +530,14 @@ leftover_loop_end:
 	JL   leftover_loop_body
 	RET
 
-// func elementWiseMulAddAssignUint64AVX2(v0 []uint64, v1 []uint64, vOut []uint64)
+// func mulAddToUint64AVX2(vOut []uint64, v0 []uint64, v1 []uint64)
 // Requires: AVX, AVX2
-TEXT ·elementWiseMulAddAssignUint64AVX2(SB), NOSPLIT, $0-72
+TEXT ·mulAddToUint64AVX2(SB), NOSPLIT, $0-72
 	VPBROADCASTQ MASK_HI<>+0(SB), Y0
-	MOVQ         v0_base+0(FP), AX
-	MOVQ         v1_base+24(FP), CX
-	MOVQ         vOut_base+48(FP), DX
-	MOVQ         vOut_len+56(FP), BX
+	MOVQ         vOut_base+0(FP), AX
+	MOVQ         v0_base+24(FP), CX
+	MOVQ         v1_base+48(FP), DX
+	MOVQ         vOut_len+8(FP), BX
 	MOVQ         BX, SI
 	SHRQ         $0x02, SI
 	SHLQ         $0x02, SI
@@ -545,9 +545,9 @@ TEXT ·elementWiseMulAddAssignUint64AVX2(SB), NOSPLIT, $0-72
 	JMP          loop_end
 
 loop_body:
-	VMOVDQU  (AX)(DI*8), Y1
-	VMOVDQU  (CX)(DI*8), Y2
-	VMOVDQU  (DX)(DI*8), Y3
+	VMOVDQU  (CX)(DI*8), Y1
+	VMOVDQU  (DX)(DI*8), Y2
+	VMOVDQU  (AX)(DI*8), Y3
 	VPSHUFD  $0xb1, Y1, Y4
 	VPMULUDQ Y1, Y2, Y1
 	VPMULLD  Y4, Y2, Y2
@@ -556,7 +556,7 @@ loop_body:
 	VPADDQ   Y4, Y2, Y2
 	VPADDQ   Y1, Y2, Y2
 	VPADDQ   Y2, Y3, Y3
-	VMOVDQU  Y3, (DX)(DI*8)
+	VMOVDQU  Y3, (AX)(DI*8)
 	ADDQ     $0x04, DI
 
 loop_end:
@@ -565,12 +565,12 @@ loop_end:
 	JMP  leftover_loop_end
 
 leftover_loop_body:
-	MOVQ  (AX)(DI*8), SI
-	MOVQ  (CX)(DI*8), R8
-	MOVQ  (DX)(DI*8), R9
+	MOVQ  (CX)(DI*8), SI
+	MOVQ  (DX)(DI*8), R8
+	MOVQ  (AX)(DI*8), R9
 	IMULQ R8, SI
 	ADDQ  SI, R9
-	MOVQ  R9, (DX)(DI*8)
+	MOVQ  R9, (AX)(DI*8)
 	ADDQ  $0x01, DI
 
 leftover_loop_end:
@@ -578,13 +578,13 @@ leftover_loop_end:
 	JL   leftover_loop_body
 	RET
 
-// func elementWiseMulSubAssignUint32AVX2(v0 []uint32, v1 []uint32, vOut []uint32)
+// func mulSubToUint32AVX2(vOut []uint32, v0 []uint32, v1 []uint32)
 // Requires: AVX, AVX2
-TEXT ·elementWiseMulSubAssignUint32AVX2(SB), NOSPLIT, $0-72
-	MOVQ v0_base+0(FP), AX
-	MOVQ v1_base+24(FP), CX
-	MOVQ vOut_base+48(FP), DX
-	MOVQ vOut_len+56(FP), BX
+TEXT ·mulSubToUint32AVX2(SB), NOSPLIT, $0-72
+	MOVQ vOut_base+0(FP), AX
+	MOVQ v0_base+24(FP), CX
+	MOVQ v1_base+48(FP), DX
+	MOVQ vOut_len+8(FP), BX
 	MOVQ BX, SI
 	SHRQ $0x03, SI
 	SHLQ $0x03, SI
@@ -592,12 +592,12 @@ TEXT ·elementWiseMulSubAssignUint32AVX2(SB), NOSPLIT, $0-72
 	JMP  loop_end
 
 loop_body:
-	VMOVDQU (AX)(DI*4), Y0
-	VMOVDQU (CX)(DI*4), Y1
-	VMOVDQU (DX)(DI*4), Y2
+	VMOVDQU (CX)(DI*4), Y0
+	VMOVDQU (DX)(DI*4), Y1
+	VMOVDQU (AX)(DI*4), Y2
 	VPMULLD Y1, Y0, Y0
 	VPSUBD  Y0, Y2, Y2
-	VMOVDQU Y2, (DX)(DI*4)
+	VMOVDQU Y2, (AX)(DI*4)
 	ADDQ    $0x08, DI
 
 loop_end:
@@ -606,12 +606,12 @@ loop_end:
 	JMP  leftover_loop_end
 
 leftover_loop_body:
-	MOVL  (AX)(DI*4), SI
-	MOVL  (CX)(DI*4), R8
-	MOVL  (DX)(DI*4), R9
+	MOVL  (CX)(DI*4), SI
+	MOVL  (DX)(DI*4), R8
+	MOVL  (AX)(DI*4), R9
 	IMULL R8, SI
 	SUBL  SI, R9
-	MOVL  R9, (DX)(DI*4)
+	MOVL  R9, (AX)(DI*4)
 	ADDQ  $0x01, DI
 
 leftover_loop_end:
@@ -619,14 +619,14 @@ leftover_loop_end:
 	JL   leftover_loop_body
 	RET
 
-// func elementWiseMulSubAssignUint64AVX2(v0 []uint64, v1 []uint64, vOut []uint64)
+// func mulSubToUint64AVX2(vOut []uint64, v0 []uint64, v1 []uint64)
 // Requires: AVX, AVX2
-TEXT ·elementWiseMulSubAssignUint64AVX2(SB), NOSPLIT, $0-72
+TEXT ·mulSubToUint64AVX2(SB), NOSPLIT, $0-72
 	VPBROADCASTQ MASK_HI<>+0(SB), Y0
-	MOVQ         v0_base+0(FP), AX
-	MOVQ         v1_base+24(FP), CX
-	MOVQ         vOut_base+48(FP), DX
-	MOVQ         vOut_len+56(FP), BX
+	MOVQ         vOut_base+0(FP), AX
+	MOVQ         v0_base+24(FP), CX
+	MOVQ         v1_base+48(FP), DX
+	MOVQ         vOut_len+8(FP), BX
 	MOVQ         BX, SI
 	SHRQ         $0x02, SI
 	SHLQ         $0x02, SI
@@ -634,9 +634,9 @@ TEXT ·elementWiseMulSubAssignUint64AVX2(SB), NOSPLIT, $0-72
 	JMP          loop_end
 
 loop_body:
-	VMOVDQU  (AX)(DI*8), Y1
-	VMOVDQU  (CX)(DI*8), Y2
-	VMOVDQU  (DX)(DI*8), Y3
+	VMOVDQU  (CX)(DI*8), Y1
+	VMOVDQU  (DX)(DI*8), Y2
+	VMOVDQU  (AX)(DI*8), Y3
 	VPSHUFD  $0xb1, Y1, Y4
 	VPMULUDQ Y1, Y2, Y1
 	VPMULLD  Y4, Y2, Y2
@@ -645,7 +645,7 @@ loop_body:
 	VPADDQ   Y4, Y2, Y2
 	VPADDQ   Y1, Y2, Y2
 	VPSUBQ   Y2, Y3, Y3
-	VMOVDQU  Y3, (DX)(DI*8)
+	VMOVDQU  Y3, (AX)(DI*8)
 	ADDQ     $0x04, DI
 
 loop_end:
@@ -654,12 +654,12 @@ loop_end:
 	JMP  leftover_loop_end
 
 leftover_loop_body:
-	MOVQ  (AX)(DI*8), SI
-	MOVQ  (CX)(DI*8), R8
-	MOVQ  (DX)(DI*8), R9
+	MOVQ  (CX)(DI*8), SI
+	MOVQ  (DX)(DI*8), R8
+	MOVQ  (AX)(DI*8), R9
 	IMULQ R8, SI
 	SUBQ  SI, R9
-	MOVQ  R9, (DX)(DI*8)
+	MOVQ  R9, (AX)(DI*8)
 	ADDQ  $0x01, DI
 
 leftover_loop_end:

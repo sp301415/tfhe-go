@@ -11,12 +11,12 @@ import (
 
 var (
 	manyLUTParams = xtfhe.ParamsUint2LUT4.Compile()
-	manyLUTEnc    = tfhe.NewEncryptor(manyLUTParams.BaseParameters())
+	manyLUTEnc    = tfhe.NewEncryptor(manyLUTParams.BaseParams())
 	manyLUTEval   = xtfhe.NewManyLUTEvaluator(manyLUTParams, manyLUTEnc.GenEvaluationKeyParallel())
 )
 
 func TestManyLUT(t *testing.T) {
-	m := int(num.Sqrt(manyLUTParams.BaseParameters().MessageModulus()))
+	m := int(num.Sqrt(manyLUTParams.BaseParams().MessageModulus()))
 	fs := make([]func(int) int, manyLUTParams.LUTCount())
 	for i := 0; i < manyLUTParams.LUTCount(); i++ {
 		j := i
@@ -27,6 +27,6 @@ func TestManyLUT(t *testing.T) {
 	ctOut := manyLUTEval.BootstrapFunc(ct, fs)
 
 	for i := 0; i < manyLUTParams.LUTCount(); i++ {
-		assert.Equal(t, manyLUTEnc.DecryptLWE(ctOut[i]), fs[i](m)%int(manyLUTParams.BaseParameters().MessageModulus()))
+		assert.Equal(t, manyLUTEnc.DecryptLWE(ctOut[i]), fs[i](m)%int(manyLUTParams.BaseParams().MessageModulus()))
 	}
 }

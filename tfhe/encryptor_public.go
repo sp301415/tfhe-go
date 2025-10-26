@@ -19,8 +19,8 @@ type PublicEncryptor[T TorusInt] struct {
 	// GLWETransformer is an embedded GLWETransformer for this PublicEncryptor.
 	*GLWETransformer[T]
 
-	// Parameters is the parameters for this PublicEncryptor.
-	Parameters Parameters[T]
+	// Params is the parameters for this PublicEncryptor.
+	Params Parameters[T]
 
 	// UniformSampler is used for sampling the mask of encryptions.
 	UniformSampler *csprng.UniformSampler[T]
@@ -35,11 +35,11 @@ type PublicEncryptor[T TorusInt] struct {
 	// PublicKey is the public key for this PublicEncryptor.
 	PublicKey PublicKey[T]
 
-	buffer publicEncryptionBuffer[T]
+	buf publicEncryptorBuffer[T]
 }
 
-// publicEncryptionBuffer is a buffer for PublicEncryptor.
-type publicEncryptionBuffer[T TorusInt] struct {
+// publicEncryptorBuffer is a buffer for PublicEncryptor.
+type publicEncryptorBuffer[T TorusInt] struct {
 	// ptGLWE is the GLWE plaintext for GLWE encryption / decryptions.
 	ptGLWE GLWEPlaintext[T]
 	// ctGLWE is the standard GLWE Ciphertext for Fourier encryption / decryptions.
@@ -49,10 +49,10 @@ type publicEncryptionBuffer[T TorusInt] struct {
 	// This must be sampled fresh for each encryption.
 	auxKey GLWESecretKey[T]
 	// auxFourierKey is the fourier transform of auxKey.
-	auxFourierKey FourierGLWESecretKey[T]
+	auxFourierKey FFTGLWESecretKey[T]
 }
 
-// NewPublicEncryptor allocates a new PublicEncryptor.
+// NewPublicEncryptor creates a new PublicEncryptor.
 //
 // Panics when the parameters do not support public key encryption.
 func NewPublicEncryptor[T TorusInt](params Parameters[T], pk PublicKey[T]) *PublicEncryptor[T] {
@@ -62,30 +62,30 @@ func NewPublicEncryptor[T TorusInt](params Parameters[T], pk PublicKey[T]) *Publ
 
 	return &PublicEncryptor[T]{
 		Encoder:         NewEncoder(params),
-		GLWETransformer: NewGLWETransformer[T](params.polyDegree),
+		GLWETransformer: NewGLWETransformer[T](params.polyRank),
 
-		Parameters: params,
+		Params: params,
 
 		UniformSampler:  csprng.NewUniformSampler[T](),
 		BinarySampler:   csprng.NewBinarySampler[T](),
 		GaussianSampler: csprng.NewGaussianSampler[T](),
 
-		PolyEvaluator: poly.NewEvaluator[T](params.polyDegree),
+		PolyEvaluator: poly.NewEvaluator[T](params.polyRank),
 
 		PublicKey: pk,
 
-		buffer: newPublicEncryptionBuffer(params),
+		buf: newPublicEncryptorBuffer(params),
 	}
 }
 
-// newPublicEncryptionBuffer allocates a new publicEncryptionBuffer.
-func newPublicEncryptionBuffer[T TorusInt](params Parameters[T]) publicEncryptionBuffer[T] {
-	return publicEncryptionBuffer[T]{
+// newPublicEncryptorBuffer creates a new publicEncryptorBuffer.
+func newPublicEncryptorBuffer[T TorusInt](params Parameters[T]) publicEncryptorBuffer[T] {
+	return publicEncryptorBuffer[T]{
 		ptGLWE: NewGLWEPlaintext(params),
 		ctGLWE: NewGLWECiphertext(params),
 
 		auxKey:        NewGLWESecretKey(params),
-		auxFourierKey: NewFourierGLWESecretKey(params),
+		auxFourierKey: NewFFTGLWESecretKey(params),
 	}
 }
 
@@ -95,7 +95,7 @@ func (e *PublicEncryptor[T]) ShallowCopy() *PublicEncryptor[T] {
 		Encoder:         e.Encoder,
 		GLWETransformer: e.GLWETransformer.ShallowCopy(),
 
-		Parameters: e.Parameters,
+		Params: e.Params,
 
 		UniformSampler:  csprng.NewUniformSampler[T](),
 		BinarySampler:   csprng.NewBinarySampler[T](),
@@ -105,6 +105,6 @@ func (e *PublicEncryptor[T]) ShallowCopy() *PublicEncryptor[T] {
 
 		PublicKey: e.PublicKey,
 
-		buffer: newPublicEncryptionBuffer(e.Parameters),
+		buf: newPublicEncryptorBuffer(e.Params),
 	}
 }

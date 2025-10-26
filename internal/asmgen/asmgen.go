@@ -1,4 +1,4 @@
-//go:generate go run . -convert -out ../../math/poly/asm_convert_amd64.s -stubs ../../math/poly/asm_convert_stub_amd64.go -pkg=poly
+//go:generate go run . -fold -out ../../math/poly/asm_fold_amd64.s -stubs ../../math/poly/asm_fold_stub_amd64.go -pkg=poly
 //go:generate go run . -fft -out ../../math/poly/asm_fft_amd64.s -stubs ../../math/poly/asm_fft_stub_amd64.go -pkg=poly
 //go:generate go run . -vec_cmplx -out ../../math/poly/asm_vec_cmplx_amd64.s -stubs ../../math/poly/asm_vec_cmplx_stub_amd64.go -pkg=poly
 //go:generate go run . -vec -out ../../math/vec/asm_vec_amd64.s -stubs ../../math/vec/asm_vec_stub_amd64.go -pkg=vec
@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	convert  = flag.Bool("convert", false, "asm_convert_amd64.s")
+	fold     = flag.Bool("fold", false, "asm_fold_amd64.s")
 	fft      = flag.Bool("fft", false, "asm_fft_amd64.s")
 	vecCmplx = flag.Bool("vec_cmplx", false, "asm_vec_cmplx_amd64.s")
 
@@ -28,22 +28,22 @@ func main() {
 	Constraint(buildtags.Term("amd64"))
 	Constraint(buildtags.Not("purego"))
 
-	if *convert {
-		convertConstants()
+	if *fold {
+		foldConstants()
 
-		convertPolyToFourierPolyAssignUint32AVX2()
-		convertPolyToFourierPolyAssignUint64AVX2()
+		foldPolyToUint32AVX2()
+		foldPolyToUint64AVX2()
 
-		floatModQInPlaceAVX2()
+		floatModInPlaceAVX2()
 
-		convertFourierPolyToPolyAssignUint32AVX2()
-		convertFourierPolyToPolyAssignUint64AVX2()
+		unfoldPolyToUint32AVX2()
+		unfoldPolyToUint64AVX2()
 
-		convertFourierPolyToPolyAddAssignUint32AVX2()
-		convertFourierPolyToPolyAddAssignUint64AVX2()
+		unfoldPolyAddToUint32AVX2()
+		unfoldPolyAddToUint64AVX2()
 
-		convertFourierPolyToPolySubAssignUint32AVX2()
-		convertFourierPolyToPolySubAssignUint64AVX2()
+		unfoldPolySubToUint32AVX2()
+		unfoldPolySubToUint64AVX2()
 
 	}
 
@@ -53,56 +53,56 @@ func main() {
 	}
 
 	if *vecCmplx {
-		addCmplxAssignAVX2()
-		subCmplxAssignAVX2()
-		negCmplxAssignAVX2()
+		addCmplxToAVX2()
+		subCmplxToAVX2()
+		negCmplxToAVX2()
 
-		floatMulCmplxAssignAVX2()
-		floatMulAddCmplxAssignAVX2()
-		floatMulSubCmplxAssignAVX2()
+		floatMulCmplxToAVX2()
+		floatMulAddCmplxToAVX2()
+		floatMulSubCmplxToAVX2()
 
-		cmplxMulCmplxAssignAVX2()
-		cmplxMulAddCmplxAssignAVX2()
-		cmplxMulSubCmplxAssignAVX2()
+		cmplxMulCmplxToAVX2()
+		cmplxMulAddCmplxToAVX2()
+		cmplxMulSubCmplxToAVX2()
 
-		elementWiseMulCmplxAssignAVX2()
-		elementWiseMulAddCmplxAssignAVX2()
-		elementWiseMulSubCmplxAssignAVX2()
+		mulCmplxToAVX2()
+		mulAddCmplxToAVX2()
+		mulSubCmplxToAVX2()
 	}
 
 	if *vec {
 		vecConstants()
 
-		addAssignUint32AVX2()
-		addAssignUint64AVX2()
+		addToUint32AVX2()
+		addToUint64AVX2()
 
-		subAssignUint32AVX2()
-		subAssignUint64AVX2()
+		subToUint32AVX2()
+		subToUint64AVX2()
 
-		scalarMulAssignUint32AVX2()
-		scalarMulAssignUint64AVX2()
+		scalarMulToUint32AVX2()
+		scalarMulToUint64AVX2()
 
-		scalarMulAddAssignUint32AVX2()
-		scalarMulAddAssignUint64AVX2()
+		scalarMulAddToUint32AVX2()
+		scalarMulAddToUint64AVX2()
 
-		scalarMulSubAssignUint32AVX2()
-		scalarMulSubAssignUint64AVX2()
+		scalarMulSubToUint32AVX2()
+		scalarMulSubToUint64AVX2()
 
-		elementWiseMulAssignUint32AVX2()
-		elementWiseMulAssignUint64AVX2()
+		mulToUint32AVX2()
+		mulToUint64AVX2()
 
-		elementWiseMulAddAssignUint32AVX2()
-		elementWiseMulAddAssignUint64AVX2()
+		mulAddToUint32AVX2()
+		mulAddToUint64AVX2()
 
-		elementWiseMulSubAssignUint32AVX2()
-		elementWiseMulSubAssignUint64AVX2()
+		mulSubToUint32AVX2()
+		mulSubToUint64AVX2()
 	}
 
 	if *decompose {
 		decomposeConstants()
 
-		decomposePolyAssignUint32AVX2()
-		decomposePolyAssignUint64AVX2()
+		decomposePolyToUint32AVX2()
+		decomposePolyToUint64AVX2()
 	}
 
 	Generate()

@@ -236,16 +236,16 @@ type ParametersLiteral[T TorusInt] struct {
 	// GLWERank is the rank of GLWE lattice used. Usually this is denoted by k.
 	// Length of GLWE secret key is GLWERank, and length of GLWE ciphertext is GLWERank+1.
 	GLWERank int
-	// PolyDegree is the degree of polynomials in GLWE entities. Usually this is denoted by N.
-	PolyDegree int
-	// LookUpTableSize is the size of the Lookup Table used in Blind Rotation.
+	// PolyRank is the rank of polynomials in GLWE entities. Usually this is denoted by N.
+	PolyRank int
+	// LUTSize is the size of the Lookup Table used in Blind Rotation.
 	//
-	// In case of Extended Bootstrapping, this may differ from PolyDegree as explained in https://eprint.iacr.org/2023/402.
-	// Therefore, it must be a multiple of PolyDegree.
-	// To use the original TFHE bootstrapping, set this to PolyDegree.
+	// In case of Extended Bootstrapping, this may differ from PolyRank as explained in https://eprint.iacr.org/2023/402.
+	// Therefore, it must be a multiple of PolyRank.
+	// To use the original TFHE bootstrapping, set this to PolyRank.
 	//
-	// If zero, then it is set to PolyDegree.
-	LookUpTableSize int
+	// If zero, then it is set to PolyRank.
+	LUTSize int
 
 	// LWEStdDev is the normalized standard deviation used for gaussian error sampling in LWE encryption.
 	LWEStdDev float64
@@ -263,10 +263,10 @@ type ParametersLiteral[T TorusInt] struct {
 	// MessageModulus is the modulus of the encoded message.
 	MessageModulus T
 
-	// BlindRotateParameters is the gadget parameters for Blind Rotation.
-	BlindRotateParameters GadgetParametersLiteral[T]
-	// KeySwitchParameters is the gadget parameters for KeySwitching.
-	KeySwitchParameters GadgetParametersLiteral[T]
+	// BlindRotateParams is the gadget parameters for Blind Rotation.
+	BlindRotateParams GadgetParametersLiteral[T]
+	// KeySwitchParams is the gadget parameters for KeySwitching.
+	KeySwitchParams GadgetParametersLiteral[T]
 
 	// BootstrapOrder is the order of Programmable Bootstrapping.
 	// If this is set to OrderKeySwitchBlindRotate, then the order is:
@@ -303,15 +303,15 @@ func (p ParametersLiteral[T]) WithGLWERank(glweRank int) ParametersLiteral[T] {
 	return p
 }
 
-// WithPolyDegree sets the PolyDegree and returns the new ParametersLiteral.
-func (p ParametersLiteral[T]) WithPolyDegree(polyDegree int) ParametersLiteral[T] {
-	p.PolyDegree = polyDegree
+// WithPolyRank sets the PolyRank and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithPolyRank(polyRank int) ParametersLiteral[T] {
+	p.PolyRank = polyRank
 	return p
 }
 
-// WithLookUpTableSize sets the LookUpTableSize and returns the new ParametersLiteral.
-func (p ParametersLiteral[T]) WithLookUpTableSize(lookUpTableSize int) ParametersLiteral[T] {
-	p.LookUpTableSize = lookUpTableSize
+// WithLUTSize sets the LUTSize and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithLUTSize(lutSize int) ParametersLiteral[T] {
+	p.LUTSize = lutSize
 	return p
 }
 
@@ -339,15 +339,15 @@ func (p ParametersLiteral[T]) WithMessageModulus(messageModulus T) ParametersLit
 	return p
 }
 
-// WithBlindRotateParameters sets the BlindRotateParameters and returns the new ParametersLiteral.
-func (p ParametersLiteral[T]) WithBlindRotateParameters(blindRotateParameters GadgetParametersLiteral[T]) ParametersLiteral[T] {
-	p.BlindRotateParameters = blindRotateParameters
+// WithBlindRotateParams sets the BlindRotateParameters and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithBlindRotateParams(blindRotateParams GadgetParametersLiteral[T]) ParametersLiteral[T] {
+	p.BlindRotateParams = blindRotateParams
 	return p
 }
 
-// WithKeySwitchParameters sets the KeySwitchParameters and returns the new ParametersLiteral.
-func (p ParametersLiteral[T]) WithKeySwitchParameters(keySwitchParameters GadgetParametersLiteral[T]) ParametersLiteral[T] {
-	p.KeySwitchParameters = keySwitchParameters
+// WithKeySwitchParams sets the KeySwitchParameters and returns the new ParametersLiteral.
+func (p ParametersLiteral[T]) WithKeySwitchParams(keySwitchParams GadgetParametersLiteral[T]) ParametersLiteral[T] {
+	p.KeySwitchParams = keySwitchParams
 	return p
 }
 
@@ -368,8 +368,8 @@ func (p ParametersLiteral[T]) WithBootstrapOrder(bootstrapOrder BootstrapOrder) 
 // Unless you are a cryptographic expert, DO NOT set parameters by yourself;
 // always use the default parameters provided.
 func (p ParametersLiteral[T]) Compile() Parameters[T] {
-	if p.LookUpTableSize == 0 {
-		p.LookUpTableSize = p.PolyDegree
+	if p.LUTSize == 0 {
+		p.LUTSize = p.PolyRank
 	}
 	if p.BlockSize == 0 {
 		p.BlockSize = 1
@@ -378,12 +378,12 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 	switch {
 	case p.LWEDimension <= 0:
 		panic("LWEDimension smaller than zero")
-	case p.LWEDimension > p.GLWERank*p.PolyDegree:
+	case p.LWEDimension > p.GLWERank*p.PolyRank:
 		panic("LWEDimension larger than GLWEDimension")
 	case p.GLWERank <= 0:
 		panic("GLWERank smaller than zero")
-	case p.LookUpTableSize < p.PolyDegree:
-		panic("LookUpTableSize smaller than PolyDegree")
+	case p.LUTSize < p.PolyRank:
+		panic("LUTSize smaller than PolyRank")
 	case p.LWEStdDev <= 0:
 		panic("LWEStdDev smaller than zero")
 	case p.GLWEStdDev <= 0:
@@ -392,22 +392,22 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		panic("BlockSize smaller than zero")
 	case p.LWEDimension%p.BlockSize != 0:
 		panic("LWEDimension not multiple of BlockSize")
-	case p.LookUpTableSize%p.PolyDegree != 0:
-		panic("LookUpTableSize not multiple of PolyDegree")
-	case !num.IsPowerOfTwo(p.PolyDegree):
-		panic("PolyDegree not power of two")
+	case p.LUTSize%p.PolyRank != 0:
+		panic("LUTSize not multiple of PolyRank")
+	case !num.IsPowerOfTwo(p.PolyRank):
+		panic("PolyRank not power of two")
 	case !(p.BootstrapOrder == OrderKeySwitchBlindRotate || p.BootstrapOrder == OrderBlindRotateKeySwitch):
 		panic("BootstrapOrder not valid")
 	}
 
 	return Parameters[T]{
-		lweDimension:     p.LWEDimension,
-		glweDimension:    p.GLWERank * p.PolyDegree,
-		glweRank:         p.GLWERank,
-		polyDegree:       p.PolyDegree,
-		logPolyDegree:    num.Log2(p.PolyDegree),
-		lookUpTableSize:  p.LookUpTableSize,
-		polyExtendFactor: p.LookUpTableSize / p.PolyDegree,
+		lweDimension:    p.LWEDimension,
+		glweDimension:   p.GLWERank * p.PolyRank,
+		glweRank:        p.GLWERank,
+		polyRank:        p.PolyRank,
+		logPolyRank:     num.Log2(p.PolyRank),
+		lutSize:         p.LUTSize,
+		lutExtendFactor: p.LUTSize / p.PolyRank,
 
 		lweStdDev:  p.LWEStdDev,
 		glweStdDev: p.GLWEStdDev,
@@ -421,8 +421,8 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 		logQ:   num.SizeT[T](),
 		floatQ: math.Exp2(float64(num.SizeT[T]())),
 
-		blindRotateParameters: p.BlindRotateParameters.Compile(),
-		keySwitchParameters:   p.KeySwitchParameters.Compile(),
+		blindRotateParams: p.BlindRotateParams.Compile(),
+		keySwitchParams:   p.KeySwitchParams.Compile(),
 
 		bootstrapOrder: p.BootstrapOrder,
 	}
@@ -432,19 +432,19 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 type Parameters[T TorusInt] struct {
 	// LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
 	lweDimension int
-	// GLWEDimension is the dimension of GLWE lattice used, which is GLWERank * PolyDegree.
+	// GLWEDimension is the dimension of GLWE lattice used, which is GLWERank * PolyRank.
 	glweDimension int
 	// GLWERank is the rank of GLWE lattice used. Usually this is denoted by k.
 	// Length of GLWE secret key is GLWERank, and length of GLWE ciphertext is GLWERank+1.
 	glweRank int
-	// PolyDegree is the degree of polynomials in GLWE entities. Usually this is denoted by N.
-	polyDegree int
-	// LogPolyDegree equals log(PolyDegree).
-	logPolyDegree int
-	// LookUpTableSize is the size of Lookup Table used in Blind Rotation.
-	lookUpTableSize int
-	// PolyExtendFactor equals LookUpTableSize / PolyDegree.
-	polyExtendFactor int
+	// PolyRank is the degree of polynomials in GLWE entities. Usually this is denoted by N.
+	polyRank int
+	// LogPolyRank equals log(PolyRank).
+	logPolyRank int
+	// LUTSize is the size of Lookup Table used in Blind Rotation.
+	lutSize int
+	// LUTExtendFactor equals LUTSize / PolyRank.
+	lutExtendFactor int
 
 	// LWEStdDev is the normalized standard deviation used for gaussian error sampling in LWE encryption.
 	lweStdDev float64
@@ -467,10 +467,10 @@ type Parameters[T TorusInt] struct {
 	// floatQ is the value of Q as float64.
 	floatQ float64
 
-	// blindRotateParameters is the gadget parameters for Blind Rotation.
-	blindRotateParameters GadgetParameters[T]
-	// keySwitchParameters is the gadget parameters for KeySwitching.
-	keySwitchParameters GadgetParameters[T]
+	// blindRotateParams is the gadget parameters for Blind Rotation.
+	blindRotateParams GadgetParameters[T]
+	// keySwitchParams is the gadget parameters for KeySwitching.
+	keySwitchParams GadgetParameters[T]
 
 	// bootstrapOrder is the order of Programmable Bootstrapping.
 	bootstrapOrder BootstrapOrder
@@ -491,7 +491,7 @@ func (p Parameters[T]) LWEDimension() int {
 	return p.lweDimension
 }
 
-// GLWEDimension is the dimension of GLWE lattice used, which is GLWERank * PolyDegree.
+// GLWEDimension is the dimension of GLWE lattice used, which is GLWERank * PolyRank.
 func (p Parameters[T]) GLWEDimension() int {
 	return p.glweDimension
 }
@@ -502,24 +502,24 @@ func (p Parameters[T]) GLWERank() int {
 	return p.glweRank
 }
 
-// PolyDegree is the degree of polynomials in GLWE entities. Usually this is denoted by N.
-func (p Parameters[T]) PolyDegree() int {
-	return p.polyDegree
+// PolyRank is the degree of polynomials in GLWE entities. Usually this is denoted by N.
+func (p Parameters[T]) PolyRank() int {
+	return p.polyRank
 }
 
-// LogPolyDegree equals log(PolyDegree).
-func (p Parameters[T]) LogPolyDegree() int {
-	return p.logPolyDegree
+// LogPolyRank equals log(PolyRank).
+func (p Parameters[T]) LogPolyRank() int {
+	return p.logPolyRank
 }
 
-// LookUpTableSize is the size of LookUpTable used in Blind Rotation.
-func (p Parameters[T]) LookUpTableSize() int {
-	return p.lookUpTableSize
+// LUTSize is the size of LookUpTable used in Blind Rotation.
+func (p Parameters[T]) LUTSize() int {
+	return p.lutSize
 }
 
-// PolyExtendFactor returns LookUpTableSize / PolyDegree.
-func (p Parameters[T]) PolyExtendFactor() int {
-	return p.polyExtendFactor
+// LUTExtendFactor returns LUTSize / PolyRank.
+func (p Parameters[T]) LUTExtendFactor() int {
+	return p.lutExtendFactor
 }
 
 // DefaultLWEStdDev returns the default standard deviation for LWE entities.
@@ -595,14 +595,14 @@ func (p Parameters[T]) LogQ() int {
 	return p.logQ
 }
 
-// BlindRotateParameters is the gadget parameters for Programmable Bootstrapping.
-func (p Parameters[T]) BlindRotateParameters() GadgetParameters[T] {
-	return p.blindRotateParameters
+// BlindRotateParams is the gadget parameters for Programmable Bootstrapping.
+func (p Parameters[T]) BlindRotateParams() GadgetParameters[T] {
+	return p.blindRotateParams
 }
 
-// KeySwitchParameters is the gadget parameters for KeySwitching.
-func (p Parameters[T]) KeySwitchParameters() GadgetParameters[T] {
-	return p.keySwitchParameters
+// KeySwitchParams is the gadget parameters for KeySwitching.
+func (p Parameters[T]) KeySwitchParams() GadgetParameters[T] {
+	return p.keySwitchParams
 }
 
 // BootstrapOrder is the order of Programmable Bootstrapping.
@@ -620,10 +620,10 @@ func (p Parameters[T]) IsPublicKeyEncryptable() bool {
 // Literal returns a ParametersLiteral from this Parameters.
 func (p Parameters[T]) Literal() ParametersLiteral[T] {
 	return ParametersLiteral[T]{
-		LWEDimension:    p.lweDimension,
-		GLWERank:        p.glweRank,
-		PolyDegree:      p.polyDegree,
-		LookUpTableSize: p.lookUpTableSize,
+		LWEDimension: p.lweDimension,
+		GLWERank:     p.glweRank,
+		PolyRank:     p.polyRank,
+		LUTSize:      p.lutSize,
 
 		LWEStdDev:  p.lweStdDev,
 		GLWEStdDev: p.glweStdDev,
@@ -632,8 +632,8 @@ func (p Parameters[T]) Literal() ParametersLiteral[T] {
 
 		MessageModulus: p.messageModulus,
 
-		BlindRotateParameters: p.blindRotateParameters.Literal(),
-		KeySwitchParameters:   p.keySwitchParameters.Literal(),
+		BlindRotateParams: p.blindRotateParams.Literal(),
+		KeySwitchParams:   p.keySwitchParams.Literal(),
 
 		BootstrapOrder: p.bootstrapOrder,
 	}
@@ -641,7 +641,7 @@ func (p Parameters[T]) Literal() ParametersLiteral[T] {
 
 // EstimateModSwitchStdDev returns an estimated standard deviation of error from modulus switching.
 func (p Parameters[T]) EstimateModSwitchStdDev() float64 {
-	L := float64(p.lookUpTableSize)
+	L := float64(p.lutSize)
 	q := p.floatQ
 
 	h := float64(p.blockCount) * (float64(p.blockSize)) / (float64(p.blockSize + 1))
@@ -655,14 +655,14 @@ func (p Parameters[T]) EstimateModSwitchStdDev() float64 {
 func (p Parameters[T]) EstimateBlindRotateStdDev() float64 {
 	n := float64(p.lweDimension)
 	k := float64(p.glweRank)
-	N := float64(p.polyDegree)
+	N := float64(p.polyRank)
 	beta := p.GLWEStdDevQ()
 	q := p.floatQ
 
 	h := float64(p.blockCount) * (float64(p.blockSize)) / (float64(p.blockSize + 1))
 
-	Bbr := float64(p.blindRotateParameters.Base())
-	Lbr := float64(p.blindRotateParameters.Level())
+	Bbr := float64(p.blindRotateParams.Base())
+	Lbr := float64(p.blindRotateParams.Level())
 
 	blindRotateVar1 := h * (h + (k*N-n)/2 + 1) * (q * q) / (6 * math.Pow(Bbr, 2*Lbr))
 	blindRotateVar2 := n * (Lbr * (k + 1) * N * beta * beta * Bbr * Bbr) / 6
@@ -672,16 +672,16 @@ func (p Parameters[T]) EstimateBlindRotateStdDev() float64 {
 	return math.Sqrt(blindRotateVar)
 }
 
-// EstimateKeySwitchForBootstrapStdDev returns an estimated standard deviation of error from Key Switching for bootstrapping.
-func (p Parameters[T]) EstimateKeySwitchForBootstrapStdDev() float64 {
+// EstimateDefaultKeySwitchStdDev returns an estimated standard deviation of error from Key Switching for bootstrapping.
+func (p Parameters[T]) EstimateDefaultKeySwitchStdDev() float64 {
 	n := float64(p.lweDimension)
 	k := float64(p.glweRank)
-	N := float64(p.polyDegree)
+	N := float64(p.polyRank)
 	alpha := p.LWEStdDevQ()
 	q := p.floatQ
 
-	Bks := float64(p.keySwitchParameters.Base())
-	Lks := float64(p.keySwitchParameters.Level())
+	Bks := float64(p.keySwitchParams.Base())
+	Lks := float64(p.keySwitchParams.Level())
 
 	keySwitchVar1 := ((k*N - n) / 2) * (q * q) / (12 * math.Pow(Bks, 2*Lks))
 	keySwitchVar2 := (k*N - n) * (alpha * alpha * Lks * Bks * Bks) / 12
@@ -694,7 +694,7 @@ func (p Parameters[T]) EstimateKeySwitchForBootstrapStdDev() float64 {
 func (p Parameters[T]) EstimateMaxErrorStdDev() float64 {
 	modSwitchStdDev := p.EstimateModSwitchStdDev()
 	blindRotateStdDev := p.EstimateBlindRotateStdDev()
-	keySwitchStdDev := p.EstimateKeySwitchForBootstrapStdDev()
+	keySwitchStdDev := p.EstimateDefaultKeySwitchStdDev()
 
 	return math.Sqrt(modSwitchStdDev*modSwitchStdDev + blindRotateStdDev*blindRotateStdDev + keySwitchStdDev*keySwitchStdDev)
 }
@@ -707,7 +707,7 @@ func (p Parameters[T]) EstimateFailureProbability() float64 {
 
 // ByteSize returns the byte size of the parameters.
 func (p Parameters[T]) ByteSize() int {
-	return 8*8 + p.blindRotateParameters.ByteSize() + p.keySwitchParameters.ByteSize() + 1
+	return 8*8 + p.blindRotateParams.ByteSize() + p.keySwitchParams.ByteSize() + 1
 }
 
 // WriteTo implements the [io.WriterTo] interface.
@@ -716,8 +716,8 @@ func (p Parameters[T]) ByteSize() int {
 //
 //	[ 8] LWEDimension
 //	[ 8] GLWERank
-//	[ 8] PolyDegree
-//	[ 8] LookUpTableSize
+//	[ 8] PolyRank
+//	[ 8] LUTSize
 //	[ 8] LWEStdDev
 //	[ 8] GLWEStdDev
 //	[ 8] BlockSize
@@ -744,15 +744,15 @@ func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
 	}
 	n += int64(nWrite)
 
-	polyDegree := p.polyDegree
-	binary.BigEndian.PutUint64(buf[:], uint64(polyDegree))
+	polyRank := p.polyRank
+	binary.BigEndian.PutUint64(buf[:], uint64(polyRank))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
 	}
 	n += int64(nWrite)
 
-	lookUpTableSize := p.lookUpTableSize
-	binary.BigEndian.PutUint64(buf[:], uint64(lookUpTableSize))
+	lutSize := p.lutSize
+	binary.BigEndian.PutUint64(buf[:], uint64(lutSize))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
 	}
@@ -786,12 +786,12 @@ func (p Parameters[T]) WriteTo(w io.Writer) (n int64, err error) {
 	}
 	n += int64(nWrite)
 
-	if nWrite64, err = p.blindRotateParameters.WriteTo(w); err != nil {
+	if nWrite64, err = p.blindRotateParams.WriteTo(w); err != nil {
 		return n + nWrite64, err
 	}
 	n += nWrite64
 
-	if nWrite64, err = p.keySwitchParameters.WriteTo(w); err != nil {
+	if nWrite64, err = p.keySwitchParams.WriteTo(w); err != nil {
 		return n + nWrite64, err
 	}
 	n += nWrite64
@@ -831,13 +831,13 @@ func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
 		return n + int64(nRead), err
 	}
 	n += int64(nRead)
-	polyDegree := int(binary.BigEndian.Uint64(buf[:]))
+	polyRank := int(binary.BigEndian.Uint64(buf[:]))
 
 	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
 		return n + int64(nRead), err
 	}
 	n += int64(nRead)
-	lookUpTableSize := int(binary.BigEndian.Uint64(buf[:]))
+	lutSize := int(binary.BigEndian.Uint64(buf[:]))
 
 	if nRead, err = io.ReadFull(r, buf[:]); err != nil {
 		return n + int64(nRead), err
@@ -863,14 +863,14 @@ func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	n += int64(nRead)
 	messageModulus := T(binary.BigEndian.Uint64(buf[:]))
 
-	var blindRotateParameters GadgetParameters[T]
-	if nRead64, err = blindRotateParameters.ReadFrom(r); err != nil {
+	var blindRotateParams GadgetParameters[T]
+	if nRead64, err = blindRotateParams.ReadFrom(r); err != nil {
 		return n + nRead64, err
 	}
 	n += nRead64
 
-	var keySwitchParameters GadgetParameters[T]
-	if nRead64, err = keySwitchParameters.ReadFrom(r); err != nil {
+	var keySwitchParams GadgetParameters[T]
+	if nRead64, err = keySwitchParams.ReadFrom(r); err != nil {
 		return n + nRead64, err
 	}
 	n += nRead64
@@ -882,10 +882,10 @@ func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	bootstrapOrder := BootstrapOrder(buf[0])
 
 	*p = ParametersLiteral[T]{
-		LWEDimension:    lweDimension,
-		GLWERank:        glweRank,
-		PolyDegree:      polyDegree,
-		LookUpTableSize: lookUpTableSize,
+		LWEDimension: lweDimension,
+		GLWERank:     glweRank,
+		PolyRank:     polyRank,
+		LUTSize:      lutSize,
 
 		LWEStdDev:  lweStdDev,
 		GLWEStdDev: glweStdDev,
@@ -894,8 +894,8 @@ func (p *Parameters[T]) ReadFrom(r io.Reader) (n int64, err error) {
 
 		MessageModulus: messageModulus,
 
-		BlindRotateParameters: blindRotateParameters.Literal(),
-		KeySwitchParameters:   keySwitchParameters.Literal(),
+		BlindRotateParams: blindRotateParams.Literal(),
+		KeySwitchParams:   keySwitchParams.Literal(),
 
 		BootstrapOrder: bootstrapOrder,
 	}.Compile()

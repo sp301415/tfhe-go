@@ -12,13 +12,13 @@ func vecConstants() {
 	ConstData("MASK_HI", U64(math.MaxUint32<<32))
 }
 
-func addAssignUint32AVX2() {
-	TEXT("addAssignUint32AVX2", NOSPLIT, "func(v0, v1, vOut []uint32)")
+func addToUint32AVX2() {
+	TEXT("addToUint32AVX2", NOSPLIT, "func(vOut, v0, v1 []uint32)")
 	Pragma("noescape")
 
+	vOut := Load(Param("vOut").Base(), GP64())
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
-	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	M := GP64()
@@ -66,13 +66,13 @@ func addAssignUint32AVX2() {
 	RET()
 }
 
-func subAssignUint32AVX2() {
-	TEXT("subAssignUint32AVX2", NOSPLIT, "func(v0, v1, vOut []uint32)")
+func subToUint32AVX2() {
+	TEXT("subToUint32AVX2", NOSPLIT, "func(vOut, v0, v1 []uint32)")
 	Pragma("noescape")
 
+	vOut := Load(Param("vOut").Base(), GP64())
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
-	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	M := GP64()
@@ -120,13 +120,13 @@ func subAssignUint32AVX2() {
 	RET()
 }
 
-func addAssignUint64AVX2() {
-	TEXT("addAssignUint64AVX2", NOSPLIT, "func(v0, v1, vOut []uint64)")
+func addToUint64AVX2() {
+	TEXT("addToUint64AVX2", NOSPLIT, "func(vOut, v0, v1 []uint64)")
 	Pragma("noescape")
 
+	vOut := Load(Param("vOut").Base(), GP64())
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
-	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	M := GP64()
@@ -174,13 +174,13 @@ func addAssignUint64AVX2() {
 	RET()
 }
 
-func subAssignUint64AVX2() {
-	TEXT("subAssignUint64AVX2", NOSPLIT, "func(v0, v1, vOut []uint64)")
+func subToUint64AVX2() {
+	TEXT("subToUint64AVX2", NOSPLIT, "func(vOut, v0, v1 []uint64)")
 	Pragma("noescape")
 
+	vOut := Load(Param("vOut").Base(), GP64())
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
-	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	M := GP64()
@@ -228,12 +228,12 @@ func subAssignUint64AVX2() {
 	RET()
 }
 
-func scalarMulAssignUint32AVX2() {
-	TEXT("scalarMulAssignUint32AVX2", NOSPLIT, "func(v0 []uint32, c uint32, vOut []uint32)")
+func scalarMulToUint32AVX2() {
+	TEXT("scalarMulToUint32AVX2", NOSPLIT, "func(vOut, v []uint32, c uint32)")
 	Pragma("noescape")
 
-	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
+	v := Load(Param("v").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	M := GP64()
@@ -242,18 +242,18 @@ func scalarMulAssignUint32AVX2() {
 	SHLQ(Imm(3), M)
 
 	cv := YMM()
-	VPBROADCASTD(NewParamAddr("c", 24), cv)
+	VPBROADCASTD(NewParamAddr("c", 48), cv)
 
 	i := GP64()
 	XORQ(i, i)
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
-	x0 := YMM()
-	VMOVDQU(Mem{Base: v0, Index: i, Scale: 4}, x0)
+	x := YMM()
+	VMOVDQU(Mem{Base: v, Index: i, Scale: 4}, x)
 
 	xOut := YMM()
-	VPMULLD(cv, x0, xOut)
+	VPMULLD(cv, x, xOut)
 
 	VMOVDQU(xOut, Mem{Base: vOut, Index: i, Scale: 4})
 
@@ -268,12 +268,13 @@ func scalarMulAssignUint32AVX2() {
 
 	JMP(LabelRef("leftover_loop_end"))
 	Label("leftover_loop_body")
-	y0 := GP32()
-	MOVL(Mem{Base: v0, Index: i, Scale: 4}, y0)
 
-	IMULL(c, y0)
+	y := GP32()
+	MOVL(Mem{Base: v, Index: i, Scale: 4}, y)
 
-	MOVL(y0, Mem{Base: vOut, Index: i, Scale: 4})
+	IMULL(c, y)
+
+	MOVL(y, Mem{Base: vOut, Index: i, Scale: 4})
 
 	ADDQ(Imm(1), i)
 
@@ -284,12 +285,12 @@ func scalarMulAssignUint32AVX2() {
 	RET()
 }
 
-func scalarMulAddAssignUint32AVX2() {
-	TEXT("scalarMulAddAssignUint32AVX2", NOSPLIT, "func(v0 []uint32, c uint32, vOut []uint32)")
+func scalarMulAddToUint32AVX2() {
+	TEXT("scalarMulAddToUint32AVX2", NOSPLIT, "func(vOut, v []uint32, c uint32)")
 	Pragma("noescape")
 
-	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
+	v := Load(Param("v").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	M := GP64()
@@ -298,20 +299,20 @@ func scalarMulAddAssignUint32AVX2() {
 	SHLQ(Imm(3), M)
 
 	cv := YMM()
-	VPBROADCASTD(NewParamAddr("c", 24), cv)
+	VPBROADCASTD(NewParamAddr("c", 48), cv)
 
 	i := GP64()
 	XORQ(i, i)
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
-	x0 := YMM()
-	VMOVDQU(Mem{Base: v0, Index: i, Scale: 4}, x0)
+	x := YMM()
+	VMOVDQU(Mem{Base: v, Index: i, Scale: 4}, x)
 	xOut := YMM()
 	VMOVDQU(Mem{Base: vOut, Index: i, Scale: 4}, xOut)
 
-	VPMULLD(cv, x0, x0)
-	VPADDD(x0, xOut, xOut)
+	VPMULLD(cv, x, x)
+	VPADDD(x, xOut, xOut)
 
 	VMOVDQU(xOut, Mem{Base: vOut, Index: i, Scale: 4})
 
@@ -326,13 +327,14 @@ func scalarMulAddAssignUint32AVX2() {
 
 	JMP(LabelRef("leftover_loop_end"))
 	Label("leftover_loop_body")
-	y0 := GP32()
-	MOVL(Mem{Base: v0, Index: i, Scale: 4}, y0)
+
+	y := GP32()
+	MOVL(Mem{Base: v, Index: i, Scale: 4}, y)
 	yOut := GP32()
 	MOVL(Mem{Base: vOut, Index: i, Scale: 4}, yOut)
 
-	IMULL(c, y0)
-	ADDL(y0, yOut)
+	IMULL(c, y)
+	ADDL(y, yOut)
 
 	MOVL(yOut, Mem{Base: vOut, Index: i, Scale: 4})
 
@@ -345,12 +347,12 @@ func scalarMulAddAssignUint32AVX2() {
 	RET()
 }
 
-func scalarMulSubAssignUint32AVX2() {
-	TEXT("scalarMulSubAssignUint32AVX2", NOSPLIT, "func(v0 []uint32, c uint32, vOut []uint32)")
+func scalarMulSubToUint32AVX2() {
+	TEXT("scalarMulSubToUint32AVX2", NOSPLIT, "func(vOut, v []uint32, c uint32)")
 	Pragma("noescape")
 
-	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
+	v := Load(Param("v").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	M := GP64()
@@ -359,20 +361,20 @@ func scalarMulSubAssignUint32AVX2() {
 	SHLQ(Imm(3), M)
 
 	cv := YMM()
-	VPBROADCASTD(NewParamAddr("c", 24), cv)
+	VPBROADCASTD(NewParamAddr("c", 48), cv)
 
 	i := GP64()
 	XORQ(i, i)
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
-	x0 := YMM()
-	VMOVDQU(Mem{Base: v0, Index: i, Scale: 4}, x0)
+	x := YMM()
+	VMOVDQU(Mem{Base: v, Index: i, Scale: 4}, x)
 	xOut := YMM()
 	VMOVDQU(Mem{Base: vOut, Index: i, Scale: 4}, xOut)
 
-	VPMULLD(cv, x0, x0)
-	VPSUBD(x0, xOut, xOut)
+	VPMULLD(cv, x, x)
+	VPSUBD(x, xOut, xOut)
 
 	VMOVDQU(xOut, Mem{Base: vOut, Index: i, Scale: 4})
 
@@ -387,13 +389,14 @@ func scalarMulSubAssignUint32AVX2() {
 
 	JMP(LabelRef("leftover_loop_end"))
 	Label("leftover_loop_body")
-	y0 := GP32()
-	MOVL(Mem{Base: v0, Index: i, Scale: 4}, y0)
+
+	y := GP32()
+	MOVL(Mem{Base: v, Index: i, Scale: 4}, y)
 	yOut := GP32()
 	MOVL(Mem{Base: vOut, Index: i, Scale: 4}, yOut)
 
-	IMULL(c, y0)
-	SUBL(y0, yOut)
+	IMULL(c, y)
+	SUBL(y, yOut)
 
 	MOVL(yOut, Mem{Base: vOut, Index: i, Scale: 4})
 
@@ -406,13 +409,13 @@ func scalarMulSubAssignUint32AVX2() {
 	RET()
 }
 
-func elementWiseMulAssignUint32AVX2() {
-	TEXT("elementWiseMulAssignUint32AVX2", NOSPLIT, "func(v0, v1, vOut []uint32)")
+func mulToUint32AVX2() {
+	TEXT("mulToUint32AVX2", NOSPLIT, "func(vOut, v0, v1 []uint32)")
 	Pragma("noescape")
 
+	vOut := Load(Param("vOut").Base(), GP64())
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
-	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	M := GP64()
@@ -462,13 +465,13 @@ func elementWiseMulAssignUint32AVX2() {
 	RET()
 }
 
-func elementWiseMulAddAssignUint32AVX2() {
-	TEXT("elementWiseMulAddAssignUint32AVX2", NOSPLIT, "func(v0, v1, vOut []uint32)")
+func mulAddToUint32AVX2() {
+	TEXT("mulAddToUint32AVX2", NOSPLIT, "func(vOut, v0, v1 []uint32)")
 	Pragma("noescape")
 
+	vOut := Load(Param("vOut").Base(), GP64())
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
-	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	M := GP64()
@@ -523,13 +526,13 @@ func elementWiseMulAddAssignUint32AVX2() {
 	RET()
 }
 
-func elementWiseMulSubAssignUint32AVX2() {
-	TEXT("elementWiseMulSubAssignUint32AVX2", NOSPLIT, "func(v0, v1, vOut []uint32)")
+func mulSubToUint32AVX2() {
+	TEXT("mulSubToUint32AVX2", NOSPLIT, "func(vOut, v0, v1 []uint32)")
 	Pragma("noescape")
 
+	vOut := Load(Param("vOut").Base(), GP64())
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
-	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	M := GP64()
@@ -601,15 +604,15 @@ func mul64LoAVX2(x0, x1, x1Swap, maskHi, xOut reg.VecVirtual) {
 	VPADDQ(xLoLo, xOut, xOut)
 }
 
-func scalarMulAssignUint64AVX2() {
-	TEXT("scalarMulAssignUint64AVX2", NOSPLIT, "func(v0 []uint64, c uint64, vOut []uint64)")
+func scalarMulToUint64AVX2() {
+	TEXT("scalarMulToUint64AVX2", NOSPLIT, "func(vOut, v []uint64, c uint64)")
 	Pragma("noescape")
 
 	maskHi := YMM()
 	VPBROADCASTQ(NewDataAddr(NewStaticSymbol("MASK_HI"), 0), maskHi)
 
-	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
+	v := Load(Param("v").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	M := GP64()
@@ -618,7 +621,7 @@ func scalarMulAssignUint64AVX2() {
 	SHLQ(Imm(2), M)
 
 	cv, cvSwap := YMM(), YMM()
-	VPBROADCASTQ(NewParamAddr("c", 24), cv)
+	VPBROADCASTQ(NewParamAddr("c", 48), cv)
 	shuffleForLoAVX2(cv, cvSwap)
 
 	i := GP64()
@@ -626,11 +629,11 @@ func scalarMulAssignUint64AVX2() {
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
-	x0 := YMM()
-	VMOVDQU(Mem{Base: v0, Index: i, Scale: 8}, x0)
+	x := YMM()
+	VMOVDQU(Mem{Base: v, Index: i, Scale: 8}, x)
 
 	xOut := YMM()
-	mul64LoAVX2(x0, cv, cvSwap, maskHi, xOut)
+	mul64LoAVX2(x, cv, cvSwap, maskHi, xOut)
 
 	VMOVDQU(xOut, Mem{Base: vOut, Index: i, Scale: 8})
 
@@ -646,12 +649,12 @@ func scalarMulAssignUint64AVX2() {
 	JMP(LabelRef("leftover_loop_end"))
 	Label("leftover_loop_body")
 
-	y0 := GP64()
-	MOVQ(Mem{Base: v0, Index: i, Scale: 8}, y0)
+	y := GP64()
+	MOVQ(Mem{Base: v, Index: i, Scale: 8}, y)
 
-	IMULQ(c, y0)
+	IMULQ(c, y)
 
-	MOVQ(y0, Mem{Base: vOut, Index: i, Scale: 8})
+	MOVQ(y, Mem{Base: vOut, Index: i, Scale: 8})
 
 	ADDQ(Imm(1), i)
 
@@ -662,15 +665,15 @@ func scalarMulAssignUint64AVX2() {
 	RET()
 }
 
-func scalarMulAddAssignUint64AVX2() {
-	TEXT("scalarMulAddAssignUint64AVX2", NOSPLIT, "func(v0 []uint64, c uint64, vOut []uint64)")
+func scalarMulAddToUint64AVX2() {
+	TEXT("scalarMulAddToUint64AVX2", NOSPLIT, "func(vOut, v []uint64, c uint64)")
 	Pragma("noescape")
 
 	maskHi := YMM()
 	VPBROADCASTQ(NewDataAddr(NewStaticSymbol("MASK_HI"), 0), maskHi)
 
-	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
+	v := Load(Param("v").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	M := GP64()
@@ -679,7 +682,7 @@ func scalarMulAddAssignUint64AVX2() {
 	SHLQ(Imm(2), M)
 
 	cv, cvSwap := YMM(), YMM()
-	VPBROADCASTQ(NewParamAddr("c", 24), cv)
+	VPBROADCASTQ(NewParamAddr("c", 48), cv)
 	shuffleForLoAVX2(cv, cvSwap)
 
 	i := GP64()
@@ -687,13 +690,13 @@ func scalarMulAddAssignUint64AVX2() {
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
-	x0 := YMM()
-	VMOVDQU(Mem{Base: v0, Index: i, Scale: 8}, x0)
+	x := YMM()
+	VMOVDQU(Mem{Base: v, Index: i, Scale: 8}, x)
 	xOut := YMM()
 	VMOVDQU(Mem{Base: vOut, Index: i, Scale: 8}, xOut)
 
-	mul64LoAVX2(x0, cv, cvSwap, maskHi, x0)
-	VPADDQ(x0, xOut, xOut)
+	mul64LoAVX2(x, cv, cvSwap, maskHi, x)
+	VPADDQ(x, xOut, xOut)
 
 	VMOVDQU(xOut, Mem{Base: vOut, Index: i, Scale: 8})
 
@@ -709,13 +712,13 @@ func scalarMulAddAssignUint64AVX2() {
 	JMP(LabelRef("leftover_loop_end"))
 	Label("leftover_loop_body")
 
-	y0 := GP64()
-	MOVQ(Mem{Base: v0, Index: i, Scale: 8}, y0)
+	y := GP64()
+	MOVQ(Mem{Base: v, Index: i, Scale: 8}, y)
 	yOut := GP64()
 	MOVQ(Mem{Base: vOut, Index: i, Scale: 8}, yOut)
 
-	IMULQ(c, y0)
-	ADDQ(y0, yOut)
+	IMULQ(c, y)
+	ADDQ(y, yOut)
 
 	MOVQ(yOut, Mem{Base: vOut, Index: i, Scale: 8})
 
@@ -728,15 +731,15 @@ func scalarMulAddAssignUint64AVX2() {
 	RET()
 }
 
-func scalarMulSubAssignUint64AVX2() {
-	TEXT("scalarMulSubAssignUint64AVX2", NOSPLIT, "func(v0 []uint64, c uint64, vOut []uint64)")
+func scalarMulSubToUint64AVX2() {
+	TEXT("scalarMulSubToUint64AVX2", NOSPLIT, "func(vOut, v []uint64, c uint64)")
 	Pragma("noescape")
 
 	maskHi := YMM()
 	VPBROADCASTQ(NewDataAddr(NewStaticSymbol("MASK_HI"), 0), maskHi)
 
-	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
+	v := Load(Param("v").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	M := GP64()
@@ -745,7 +748,7 @@ func scalarMulSubAssignUint64AVX2() {
 	SHLQ(Imm(2), M)
 
 	cv, cvSwap := YMM(), YMM()
-	VPBROADCASTQ(NewParamAddr("c", 24), cv)
+	VPBROADCASTQ(NewParamAddr("c", 48), cv)
 	shuffleForLoAVX2(cv, cvSwap)
 
 	i := GP64()
@@ -753,13 +756,13 @@ func scalarMulSubAssignUint64AVX2() {
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
-	x0 := YMM()
-	VMOVDQU(Mem{Base: v0, Index: i, Scale: 8}, x0)
+	x := YMM()
+	VMOVDQU(Mem{Base: v, Index: i, Scale: 8}, x)
 	xOut := YMM()
 	VMOVDQU(Mem{Base: vOut, Index: i, Scale: 8}, xOut)
 
-	mul64LoAVX2(x0, cv, cvSwap, maskHi, x0)
-	VPSUBQ(x0, xOut, xOut)
+	mul64LoAVX2(x, cv, cvSwap, maskHi, x)
+	VPSUBQ(x, xOut, xOut)
 
 	VMOVDQU(xOut, Mem{Base: vOut, Index: i, Scale: 8})
 
@@ -775,13 +778,13 @@ func scalarMulSubAssignUint64AVX2() {
 	JMP(LabelRef("leftover_loop_end"))
 	Label("leftover_loop_body")
 
-	y0 := GP64()
-	MOVQ(Mem{Base: v0, Index: i, Scale: 8}, y0)
+	y := GP64()
+	MOVQ(Mem{Base: v, Index: i, Scale: 8}, y)
 	yOut := GP64()
 	MOVQ(Mem{Base: vOut, Index: i, Scale: 8}, yOut)
 
-	IMULQ(c, y0)
-	SUBQ(y0, yOut)
+	IMULQ(c, y)
+	SUBQ(y, yOut)
 
 	MOVQ(yOut, Mem{Base: vOut, Index: i, Scale: 8})
 
@@ -794,16 +797,16 @@ func scalarMulSubAssignUint64AVX2() {
 	RET()
 }
 
-func elementWiseMulAssignUint64AVX2() {
-	TEXT("elementWiseMulAssignUint64AVX2", NOSPLIT, "func(v0, v1, vOut []uint64)")
+func mulToUint64AVX2() {
+	TEXT("mulToUint64AVX2", NOSPLIT, "func(vOut, v0, v1 []uint64)")
 	Pragma("noescape")
 
 	maskHi := YMM()
 	VPBROADCASTQ(NewDataAddr(NewStaticSymbol("MASK_HI"), 0), maskHi)
 
+	vOut := Load(Param("vOut").Base(), GP64())
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
-	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	M := GP64()
@@ -856,16 +859,16 @@ func elementWiseMulAssignUint64AVX2() {
 	RET()
 }
 
-func elementWiseMulAddAssignUint64AVX2() {
-	TEXT("elementWiseMulAddAssignUint64AVX2", NOSPLIT, "func(v0, v1, vOut []uint64)")
+func mulAddToUint64AVX2() {
+	TEXT("mulAddToUint64AVX2", NOSPLIT, "func(vOut, v0, v1 []uint64)")
 	Pragma("noescape")
 
 	maskHi := YMM()
 	VPBROADCASTQ(NewDataAddr(NewStaticSymbol("MASK_HI"), 0), maskHi)
 
+	vOut := Load(Param("vOut").Base(), GP64())
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
-	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	M := GP64()
@@ -923,16 +926,16 @@ func elementWiseMulAddAssignUint64AVX2() {
 	RET()
 }
 
-func elementWiseMulSubAssignUint64AVX2() {
-	TEXT("elementWiseMulSubAssignUint64AVX2", NOSPLIT, "func(v0, v1, vOut []uint64)")
+func mulSubToUint64AVX2() {
+	TEXT("mulSubToUint64AVX2", NOSPLIT, "func(vOut, v0, v1 []uint64)")
 	Pragma("noescape")
 
 	maskHi := YMM()
 	VPBROADCASTQ(NewDataAddr(NewStaticSymbol("MASK_HI"), 0), maskHi)
 
+	vOut := Load(Param("vOut").Base(), GP64())
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
-	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	M := GP64()

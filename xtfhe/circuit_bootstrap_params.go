@@ -6,15 +6,15 @@ import (
 
 // CircuitBootstrapParametersLiteral is a structure for Circuit Bootstrapping Parameters.
 type CircuitBootstrapParametersLiteral[T tfhe.TorusInt] struct {
-	// ManyLUTParametersLiteral is a base ManyLUTParametersLiteral for this CircuitBootstrapParametersLiteral.
-	ManyLUTParametersLiteral ManyLUTParametersLiteral[T]
+	// ManyLUTParams is a base ManyLUTParams for this CircuitBootstrapParametersLiteral.
+	ManyLUTParams ManyLUTParametersLiteral[T]
 
-	// SchemeSwitchParametersLiteral is the gadget parameters for scheme switching.
-	SchemeSwitchParametersLiteral tfhe.GadgetParametersLiteral[T]
-	// TraceKeySwitchParametersLiteral is the gadget parameters for LWE to GLWE packing.
-	TraceKeySwitchParametersLiteral tfhe.GadgetParametersLiteral[T]
-	// OutputParametersLiteral is the gadget parameters for the output of circuit bootstrapping.
-	OutputParametersLiteral tfhe.GadgetParametersLiteral[T]
+	// SchemeSwitchParams is the gadget parameters for scheme switching.
+	SchemeSwitchParams tfhe.GadgetParametersLiteral[T]
+	// TraceKeySwitchParams is the gadget parameters for LWE to GLWE packing.
+	TraceKeySwitchParams tfhe.GadgetParametersLiteral[T]
+	// OutputParams is the gadget parameters for the output of circuit bootstrapping.
+	OutputParams tfhe.GadgetParametersLiteral[T]
 }
 
 // Compile transforms ParametersLiteral to read-only Parameters.
@@ -22,11 +22,11 @@ type CircuitBootstrapParametersLiteral[T tfhe.TorusInt] struct {
 // Default parameters are guaranteed to be compiled without panics.
 func (p CircuitBootstrapParametersLiteral[T]) Compile() CircuitBootstrapParameters[T] {
 	return CircuitBootstrapParameters[T]{
-		manyLUTParameters: p.ManyLUTParametersLiteral.Compile(),
+		manyLUTParameters: p.ManyLUTParams.Compile(),
 
-		schemeSwitchParameters:   p.SchemeSwitchParametersLiteral.Compile(),
-		traceKeySwitchParameters: p.TraceKeySwitchParametersLiteral.Compile(),
-		outputParameters:         p.OutputParametersLiteral.Compile(),
+		schemeSwitchParameters:   p.SchemeSwitchParams.Compile(),
+		traceKeySwitchParameters: p.TraceKeySwitchParams.Compile(),
+		outputParameters:         p.OutputParams.Compile(),
 	}
 }
 
@@ -43,27 +43,27 @@ type CircuitBootstrapParameters[T tfhe.TorusInt] struct {
 	outputParameters tfhe.GadgetParameters[T]
 }
 
-// ManyLUTParameters returns the base ManyLUTParameters for this CircuitBootstrapParameters.
-func (p CircuitBootstrapParameters[T]) ManyLUTParameters() ManyLUTParameters[T] {
+// ManyLUTParams returns the base ManyLUTParams for this CircuitBootstrapParameters.
+func (p CircuitBootstrapParameters[T]) ManyLUTParams() ManyLUTParameters[T] {
 	return p.manyLUTParameters
 }
 
-// BaseParameters returns the base parameters for this ManyLUTParameters.
-func (p CircuitBootstrapParameters[T]) BaseParameters() tfhe.Parameters[T] {
-	return p.manyLUTParameters.baseParameters
+// Params returns the base parameters for this ManyLUTParameters.
+func (p CircuitBootstrapParameters[T]) Params() tfhe.Parameters[T] {
+	return p.manyLUTParameters.baseParams
 }
 
-// SchemeSwitchParameters returns the gadget parameters for scheme switching.
-func (p CircuitBootstrapParameters[T]) SchemeSwitchParameters() tfhe.GadgetParameters[T] {
+// SchemeSwitchParams returns the gadget parameters for scheme switching.
+func (p CircuitBootstrapParameters[T]) SchemeSwitchParams() tfhe.GadgetParameters[T] {
 	return p.schemeSwitchParameters
 }
 
-// TraceKeySwitchParameters returns the gadget parameters for LWE to GLWE packing.
-func (p CircuitBootstrapParameters[T]) TraceKeySwitchParameters() tfhe.GadgetParameters[T] {
+// TraceKeySwitchParams returns the gadget parameters for LWE to GLWE packing.
+func (p CircuitBootstrapParameters[T]) TraceKeySwitchParams() tfhe.GadgetParameters[T] {
 	return p.traceKeySwitchParameters
 }
 
-// OutputParameters returns the gadget parameters for the output of circuit bootstrapping.
-func (p CircuitBootstrapParameters[T]) OutputParameters() tfhe.GadgetParameters[T] {
+// OutputParams returns the gadget parameters for the output of circuit bootstrapping.
+func (p CircuitBootstrapParameters[T]) OutputParams() tfhe.GadgetParameters[T] {
 	return p.outputParameters
 }

@@ -8,27 +8,27 @@ import (
 type BinaryEncryptor[T tfhe.TorusInt] struct {
 	// BinaryEncoder is an embedded encoder for this BinaryEncryptor.
 	*tfhe.BinaryEncoder[T]
-	// Parameters is the parameters for this BinaryEncryptor.
-	Parameters Parameters[T]
-	// BaseEncryptor is a generic Encryptor for this BinaryEncryptor.
-	BaseEncryptor *Encryptor[T]
+	// Params is the parameters for this BinaryEncryptor.
+	Params Parameters[T]
+	// Encryptor is a generic Encryptor for this BinaryEncryptor.
+	Encryptor *Encryptor[T]
 }
 
 // NewBinaryEncryptor creates a new BinaryEncryptor.
 func NewBinaryEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte) *BinaryEncryptor[T] {
 	return &BinaryEncryptor[T]{
-		BinaryEncoder: tfhe.NewBinaryEncoder(params.singleKeyParameters),
-		Parameters:    params,
-		BaseEncryptor: NewEncryptor(params, idx, crsSeed),
+		BinaryEncoder: tfhe.NewBinaryEncoder(params.subParams),
+		Params:        params,
+		Encryptor:     NewEncryptor(params, idx, crsSeed),
 	}
 }
 
 // NewBinaryEncryptorWithKey creates a new BinaryEncryptor with a given key.
 func NewBinaryEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte, sk tfhe.SecretKey[T]) *BinaryEncryptor[T] {
 	return &BinaryEncryptor[T]{
-		BinaryEncoder: tfhe.NewBinaryEncoder(params.singleKeyParameters),
-		Parameters:    params,
-		BaseEncryptor: NewEncryptorWithKey(params, idx, crsSeed, sk),
+		BinaryEncoder: tfhe.NewBinaryEncoder(params.subParams),
+		Params:        params,
+		Encryptor:     NewEncryptorWithKey(params, idx, crsSeed, sk),
 	}
 }
 
@@ -37,8 +37,8 @@ func NewBinaryEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, c
 func (e *BinaryEncryptor[T]) ShallowCopy() *BinaryEncryptor[T] {
 	return &BinaryEncryptor[T]{
 		BinaryEncoder: e.BinaryEncoder,
-		Parameters:    e.Parameters,
-		BaseEncryptor: e.BaseEncryptor.ShallowCopy(),
+		Params:        e.Params,
+		Encryptor:     e.Encryptor.ShallowCopy(),
 	}
 }
 
@@ -47,29 +47,29 @@ func (e *BinaryEncryptor[T]) ShallowCopy() *BinaryEncryptor[T] {
 //
 // Note that this is different from calling EncryptLWE with 0 or 1.
 func (e *BinaryEncryptor[T]) EncryptLWEBool(message bool) LWECiphertext[T] {
-	return e.BaseEncryptor.EncryptLWEPlaintext(e.EncodeLWEBool(message))
+	return e.Encryptor.EncryptLWEPlaintext(e.EncodeLWEBool(message))
 }
 
-// EncryptLWEBoolAssign encrypts boolean message to LWE ciphertexts.
+// EncryptLWEBoolTo encrypts boolean message to LWE ciphertexts.
 // Like most languages, false == 0, and true == 1.
 //
 // Note that this is different from calling EncryptLWE with 0 or 1.
-func (e *BinaryEncryptor[T]) EncryptLWEBoolAssign(message bool, ct LWECiphertext[T]) {
-	e.BaseEncryptor.EncryptLWEPlaintextAssign(e.EncodeLWEBool(message), ct)
+func (e *BinaryEncryptor[T]) EncryptLWEBoolTo(ctOut LWECiphertext[T], message bool) {
+	e.Encryptor.EncryptLWEPlaintextTo(ctOut, e.EncodeLWEBool(message))
 }
 
 // EncryptLWEBits encrypts each bits of an integer message.
 // The order of the bits are little-endian.
 func (e *BinaryEncryptor[T]) EncryptLWEBits(message, bits int) []LWECiphertext[T] {
-	cts := make([]LWECiphertext[T], bits)
-	e.EncryptLWEBitsAssign(message, cts)
-	return cts
+	ctOut := make([]LWECiphertext[T], bits)
+	e.EncryptLWEBitsTo(ctOut, message)
+	return ctOut
 }
 
-// EncryptLWEBitsAssign encrypts each bits of an integer message.
+// EncryptLWEBitsTo encrypts each bits of an integer message.
 // The order of the bits are little-endian,
 // and will be cut by the length of ctOut.
-func (e *BinaryEncryptor[T]) EncryptLWEBitsAssign(message int, ctOut []LWECiphertext[T]) {
+func (e *BinaryEncryptor[T]) EncryptLWEBitsTo(ctOut []LWECiphertext[T], message int) {
 	for i := 0; i < len(ctOut); i++ {
 		ctOut[i] = e.EncryptLWEBool(message&1 == 1)
 		message >>= 1
@@ -81,22 +81,22 @@ func (e *BinaryEncryptor[T]) EncryptLWEBitsAssign(message int, ctOut []LWECipher
 // This can take a long time.
 // Use [*Encryptor.GenEvaluationKeyParallel] for better key generation performance.
 func (e *BinaryEncryptor[T]) GenEvaluationKey() EvaluationKey[T] {
-	return e.BaseEncryptor.GenEvaluationKey()
+	return e.Encryptor.GenEvaluationKey()
 }
 
 // GenEvaluationKeyParallel samples a new evaluation key for bootstrapping in parallel.
 func (e *BinaryEncryptor[T]) GenEvaluationKeyParallel() EvaluationKey[T] {
-	return e.BaseEncryptor.GenEvaluationKeyParallel()
+	return e.Encryptor.GenEvaluationKeyParallel()
 }
 
 // GenPublicKey samples a new public key.
 //
 // Panics when the parameters do not support public key encryption.
 func (e *BinaryEncryptor[T]) GenPublicKey() tfhe.PublicKey[T] {
-	return e.BaseEncryptor.GenPublicKey()
+	return e.Encryptor.GenPublicKey()
 }
 
 // PublicEncryptor returns a BinaryPublicEncryptor with the same parameters.
 func (e *BinaryEncryptor[T]) PublicEncryptor() *BinaryPublicEncryptor[T] {
-	return NewBinaryPublicEncryptor(e.Parameters, e.BaseEncryptor.Index, e.GenPublicKey())
+	return NewBinaryPublicEncryptor(e.Params, e.Encryptor.Index, e.GenPublicKey())
 }

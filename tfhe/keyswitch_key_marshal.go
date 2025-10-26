@@ -22,14 +22,14 @@ func (ksk LWEKeySwitchKey[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int
 	var buf [8]byte
 
-	base := ksk.GadgetParameters.base
+	base := ksk.GadgetParams.base
 	binary.BigEndian.PutUint64(buf[:], uint64(base))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
 	}
 	n += int64(nWrite)
 
-	level := ksk.GadgetParameters.level
+	level := ksk.GadgetParams.level
 	binary.BigEndian.PutUint64(buf[:], uint64(level))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
@@ -62,7 +62,7 @@ func (ksk LWEKeySwitchKey[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 
 	for i := range ksk.Value {
 		for j := range ksk.Value[i].Value {
-			if nWrite, err = vecWriteToBuffered(ksk.Value[i].Value[j].Value, buf, w); err != nil {
+			if nWrite, err = vecWriteToBuf(ksk.Value[i].Value[j].Value, buf, w); err != nil {
 				return n + nWrite, err
 			}
 			n += nWrite
@@ -144,7 +144,7 @@ func (ksk *LWEKeySwitchKey[T]) valueReadFrom(r io.Reader) (n int64, err error) {
 
 	for i := range ksk.Value {
 		for j := range ksk.Value[i].Value {
-			if nRead, err = vecReadFromBuffered(ksk.Value[i].Value[j].Value, buf, r); err != nil {
+			if nRead, err = vecReadFromBuf(ksk.Value[i].Value[j].Value, buf, r); err != nil {
 				return n + nRead, err
 			}
 			n += nRead
@@ -190,9 +190,9 @@ func (ksk GLWEKeySwitchKey[T]) ByteSize() int {
 	inputRank := len(ksk.Value)
 	level := len(ksk.Value[0].Value)
 	outputRank := len(ksk.Value[0].Value[0].Value) - 1
-	polyDegree := ksk.Value[0].Value[0].Value[0].Degree()
+	polyRank := ksk.Value[0].Value[0].Value[0].Rank()
 
-	return 40 + inputRank*level*(outputRank+1)*polyDegree*8
+	return 40 + inputRank*level*(outputRank+1)*polyRank*8
 }
 
 // headerWriteTo writes the header.
@@ -228,8 +228,8 @@ func (ksk GLWEKeySwitchKey[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 	}
 	n += int64(nWrite)
 
-	polyDegree := ksk.Value[0].Value[0].Value[0].Degree()
-	binary.BigEndian.PutUint64(buf[:], uint64(polyDegree))
+	polyRank := ksk.Value[0].Value[0].Value[0].Rank()
+	binary.BigEndian.PutUint64(buf[:], uint64(polyRank))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
 	}
@@ -242,13 +242,13 @@ func (ksk GLWEKeySwitchKey[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 func (ksk GLWEKeySwitchKey[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
 
-	polyDegree := ksk.Value[0].Value[0].Value[0].Degree()
-	buf := make([]byte, polyDegree*8)
+	polyRank := ksk.Value[0].Value[0].Value[0].Rank()
+	buf := make([]byte, polyRank*8)
 
 	for i := range ksk.Value {
 		for j := range ksk.Value[i].Value {
 			for k := range ksk.Value[i].Value[j].Value {
-				if nWrite, err = floatVecWriteToBuffered(ksk.Value[i].Value[j].Value[k].Coeffs, buf, w); err != nil {
+				if nWrite, err = floatVecWriteToBuf(ksk.Value[i].Value[j].Value[k].Coeffs, buf, w); err != nil {
 					return n + nWrite, err
 				}
 				n += nWrite
@@ -267,7 +267,7 @@ func (ksk GLWEKeySwitchKey[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 //	[8] Level
 //	[8] InputRank
 //	[8] OutputRank
-//	[8] PolyDegree
+//	[8] PolyRank
 //	    Value
 func (ksk GLWEKeySwitchKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
@@ -322,9 +322,9 @@ func (ksk *GLWEKeySwitchKey[T]) headerReadFrom(r io.Reader) (n int64, err error)
 		return n + int64(nRead), err
 	}
 	n += int64(nRead)
-	polyDegree := int(binary.BigEndian.Uint64(buf[:]))
+	polyRank := int(binary.BigEndian.Uint64(buf[:]))
 
-	*ksk = NewGLWEKeySwitchKeyCustom(inputRank, outputRank, polyDegree, GadgetParametersLiteral[T]{Base: base, Level: level}.Compile())
+	*ksk = NewGLWEKeySwitchKeyCustom(inputRank, outputRank, polyRank, GadgetParametersLiteral[T]{Base: base, Level: level}.Compile())
 
 	return
 }
@@ -333,13 +333,13 @@ func (ksk *GLWEKeySwitchKey[T]) headerReadFrom(r io.Reader) (n int64, err error)
 func (ksk *GLWEKeySwitchKey[T]) valueReadFrom(r io.Reader) (n int64, err error) {
 	var nRead int64
 
-	polyDegree := ksk.Value[0].Value[0].Value[0].Degree()
-	buf := make([]byte, polyDegree*8)
+	polyRank := ksk.Value[0].Value[0].Value[0].Rank()
+	buf := make([]byte, polyRank*8)
 
 	for i := range ksk.Value {
 		for j := range ksk.Value[i].Value {
 			for k := range ksk.Value[i].Value[j].Value {
-				if nRead, err = floatVecReadFromBuffered(ksk.Value[i].Value[j].Value[k].Coeffs, buf, r); err != nil {
+				if nRead, err = floatVecReadFromBuf(ksk.Value[i].Value[j].Value[k].Coeffs, buf, r); err != nil {
 					return n + nRead, err
 				}
 				n += nRead

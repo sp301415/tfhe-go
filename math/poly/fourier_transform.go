@@ -1,149 +1,151 @@
 package poly
 
-// ToFourierPoly transforms Poly to FourierPoly.
-func (e *Evaluator[T]) ToFourierPoly(p Poly[T]) FourierPoly {
-	fpOut := NewFourierPoly(e.degree)
-	e.ToFourierPolyAssign(p, fpOut)
+// FFT returns FFT(p).
+func (e *Evaluator[T]) FFT(p Poly[T]) FFTPoly {
+	fpOut := NewFFTPoly(e.rank)
+	e.FFTTo(fpOut, p)
 	return fpOut
 }
 
-// ToFourierPolyAssign transforms Poly to FourierPoly and writes it to fpOut.
-func (e *Evaluator[T]) ToFourierPolyAssign(p Poly[T], fpOut FourierPoly) {
-	convertPolyToFourierPolyAssign(p.Coeffs, fpOut.Coeffs)
+// FFTTo computes fpOut = FFT(p).
+func (e *Evaluator[T]) FFTTo(fpOut FFTPoly, p Poly[T]) {
+	foldPolyTo(fpOut.Coeffs, p.Coeffs)
 	fftInPlace(fpOut.Coeffs, e.tw)
 }
 
-// ToFourierPolyAddAssign transforms Poly to FourierPoly and adds it to fpOut.
-func (e *Evaluator[T]) ToFourierPolyAddAssign(p Poly[T], fpOut FourierPoly) {
-	convertPolyToFourierPolyAssign(p.Coeffs, e.buffer.fp.Coeffs)
-	fftInPlace(e.buffer.fp.Coeffs, e.tw)
-	addCmplxAssign(fpOut.Coeffs, e.buffer.fp.Coeffs, fpOut.Coeffs)
+// FFTAddTo computes fpOut += FFT(p).
+func (e *Evaluator[T]) FFTAddTo(fpOut FFTPoly, p Poly[T]) {
+	foldPolyTo(e.buf.fp.Coeffs, p.Coeffs)
+	fftInPlace(e.buf.fp.Coeffs, e.tw)
+	addCmplxTo(fpOut.Coeffs, e.buf.fp.Coeffs, fpOut.Coeffs)
 }
 
-// ToFourierPolySubAssign transforms Poly to FourierPoly and subtracts it from fpOut.
-func (e *Evaluator[T]) ToFourierPolySubAssign(p Poly[T], fpOut FourierPoly) {
-	convertPolyToFourierPolyAssign(p.Coeffs, e.buffer.fp.Coeffs)
-	fftInPlace(e.buffer.fp.Coeffs, e.tw)
-	subCmplxAssign(fpOut.Coeffs, e.buffer.fp.Coeffs, fpOut.Coeffs)
+// FFTSubTo computes fpOut -= FFT(p).
+func (e *Evaluator[T]) FFTSubTo(fpOut FFTPoly, p Poly[T]) {
+	foldPolyTo(e.buf.fp.Coeffs, p.Coeffs)
+	fftInPlace(e.buf.fp.Coeffs, e.tw)
+	subCmplxTo(fpOut.Coeffs, e.buf.fp.Coeffs, fpOut.Coeffs)
 }
 
-// MonomialToFourierPoly transforms X^d to FourierPoly.
-func (e *Evaluator[T]) MonomialToFourierPoly(d int) FourierPoly {
-	fpOut := NewFourierPoly(e.degree)
-	e.MonomialToFourierPolyAssign(d, fpOut)
+// MonomialFFT returns FFT(X^d).
+func (e *Evaluator[T]) MonomialFFT(d int) FFTPoly {
+	fpOut := NewFFTPoly(e.rank)
+	e.MonomialFFTTo(fpOut, d)
 	return fpOut
 }
 
-// MonomialToFourierPolyAssign transforms X^d to FourierPoly and writes it to fpOut.
-func (e *Evaluator[T]) MonomialToFourierPolyAssign(d int, fpOut FourierPoly) {
-	d &= 2*e.degree - 1
-	for j, jj := 0, 0; j < e.degree; j, jj = j+8, jj+4 {
-		c0 := e.twMono[(e.twMonoIdx[jj+0]*d)&(2*e.degree-1)]
+// MonomialFFTTo computes fpOut = FFT(X^d).
+func (e *Evaluator[T]) MonomialFFTTo(fpOut FFTPoly, d int) {
+	d &= 2*e.rank - 1
+	for j, jj := 0, 0; j < e.rank; j, jj = j+8, jj+4 {
+		c0 := e.twMono[(e.twMonoIdx[jj+0]*d)&(2*e.rank-1)]
 		fpOut.Coeffs[j+0] = real(c0)
 		fpOut.Coeffs[j+4] = imag(c0)
 
-		c1 := e.twMono[(e.twMonoIdx[jj+1]*d)&(2*e.degree-1)]
+		c1 := e.twMono[(e.twMonoIdx[jj+1]*d)&(2*e.rank-1)]
 		fpOut.Coeffs[j+1] = real(c1)
 		fpOut.Coeffs[j+5] = imag(c1)
 
-		c2 := e.twMono[(e.twMonoIdx[jj+2]*d)&(2*e.degree-1)]
+		c2 := e.twMono[(e.twMonoIdx[jj+2]*d)&(2*e.rank-1)]
 		fpOut.Coeffs[j+2] = real(c2)
 		fpOut.Coeffs[j+6] = imag(c2)
 
-		c3 := e.twMono[(e.twMonoIdx[jj+3]*d)&(2*e.degree-1)]
+		c3 := e.twMono[(e.twMonoIdx[jj+3]*d)&(2*e.rank-1)]
 		fpOut.Coeffs[j+3] = real(c3)
 		fpOut.Coeffs[j+7] = imag(c3)
 	}
 }
 
-// MonomialSubOneToFourierPoly transforms X^d-1 to FourierPoly.
+// MonomialSubOneFFT returns FFT(X^d-1).
 //
 // d should be positive.
-func (e *Evaluator[T]) MonomialSubOneToFourierPoly(d int) FourierPoly {
-	fpOut := NewFourierPoly(e.degree)
-	e.MonomialSubOneToFourierPolyAssign(d, fpOut)
+func (e *Evaluator[T]) MonomialSubOneFFT(d int) FFTPoly {
+	fpOut := NewFFTPoly(e.rank)
+	e.MonomialSubOneFFTTo(fpOut, d)
 	return fpOut
 }
 
-// MonomialSubOneToFourierPolyAssign transforms X^d-1 to FourierPoly and writes it to fpOut.
-func (e *Evaluator[T]) MonomialSubOneToFourierPolyAssign(d int, fpOut FourierPoly) {
-	d &= 2*e.degree - 1
-	for j, jj := 0, 0; j < e.degree; j, jj = j+8, jj+4 {
-		c0 := e.twMono[(e.twMonoIdx[jj+0]*d)&(2*e.degree-1)]
+// MonomialSubOneFFTTo computes fpOut = FFT(X^d-1).
+//
+// d should be positive.
+func (e *Evaluator[T]) MonomialSubOneFFTTo(fpOut FFTPoly, d int) {
+	d &= 2*e.rank - 1
+	for j, jj := 0, 0; j < e.rank; j, jj = j+8, jj+4 {
+		c0 := e.twMono[(e.twMonoIdx[jj+0]*d)&(2*e.rank-1)]
 		fpOut.Coeffs[j+0] = real(c0) - 1
 		fpOut.Coeffs[j+4] = imag(c0)
 
-		c1 := e.twMono[(e.twMonoIdx[jj+1]*d)&(2*e.degree-1)]
+		c1 := e.twMono[(e.twMonoIdx[jj+1]*d)&(2*e.rank-1)]
 		fpOut.Coeffs[j+1] = real(c1) - 1
 		fpOut.Coeffs[j+5] = imag(c1)
 
-		c2 := e.twMono[(e.twMonoIdx[jj+2]*d)&(2*e.degree-1)]
+		c2 := e.twMono[(e.twMonoIdx[jj+2]*d)&(2*e.rank-1)]
 		fpOut.Coeffs[j+2] = real(c2) - 1
 		fpOut.Coeffs[j+6] = imag(c2)
 
-		c3 := e.twMono[(e.twMonoIdx[jj+3]*d)&(2*e.degree-1)]
+		c3 := e.twMono[(e.twMonoIdx[jj+3]*d)&(2*e.rank-1)]
 		fpOut.Coeffs[j+3] = real(c3) - 1
 		fpOut.Coeffs[j+7] = imag(c3)
 	}
 }
 
-// ToPoly transforms FourierPoly to Poly.
-func (e *Evaluator[T]) ToPoly(fp FourierPoly) Poly[T] {
-	pOut := NewPoly[T](e.degree)
-	e.ToPolyAssign(fp, pOut)
+// InvFFT returns InvFFT(fp).
+func (e *Evaluator[T]) InvFFT(fp FFTPoly) Poly[T] {
+	pOut := NewPoly[T](e.rank)
+	e.InvFFTTo(pOut, fp)
 	return pOut
 }
 
-// ToPolyAssign transforms FourierPoly to Poly and writes it to pOut.
-func (e *Evaluator[T]) ToPolyAssign(fp FourierPoly, pOut Poly[T]) {
-	e.buffer.fpInv.CopyFrom(fp)
-	ifftInPlace(e.buffer.fpInv.Coeffs, e.twInv)
-	floatModQInPlace(e.buffer.fpInv.Coeffs, e.q)
-	convertFourierPolyToPolyAssign(e.buffer.fpInv.Coeffs, pOut.Coeffs)
+// InvFFTTo computes pOut = InvFFT(fp).
+func (e *Evaluator[T]) InvFFTTo(pOut Poly[T], fp FFTPoly) {
+	e.buf.fpInv.CopyFrom(fp)
+	ifftInPlace(e.buf.fpInv.Coeffs, e.twInv)
+	floatModInPlace(e.buf.fpInv.Coeffs, e.q)
+	unfoldPolyTo(pOut.Coeffs, e.buf.fpInv.Coeffs)
 }
 
-// ToPolyAddAssign transforms FourierPoly to Poly and adds it to pOut.
-func (e *Evaluator[T]) ToPolyAddAssign(fp FourierPoly, pOut Poly[T]) {
-	e.buffer.fpInv.CopyFrom(fp)
-	ifftInPlace(e.buffer.fpInv.Coeffs, e.twInv)
-	floatModQInPlace(e.buffer.fpInv.Coeffs, e.q)
-	convertFourierPolyToPolyAddAssign(e.buffer.fpInv.Coeffs, pOut.Coeffs)
+// InvFFTAddTo computes pOut += InvFFT(fp).
+func (e *Evaluator[T]) InvFFTAddTo(pOut Poly[T], fp FFTPoly) {
+	e.buf.fpInv.CopyFrom(fp)
+	ifftInPlace(e.buf.fpInv.Coeffs, e.twInv)
+	floatModInPlace(e.buf.fpInv.Coeffs, e.q)
+	unfoldPolyAddTo(pOut.Coeffs, e.buf.fpInv.Coeffs)
 }
 
-// ToPolySubAssign transforms FourierPoly to Poly and subtracts it from pOut.
-func (e *Evaluator[T]) ToPolySubAssign(fp FourierPoly, pOut Poly[T]) {
-	e.buffer.fpInv.CopyFrom(fp)
-	ifftInPlace(e.buffer.fpInv.Coeffs, e.twInv)
-	floatModQInPlace(e.buffer.fpInv.Coeffs, e.q)
-	convertFourierPolyToPolySubAssign(e.buffer.fpInv.Coeffs, pOut.Coeffs)
+// InvFFTSubTo computes pOut -= InvFFT(fp).
+func (e *Evaluator[T]) InvFFTSubTo(pOut Poly[T], fp FFTPoly) {
+	e.buf.fpInv.CopyFrom(fp)
+	ifftInPlace(e.buf.fpInv.Coeffs, e.twInv)
+	floatModInPlace(e.buf.fpInv.Coeffs, e.q)
+	unfoldPolySubTo(pOut.Coeffs, e.buf.fpInv.Coeffs)
 }
 
-// ToPolyAssignUnsafe transforms FourierPoly to Poly and writes it to pOut.
+// InvFFTToUnsafe computes pOut = InvFFT(fp).
 //
-// This method is slightly faster than [*Evaluator.ToPolyAssign], but it modifies fp directly.
+// This method is slightly faster than [*Evaluator.InvFFTTo], but it modifies fp directly.
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
-func (e *Evaluator[T]) ToPolyAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
+func (e *Evaluator[T]) InvFFTToUnsafe(pOut Poly[T], fp FFTPoly) {
 	ifftInPlace(fp.Coeffs, e.twInv)
-	floatModQInPlace(fp.Coeffs, e.q)
-	convertFourierPolyToPolyAssign(fp.Coeffs, pOut.Coeffs)
+	floatModInPlace(fp.Coeffs, e.q)
+	unfoldPolyTo(pOut.Coeffs, fp.Coeffs)
 }
 
-// ToPolyAddAssignUnsafe transforms FourierPoly to Poly and adds it to pOut.
+// InvFFTAddToUnsafe computes pOut += InvFFT(fp).
 //
-// This method is slightly faster than [*Evaluator.ToPolyAddAssign], but it modifies fp directly.
+// This method is slightly faster than [*Evaluator.InvFFTAddTo], but it modifies fp directly.
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
-func (e *Evaluator[T]) ToPolyAddAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
+func (e *Evaluator[T]) InvFFTAddToUnsafe(pOut Poly[T], fp FFTPoly) {
 	ifftInPlace(fp.Coeffs, e.twInv)
-	floatModQInPlace(fp.Coeffs, e.q)
-	convertFourierPolyToPolyAddAssign(fp.Coeffs, pOut.Coeffs)
+	floatModInPlace(fp.Coeffs, e.q)
+	unfoldPolyAddTo(pOut.Coeffs, fp.Coeffs)
 }
 
-// ToPolySubAssignUnsafe transforms FourierPoly to Poly and subtracts it from pOut.
+// InvFFTSubToUnsafe computes pOut -= InvFFT(fp).
 //
-// This method is slightly faster than [*Evaluator.ToPolySubAssign], but it modifies fp directly.
+// This method is slightly faster than [*Evaluator.InvFFTSubTo], but it modifies fp directly.
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
-func (e *Evaluator[T]) ToPolySubAssignUnsafe(fp FourierPoly, pOut Poly[T]) {
+func (e *Evaluator[T]) InvFFTSubToUnsafe(pOut Poly[T], fp FFTPoly) {
 	ifftInPlace(fp.Coeffs, e.twInv)
-	floatModQInPlace(fp.Coeffs, e.q)
-	convertFourierPolyToPolySubAssign(fp.Coeffs, pOut.Coeffs)
+	floatModInPlace(fp.Coeffs, e.q)
+	unfoldPolySubTo(pOut.Coeffs, fp.Coeffs)
 }

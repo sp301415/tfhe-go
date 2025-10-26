@@ -1,8 +1,8 @@
 // Package vec implements vector operations acting on slices.
 //
 // Operations usually take two forms: for example,
-//   - Add(v0, v1) adds v0, v1, allocates a new vector to store the result and returns it.
-//   - AddAssign(v0, v1, vOut) adds v0, v1 and writes the result to pre-allocated vOut without returning.
+//   - Op(v0, v1) operates on v0, v1, allocates a new vector to store the result and returns it.
+//   - OpTo(vOut, v0, v1) operates on v0, v1 and writes the result to pre-allocated vOut without returning.
 //
 // Note that in most cases, v0, v1, and vOut can overlap.
 // However, for operations that cannot, InPlace methods are implemented separately.
@@ -39,14 +39,14 @@ func Fill[T any](v []T, x T) {
 // Cast casts vector v of type []T1 to []T2.
 func Cast[T1, T2 num.Real](v []T1) []T2 {
 	vOut := make([]T2, len(v))
-	CastAssign(v, vOut)
+	CastTo(vOut, v)
 	return vOut
 }
 
-// CastAssign casts v of type []T1 to vOut of type []T2.
-func CastAssign[T1, T2 num.Real](v []T1, vOut []T2) {
+// CastTo casts v of type []TIn to vOut of type []TOut.
+func CastTo[TOut, TIn num.Real](vOut []TOut, v []TIn) {
 	for i := range vOut {
-		vOut[i] = T2(v[i])
+		vOut[i] = TOut(v[i])
 	}
 }
 
@@ -55,24 +55,24 @@ func CastAssign[T1, T2 num.Real](v []T1, vOut []T2) {
 // If Abs(l) > len(s), it may panic.
 func Rotate[T any](v []T, l int) []T {
 	vOut := make([]T, len(v))
-	RotateAssign(v, l, vOut)
+	RotateTo(vOut, v, l)
 	return vOut
 }
 
-// RotateAssign rotates v l times to the right and writes it to vOut.
+// RotateTo rotates v l times to the right and writes it to vOut.
 // If l < 0, then it rotates the vector l times to the left.
 //
 // v and vOut should not overlap. For rotating a slice inplace,
 // use [vec.RotateInPlace].
-func RotateAssign[T any](v []T, l int, vOut []T) {
+func RotateTo[T any](vOut, v []T, l int) {
 	if l < 0 {
 		l = len(v) - ((-l) % len(v))
 	} else {
 		l %= len(v)
 	}
 
-	CopyAssign(v, vOut[l:])
-	CopyAssign(v[len(v)-l:], vOut[:l])
+	copy(vOut[l:], v)
+	copy(vOut[:l], v[len(v)-l:])
 }
 
 // RotateInPlace rotates v l times to the right in-place.
@@ -92,15 +92,15 @@ func RotateInPlace[T any](v []T, l int) {
 // Reverse reverses v.
 func Reverse[T any](v []T) []T {
 	vOut := make([]T, len(v))
-	ReverseAssign(v, vOut)
+	ReverseTo(vOut, v)
 	return vOut
 }
 
-// ReverseAssign reverse v and writes it to vOut.
+// ReverseTo reverse v and writes it to vOut.
 //
 // v and vOut should not overlap. For reversing a slice inplace,
 // use [vec.ReverseInPlace].
-func ReverseAssign[T any](v, vOut []T) {
+func ReverseTo[T any](vOut, v []T) {
 	for i := range vOut {
 		vOut[len(vOut)-i-1] = v[i]
 	}
@@ -137,11 +137,6 @@ func Copy[T any](v []T) []T {
 	return append(make([]T, 0, len(v)), v...)
 }
 
-// CopyAssign copies v0 to v1.
-func CopyAssign[T any](v0, v1 []T) {
-	copy(v1, v0)
-}
-
 // Dot returns the dot product of two vectors.
 func Dot[T num.Number](v0, v1 []T) T {
 	var res T
@@ -154,42 +149,42 @@ func Dot[T num.Number](v0, v1 []T) T {
 // Add returns v0 + v1.
 func Add[T num.Number](v0, v1 []T) []T {
 	vOut := make([]T, len(v0))
-	AddAssign(v0, v1, vOut)
+	AddTo(vOut, v0, v1)
 	return vOut
 }
 
 // Sub returns v0 - v1.
 func Sub[T num.Number](v0, v1 []T) []T {
 	vOut := make([]T, len(v0))
-	SubAssign(v0, v1, vOut)
+	SubTo(vOut, v0, v1)
 	return vOut
 }
 
-// Neg returns -v0.
-func Neg[T num.Number](v0 []T) []T {
-	vOut := make([]T, len(v0))
-	NegAssign(v0, vOut)
+// Neg returns -v.
+func Neg[T num.Number](v []T) []T {
+	vOut := make([]T, len(v))
+	NegTo(vOut, v)
 	return vOut
 }
 
-// NegAssign computes vOut = -v0.
-func NegAssign[T num.Number](v0, vOut []T) {
+// NegTo computes vOut = -v.
+func NegTo[T num.Number](vOut, v []T) {
 	for i := range vOut {
-		vOut[i] = -v0[i]
+		vOut[i] = -v[i]
 	}
 }
 
 // ScalarMul returns c * v0.
 func ScalarMul[T num.Number](v0 []T, c T) []T {
 	vOut := make([]T, len(v0))
-	ScalarMulAssign(v0, c, vOut)
+	ScalarMulTo(vOut, v0, c)
 	return vOut
 }
 
-// ElementWiseMul returns v0 * v1, where * is an elementwise multiplication.
-func ElementWiseMul[T num.Number](v0, v1 []T) []T {
+// Mul returns v0 * v1, where * is an elementwise multiplication.
+func Mul[T num.Number](v0, v1 []T) []T {
 	vOut := make([]T, len(v0))
-	ElementWiseMulAssign(v0, v1, vOut)
+	MulTo(vOut, v0, v1)
 	return vOut
 }
 
@@ -207,11 +202,11 @@ func ElementWiseMul[T num.Number](v0, v1 []T) []T {
 // The length of the input vector should be multiple of 4.
 func CmplxToFloat4(v []complex128) []float64 {
 	vOut := make([]float64, 2*len(v))
-	CmplxToFloat4Assign(v, vOut)
+	CmplxToFloat4To(vOut, v)
 	return vOut
 }
 
-// CmplxToFloat4Assign converts a complex128 vector to
+// CmplxToFloat4To converts a complex128 vector to
 // float-4 representation used in fourier polynomials and writes it to vOut.
 //
 // Namely, it converts
@@ -224,7 +219,7 @@ func CmplxToFloat4(v []complex128) []float64 {
 //
 // The length of the input vector should be multiple of 4,
 // and the length of vOut should be 2 times of the length of v.
-func CmplxToFloat4Assign(v []complex128, vOut []float64) {
+func CmplxToFloat4To(vOut []float64, v []complex128) {
 	for i, j := 0, 0; i < len(v); i, j = i+4, j+8 {
 		vOut[j+0] = real(v[i+0])
 		vOut[j+1] = real(v[i+1])
@@ -252,11 +247,11 @@ func CmplxToFloat4Assign(v []complex128, vOut []float64) {
 // The length of the input vector should be multiple of 8.
 func Float4ToCmplx(v []float64) []complex128 {
 	vOut := make([]complex128, len(v)/2)
-	Float4ToCmplxAssign(v, vOut)
+	Float4ToCmplxTo(vOut, v)
 	return vOut
 }
 
-// Float4ToCmplxAssign converts a float-4 complex vector to
+// Float4ToCmplxTo converts a float-4 complex vector to
 // naturally represented complex128 vector and writes it to vOut.
 //
 // Namely, it converts
@@ -269,7 +264,7 @@ func Float4ToCmplx(v []float64) []complex128 {
 //
 // The length of the input vector should be multiple of 8,
 // and the length of vOut should be half of the length of v.
-func Float4ToCmplxAssign(v []float64, vOut []complex128) {
+func Float4ToCmplxTo(vOut []complex128, v []float64) {
 	for i, j := 0, 0; i < len(v); i, j = i+8, j+4 {
 		vOut[j+0] = complex(v[i+0], v[i+4])
 		vOut[j+1] = complex(v[i+1], v[i+5])

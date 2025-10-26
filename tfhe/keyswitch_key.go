@@ -2,7 +2,7 @@ package tfhe
 
 // LWEKeySwitchKey is a LWE keyswitch key from one LWEKey to another LWEKey.
 type LWEKeySwitchKey[T TorusInt] struct {
-	GadgetParameters GadgetParameters[T]
+	GadgetParams GadgetParameters[T]
 
 	// Value has length InputLWEDimension.
 	Value []LevCiphertext[T]
@@ -14,7 +14,7 @@ func NewLWEKeySwitchKey[T TorusInt](params Parameters[T], inputDimension int, ga
 	for i := 0; i < inputDimension; i++ {
 		ksk[i] = NewLevCiphertext(params, gadgetParams)
 	}
-	return LWEKeySwitchKey[T]{Value: ksk, GadgetParameters: gadgetParams}
+	return LWEKeySwitchKey[T]{Value: ksk, GadgetParams: gadgetParams}
 }
 
 // NewLWEKeySwitchKeyCustom creates a new LWEKeySwitchingKey with custom parameters.
@@ -23,17 +23,17 @@ func NewLWEKeySwitchKeyCustom[T TorusInt](inputDimension, outputDimension int, g
 	for i := 0; i < inputDimension; i++ {
 		ksk[i] = NewLevCiphertextCustom(outputDimension, gadgetParams)
 	}
-	return LWEKeySwitchKey[T]{Value: ksk, GadgetParameters: gadgetParams}
+	return LWEKeySwitchKey[T]{Value: ksk, GadgetParams: gadgetParams}
 }
 
 // NewKeySwitchKeyForBootstrap creates a new LWEKeySwitchingKey for bootstrapping.
 func NewKeySwitchKeyForBootstrap[T TorusInt](params Parameters[T]) LWEKeySwitchKey[T] {
-	return NewLWEKeySwitchKeyCustom(params.glweDimension-params.lweDimension, params.lweDimension, params.keySwitchParameters)
+	return NewLWEKeySwitchKeyCustom(params.glweDimension-params.lweDimension, params.lweDimension, params.keySwitchParams)
 }
 
 // NewKeySwitchKeyForBootstrapCustom creates a new LWEKeySwitchingKey with custom parameters.
-func NewKeySwitchKeyForBootstrapCustom[T TorusInt](lweDimension, glweRank, polyDegree int, gadgetParams GadgetParameters[T]) LWEKeySwitchKey[T] {
-	return NewLWEKeySwitchKeyCustom(glweRank*polyDegree-lweDimension, lweDimension, gadgetParams)
+func NewKeySwitchKeyForBootstrapCustom[T TorusInt](lweDimension, glweRank, polyRank int, gadgetParams GadgetParameters[T]) LWEKeySwitchKey[T] {
+	return NewLWEKeySwitchKeyCustom(glweRank*polyRank-lweDimension, lweDimension, gadgetParams)
 }
 
 // InputLWEDimension returns the input LWEDimension of this key.
@@ -47,7 +47,7 @@ func (ksk LWEKeySwitchKey[T]) Copy() LWEKeySwitchKey[T] {
 	for i := range ksk.Value {
 		kskCopy[i] = ksk.Value[i].Copy()
 	}
-	return LWEKeySwitchKey[T]{Value: kskCopy, GadgetParameters: ksk.GadgetParameters}
+	return LWEKeySwitchKey[T]{Value: kskCopy, GadgetParams: ksk.GadgetParams}
 }
 
 // CopyFrom copies values from key.
@@ -55,7 +55,7 @@ func (ksk *LWEKeySwitchKey[T]) CopyFrom(kskIn LWEKeySwitchKey[T]) {
 	for i := range ksk.Value {
 		ksk.Value[i].CopyFrom(kskIn.Value[i])
 	}
-	ksk.GadgetParameters = kskIn.GadgetParameters
+	ksk.GadgetParams = kskIn.GadgetParams
 }
 
 // Clear clears the key.
@@ -70,23 +70,23 @@ type GLWEKeySwitchKey[T TorusInt] struct {
 	GadgetParameters GadgetParameters[T]
 
 	// Value has length InputGLWERank.
-	Value []FourierGLevCiphertext[T]
+	Value []FFTGLevCiphertext[T]
 }
 
 // NewGLWEKeySwitchKey creates a new GLWEKeySwitchingKey.
 func NewGLWEKeySwitchKey[T TorusInt](params Parameters[T], inputGLWERank int, gadgetParams GadgetParameters[T]) GLWEKeySwitchKey[T] {
-	ksk := make([]FourierGLevCiphertext[T], inputGLWERank)
+	ksk := make([]FFTGLevCiphertext[T], inputGLWERank)
 	for i := 0; i < inputGLWERank; i++ {
-		ksk[i] = NewFourierGLevCiphertext(params, gadgetParams)
+		ksk[i] = NewFFTGLevCiphertext(params, gadgetParams)
 	}
 	return GLWEKeySwitchKey[T]{Value: ksk, GadgetParameters: gadgetParams}
 }
 
 // NewGLWEKeySwitchKeyCustom creates a new GLWEKeySwitchingKey with custom parameters.
-func NewGLWEKeySwitchKeyCustom[T TorusInt](inputGLWERank, outputGLWERank, polyDegree int, gadgetParams GadgetParameters[T]) GLWEKeySwitchKey[T] {
-	ksk := make([]FourierGLevCiphertext[T], inputGLWERank)
+func NewGLWEKeySwitchKeyCustom[T TorusInt](inputGLWERank, outputGLWERank, polyRank int, gadgetParams GadgetParameters[T]) GLWEKeySwitchKey[T] {
+	ksk := make([]FFTGLevCiphertext[T], inputGLWERank)
 	for i := 0; i < inputGLWERank; i++ {
-		ksk[i] = NewFourierGLevCiphertextCustom(outputGLWERank, polyDegree, gadgetParams)
+		ksk[i] = NewFFTGLevCiphertextCustom(outputGLWERank, polyRank, gadgetParams)
 	}
 	return GLWEKeySwitchKey[T]{Value: ksk, GadgetParameters: gadgetParams}
 }
@@ -98,7 +98,7 @@ func (ksk GLWEKeySwitchKey[T]) InputGLWERank() int {
 
 // Copy returns a copy of the key.
 func (ksk GLWEKeySwitchKey[T]) Copy() GLWEKeySwitchKey[T] {
-	kskCopy := make([]FourierGLevCiphertext[T], len(ksk.Value))
+	kskCopy := make([]FFTGLevCiphertext[T], len(ksk.Value))
 	for i := range ksk.Value {
 		kskCopy[i] = ksk.Value[i].Copy()
 	}

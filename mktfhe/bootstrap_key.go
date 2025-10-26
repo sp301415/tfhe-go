@@ -7,26 +7,26 @@ type EvaluationKey[T tfhe.TorusInt] struct {
 	// EvaluationKey is an embedded single-key EvaluationKey.
 	tfhe.EvaluationKey[T]
 	// CRSPublicKey is a public key from the common reference string.
-	CRSPublicKey tfhe.FourierGLevCiphertext[T]
+	CRSPublicKey tfhe.FFTGLevCiphertext[T]
 	// RelinKey is a relinearization key.
-	RelinKey FourierUniEncryption[T]
+	RelinKey FFTUniEncryption[T]
 }
 
 // NewEvaluationKey creates a new EvaluationKey.
 func NewEvaluationKey[T tfhe.TorusInt](params Parameters[T]) EvaluationKey[T] {
 	return EvaluationKey[T]{
-		EvaluationKey: tfhe.NewEvaluationKey(params.singleKeyParameters),
-		CRSPublicKey:  tfhe.NewFourierGLevCiphertext(params.singleKeyParameters, params.relinKeyParameters),
-		RelinKey:      NewFourierUniEncryption(params, params.relinKeyParameters),
+		EvaluationKey: tfhe.NewEvaluationKey(params.subParams),
+		CRSPublicKey:  tfhe.NewFFTGLevCiphertext(params.subParams, params.relinKeyParams),
+		RelinKey:      NewFFTUniEncryption(params, params.relinKeyParams),
 	}
 }
 
 // NewEvaluationKeyCustom creates a new EvaluationKey with custom parameters.
-func NewEvaluationKeyCustom[T tfhe.TorusInt](lweDimension, polyDegree int, blindRotateParams, keySwitchParams, relinParams tfhe.GadgetParameters[T]) EvaluationKey[T] {
+func NewEvaluationKeyCustom[T tfhe.TorusInt](lweDimension, polyRank int, blindRotateParams, keySwitchParams, relinParams tfhe.GadgetParameters[T]) EvaluationKey[T] {
 	return EvaluationKey[T]{
-		EvaluationKey: tfhe.NewEvaluationKeyCustom(lweDimension, 1, polyDegree, blindRotateParams, keySwitchParams),
-		CRSPublicKey:  tfhe.NewFourierGLevCiphertextCustom(1, polyDegree, relinParams),
-		RelinKey:      NewFourierUniEncryptionCustom(polyDegree, relinParams),
+		EvaluationKey: tfhe.NewEvaluationKeyCustom(lweDimension, 1, polyRank, blindRotateParams, keySwitchParams),
+		CRSPublicKey:  tfhe.NewFFTGLevCiphertextCustom(1, polyRank, relinParams),
+		RelinKey:      NewFFTUniEncryptionCustom(polyRank, relinParams),
 	}
 }
 

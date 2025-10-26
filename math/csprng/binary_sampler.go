@@ -34,8 +34,8 @@ func (s *BinarySampler[T]) Sample() T {
 	return T(s.baseSampler.Sample() & 1)
 }
 
-// SampleVecAssign samples uniform binary values to vOut.
-func (s *BinarySampler[T]) SampleVecAssign(vOut []T) {
+// SampleVecTo samples uniform binary values to vOut.
+func (s *BinarySampler[T]) SampleVecTo(vOut []T) {
 	var buf uint64
 	for i := 0; i < len(vOut); i++ {
 		if i&63 == 0 {
@@ -46,15 +46,15 @@ func (s *BinarySampler[T]) SampleVecAssign(vOut []T) {
 	}
 }
 
-// SamplePolyAssign samples uniform binary values to pOut.
-func (s *BinarySampler[T]) SamplePolyAssign(pOut poly.Poly[T]) {
-	s.SampleVecAssign(pOut.Coeffs)
+// SamplePolyTo samples uniform binary values to pOut.
+func (s *BinarySampler[T]) SamplePolyTo(pOut poly.Poly[T]) {
+	s.SampleVecTo(pOut.Coeffs)
 }
 
-// SampleBlockVecAssign samples block binary values to vOut.
-func (s *BinarySampler[T]) SampleBlockVecAssign(blockSize int, vOut []T) {
+// SampleBlockVecTo samples block binary values to vOut.
+func (s *BinarySampler[T]) SampleBlockVecTo(vOut []T, blockSize int) {
 	if len(vOut)%blockSize != 0 {
-		panic("length not multiple of blocksize")
+		panic("SampleBlockVecTo: length not multiple of blocksize")
 	}
 
 	for i := 0; i < len(vOut); i += blockSize {
@@ -67,7 +67,7 @@ func (s *BinarySampler[T]) SampleBlockVecAssign(blockSize int, vOut []T) {
 	}
 }
 
-// SampleBlockPolyAssign samples block binary values to pOut.
-func (s *BinarySampler[T]) SampleBlockPolyAssign(blockSize int, pOut poly.Poly[T]) {
-	s.SampleBlockVecAssign(blockSize, pOut.Coeffs)
+// SampleBlockPolyTo samples block binary values to pOut.
+func (s *BinarySampler[T]) SampleBlockPolyTo(pOut poly.Poly[T], blockSize int) {
+	s.SampleBlockVecTo(pOut.Coeffs, blockSize)
 }

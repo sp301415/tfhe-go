@@ -9,10 +9,10 @@ import (
 
 // FHEWParametersLiteral is a structure for FHEW Parameters.
 //
-// BlockSize must be 1, and PolyDegree does not equal LookUpTableSize.
+// BlockSize must be 1, and PolyRank does not equal LUTSize.
 type FHEWParametersLiteral[T tfhe.TorusInt] struct {
-	// BaseParametersLiteral is a base parameters for this FHEWParametersLiteral.
-	BaseParametersLiteral tfhe.ParametersLiteral[T]
+	// BaseParams is a base parameters for this FHEWParametersLiteral.
+	BaseParams tfhe.ParametersLiteral[T]
 
 	// SecretKeyStdDev is the standard deviation of the secret key.
 	// Must be smaller than [poly.ShortPolyBound] / 8Q.
@@ -26,15 +26,15 @@ type FHEWParametersLiteral[T tfhe.TorusInt] struct {
 // If there is any invalid parameter in the literal, it panics.
 // Default parameters are guaranteed to be compiled without panics.
 func (p FHEWParametersLiteral[T]) Compile() FHEWParameters[T] {
-	baseParameters := p.BaseParametersLiteral.Compile()
+	baseParams := p.BaseParams.Compile()
 
-	logQ := float64(baseParameters.LogQ())
+	logQ := float64(baseParams.LogQ())
 	logTailCut := math.Log2(GaussianTailCut)
 	switch {
-	case baseParameters.BlockSize() != 1:
+	case baseParams.BlockSize() != 1:
 		panic("BlockSize not 1")
-	case baseParameters.PolyDegree() != baseParameters.LookUpTableSize():
-		panic("PolyDegree does not equal LookUpTableSize")
+	case baseParams.PolyRank() != baseParams.LUTSize():
+		panic("PolyRank does not equal LUTSize")
 	case p.SecretKeyStdDev <= 0:
 		panic("SecretKeyStdDev smaller than or equal to 0")
 	case math.Log2(p.SecretKeyStdDev)+logQ+logTailCut > poly.ShortLogBound:
@@ -44,7 +44,7 @@ func (p FHEWParametersLiteral[T]) Compile() FHEWParameters[T] {
 	}
 
 	return FHEWParameters[T]{
-		baseParameters: baseParameters,
+		baseParams: baseParams,
 
 		secretKeyStdDev: p.SecretKeyStdDev,
 		windowSize:      p.WindowSize,
@@ -53,8 +53,8 @@ func (p FHEWParametersLiteral[T]) Compile() FHEWParameters[T] {
 
 // FHEWParameters are read-only, compiled parameters for FHEW.
 type FHEWParameters[T tfhe.TorusInt] struct {
-	// BaseParameters is a base parameters for this FHEWParameters.
-	baseParameters tfhe.Parameters[T]
+	// BaseParams is a base parameters for this FHEWParameters.
+	baseParams tfhe.Parameters[T]
 
 	// SecretKeyStdDev is the standard deviation of the secret key.
 	// Must be smaller than [poly.ShortPolyBound] / 8Q.
@@ -64,9 +64,9 @@ type FHEWParameters[T tfhe.TorusInt] struct {
 	windowSize int
 }
 
-// BaseParameters returns the base parameters for this FHEWParameters.
-func (p FHEWParameters[T]) BaseParameters() tfhe.Parameters[T] {
-	return p.baseParameters
+// BaseParams returns the base parameters for this FHEWParameters.
+func (p FHEWParameters[T]) BaseParams() tfhe.Parameters[T] {
+	return p.baseParams
 }
 
 // SecretKeyStdDev returns the standard deviation of the secret key.
@@ -79,7 +79,7 @@ func (p FHEWParameters[T]) SecretKeyStdDev() float64 {
 
 // SecretKeyStdDevQ returns SecretKeyStdDev * Q
 func (p FHEWParameters[T]) SecretKeyStdDevQ() float64 {
-	return p.secretKeyStdDev * math.Exp2(float64(p.baseParameters.LogQ()))
+	return p.secretKeyStdDev * math.Exp2(float64(p.baseParams.LogQ()))
 }
 
 // WindowSize returns the window size for the FHEW blind rotation.

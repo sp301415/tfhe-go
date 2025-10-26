@@ -28,7 +28,7 @@ func (ct LWECiphertext[T]) Copy() LWECiphertext[T] {
 
 // CopyFrom copies values from the ciphertext.
 func (ct *LWECiphertext[T]) CopyFrom(ctIn LWECiphertext[T]) {
-	vec.CopyAssign(ctIn.Value, ct.Value)
+	copy(ct.Value, ctIn.Value)
 }
 
 // CopyFromSingleKey copies values from the single-key ciphertext.
@@ -41,7 +41,7 @@ func (ct *LWECiphertext[T]) CopyFromSingleKey(ctIn tfhe.LWECiphertext[T], idx in
 
 	ct.Clear()
 	singleKeyLWEDimension := len(ctIn.Value) - 1
-	vec.CopyAssign(ctIn.Value[1:], ct.Value[1+idx*singleKeyLWEDimension:1+(idx+1)*singleKeyLWEDimension])
+	copy(ct.Value[1+idx*singleKeyLWEDimension:1+(idx+1)*singleKeyLWEDimension], ctIn.Value[1:])
 	ct.Value[0] = ctIn.Value[0]
 }
 

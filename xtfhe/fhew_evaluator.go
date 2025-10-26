@@ -13,24 +13,24 @@ type FHEWEvaluator[T tfhe.TorusInt] struct {
 	// Evaluator is an embedded [tfhe.Evaluator] for this FHEWEvaluator.
 	*tfhe.Evaluator[T]
 
-	// Parameters is the parameters for this Evaluator.
-	Parameters FHEWParameters[T]
+	// Params is the parameters for this Evaluator.
+	Params FHEWParameters[T]
 
-	// EvaluationKey is the evaluation key for this Evaluator.
-	EvaluationKey FHEWEvaluationKey[T]
+	// EvalKey is the evaluation key for this Evaluator.
+	EvalKey FHEWEvaluationKey[T]
 
 	// autIdxMap holds the map ±5^i -> ±i mod 2N.
 	autIdxMap []int
 
-	buffer fhewEvaluationBuffer[T]
+	buf fhewEvaluatorBuffer[T]
 }
 
-// fhewEvaluationBuffer is a buffer for FHEWEvaluator.
-type fhewEvaluationBuffer[T tfhe.TorusInt] struct {
-	// ctFourierAcc is the fourier transformed accumulator in Blind Rotation.
-	ctFourierAcc tfhe.FourierGLWECiphertext[T]
-	// ctAccFourierDecomposed is the decomposed ctAcc in Blind Rotation.
-	ctAccFourierDecomposed [][]poly.FourierPoly
+// fhewEvaluatorBuffer is a buffer for FHEWEvaluator.
+type fhewEvaluatorBuffer[T tfhe.TorusInt] struct {
+	// fctAcc is the fourier transformed accumulator in Blind Rotation.
+	fctAcc tfhe.FFTGLWECiphertext[T]
+	// fctAccDcmp is the decomposed ctAcc in Blind Rotation.
+	fctAccDcmp [][]poly.FFTPoly
 
 	// ctPermute is the permuted accumulator for bootstrapping.
 	ctPermute tfhe.GLWECiphertext[T]
@@ -38,8 +38,8 @@ type fhewEvaluationBuffer[T tfhe.TorusInt] struct {
 	ctRotate tfhe.GLWECiphertext[T]
 	// ctExtract is the extracted LWE ciphertext after Blind Rotation.
 	ctExtract tfhe.LWECiphertext[T]
-	// ctKeySwitchForBootstrap is the LWEDimension sized ciphertext from keyswitching for bootstrapping.
-	ctKeySwitchForBootstrap tfhe.LWECiphertext[T]
+	// ctKeySwitch is the LWEDimension sized ciphertext from keyswitching for bootstrapping.
+	ctKeySwitch tfhe.LWECiphertext[T]
 
 	// lut is an empty lut, used for BlindRotateFunc.
 	lut tfhe.LookUpTable[T]
@@ -47,48 +47,48 @@ type fhewEvaluationBuffer[T tfhe.TorusInt] struct {
 
 // NewFHEWEvaluator creates a new FHEWEvaluator.
 func NewFHEWEvaluator[T tfhe.TorusInt](params FHEWParameters[T], evk FHEWEvaluationKey[T]) *FHEWEvaluator[T] {
-	autIdxMap := make([]int, 2*params.baseParameters.PolyDegree())
+	autIdxMap := make([]int, 2*params.baseParams.PolyRank())
 	autIdx := 1
-	for i := 0; i < params.baseParameters.PolyDegree()/2; i++ {
+	for i := 0; i < params.baseParams.PolyRank()/2; i++ {
 		autIdxMap[autIdx] = i
-		autIdxMap[2*params.baseParameters.PolyDegree()-autIdx] = -i
-		autIdx = (autIdx * 5) % (2 * params.baseParameters.PolyDegree())
+		autIdxMap[2*params.baseParams.PolyRank()-autIdx] = -i
+		autIdx = (autIdx * 5) % (2 * params.baseParams.PolyRank())
 	}
-	autIdxMap[2*params.baseParameters.PolyDegree()-1] = 2 * params.baseParameters.PolyDegree()
+	autIdxMap[2*params.baseParams.PolyRank()-1] = 2 * params.baseParams.PolyRank()
 
 	return &FHEWEvaluator[T]{
-		Evaluator: tfhe.NewEvaluator(params.baseParameters, tfhe.EvaluationKey[T]{KeySwitchKey: evk.KeySwitchKey}),
+		Evaluator: tfhe.NewEvaluator(params.baseParams, tfhe.EvaluationKey[T]{KeySwitchKey: evk.KeySwitchKey}),
 
-		Parameters: params,
+		Params: params,
 
-		EvaluationKey: evk,
+		EvalKey: evk,
 
 		autIdxMap: autIdxMap,
 
-		buffer: newFHEWEvaluationBuffer(params),
+		buf: newFHEWEvaluatorBuffer(params),
 	}
 }
 
-// newFHEWEvaluationBuffer creates a new evaluationBuffer.
-func newFHEWEvaluationBuffer[T tfhe.TorusInt](params FHEWParameters[T]) fhewEvaluationBuffer[T] {
-	ctAccFourierDecomposed := make([][]poly.FourierPoly, params.baseParameters.GLWERank()+1)
-	for i := 0; i < params.baseParameters.GLWERank()+1; i++ {
-		ctAccFourierDecomposed[i] = make([]poly.FourierPoly, params.baseParameters.BlindRotateParameters().Level())
-		for j := 0; j < params.baseParameters.BlindRotateParameters().Level(); j++ {
-			ctAccFourierDecomposed[i][j] = poly.NewFourierPoly(params.baseParameters.PolyDegree())
+// newFHEWEvaluatorBuffer creates a new fhewEvaluatorBuffer.
+func newFHEWEvaluatorBuffer[T tfhe.TorusInt](params FHEWParameters[T]) fhewEvaluatorBuffer[T] {
+	fctAccDcmp := make([][]poly.FFTPoly, params.baseParams.GLWERank()+1)
+	for i := 0; i < params.baseParams.GLWERank()+1; i++ {
+		fctAccDcmp[i] = make([]poly.FFTPoly, params.baseParams.BlindRotateParams().Level())
+		for j := 0; j < params.baseParams.BlindRotateParams().Level(); j++ {
+			fctAccDcmp[i][j] = poly.NewFFTPoly(params.baseParams.PolyRank())
 		}
 	}
 
-	return fhewEvaluationBuffer[T]{
-		ctFourierAcc:           tfhe.NewFourierGLWECiphertext(params.baseParameters),
-		ctAccFourierDecomposed: ctAccFourierDecomposed,
+	return fhewEvaluatorBuffer[T]{
+		fctAcc:     tfhe.NewFFTGLWECiphertext(params.baseParams),
+		fctAccDcmp: fctAccDcmp,
 
-		ctPermute:               tfhe.NewGLWECiphertext(params.baseParameters),
-		ctRotate:                tfhe.NewGLWECiphertext(params.baseParameters),
-		ctExtract:               tfhe.NewLWECiphertextCustom[T](params.baseParameters.GLWEDimension()),
-		ctKeySwitchForBootstrap: tfhe.NewLWECiphertextCustom[T](params.baseParameters.LWEDimension()),
+		ctPermute:   tfhe.NewGLWECiphertext(params.baseParams),
+		ctRotate:    tfhe.NewGLWECiphertext(params.baseParams),
+		ctExtract:   tfhe.NewLWECiphertextCustom[T](params.baseParams.GLWEDimension()),
+		ctKeySwitch: tfhe.NewLWECiphertextCustom[T](params.baseParams.LWEDimension()),
 
-		lut: tfhe.NewLookUpTable(params.baseParameters),
+		lut: tfhe.NewLUT(params.baseParams),
 	}
 }
 
@@ -98,12 +98,12 @@ func (e *FHEWEvaluator[T]) ShallowCopy() *FHEWEvaluator[T] {
 	return &FHEWEvaluator[T]{
 		Evaluator: e.Evaluator.ShallowCopy(),
 
-		Parameters: e.Parameters,
+		Params: e.Params,
 
-		EvaluationKey: e.EvaluationKey,
+		EvalKey: e.EvalKey,
 
 		autIdxMap: e.autIdxMap,
 
-		buffer: newFHEWEvaluationBuffer(e.Parameters),
+		buf: newFHEWEvaluatorBuffer(e.Params),
 	}
 }

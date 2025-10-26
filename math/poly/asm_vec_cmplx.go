@@ -2,14 +2,16 @@
 
 package poly
 
-import "unsafe"
+import (
+	"unsafe"
+)
 
-// addCmplxAssign computes vOut = v0 + v1.
-func addCmplxAssign(v0, v1, vOut []float64) {
+// addCmplxTo computes vOut = v0 + v1.
+func addCmplxTo(vOut, v0, v1 []float64) {
 	for i := 0; i < len(vOut); i += 8 {
+		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
 		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
 		w1 := (*[8]float64)(unsafe.Pointer(&v1[i]))
-		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
 
 		wOut[0] = w0[0] + w1[0]
 		wOut[1] = w0[1] + w1[1]
@@ -23,12 +25,12 @@ func addCmplxAssign(v0, v1, vOut []float64) {
 	}
 }
 
-// subCmplxAssign computes vOut = v0 - v1.
-func subCmplxAssign(v0, v1, vOut []float64) {
+// subCmplxTo computes vOut = v0 - v1.
+func subCmplxTo(vOut, v0, v1 []float64) {
 	for i := 0; i < len(vOut); i += 8 {
+		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
 		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
 		w1 := (*[8]float64)(unsafe.Pointer(&v1[i]))
-		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
 
 		wOut[0] = w0[0] - w1[0]
 		wOut[1] = w0[1] - w1[1]
@@ -42,11 +44,11 @@ func subCmplxAssign(v0, v1, vOut []float64) {
 	}
 }
 
-// negCmplxAssign computes vOut = -v0.
-func negCmplxAssign(v0, vOut []float64) {
+// negCmplxTo computes vOut = -v.
+func negCmplxTo(vOut, v []float64) {
 	for i := 0; i < len(vOut); i += 8 {
-		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
 		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
+		w0 := (*[8]float64)(unsafe.Pointer(&v[i]))
 
 		wOut[0] = -w0[0]
 		wOut[1] = -w0[1]
@@ -60,11 +62,11 @@ func negCmplxAssign(v0, vOut []float64) {
 	}
 }
 
-// floatMulCmplxAssign computes vOut = c * v0.
-func floatMulCmplxAssign(v0 []float64, c float64, vOut []float64) {
+// floatMulCmplxTo computes vOut = c * v.
+func floatMulCmplxTo(vOut, v []float64, c float64) {
 	for i := 0; i < len(vOut); i += 8 {
-		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
 		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
+		w0 := (*[8]float64)(unsafe.Pointer(&v[i]))
 
 		wOut[0] = c * w0[0]
 		wOut[1] = c * w0[1]
@@ -78,11 +80,11 @@ func floatMulCmplxAssign(v0 []float64, c float64, vOut []float64) {
 	}
 }
 
-// floatMulAddCmplxAssign computes vOut += c * v0.
-func floatMulAddCmplxAssign(v0 []float64, c float64, vOut []float64) {
+// floatMulAddCmplxTo computes vOut += c * v.
+func floatMulAddCmplxTo(vOut, v []float64, c float64) {
 	for i := 0; i < len(vOut); i += 8 {
-		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
 		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
+		w0 := (*[8]float64)(unsafe.Pointer(&v[i]))
 
 		wOut[0] += c * w0[0]
 		wOut[1] += c * w0[1]
@@ -96,11 +98,11 @@ func floatMulAddCmplxAssign(v0 []float64, c float64, vOut []float64) {
 	}
 }
 
-// floatMulSubCmplxAssign computes vOut -= c * v0.
-func floatMulSubCmplxAssign(v0 []float64, c float64, vOut []float64) {
+// floatMulSubCmplxTo computes vOut -= c * v.
+func floatMulSubCmplxTo(vOut, v []float64, c float64) {
 	for i := 0; i < len(vOut); i += 8 {
-		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
 		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
+		w0 := (*[8]float64)(unsafe.Pointer(&v[i]))
 
 		wOut[0] -= c * w0[0]
 		wOut[1] -= c * w0[1]
@@ -114,12 +116,12 @@ func floatMulSubCmplxAssign(v0 []float64, c float64, vOut []float64) {
 	}
 }
 
-// cmplxMulCmplxAssign computes vOut = c * v0.
-func cmplxMulCmplxAssign(v0 []float64, c complex128, vOut []float64) {
+// cmplxMulCmplxTo computes vOut = c * v.
+func cmplxMulCmplxTo(vOut, v []float64, c complex128) {
 	cR, cI := real(c), imag(c)
 	for i := 0; i < len(vOut); i += 8 {
-		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
 		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
+		w0 := (*[8]float64)(unsafe.Pointer(&v[i]))
 
 		wOut[0] = w0[0]*cR - w0[4]*cI
 		wOut[1] = w0[1]*cR - w0[5]*cI
@@ -133,12 +135,12 @@ func cmplxMulCmplxAssign(v0 []float64, c complex128, vOut []float64) {
 	}
 }
 
-// cmplxMulAddCmplxAssign computes vOut += c * v0.
-func cmplxMulAddCmplxAssign(v0 []float64, c complex128, vOut []float64) {
+// cmplxMulAddCmplxTo computes vOut += c * v.
+func cmplxMulAddCmplxTo(vOut, v []float64, c complex128) {
 	cR, cI := real(c), imag(c)
 	for i := 0; i < len(vOut); i += 8 {
-		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
 		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
+		w0 := (*[8]float64)(unsafe.Pointer(&v[i]))
 
 		wOut[0] += w0[0]*cR - w0[4]*cI
 		wOut[1] += w0[1]*cR - w0[5]*cI
@@ -152,12 +154,12 @@ func cmplxMulAddCmplxAssign(v0 []float64, c complex128, vOut []float64) {
 	}
 }
 
-// cmplxMulSubCmplxAssign computes vOut -= c * v0.
-func cmplxMulSubCmplxAssign(v0 []float64, c complex128, vOut []float64) {
+// cmplxMulSubCmplxTo computes vOut -= c * v.
+func cmplxMulSubCmplxTo(vOut, v []float64, c complex128) {
 	cR, cI := real(c), imag(c)
 	for i := 0; i < len(vOut); i += 8 {
-		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
 		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
+		w0 := (*[8]float64)(unsafe.Pointer(&v[i]))
 
 		wOut[0] -= w0[0]*cR - w0[4]*cI
 		wOut[1] -= w0[1]*cR - w0[5]*cI
@@ -171,14 +173,13 @@ func cmplxMulSubCmplxAssign(v0 []float64, c complex128, vOut []float64) {
 	}
 }
 
-// elementWiseMulCmplxAssign computes vOut = v0 * v1.
-func elementWiseMulCmplxAssign(v0, v1, vOut []float64) {
+// mulCmplxTo computes vOut = v0 * v1.
+func mulCmplxTo(vOut, v0, v1 []float64) {
 	var vOutR, vOutI float64
-
 	for i := 0; i < len(vOut); i += 8 {
+		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
 		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
 		w1 := (*[8]float64)(unsafe.Pointer(&v1[i]))
-		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
 
 		vOutR = w0[0]*w1[0] - w0[4]*w1[4]
 		vOutI = w0[0]*w1[4] + w0[4]*w1[0]
@@ -198,14 +199,13 @@ func elementWiseMulCmplxAssign(v0, v1, vOut []float64) {
 	}
 }
 
-// elementWiseMulAddCmplxAssign computes vOut += v0 * v1.
-func elementWiseMulAddCmplxAssign(v0, v1, vOut []float64) {
+// mulAddCmplxTo computes vOut += v0 * v1.
+func mulAddCmplxTo(vOut, v0, v1 []float64) {
 	var vOutR, vOutI float64
-
 	for i := 0; i < len(vOut); i += 8 {
+		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
 		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
 		w1 := (*[8]float64)(unsafe.Pointer(&v1[i]))
-		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
 
 		vOutR = wOut[0] + (w0[0]*w1[0] - w0[4]*w1[4])
 		vOutI = wOut[4] + (w0[0]*w1[4] + w0[4]*w1[0])
@@ -225,14 +225,13 @@ func elementWiseMulAddCmplxAssign(v0, v1, vOut []float64) {
 	}
 }
 
-// elementWiseMulSubCmplxAssign computes vOut -= v0 * v1.
-func elementWiseMulSubCmplxAssign(v0, v1, vOut []float64) {
+// mulSubCmplxTo computes vOut -= v0 * v1.
+func mulSubCmplxTo(vOut, v0, v1 []float64) {
 	var vOutR, vOutI float64
-
 	for i := 0; i < len(vOut); i += 8 {
+		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
 		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
 		w1 := (*[8]float64)(unsafe.Pointer(&v1[i]))
-		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
 
 		vOutR = wOut[0] - (w0[0]*w1[0] - w0[4]*w1[4])
 		vOutI = wOut[4] - (w0[0]*w1[4] + w0[4]*w1[0])

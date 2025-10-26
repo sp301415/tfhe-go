@@ -5,49 +5,49 @@
 package vec
 
 //go:noescape
-func addAssignUint32AVX2(v0 []uint32, v1 []uint32, vOut []uint32)
+func addToUint32AVX2(vOut []uint32, v0 []uint32, v1 []uint32)
 
 //go:noescape
-func addAssignUint64AVX2(v0 []uint64, v1 []uint64, vOut []uint64)
+func addToUint64AVX2(vOut []uint64, v0 []uint64, v1 []uint64)
 
 //go:noescape
-func subAssignUint32AVX2(v0 []uint32, v1 []uint32, vOut []uint32)
+func subToUint32AVX2(vOut []uint32, v0 []uint32, v1 []uint32)
 
 //go:noescape
-func subAssignUint64AVX2(v0 []uint64, v1 []uint64, vOut []uint64)
+func subToUint64AVX2(vOut []uint64, v0 []uint64, v1 []uint64)
 
 //go:noescape
-func scalarMulAssignUint32AVX2(v0 []uint32, c uint32, vOut []uint32)
+func scalarMulToUint32AVX2(vOut []uint32, v []uint32, c uint32)
 
 //go:noescape
-func scalarMulAssignUint64AVX2(v0 []uint64, c uint64, vOut []uint64)
+func scalarMulToUint64AVX2(vOut []uint64, v []uint64, c uint64)
 
 //go:noescape
-func scalarMulAddAssignUint32AVX2(v0 []uint32, c uint32, vOut []uint32)
+func scalarMulAddToUint32AVX2(vOut []uint32, v []uint32, c uint32)
 
 //go:noescape
-func scalarMulAddAssignUint64AVX2(v0 []uint64, c uint64, vOut []uint64)
+func scalarMulAddToUint64AVX2(vOut []uint64, v []uint64, c uint64)
 
 //go:noescape
-func scalarMulSubAssignUint32AVX2(v0 []uint32, c uint32, vOut []uint32)
+func scalarMulSubToUint32AVX2(vOut []uint32, v []uint32, c uint32)
 
 //go:noescape
-func scalarMulSubAssignUint64AVX2(v0 []uint64, c uint64, vOut []uint64)
+func scalarMulSubToUint64AVX2(vOut []uint64, v []uint64, c uint64)
 
 //go:noescape
-func elementWiseMulAssignUint32AVX2(v0 []uint32, v1 []uint32, vOut []uint32)
+func mulToUint32AVX2(vOut []uint32, v0 []uint32, v1 []uint32)
 
 //go:noescape
-func elementWiseMulAssignUint64AVX2(v0 []uint64, v1 []uint64, vOut []uint64)
+func mulToUint64AVX2(vOut []uint64, v0 []uint64, v1 []uint64)
 
 //go:noescape
-func elementWiseMulAddAssignUint32AVX2(v0 []uint32, v1 []uint32, vOut []uint32)
+func mulAddToUint32AVX2(vOut []uint32, v0 []uint32, v1 []uint32)
 
 //go:noescape
-func elementWiseMulAddAssignUint64AVX2(v0 []uint64, v1 []uint64, vOut []uint64)
+func mulAddToUint64AVX2(vOut []uint64, v0 []uint64, v1 []uint64)
 
 //go:noescape
-func elementWiseMulSubAssignUint32AVX2(v0 []uint32, v1 []uint32, vOut []uint32)
+func mulSubToUint32AVX2(vOut []uint32, v0 []uint32, v1 []uint32)
 
 //go:noescape
-func elementWiseMulSubAssignUint64AVX2(v0 []uint64, v1 []uint64, vOut []uint64)
+func mulSubToUint64AVX2(vOut []uint64, v0 []uint64, v1 []uint64)

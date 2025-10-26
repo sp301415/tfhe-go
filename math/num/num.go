@@ -118,7 +118,7 @@ func IsPowerOfTwo[T Integer](x T) bool {
 // Log2 returns floor(log2(x)). Panics if x <= 0.
 func Log2[T Integer](x T) int {
 	if x <= 0 {
-		panic("non-positive log2 undefined")
+		panic("Log2: x must be positive")
 	}
 
 	return int(bits.Len64(uint64(x))) - 1
@@ -190,7 +190,7 @@ func MinN[T Real](x ...T) T {
 // Sqrt returns floor(sqrt2(x)). Panics if x < 0.
 func Sqrt[T Integer](x T) T {
 	if x < 0 {
-		panic("negative sqrt undefined")
+		panic("Sqrt: negative sqrt undefined")
 	}
 
 	t := uint64(x)
@@ -218,7 +218,7 @@ func Sqrt[T Integer](x T) T {
 // Panics if m <= 0 or x and m are not coprime.
 func ModInverse[T Integer](x, m T) T {
 	if m <= 0 {
-		panic("modulus not positive")
+		panic("ModInverse: modulus not positive")
 	}
 
 	x %= m
@@ -235,7 +235,7 @@ func ModInverse[T Integer](x, m T) T {
 	}
 
 	if a != 1 {
-		panic("modular inverse does not exist")
+		panic("ModInverse: modular inverse does not exist")
 	}
 
 	u %= m
@@ -253,7 +253,7 @@ func ModInverse[T Integer](x, m T) T {
 // Panics if x and m are not coprime in this case.
 func ModExp[T Integer](x, y, m T) T {
 	if m <= 0 {
-		panic("modulus not positive")
+		panic("ModExp: modulus not positive")
 	}
 
 	switch {

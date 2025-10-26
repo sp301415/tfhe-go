@@ -9,118 +9,118 @@ import (
 
 // BootstrapFunc returns a bootstrapped LWE ciphertext with respect to given function.
 func (e *Evaluator[T]) BootstrapFunc(ct LWECiphertext[T], f func(int) int) LWECiphertext[T] {
-	e.BaseSingleKeyEvaluator.GenLookUpTableAssign(f, e.buffer.lut)
-	return e.BootstrapLUT(ct, e.buffer.lut)
+	e.subEvaluator.GenLUTTo(e.buf.lut, f)
+	return e.BootstrapLUT(ct, e.buf.lut)
 }
 
-// BootstrapFuncAssign bootstraps LWE ciphertext with respect to given function and writes it to ctOut.
-func (e *Evaluator[T]) BootstrapFuncAssign(ct LWECiphertext[T], f func(int) int, ctOut LWECiphertext[T]) {
-	e.BaseSingleKeyEvaluator.GenLookUpTableAssign(f, e.buffer.lut)
-	e.BootstrapLUTAssign(ct, e.buffer.lut, ctOut)
+// BootstrapFuncTo bootstraps LWE ciphertext with respect to given function and writes it to ctOut.
+func (e *Evaluator[T]) BootstrapFuncTo(ctOut, ct LWECiphertext[T], f func(int) int) {
+	e.subEvaluator.GenLUTTo(e.buf.lut, f)
+	e.BootstrapLUTTo(ctOut, ct, e.buf.lut)
 }
 
 // BootstrapLUT returns a bootstrapped LWE ciphertext with respect to given LUT.
 func (e *Evaluator[T]) BootstrapLUT(ct LWECiphertext[T], lut tfhe.LookUpTable[T]) LWECiphertext[T] {
-	ctOut := NewLWECiphertext(e.Parameters)
-	e.BootstrapLUTAssign(ct, lut, ctOut)
+	ctOut := NewLWECiphertext(e.Params)
+	e.BootstrapLUTTo(ctOut, ct, lut)
 	return ctOut
 }
 
-// BootstrapLUTAssign bootstraps LWE ciphertext with respect to given LUT and writes it to ctOut.
-func (e *Evaluator[T]) BootstrapLUTAssign(ct LWECiphertext[T], lut tfhe.LookUpTable[T], ctOut LWECiphertext[T]) {
-	switch e.Parameters.BootstrapOrder() {
+// BootstrapLUTTo bootstraps LWE ciphertext with respect to given LUT and writes it to ctOut.
+func (e *Evaluator[T]) BootstrapLUTTo(ctOut, ct LWECiphertext[T], lut tfhe.LookUpTable[T]) {
+	switch e.Params.BootstrapOrder() {
 	case tfhe.OrderKeySwitchBlindRotate:
-		e.KeySwitchForBootstrapAssign(ct, e.buffer.ctKeySwitchForBootstrap)
-		e.BlindRotateAssign(e.buffer.ctKeySwitchForBootstrap, lut, e.buffer.ctRotate)
-		e.buffer.ctRotate.ToLWECiphertextAssign(0, ctOut)
+		e.DefaultKeySwitchTo(e.buf.ctKeySwitc, ct)
+		e.BlindRotateTo(e.buf.ctRotate, e.buf.ctKeySwitc, lut)
+		e.buf.ctRotate.AsLWECiphertextTo(ctOut, 0)
 	case tfhe.OrderBlindRotateKeySwitch:
-		e.BlindRotateAssign(ct, lut, e.buffer.ctRotate)
-		e.buffer.ctRotate.ToLWECiphertextAssign(0, e.buffer.ctExtract)
-		e.KeySwitchForBootstrapAssign(e.buffer.ctExtract, ctOut)
+		e.BlindRotateTo(e.buf.ctRotate, ct, lut)
+		e.buf.ctRotate.AsLWECiphertextTo(e.buf.ctExtract, 0)
+		e.DefaultKeySwitchTo(ctOut, e.buf.ctExtract)
 	}
 }
 
 // BootstrapFuncParallel returns a bootstrapped LWE ciphertext with respect to given function in parallel.
 func (e *Evaluator[T]) BootstrapFuncParallel(ct LWECiphertext[T], f func(int) int) LWECiphertext[T] {
-	e.BaseSingleKeyEvaluator.GenLookUpTableAssign(f, e.buffer.lut)
-	return e.BootstrapLUTParallel(ct, e.buffer.lut)
+	e.subEvaluator.GenLUTTo(e.buf.lut, f)
+	return e.BootstrapLUTParallel(ct, e.buf.lut)
 }
 
-// BootstrapFuncParallelAssign bootstraps LWE ciphertext with respect to given function and writes it to ctOut in parallel.
-func (e *Evaluator[T]) BootstrapFuncParallelAssign(ct LWECiphertext[T], f func(int) int, ctOut LWECiphertext[T]) {
-	e.BaseSingleKeyEvaluator.GenLookUpTableAssign(f, e.buffer.lut)
-	e.BootstrapLUTAssign(ct, e.buffer.lut, ctOut)
+// BootstrapFuncParallelTo bootstraps LWE ciphertext with respect to given function and writes it to ctOut in parallel.
+func (e *Evaluator[T]) BootstrapFuncParallelTo(ctOut, ct LWECiphertext[T], f func(int) int) {
+	e.subEvaluator.GenLUTTo(e.buf.lut, f)
+	e.BootstrapLUTParallelTo(ctOut, ct, e.buf.lut)
 }
 
 // BootstrapLUTParallel returns a bootstrapped LWE ciphertext with respect to given LUT in parallel.
 func (e *Evaluator[T]) BootstrapLUTParallel(ct LWECiphertext[T], lut tfhe.LookUpTable[T]) LWECiphertext[T] {
-	ctOut := NewLWECiphertext(e.Parameters)
-	e.BootstrapLUTParallelAssign(ct, lut, ctOut)
+	ctOut := NewLWECiphertext(e.Params)
+	e.BootstrapLUTParallelTo(ctOut, ct, lut)
 	return ctOut
 }
 
-// BootstrapLUTParallelAssign bootstraps LWE ciphertext with respect to given LUT and writes it to ctOut in parallel.
-func (e *Evaluator[T]) BootstrapLUTParallelAssign(ct LWECiphertext[T], lut tfhe.LookUpTable[T], ctOut LWECiphertext[T]) {
-	switch e.Parameters.BootstrapOrder() {
+// BootstrapLUTParallelTo bootstraps LWE ciphertext with respect to given LUT and writes it to ctOut in parallel.
+func (e *Evaluator[T]) BootstrapLUTParallelTo(ctOut, ct LWECiphertext[T], lut tfhe.LookUpTable[T]) {
+	switch e.Params.BootstrapOrder() {
 	case tfhe.OrderKeySwitchBlindRotate:
-		e.KeySwitchForBootstrapAssign(ct, e.buffer.ctKeySwitchForBootstrap)
-		e.BlindRotateParallelAssign(e.buffer.ctKeySwitchForBootstrap, lut, e.buffer.ctRotate)
-		e.buffer.ctRotate.ToLWECiphertextAssign(0, ctOut)
+		e.DefaultKeySwitchTo(e.buf.ctKeySwitc, ct)
+		e.BlindRotateParallelTo(e.buf.ctRotate, e.buf.ctKeySwitc, lut)
+		e.buf.ctRotate.AsLWECiphertextTo(ctOut, 0)
 	case tfhe.OrderBlindRotateKeySwitch:
-		e.BlindRotateParallelAssign(ct, lut, e.buffer.ctRotate)
-		e.buffer.ctRotate.ToLWECiphertextAssign(0, e.buffer.ctExtract)
-		e.KeySwitchForBootstrapAssign(e.buffer.ctExtract, ctOut)
+		e.BlindRotateParallelTo(e.buf.ctRotate, ct, lut)
+		e.buf.ctRotate.AsLWECiphertextTo(e.buf.ctExtract, 0)
+		e.DefaultKeySwitchTo(ctOut, e.buf.ctExtract)
 	}
 }
 
 // BlindRotate returns the blind rotation of LWE ciphertext with respect to LUT.
 func (e *Evaluator[T]) BlindRotate(ct LWECiphertext[T], lut tfhe.LookUpTable[T]) GLWECiphertext[T] {
-	ctOut := NewGLWECiphertext(e.Parameters)
-	e.BlindRotateAssign(ct, lut, ctOut)
+	ctOut := NewGLWECiphertext(e.Params)
+	e.BlindRotateTo(ctOut, ct, lut)
 	return ctOut
 }
 
-// BlindRotateAssign computes the blind rotation of LWE ciphertext with respect to LUT and writes it to ctOut.
-func (e *Evaluator[T]) BlindRotateAssign(ct LWECiphertext[T], lut tfhe.LookUpTable[T], ctOut GLWECiphertext[T]) {
+// BlindRotateTo computes the blind rotation of LWE ciphertext with respect to LUT and writes it to ctOut.
+func (e *Evaluator[T]) BlindRotateTo(ctOut GLWECiphertext[T], ct LWECiphertext[T], lut tfhe.LookUpTable[T]) {
 	ctOut.Clear()
 
-	e.BaseSingleKeyEvaluator.PolyEvaluator.MonomialMulPolyAssign(lut.Value[0], -e.BaseSingleKeyEvaluator.ModSwitch(ct.Value[0]), ctOut.Value[0])
+	e.subEvaluator.PolyEvaluator.MonomialMulPolyTo(ctOut.Value[0], lut.Value[0], -e.subEvaluator.ModSwitch(ct.Value[0]))
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			e.buffer.ctRotateInputs[i].Value[0] = 0
-			vec.CopyAssign(ct.Value[1+i*e.Parameters.singleKeyParameters.LWEDimension():1+(i+1)*e.Parameters.singleKeyParameters.LWEDimension()], e.buffer.ctRotateInputs[i].Value[1:])
-			for j := 0; j < e.Parameters.accumulatorParameters.Level(); j++ {
-				e.SingleKeyEvaluators[i].BlindRotateAssign(e.buffer.ctRotateInputs[i], e.gadgetLUTs[j], e.buffer.ctAccs[i])
-				e.SingleKeyEvaluators[i].ToFourierGLWECiphertextAssign(e.buffer.ctAccs[i], e.buffer.ctFourierAccs[i].Value[j])
+			e.buf.ctRotateIn[i].Value[0] = 0
+			copy(e.buf.ctRotateIn[i].Value[1:], ct.Value[1+i*e.Params.subParams.LWEDimension():1+(i+1)*e.Params.subParams.LWEDimension()])
+			for j := 0; j < e.Params.accumulatorParams.Level(); j++ {
+				e.SubEvaluators[i].BlindRotateTo(e.buf.ctAccs[i], e.buf.ctRotateIn[i], e.gadgetLUTs[j])
+				e.SubEvaluators[i].FFTGLWECiphertextTo(e.buf.fctAccs[i].Value[j], e.buf.ctAccs[i])
 			}
-			e.ExternalProductGLWEAssign(i, e.buffer.ctFourierAccs[i], ctOut, ctOut)
+			e.ExternalProductGLWETo(i, e.buf.fctAccs[i], ctOut, ctOut)
 		}
 	}
 }
 
 // BlindRotateParallel returns the blind rotation of LWE ciphertext with respect to LUT in parallel.
 func (e *Evaluator[T]) BlindRotateParallel(ct LWECiphertext[T], lut tfhe.LookUpTable[T]) GLWECiphertext[T] {
-	ctOut := NewGLWECiphertext(e.Parameters)
-	e.BlindRotateParallelAssign(ct, lut, ctOut)
+	ctOut := NewGLWECiphertext(e.Params)
+	e.BlindRotateParallelTo(ctOut, ct, lut)
 	return ctOut
 }
 
-// BlindRotateParallelAssign computes the blind rotation of LWE ciphertext with respect to LUT and writes it to ctOut in parallel.
-func (e *Evaluator[T]) BlindRotateParallelAssign(ct LWECiphertext[T], lut tfhe.LookUpTable[T], ctOut GLWECiphertext[T]) {
+// BlindRotateParallelTo computes the blind rotation of LWE ciphertext with respect to LUT and writes it to ctOut in parallel.
+func (e *Evaluator[T]) BlindRotateParallelTo(ctOut GLWECiphertext[T], ct LWECiphertext[T], lut tfhe.LookUpTable[T]) {
 	ctOut.Clear()
 
-	e.BaseSingleKeyEvaluator.PolyEvaluator.MonomialMulPolyAssign(lut.Value[0], -e.BaseSingleKeyEvaluator.ModSwitch(ct.Value[0]), ctOut.Value[0])
+	e.subEvaluator.PolyEvaluator.MonomialMulPolyTo(ctOut.Value[0], lut.Value[0], -e.subEvaluator.ModSwitch(ct.Value[0]))
 
 	var wg sync.WaitGroup
 	for i, ok := range e.PartyBitMap {
 		if ok {
 			wg.Add(1)
 			go func(i int) {
-				e.buffer.ctRotateInputs[i].Value[0] = 0
-				vec.CopyAssign(ct.Value[1+i*e.Parameters.singleKeyParameters.LWEDimension():1+(i+1)*e.Parameters.singleKeyParameters.LWEDimension()], e.buffer.ctRotateInputs[i].Value[1:])
-				for j := 0; j < e.Parameters.accumulatorParameters.Level(); j++ {
-					e.SingleKeyEvaluators[i].BlindRotateAssign(e.buffer.ctRotateInputs[i], e.gadgetLUTs[j], e.buffer.ctAccs[i])
-					e.SingleKeyEvaluators[i].ToFourierGLWECiphertextAssign(e.buffer.ctAccs[i], e.buffer.ctFourierAccs[i].Value[j])
+				e.buf.ctRotateIn[i].Value[0] = 0
+				copy(e.buf.ctRotateIn[i].Value[1:], ct.Value[1+i*e.Params.subParams.LWEDimension():1+(i+1)*e.Params.subParams.LWEDimension()])
+				for j := 0; j < e.Params.accumulatorParams.Level(); j++ {
+					e.SubEvaluators[i].BlindRotateTo(e.buf.ctAccs[i], e.buf.ctRotateIn[i], e.gadgetLUTs[j])
+					e.SubEvaluators[i].FFTGLWECiphertextTo(e.buf.fctAccs[i].Value[j], e.buf.ctAccs[i])
 				}
 				wg.Done()
 			}(i)
@@ -130,38 +130,38 @@ func (e *Evaluator[T]) BlindRotateParallelAssign(ct LWECiphertext[T], lut tfhe.L
 
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			e.ExternalProductGLWEAssign(i, e.buffer.ctFourierAccs[i], ctOut, ctOut)
+			e.ExternalProductGLWETo(i, e.buf.fctAccs[i], ctOut, ctOut)
 		}
 	}
 }
 
-// KeySwitchForBootstrap performs the keyswitching using evaulater's evaluation key.
+// DefaultKeySwitch performs the keyswitching using evaulater's evaluation key.
 // Input ciphertext should be of length GLWEDimension + 1.
 // Output ciphertext will be of length LWEDimension + 1.
-func (e *Evaluator[T]) KeySwitchForBootstrap(ct LWECiphertext[T]) LWECiphertext[T] {
-	ctOut := NewLWECiphertextCustom[T](e.Parameters.LWEDimension())
-	e.KeySwitchForBootstrapAssign(ct, ctOut)
+func (e *Evaluator[T]) DefaultKeySwitch(ct LWECiphertext[T]) LWECiphertext[T] {
+	ctOut := NewLWECiphertextCustom[T](e.Params.LWEDimension())
+	e.DefaultKeySwitchTo(ctOut, ct)
 	return ctOut
 }
 
-// KeySwitchForBootstrapAssign performs the keyswitching using evaulater's evaluation key.
+// DefaultKeySwitchTo performs the keyswitching using evaulater's evaluation key.
 // Input ciphertext should be of length GLWEDimension + 1.
 // Output ciphertext should be of length LWEDimension + 1.
-func (e *Evaluator[T]) KeySwitchForBootstrapAssign(ct, ctOut LWECiphertext[T]) {
-	scalarDecomposed := e.Decomposer.ScalarDecomposedBuffer(e.Parameters.KeySwitchParameters())
+func (e *Evaluator[T]) DefaultKeySwitchTo(ctOut LWECiphertext[T], ct LWECiphertext[T]) {
+	cDcmp := e.Decomposer.ScalarBuffer(e.Params.KeySwitchParams())
 
 	ctOut.Value[0] = ct.Value[0]
 
 	for i, ok := range e.PartyBitMap {
-		ctMask := ct.Value[1+i*e.Parameters.singleKeyParameters.GLWEDimension() : 1+(i+1)*e.Parameters.singleKeyParameters.GLWEDimension()]
-		ctOutMask := ctOut.Value[1+i*e.Parameters.singleKeyParameters.LWEDimension() : 1+(i+1)*e.Parameters.singleKeyParameters.LWEDimension()]
+		ctMask := ct.Value[1+i*e.Params.subParams.GLWEDimension() : 1+(i+1)*e.Params.subParams.GLWEDimension()]
+		ctOutMask := ctOut.Value[1+i*e.Params.subParams.LWEDimension() : 1+(i+1)*e.Params.subParams.LWEDimension()]
 		if ok {
-			vec.CopyAssign(ctMask, ctOutMask)
-			for j, jj := e.Parameters.singleKeyParameters.LWEDimension(), 0; j < e.Parameters.singleKeyParameters.GLWEDimension(); j, jj = j+1, jj+1 {
-				e.SingleKeyEvaluators[i].Decomposer.DecomposeScalarAssign(ctMask[j], e.Parameters.KeySwitchParameters(), scalarDecomposed)
-				for k := 0; k < e.Parameters.KeySwitchParameters().Level(); k++ {
-					vec.ScalarMulAddAssign(e.EvaluationKeys[i].KeySwitchKey.Value[jj].Value[k].Value[1:], scalarDecomposed[k], ctOutMask)
-					ctOut.Value[0] += scalarDecomposed[k] * e.EvaluationKeys[i].KeySwitchKey.Value[jj].Value[k].Value[0]
+			copy(ctOutMask, ctMask)
+			for j, jj := e.Params.subParams.LWEDimension(), 0; j < e.Params.subParams.GLWEDimension(); j, jj = j+1, jj+1 {
+				e.SubEvaluators[i].Decomposer.DecomposeScalarTo(cDcmp, ctMask[j], e.Params.KeySwitchParams())
+				for k := 0; k < e.Params.KeySwitchParams().Level(); k++ {
+					vec.ScalarMulAddTo(ctOutMask, e.EvalKey[i].KeySwitchKey.Value[jj].Value[k].Value[1:], cDcmp[k])
+					ctOut.Value[0] += cDcmp[k] * e.EvalKey[i].KeySwitchKey.Value[jj].Value[k].Value[0]
 				}
 			}
 		} else {

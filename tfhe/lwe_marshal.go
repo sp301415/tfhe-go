@@ -36,9 +36,9 @@ func vecWriteTo[T TorusInt](v []T, w io.Writer) (n int64, err error) {
 	return
 }
 
-// vecWriteToBuffered implements the [io.WriterTo] interface for a vector of T, using a buffer.
+// vecWriteToBuf implements the [io.WriterTo] interface for a vector of T, using a buffer.
 // Assumes the length of the buffer is exactly the byte length of v.
-func vecWriteToBuffered[T TorusInt](v []T, buf []byte, w io.Writer) (n int64, err error) {
+func vecWriteToBuf[T TorusInt](v []T, buf []byte, w io.Writer) (n int64, err error) {
 	var nWrite int
 
 	var z T
@@ -94,9 +94,9 @@ func vecReadFrom[T TorusInt](v []T, r io.Reader) (n int64, err error) {
 	return
 }
 
-// vecReadFromBuffered implements the [io.ReaderFrom] interface for a vector of T, using a buffer.
+// vecReadFromBuf implements the [io.ReaderFrom] interface for a vector of T, using a buffer.
 // Assumes the length of the buffer is exactly the byte length of v.
-func vecReadFromBuffered[T TorusInt](v []T, buf []byte, r io.Reader) (n int64, err error) {
+func vecReadFromBuf[T TorusInt](v []T, buf []byte, r io.Reader) (n int64, err error) {
 	var nRead int
 
 	var z T
@@ -230,8 +230,8 @@ func (sk *LWESecretKey[T]) UnmarshalBinary(data []byte) error {
 // ByteSize returns the size of the key in bytes.
 func (pk LWEPublicKey[T]) ByteSize() int {
 	glweRank := len(pk.Value)
-	polyDegree := pk.Value[0].Value[0].Degree()
-	return 16 + glweRank*(glweRank+1)*polyDegree*num.ByteSizeT[T]()
+	polyRank := pk.Value[0].Value[0].Rank()
+	return 16 + glweRank*(glweRank+1)*polyRank*num.ByteSizeT[T]()
 }
 
 // headerWriteTo writes the header.
@@ -246,8 +246,8 @@ func (pk LWEPublicKey[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 	}
 	n += int64(nWrite)
 
-	polyDegree := pk.Value[0].Value[0].Degree()
-	binary.BigEndian.PutUint64(buf[:], uint64(polyDegree))
+	polyRank := pk.Value[0].Value[0].Rank()
+	binary.BigEndian.PutUint64(buf[:], uint64(polyRank))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
 	}
@@ -260,12 +260,12 @@ func (pk LWEPublicKey[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 func (pk LWEPublicKey[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
 
-	polyDegree := pk.Value[0].Value[0].Degree()
-	buf := make([]byte, polyDegree*num.ByteSizeT[T]())
+	polyRank := pk.Value[0].Value[0].Rank()
+	buf := make([]byte, polyRank*num.ByteSizeT[T]())
 
 	for i := range pk.Value {
 		for j := range pk.Value[i].Value {
-			if nWrite, err = vecWriteToBuffered(pk.Value[i].Value[j].Coeffs, buf, w); err != nil {
+			if nWrite, err = vecWriteToBuf(pk.Value[i].Value[j].Coeffs, buf, w); err != nil {
 				return n + nWrite, err
 			}
 			n += nWrite
@@ -280,7 +280,7 @@ func (pk LWEPublicKey[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 // The encoded form is as follows:
 //
 //	[8] GLWERank
-//	[8] PolyDegree
+//	[8] PolyRank
 //	    Value
 func (pk LWEPublicKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
@@ -317,9 +317,9 @@ func (pk *LWEPublicKey[T]) headerReadFrom(r io.Reader) (n int64, err error) {
 		return n + int64(nRead), err
 	}
 	n += int64(nRead)
-	polyDegree := int(binary.BigEndian.Uint64(buf[:]))
+	polyRank := int(binary.BigEndian.Uint64(buf[:]))
 
-	*pk = NewLWEPublicKeyCustom[T](glweRank, polyDegree)
+	*pk = NewLWEPublicKeyCustom[T](glweRank, polyRank)
 
 	return
 }
@@ -328,12 +328,12 @@ func (pk *LWEPublicKey[T]) headerReadFrom(r io.Reader) (n int64, err error) {
 func (pk *LWEPublicKey[T]) valueReadFrom(r io.Reader) (n int64, err error) {
 	var nRead int64
 
-	polyDegree := pk.Value[0].Value[0].Degree()
-	buf := make([]byte, polyDegree*num.ByteSizeT[T]())
+	polyRank := pk.Value[0].Value[0].Rank()
+	buf := make([]byte, polyRank*num.ByteSizeT[T]())
 
 	for i := range pk.Value {
 		for j := range pk.Value[i].Value {
-			if nRead, err = vecReadFromBuffered(pk.Value[i].Value[j].Coeffs, buf, r); err != nil {
+			if nRead, err = vecReadFromBuf(pk.Value[i].Value[j].Coeffs, buf, r); err != nil {
 				return n + nRead, err
 			}
 			n += nRead
@@ -544,7 +544,7 @@ func (ct LevCiphertext[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int
 	var buf [8]byte
 
-	base := ct.GadgetParameters.base
+	base := ct.GadgetParams.base
 	binary.BigEndian.PutUint64(buf[:], uint64(base))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
@@ -576,7 +576,7 @@ func (ct LevCiphertext[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 	buf := make([]byte, (lweDimension+1)*num.ByteSizeT[T]())
 
 	for i := range ct.Value {
-		if nWrite, err = vecWriteToBuffered(ct.Value[i].Value, buf, w); err != nil {
+		if nWrite, err = vecWriteToBuf(ct.Value[i].Value, buf, w); err != nil {
 			return n + nWrite, err
 		}
 		n += nWrite
@@ -649,7 +649,7 @@ func (ct *LevCiphertext[T]) valueReadFrom(r io.Reader) (n int64, err error) {
 	buf := make([]byte, (lweDimension+1)*num.ByteSizeT[T]())
 
 	for i := range ct.Value {
-		if nRead, err = vecReadFromBuffered(ct.Value[i].Value, buf, r); err != nil {
+		if nRead, err = vecReadFromBuf(ct.Value[i].Value, buf, r); err != nil {
 			return n + nRead, err
 		}
 		n += nRead
@@ -702,7 +702,7 @@ func (ct GSWCiphertext[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int
 	var buf [8]byte
 
-	base := ct.GadgetParameters.base
+	base := ct.GadgetParams.base
 	binary.BigEndian.PutUint64(buf[:], uint64(base))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
@@ -735,7 +735,7 @@ func (ct GSWCiphertext[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 
 	for i := range ct.Value {
 		for j := range ct.Value[i].Value {
-			if nWrite, err = vecWriteToBuffered(ct.Value[i].Value[j].Value, buf, w); err != nil {
+			if nWrite, err = vecWriteToBuf(ct.Value[i].Value[j].Value, buf, w); err != nil {
 				return n + nWrite, err
 			}
 			n += nWrite
@@ -810,7 +810,7 @@ func (ct *GSWCiphertext[T]) valueReadFrom(r io.Reader) (n int64, err error) {
 
 	for i := range ct.Value {
 		for j := range ct.Value[i].Value {
-			if nRead, err = vecReadFromBuffered(ct.Value[i].Value[j].Value, buf, r); err != nil {
+			if nRead, err = vecReadFromBuf(ct.Value[i].Value[j].Value, buf, r); err != nil {
 				return n + nRead, err
 			}
 			n += nRead

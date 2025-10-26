@@ -26,34 +26,34 @@ func BenchmarkOps(b *testing.B) {
 			p1 := pev.NewPoly()
 			pOut := pev.NewPoly()
 
-			for i := 0; i < pev.Degree(); i++ {
+			for i := 0; i < pev.Rank(); i++ {
 				p0.Coeffs[i] = r.Uint64()
 				p1.Coeffs[i] = r.Uint64()
 			}
 
-			fp := pev.ToFourierPoly(p0)
+			fp := pev.FFT(p0)
 
 			b.Run("op=Add", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
-					pev.AddPolyAssign(p0, p1, pOut)
+					pev.AddPolyTo(pOut, p0, p1)
 				}
 			})
 
 			b.Run("op=Sub", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
-					pev.SubPolyAssign(p0, p1, pOut)
+					pev.SubPolyTo(pOut, p0, p1)
 				}
 			})
 
 			b.Run("op=BinaryMul", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
-					pev.ShortFourierPolyMulPolyAssign(p0, fp, pOut)
+					pev.ShortFFTPolyMulPolyTo(pOut, p0, fp)
 				}
 			})
 
 			b.Run("op=Mul", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
-					pev.MulPolyAssign(p0, p1, pOut)
+					pev.MulPolyTo(pOut, p0, p1)
 				}
 			})
 		})
@@ -69,30 +69,30 @@ func BenchmarkFourierOps(b *testing.B) {
 
 			pev := poly.NewEvaluator[uint64](N)
 
-			fp0 := pev.NewFourierPoly()
-			fp1 := pev.NewFourierPoly()
-			fpOut := pev.NewFourierPoly()
+			fp0 := pev.NewFFTPoly()
+			fp1 := pev.NewFFTPoly()
+			fpOut := pev.NewFFTPoly()
 
-			for i := 0; i < pev.Degree(); i++ {
+			for i := 0; i < pev.Rank(); i++ {
 				fp0.Coeffs[i] = (2*r.Float64() - 1.0) * math.Exp(63)
 				fp1.Coeffs[i] = (2*r.Float64() - 1.0) * math.Exp(63)
 			}
 
 			b.Run("op=Add", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
-					pev.AddFourierPolyAssign(fp0, fp1, fpOut)
+					pev.AddFFTPolyTo(fpOut, fp0, fp1)
 				}
 			})
 
 			b.Run("op=Sub", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
-					pev.SubFourierPolyAssign(fp0, fp1, fpOut)
+					pev.SubFFTPolyTo(fpOut, fp0, fp1)
 				}
 			})
 
 			b.Run("op=Mul", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
-					pev.MulFourierPolyAssign(fp0, fp1, fpOut)
+					pev.MulFFTPolyTo(fpOut, fp0, fp1)
 				}
 			})
 		})
@@ -109,28 +109,28 @@ func BenchmarkFourierTransform(b *testing.B) {
 			pev := poly.NewEvaluator[uint64](N)
 
 			p := pev.NewPoly()
-			fp := pev.NewFourierPoly()
+			fp := pev.NewFFTPoly()
 
-			for i := 0; i < pev.Degree(); i++ {
+			for i := 0; i < pev.Rank(); i++ {
 				p.Coeffs[i] = r.Uint64()
 			}
 
-			b.Run("op=ToFourierPoly", func(b *testing.B) {
+			b.Run("op=FFT", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
-					pev.ToFourierPolyAssign(p, fp)
+					pev.FFTTo(fp, p)
 				}
 			})
 
 			x := N / 3
-			b.Run("op=MonomialToFourierPoly", func(b *testing.B) {
+			b.Run("op=MonomialFFT", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
-					pev.MonomialToFourierPolyAssign(x, fp)
+					pev.MonomialFFTTo(fp, x)
 				}
 			})
 
-			b.Run("op=ToPoly", func(b *testing.B) {
+			b.Run("op=InvFFT", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
-					pev.ToPolyAssignUnsafe(fp, p)
+					pev.InvFFTToUnsafe(p, fp)
 				}
 			})
 		})

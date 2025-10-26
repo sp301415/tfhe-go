@@ -6,298 +6,291 @@ import (
 	"github.com/sp301415/tfhe-go/math/num"
 )
 
-// AddFourierPoly returns fp0 + fp1.
-func (e *Evaluator[T]) AddFourierPoly(fp0, fp1 FourierPoly) FourierPoly {
-	fpOut := e.NewFourierPoly()
-	e.AddFourierPolyAssign(fp0, fp1, fpOut)
+// AddFFTPoly returns fp0 + fp1.
+func (e *Evaluator[T]) AddFFTPoly(fp0, fp1 FFTPoly) FFTPoly {
+	fpOut := e.NewFFTPoly()
+	e.AddFFTPolyTo(fpOut, fp0, fp1)
 	return fpOut
 }
 
-// AddFourierPolyAssign computes fpOut = fp0 + fp1.
-func (e *Evaluator[T]) AddFourierPolyAssign(fp0, fp1, fpOut FourierPoly) {
-	addCmplxAssign(fp0.Coeffs, fp1.Coeffs, fpOut.Coeffs)
+// AddFFTPolyTo computes fpOut = fp0 + fp1.
+func (e *Evaluator[T]) AddFFTPolyTo(fpOut, fp0, fp1 FFTPoly) {
+	addCmplxTo(fpOut.Coeffs, fp0.Coeffs, fp1.Coeffs)
 }
 
-// SubFourierPoly returns fp0 - fp1.
-func (e *Evaluator[T]) SubFourierPoly(fp0, fp1 FourierPoly) FourierPoly {
-	fpOut := e.NewFourierPoly()
-	e.SubFourierPolyAssign(fp0, fp1, fpOut)
+// SubFFTPoly returns fp0 - fp1.
+func (e *Evaluator[T]) SubFFTPoly(fp0, fp1 FFTPoly) FFTPoly {
+	fpOut := e.NewFFTPoly()
+	e.SubFFTPolyTo(fpOut, fp0, fp1)
 	return fpOut
 }
 
-// SubFourierPolyAssign computes fpOut = fp0 - fp1.
-func (e *Evaluator[T]) SubFourierPolyAssign(fp0, fp1, fpOut FourierPoly) {
-	subCmplxAssign(fp0.Coeffs, fp1.Coeffs, fpOut.Coeffs)
+// SubFFTPolyTo computes fpOut = fp0 - fp1.
+func (e *Evaluator[T]) SubFFTPolyTo(fpOut, fp0, fp1 FFTPoly) {
+	subCmplxTo(fpOut.Coeffs, fp0.Coeffs, fp1.Coeffs)
 }
 
-// NegFourierPoly returns -fp0.
-func (e *Evaluator[T]) NegFourierPoly(fp0 FourierPoly) FourierPoly {
-	fpOut := e.NewFourierPoly()
-	e.NegFourierPolyAssign(fp0, fpOut)
+// NegFFTPoly returns -fp.
+func (e *Evaluator[T]) NegFFTPoly(fp FFTPoly) FFTPoly {
+	fpOut := e.NewFFTPoly()
+	e.NegFFTPolyTo(fpOut, fp)
 	return fpOut
 }
 
-// NegFourierPolyAssign computes fpOut = -fp0.
-func (e *Evaluator[T]) NegFourierPolyAssign(fp0, fpOut FourierPoly) {
-	negCmplxAssign(fp0.Coeffs, fpOut.Coeffs)
+// NegFFTPolyTo computes fpOut = -fp.
+func (e *Evaluator[T]) NegFFTPolyTo(fpOut, fp FFTPoly) {
+	negCmplxTo(fpOut.Coeffs, fp.Coeffs)
 }
 
-// FloatMulFourierPoly returns c * fp0.
-func (e *Evaluator[T]) FloatMulFourierPoly(fp0 FourierPoly, c float64) FourierPoly {
-	fpOut := e.NewFourierPoly()
-	e.FloatMulFourierPolyAssign(fp0, c, fpOut)
+// FloatMulFFTPoly returns c * fp.
+func (e *Evaluator[T]) FloatMulFFTPoly(fp FFTPoly, c float64) FFTPoly {
+	fpOut := e.NewFFTPoly()
+	e.FloatMulFFTPolyTo(fpOut, fp, c)
 	return fpOut
 }
 
-// FloatMulFourierPolyAssign computes fpOut = c * fp0.
-func (e *Evaluator[T]) FloatMulFourierPolyAssign(fp0 FourierPoly, c float64, fpOut FourierPoly) {
-	floatMulCmplxAssign(fp0.Coeffs, c, fpOut.Coeffs)
+// FloatMulFFTPolyTo computes fpOut = c * fp.
+func (e *Evaluator[T]) FloatMulFFTPolyTo(fpOut, fp FFTPoly, c float64) {
+	floatMulCmplxTo(fpOut.Coeffs, fp.Coeffs, c)
 }
 
-// FloatMulAddFourierPolyAssign computes fpOut += c * fp0.
-func (e *Evaluator[T]) FloatMulAddFourierPolyAssign(fp0 FourierPoly, c float64, fpOut FourierPoly) {
-	floatMulAddCmplxAssign(fp0.Coeffs, c, fpOut.Coeffs)
+// FloatMulAddFFTPolyTo computes fpOut += c * fp.
+func (e *Evaluator[T]) FloatMulAddFFTPolyTo(fpOut, fp FFTPoly, c float64) {
+	floatMulAddCmplxTo(fpOut.Coeffs, fp.Coeffs, c)
 }
 
-// FloatMulSubFourierPolyAssign computes fpOut -= c * fp0.
-func (e *Evaluator[T]) FloatMulSubFourierPolyAssign(fp0 FourierPoly, c float64, fpOut FourierPoly) {
-	floatMulSubCmplxAssign(fp0.Coeffs, c, fpOut.Coeffs)
+// FloatMulSubFFTPolyTo computes fpOut -= c * fp.
+func (e *Evaluator[T]) FloatMulSubFFTPolyTo(fpOut, fp FFTPoly, c float64) {
+	floatMulSubCmplxTo(fpOut.Coeffs, fp.Coeffs, c)
 }
 
-// CmplxMulFourierPoly returns c * fp0.
-func (e *Evaluator[T]) CmplxMulFourierPoly(fp0 FourierPoly, c complex128) FourierPoly {
-	fpOut := e.NewFourierPoly()
-	e.CmplxMulFourierPolyAssign(fp0, c, fpOut)
+// CmplxMulFFTPoly returns c * fp.
+func (e *Evaluator[T]) CmplxMulFFTPoly(fp FFTPoly, c complex128) FFTPoly {
+	fpOut := e.NewFFTPoly()
+	e.CmplxMulFFTPolyTo(fpOut, fp, c)
 	return fpOut
 }
 
-// CmplxMulFourierPolyAssign computes fpOut = c * fp0.
-func (e *Evaluator[T]) CmplxMulFourierPolyAssign(fp0 FourierPoly, c complex128, fpOut FourierPoly) {
-	cmplxMulCmplxAssign(fp0.Coeffs, c, fpOut.Coeffs)
+// CmplxMulFFTPolyTo computes fpOut = c * fp.
+func (e *Evaluator[T]) CmplxMulFFTPolyTo(fpOut, fp FFTPoly, c complex128) {
+	cmplxMulCmplxTo(fpOut.Coeffs, fp.Coeffs, c)
 }
 
-// CmplxMulAddFourierPolyAssign computes fpOut += c * fp0.
-func (e *Evaluator[T]) CmplxMulAddFourierPolyAssign(fp0 FourierPoly, c complex128, fpOut FourierPoly) {
-	cmplxMulAddCmplxAssign(fp0.Coeffs, c, fpOut.Coeffs)
+// CmplxMulAddFFTPolyTo computes fpOut += c * fp.
+func (e *Evaluator[T]) CmplxMulAddFFTPolyTo(fpOut, fp FFTPoly, c complex128) {
+	cmplxMulAddCmplxTo(fpOut.Coeffs, fp.Coeffs, c)
 }
 
-// CmplxMulSubFourierPolyAssign computes fpOut -= c * fp0.
-func (e *Evaluator[T]) CmplxMulSubFourierPolyAssign(fp0 FourierPoly, c complex128, fpOut FourierPoly) {
-	cmplxMulSubCmplxAssign(fp0.Coeffs, c, fpOut.Coeffs)
+// CmplxMulSubFFTPolyTo computes fpOut -= c * fp.
+func (e *Evaluator[T]) CmplxMulSubFFTPolyTo(fpOut, fp FFTPoly, c complex128) {
+	cmplxMulSubCmplxTo(fpOut.Coeffs, fp.Coeffs, c)
 }
 
-// MulFourierPoly returns fp0 * fp1.
-func (e *Evaluator[T]) MulFourierPoly(fp0, fp1 FourierPoly) FourierPoly {
-	fpOut := e.NewFourierPoly()
-	e.MulFourierPolyAssign(fp0, fp1, fpOut)
+// MulFFTPoly returns fp0 * fp1.
+func (e *Evaluator[T]) MulFFTPoly(fp0, fp1 FFTPoly) FFTPoly {
+	fpOut := e.NewFFTPoly()
+	e.MulFFTPolyTo(fpOut, fp0, fp1)
 	return fpOut
 }
 
-// MulFourierPolyAssign computes fpOut = fp0 * fp1.
-func (e *Evaluator[T]) MulFourierPolyAssign(fp0, fp1, fpOut FourierPoly) {
-	elementWiseMulCmplxAssign(fp0.Coeffs, fp1.Coeffs, fpOut.Coeffs)
+// MulFFTPolyTo computes fpOut = fp0 * fp1.
+func (e *Evaluator[T]) MulFFTPolyTo(fpOut, fp0, fp1 FFTPoly) {
+	mulCmplxTo(fpOut.Coeffs, fp0.Coeffs, fp1.Coeffs)
 }
 
-// MulAddFourierPolyAssign computes fpOut += fp0 * fp1.
-func (e *Evaluator[T]) MulAddFourierPolyAssign(fp0, fp1, fpOut FourierPoly) {
-	elementWiseMulAddCmplxAssign(fp0.Coeffs, fp1.Coeffs, fpOut.Coeffs)
+// MulAddFFTPolyTo computes fpOut += fp0 * fp1.
+func (e *Evaluator[T]) MulAddFFTPolyTo(fpOut, fp0, fp1 FFTPoly) {
+	mulAddCmplxTo(fpOut.Coeffs, fp0.Coeffs, fp1.Coeffs)
 }
 
-// MulSubFourierPolyAssign computes fpOut -= fp0 * fp1.
-func (e *Evaluator[T]) MulSubFourierPolyAssign(fp0, fp1, fpOut FourierPoly) {
-	elementWiseMulSubCmplxAssign(fp0.Coeffs, fp1.Coeffs, fpOut.Coeffs)
+// MulSubFFTPolyTo computes fpOut -= fp0 * fp1.
+func (e *Evaluator[T]) MulSubFFTPolyTo(fpOut, fp0, fp1 FFTPoly) {
+	mulSubCmplxTo(fpOut.Coeffs, fp0.Coeffs, fp1.Coeffs)
 }
 
-// PolyMulFourierPoly returns p * fp0 as FourierPoly.
-func (e *Evaluator[T]) PolyMulFourierPoly(fp0 FourierPoly, p Poly[T]) FourierPoly {
-	fpOut := e.NewFourierPoly()
-	e.PolyMulFourierPolyAssign(fp0, p, fpOut)
+// PolyMulFFTPoly returns p * fp as FFTPoly.
+func (e *Evaluator[T]) PolyMulFFTPoly(fp FFTPoly, p Poly[T]) FFTPoly {
+	fpOut := e.NewFFTPoly()
+	e.PolyMulFFTPolyTo(fpOut, fp, p)
 	return fpOut
 }
 
-// PolyMulFourierPolyAssign computes fpOut = p * fp0.
-func (e *Evaluator[T]) PolyMulFourierPolyAssign(fp0 FourierPoly, p Poly[T], fpOut FourierPoly) {
-	e.ToFourierPolyAssign(p, e.buffer.fp)
-
-	elementWiseMulCmplxAssign(fp0.Coeffs, e.buffer.fp.Coeffs, fpOut.Coeffs)
+// PolyMulFFTPolyTo computes fpOut = p * fp.
+func (e *Evaluator[T]) PolyMulFFTPolyTo(fpOut, fp FFTPoly, p Poly[T]) {
+	e.FFTTo(e.buf.fp, p)
+	mulCmplxTo(fpOut.Coeffs, fp.Coeffs, e.buf.fp.Coeffs)
 }
 
-// PolyMulAddFourierPolyAssign computes fpOut += p * fp0.
-func (e *Evaluator[T]) PolyMulAddFourierPolyAssign(fp0 FourierPoly, p Poly[T], fpOut FourierPoly) {
-	e.ToFourierPolyAssign(p, e.buffer.fp)
-
-	elementWiseMulAddCmplxAssign(fp0.Coeffs, e.buffer.fp.Coeffs, fpOut.Coeffs)
+// PolyMulAddFFTPolyTo computes fpOut += p * fp.
+func (e *Evaluator[T]) PolyMulAddFFTPolyTo(fpOut, fp FFTPoly, p Poly[T]) {
+	e.FFTTo(e.buf.fp, p)
+	mulAddCmplxTo(fpOut.Coeffs, fp.Coeffs, e.buf.fp.Coeffs)
 }
 
-// PolyMulSubFourierPolyAssign computes fpOut -= p * fp0.
-func (e *Evaluator[T]) PolyMulSubFourierPolyAssign(fp0 FourierPoly, p Poly[T], fpOut FourierPoly) {
-	e.ToFourierPolyAssign(p, e.buffer.fp)
-
-	elementWiseMulSubCmplxAssign(fp0.Coeffs, e.buffer.fp.Coeffs, fpOut.Coeffs)
+// PolyMulSubFFTPolyTo computes fpOut -= p * fp.
+func (e *Evaluator[T]) PolyMulSubFFTPolyTo(fpOut, fp FFTPoly, p Poly[T]) {
+	e.FFTTo(e.buf.fp, p)
+	mulSubCmplxTo(fpOut.Coeffs, fp.Coeffs, e.buf.fp.Coeffs)
 }
 
-// PermuteFourierPoly returns fp0(X^d).
+// PermuteFFTPoly returns fp(X^d).
 //
 // Panics when d is not odd.
 // This is because the permutation is not bijective when d is even.
-func (e *Evaluator[T]) PermuteFourierPoly(fp0 FourierPoly, d int) FourierPoly {
-	if d&1 == 0 {
-		panic("d not odd")
-	}
-
-	fpOut := e.NewFourierPoly()
-	e.PermuteFourierPolyAssign(fp0, d, fpOut)
+func (e *Evaluator[T]) PermuteFFTPoly(fp FFTPoly, d int) FFTPoly {
+	fpOut := e.NewFFTPoly()
+	e.PermuteFFTPolyTo(fpOut, fp, d)
 	return fpOut
 }
 
-// PermuteFourierPolyAssign computes fpOut = fp0(X^d).
+// PermuteFFTPolyTo computes fpOut = fp(X^d).
 //
-// fp0 and fpOut should not overlap. For inplace permutation,
-// use [*Evaluator.PermuteFourierPolyInPlace].
+// fp and fpOut should not overlap. For inplace permutation,
+// use [*Evaluator.PermuteFFTPolyInPlace].
 //
 // Panics when d is not odd.
 // This is because the permutation is not bijective when d is even.
-func (e *Evaluator[T]) PermuteFourierPolyAssign(fp0 FourierPoly, d int, fpOut FourierPoly) {
+func (e *Evaluator[T]) PermuteFFTPolyTo(fpOut, fp FFTPoly, d int) {
 	if d&1 == 0 {
-		panic("d not odd")
+		panic("PermuteFFTPolyTo: d not odd")
 	}
 
-	revShiftBits := 64 - (num.Log2(e.degree) - 1)
+	revShiftBits := 64 - (num.Log2(e.rank) - 1)
 
-	d = d & (2*e.degree - 1)
+	d = d & (2*e.rank - 1)
 	if d%4 == 1 {
 		k := (d - 1) >> 2
 		var ci, cj int
-		for ii := 0; ii < e.degree; ii += 8 {
+		for ii := 0; ii < e.rank; ii += 8 {
 			for i := ii; i < ii+4; i++ {
 				ci = ((i >> 3) << 2) | (i & 3)
 				ci = int(bits.Reverse64(uint64(ci)) >> revShiftBits)
-				cj = (d*ci - k) & (e.degree>>1 - 1)
+				cj = (d*ci - k) & (e.rank>>1 - 1)
 				cj = int(bits.Reverse64(uint64(cj)) >> revShiftBits)
 				j := ((cj >> 2) << 3) | (cj & 3)
 
-				fpOut.Coeffs[i+0] = fp0.Coeffs[j+0]
-				fpOut.Coeffs[i+4] = fp0.Coeffs[j+4]
+				fpOut.Coeffs[i+0] = fp.Coeffs[j+0]
+				fpOut.Coeffs[i+4] = fp.Coeffs[j+4]
 			}
 		}
 	} else {
 		k := (d - 3) >> 2
 		var ci, cj int
-		for ii := 0; ii < e.degree; ii += 8 {
+		for ii := 0; ii < e.rank; ii += 8 {
 			for i := ii; i < ii+4; i++ {
 				ci = ((i >> 3) << 2) | (i & 3)
 				ci = int(bits.Reverse64(uint64(ci)) >> revShiftBits)
-				cj = (-d*ci + k + 1) & (e.degree>>1 - 1)
+				cj = (-d*ci + k + 1) & (e.rank>>1 - 1)
 				cj = int(bits.Reverse64(uint64(cj)) >> revShiftBits)
 				j := ((cj >> 2) << 3) | (cj & 3)
 
-				fpOut.Coeffs[i+0] = fp0.Coeffs[j+0]
-				fpOut.Coeffs[i+4] = -fp0.Coeffs[j+4]
+				fpOut.Coeffs[i+0] = fp.Coeffs[j+0]
+				fpOut.Coeffs[i+4] = -fp.Coeffs[j+4]
 			}
 		}
 	}
 }
 
-// PermuteFourierPolyInPlace computes fp0 = fp0(X^d).
+// PermuteFFTPolyInPlace computes fp = fp(X^d).
 //
 // Panics when d is not odd.
 // This is because the permutation is not bijective when d is even.
-func (e *Evaluator[T]) PermuteFourierPolyInPlace(fp0 FourierPoly, d int) {
+func (e *Evaluator[T]) PermuteFFTPolyInPlace(fp FFTPoly, d int) {
 	if d&1 == 0 {
-		panic("d not odd")
+		panic("PermuteFFTPolyInPlace: d not odd")
 	}
 
-	e.PermuteFourierPolyAssign(fp0, d, e.buffer.fpOut)
-	fp0.CopyFrom(e.buffer.fpOut)
+	e.PermuteFFTPolyTo(e.buf.fpOut, fp, d)
+	fp.CopyFrom(e.buf.fpOut)
 }
 
-// PermuteAddFourierPolyAssign computes fpOut += fp0(X^d).
+// PermuteAddFFTPolyTo computes fpOut += fp(X^d).
 //
-// fp0 and fpOut should not overlap.
+// fp and fpOut should not overlap.
 //
 // Panics when d is not odd.
 // This is because the permutation is not bijective when d is even.
-func (e *Evaluator[T]) PermuteAddFourierPolyAssign(fp0 FourierPoly, d int, fpOut FourierPoly) {
+func (e *Evaluator[T]) PermuteAddFFTPolyTo(fpOut, fp FFTPoly, d int) {
 	if d&1 == 0 {
-		panic("d not odd")
+		panic("PermuteAddFFTPolyTo: d not odd")
 	}
 
-	d = d & (2*e.degree - 1)
-	revShiftBits := 64 - (num.Log2(e.degree) - 1)
+	d = d & (2*e.rank - 1)
+	revShiftBits := 64 - (num.Log2(e.rank) - 1)
 	if d%4 == 1 {
 		k := (d - 1) >> 2
 		var ci, cj int
-		for ii := 0; ii < e.degree; ii += 8 {
+		for ii := 0; ii < e.rank; ii += 8 {
 			for i := ii; i < ii+4; i++ {
 				ci = ((i >> 3) << 2) + (i & 3)
 				ci = int(bits.Reverse64(uint64(ci)) >> revShiftBits)
-				cj = (d*ci - k) & (e.degree>>1 - 1)
+				cj = (d*ci - k) & (e.rank>>1 - 1)
 				cj = int(bits.Reverse64(uint64(cj)) >> revShiftBits)
 				j := ((cj >> 2) << 3) + (cj & 3)
 
-				fpOut.Coeffs[i+0] += fp0.Coeffs[j+0]
-				fpOut.Coeffs[i+4] += fp0.Coeffs[j+4]
+				fpOut.Coeffs[i+0] += fp.Coeffs[j+0]
+				fpOut.Coeffs[i+4] += fp.Coeffs[j+4]
 			}
 		}
 	} else {
 		k := (d - 3) >> 2
 		var ci, cj int
-		for ii := 0; ii < e.degree; ii += 8 {
+		for ii := 0; ii < e.rank; ii += 8 {
 			for i := ii; i < ii+4; i++ {
 				ci = ((i >> 3) << 2) + (i & 3)
 				ci = int(bits.Reverse64(uint64(ci)) >> revShiftBits)
-				cj = (-d*ci + k + 1) & (e.degree>>1 - 1)
+				cj = (-d*ci + k + 1) & (e.rank>>1 - 1)
 				cj = int(bits.Reverse64(uint64(cj)) >> revShiftBits)
 				j := ((cj >> 2) << 3) + (cj & 3)
 
-				fpOut.Coeffs[i+0] += fp0.Coeffs[j+0]
-				fpOut.Coeffs[i+4] += -fp0.Coeffs[j+4]
+				fpOut.Coeffs[i+0] += fp.Coeffs[j+0]
+				fpOut.Coeffs[i+4] += -fp.Coeffs[j+4]
 			}
 		}
 	}
 }
 
-// PermuteSubFourierPolyAssign computes fpOut -= fp0(X^d).
+// PermuteSubFFTPolyTo computes fpOut -= fp(X^d).
 //
-// fp0 and fpOut should not overlap.
+// fp and fpOut should not overlap.
 //
 // Panics when d is not odd.
 // This is because the permutation is not bijective when d is even.
-func (e *Evaluator[T]) PermuteSubFourierPolyAssign(fp0 FourierPoly, d int, fpOut FourierPoly) {
+func (e *Evaluator[T]) PermuteSubFFTPolyTo(fpOut, fp FFTPoly, d int) {
 	if d&1 == 0 {
-		panic("d not odd")
+		panic("PermuteSubFFTPolyTo: d not odd")
 	}
 
-	d = d & (2*e.degree - 1)
-	revShiftBits := 64 - (num.Log2(e.degree) - 1)
+	d = d & (2*e.rank - 1)
+	revShiftBits := 64 - (num.Log2(e.rank) - 1)
 	if d%4 == 1 {
 		k := (d - 1) >> 2
 		var ci, cj int
-		for ii := 0; ii < e.degree; ii += 8 {
+		for ii := 0; ii < e.rank; ii += 8 {
 			for i := ii; i < ii+4; i++ {
 				ci = ((i >> 3) << 2) | (i & 3)
 				ci = int(bits.Reverse64(uint64(ci)) >> revShiftBits)
-				cj = (d*ci - k) & (e.degree>>1 - 1)
+				cj = (d*ci - k) & (e.rank>>1 - 1)
 				cj = int(bits.Reverse64(uint64(cj)) >> revShiftBits)
 				j := ((cj >> 2) << 3) | (cj & 3)
 
-				fpOut.Coeffs[i+0] -= fp0.Coeffs[j+0]
-				fpOut.Coeffs[i+4] -= fp0.Coeffs[j+4]
+				fpOut.Coeffs[i+0] -= fp.Coeffs[j+0]
+				fpOut.Coeffs[i+4] -= fp.Coeffs[j+4]
 			}
 		}
 	} else {
 		k := (d - 3) >> 2
 		var ci, cj int
-		for ii := 0; ii < e.degree; ii += 8 {
+		for ii := 0; ii < e.rank; ii += 8 {
 			for i := ii; i < ii+4; i++ {
 				ci = ((i >> 3) << 2) | (i & 3)
 				ci = int(bits.Reverse64(uint64(ci)) >> revShiftBits)
-				cj = (-d*ci + k + 1) & (e.degree>>1 - 1)
+				cj = (-d*ci + k + 1) & (e.rank>>1 - 1)
 				cj = int(bits.Reverse64(uint64(cj)) >> revShiftBits)
 				j := ((cj >> 2) << 3) | (cj & 3)
 
-				fpOut.Coeffs[i+0] -= fp0.Coeffs[j+0]
-				fpOut.Coeffs[i+4] -= -fp0.Coeffs[j+4]
+				fpOut.Coeffs[i+0] -= fp.Coeffs[j+0]
+				fpOut.Coeffs[i+4] -= -fp.Coeffs[j+4]
 			}
 		}
 	}

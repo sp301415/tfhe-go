@@ -9,9 +9,9 @@ import (
 	"github.com/sp301415/tfhe-go/tfhe"
 )
 
-// floatVecWriteToBuffered implements the [io.WriterTo] interface for a vector of float64, using a buffer.
+// floatVecWriteToBuf implements the [io.WriterTo] interface for a vector of float64, using a buffer.
 // Assumes the length of the buffer is exactly the byte length of v.
-func floatVecWriteToBuffered(v []float64, buf []byte, w io.Writer) (n int64, err error) {
+func floatVecWriteToBuf(v []float64, buf []byte, w io.Writer) (n int64, err error) {
 	var nWrite int
 
 	for i := range v {
@@ -22,9 +22,9 @@ func floatVecWriteToBuffered(v []float64, buf []byte, w io.Writer) (n int64, err
 	return int64(nWrite), err
 }
 
-// floatVecReadFromBuffered implements the [io.ReaderFrom] interface for a vector of float64, using a buffer.
+// floatVecReadFromBuf implements the [io.ReaderFrom] interface for a vector of float64, using a buffer.
 // Assumes the length of the buffer is exactly the byte length of v.
-func floatVecReadFromBuffered(v []float64, buf []byte, r io.Reader) (n int64, err error) {
+func floatVecReadFromBuf(v []float64, buf []byte, r io.Reader) (n int64, err error) {
 	var nRead int
 
 	if nRead, err = io.ReadFull(r, buf); err != nil {
@@ -40,15 +40,15 @@ func floatVecReadFromBuffered(v []float64, buf []byte, r io.Reader) (n int64, er
 }
 
 // ByteSize returns the size of the ciphertext in bytes.
-func (ct FourierGLWECiphertext[T]) ByteSize() int {
+func (ct FFTGLWECiphertext[T]) ByteSize() int {
 	glweRank := len(ct.Value) - 1
-	polyDegree := ct.Value[0].Degree()
+	polyRank := ct.Value[0].Rank()
 
-	return 16 + (glweRank+1)*polyDegree*8
+	return 16 + (glweRank+1)*polyRank*8
 }
 
 // headerWriteTo writes the header.
-func (ct FourierGLWECiphertext[T]) headerWriteTo(w io.Writer) (n int64, err error) {
+func (ct FFTGLWECiphertext[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int
 	var buf [8]byte
 
@@ -59,8 +59,8 @@ func (ct FourierGLWECiphertext[T]) headerWriteTo(w io.Writer) (n int64, err erro
 	}
 	n += int64(nWrite)
 
-	polyDegree := ct.Value[0].Degree()
-	binary.BigEndian.PutUint64(buf[:], uint64(polyDegree))
+	polyRank := ct.Value[0].Rank()
+	binary.BigEndian.PutUint64(buf[:], uint64(polyRank))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return int64(nWrite), err
 	}
@@ -70,14 +70,14 @@ func (ct FourierGLWECiphertext[T]) headerWriteTo(w io.Writer) (n int64, err erro
 }
 
 // valueWriteTo writes the value.
-func (ct FourierGLWECiphertext[T]) valueWriteTo(w io.Writer) (n int64, err error) {
+func (ct FFTGLWECiphertext[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
 
-	polyDegree := ct.Value[0].Degree()
-	buf := make([]byte, polyDegree*8)
+	polyRank := ct.Value[0].Rank()
+	buf := make([]byte, polyRank*8)
 
 	for i := range ct.Value {
-		if nWrite, err = floatVecWriteToBuffered(ct.Value[i].Coeffs, buf, w); err != nil {
+		if nWrite, err = floatVecWriteToBuf(ct.Value[i].Coeffs, buf, w); err != nil {
 			return n + nWrite, err
 		}
 		n += nWrite
@@ -91,9 +91,9 @@ func (ct FourierGLWECiphertext[T]) valueWriteTo(w io.Writer) (n int64, err error
 // The encoded form is as follows:
 //
 //	[8] GLWERank
-//	[8] PolyDegree
+//	[8] PolyRank
 //	    Value
-func (ct FourierGLWECiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
+func (ct FFTGLWECiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
 
 	if nWrite, err = ct.headerWriteTo(w); err != nil {
@@ -114,7 +114,7 @@ func (ct FourierGLWECiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // headerReadFrom reads the header, and initializes the value.
-func (ct *FourierGLWECiphertext[T]) headerReadFrom(r io.Reader) (n int64, err error) {
+func (ct *FFTGLWECiphertext[T]) headerReadFrom(r io.Reader) (n int64, err error) {
 	var nRead int
 	var buf [8]byte
 
@@ -128,22 +128,22 @@ func (ct *FourierGLWECiphertext[T]) headerReadFrom(r io.Reader) (n int64, err er
 		return int64(nRead), err
 	}
 	n += int64(nRead)
-	polyDegree := int(binary.BigEndian.Uint64(buf[:]))
+	polyRank := int(binary.BigEndian.Uint64(buf[:]))
 
-	*ct = NewFourierGLWECiphertextCustom[T](glweRank, polyDegree)
+	*ct = NewFFTGLWECiphertextCustom[T](glweRank, polyRank)
 
 	return
 }
 
 // valueReadFrom reads the value.
-func (ct FourierGLWECiphertext[T]) valueReadFrom(r io.Reader) (n int64, err error) {
+func (ct FFTGLWECiphertext[T]) valueReadFrom(r io.Reader) (n int64, err error) {
 	var nRead int64
 
-	polyDegree := ct.Value[0].Degree()
-	buf := make([]byte, polyDegree*8)
+	polyRank := ct.Value[0].Rank()
+	buf := make([]byte, polyRank*8)
 
 	for i := range ct.Value {
-		if nRead, err = floatVecReadFromBuffered(ct.Value[i].Coeffs, buf, r); err != nil {
+		if nRead, err = floatVecReadFromBuf(ct.Value[i].Coeffs, buf, r); err != nil {
 			return n + nRead, err
 		}
 		n += nRead
@@ -153,7 +153,7 @@ func (ct FourierGLWECiphertext[T]) valueReadFrom(r io.Reader) (n int64, err erro
 }
 
 // ReadFrom implements the [io.ReaderFrom] interface.
-func (ct *FourierGLWECiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
+func (ct *FFTGLWECiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	var nRead int64
 
 	if nRead, err = ct.headerReadFrom(r); err != nil {
@@ -170,33 +170,33 @@ func (ct *FourierGLWECiphertext[T]) ReadFrom(r io.Reader) (n int64, err error) {
 }
 
 // MarshalBinary implements the [encoding.BinaryMarshaler] interface.
-func (ct FourierGLWECiphertext[T]) MarshalBinary() (data []byte, err error) {
+func (ct FFTGLWECiphertext[T]) MarshalBinary() (data []byte, err error) {
 	buf := bytes.NewBuffer(make([]byte, 0, ct.ByteSize()))
 	_, err = ct.WriteTo(buf)
 	return buf.Bytes(), err
 }
 
 // UnmarshalBinary implements the [encoding.BinaryUnmarshaler] interface.
-func (ct *FourierGLWECiphertext[T]) UnmarshalBinary(data []byte) error {
+func (ct *FFTGLWECiphertext[T]) UnmarshalBinary(data []byte) error {
 	buf := bytes.NewBuffer(data)
 	_, err := ct.ReadFrom(buf)
 	return err
 }
 
 // ByteSize returns the size of the ciphertext in bytes.
-func (ct FourierUniEncryption[T]) ByteSize() int {
+func (ct FFTUniEncryption[T]) ByteSize() int {
 	level := len(ct.Value[0].Value)
-	polyDegree := ct.Value[0].Value[0].Value[0].Degree()
+	polyRank := ct.Value[0].Value[0].Value[0].Rank()
 
-	return 24 + 2*level*2*polyDegree*8
+	return 24 + 2*level*2*polyRank*8
 }
 
 // headerWriteTo writes the header.
-func (ct FourierUniEncryption[T]) headerWriteTo(w io.Writer) (n int64, err error) {
+func (ct FFTUniEncryption[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int
 	var buf [8]byte
 
-	base := ct.GadgetParameters.Base()
+	base := ct.GadgetParams.Base()
 	binary.BigEndian.PutUint64(buf[:], uint64(base))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
@@ -210,8 +210,8 @@ func (ct FourierUniEncryption[T]) headerWriteTo(w io.Writer) (n int64, err error
 	}
 	n += int64(nWrite)
 
-	polyDegree := ct.Value[0].Value[0].Value[0].Degree()
-	binary.BigEndian.PutUint64(buf[:], uint64(polyDegree))
+	polyRank := ct.Value[0].Value[0].Value[0].Rank()
+	binary.BigEndian.PutUint64(buf[:], uint64(polyRank))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
 	}
@@ -221,16 +221,16 @@ func (ct FourierUniEncryption[T]) headerWriteTo(w io.Writer) (n int64, err error
 }
 
 // valueWriteTo writes the value.
-func (ct FourierUniEncryption[T]) valueWriteTo(w io.Writer) (n int64, err error) {
+func (ct FFTUniEncryption[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
 
-	polyDegree := ct.Value[0].Value[0].Value[0].Degree()
-	buf := make([]byte, polyDegree*8)
+	polyRank := ct.Value[0].Value[0].Value[0].Rank()
+	buf := make([]byte, polyRank*8)
 
 	for i := range ct.Value {
 		for j := range ct.Value[i].Value {
 			for k := range ct.Value[i].Value[j].Value {
-				if nWrite, err = floatVecWriteToBuffered(ct.Value[i].Value[j].Value[k].Coeffs, buf, w); err != nil {
+				if nWrite, err = floatVecWriteToBuf(ct.Value[i].Value[j].Value[k].Coeffs, buf, w); err != nil {
 					return n + nWrite, err
 				}
 				n += nWrite
@@ -247,9 +247,9 @@ func (ct FourierUniEncryption[T]) valueWriteTo(w io.Writer) (n int64, err error)
 //
 //	[8] Base
 //	[8] Level
-//	[8] PolyDegree
+//	[8] PolyRank
 //	    Value
-func (ct FourierUniEncryption[T]) WriteTo(w io.Writer) (n int64, err error) {
+func (ct FFTUniEncryption[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
 
 	if nWrite, err = ct.headerWriteTo(w); err != nil {
@@ -270,7 +270,7 @@ func (ct FourierUniEncryption[T]) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 // headerReadFrom reads the header, and initializes the value.
-func (ct *FourierUniEncryption[T]) headerReadFrom(r io.Reader) (n int64, err error) {
+func (ct *FFTUniEncryption[T]) headerReadFrom(r io.Reader) (n int64, err error) {
 	var nRead int
 	var buf [8]byte
 
@@ -290,24 +290,24 @@ func (ct *FourierUniEncryption[T]) headerReadFrom(r io.Reader) (n int64, err err
 		return n + int64(nRead), err
 	}
 	n += int64(nRead)
-	polyDegree := int(binary.BigEndian.Uint64(buf[:]))
+	polyRank := int(binary.BigEndian.Uint64(buf[:]))
 
-	*ct = NewFourierUniEncryptionCustom(polyDegree, tfhe.GadgetParametersLiteral[T]{Base: base, Level: level}.Compile())
+	*ct = NewFFTUniEncryptionCustom(polyRank, tfhe.GadgetParametersLiteral[T]{Base: base, Level: level}.Compile())
 
 	return
 }
 
 // valueReadFrom reads the value.
-func (ct *FourierUniEncryption[T]) valueReadFrom(r io.Reader) (n int64, err error) {
+func (ct *FFTUniEncryption[T]) valueReadFrom(r io.Reader) (n int64, err error) {
 	var nRead int64
 
-	polyDegree := ct.Value[0].Value[0].Value[0].Degree()
-	buf := make([]byte, polyDegree*8)
+	polyRank := ct.Value[0].Value[0].Value[0].Rank()
+	buf := make([]byte, polyRank*8)
 
 	for i := range ct.Value {
 		for j := range ct.Value[i].Value {
 			for k := range ct.Value[i].Value[j].Value {
-				if nRead, err = floatVecReadFromBuffered(ct.Value[i].Value[j].Value[k].Coeffs, buf, r); err != nil {
+				if nRead, err = floatVecReadFromBuf(ct.Value[i].Value[j].Value[k].Coeffs, buf, r); err != nil {
 					return n + nRead, err
 				}
 				n += nRead
@@ -319,7 +319,7 @@ func (ct *FourierUniEncryption[T]) valueReadFrom(r io.Reader) (n int64, err erro
 }
 
 // ReadFrom implements the [io.ReaderFrom] interface.
-func (ct *FourierUniEncryption[T]) ReadFrom(r io.Reader) (n int64, err error) {
+func (ct *FFTUniEncryption[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	var nRead int64
 
 	if nRead, err = ct.headerReadFrom(r); err != nil {
@@ -336,14 +336,14 @@ func (ct *FourierUniEncryption[T]) ReadFrom(r io.Reader) (n int64, err error) {
 }
 
 // MarshalBinary implements the [encoding.BinaryMarshaler] interface.
-func (ct FourierUniEncryption[T]) MarshalBinary() (data []byte, err error) {
+func (ct FFTUniEncryption[T]) MarshalBinary() (data []byte, err error) {
 	buf := bytes.NewBuffer(make([]byte, 0, ct.ByteSize()))
 	_, err = ct.WriteTo(buf)
 	return buf.Bytes(), err
 }
 
 // UnmarshalBinary implements the [encoding.BinaryUnmarshaler] interface.
-func (ct *FourierUniEncryption[T]) UnmarshalBinary(data []byte) error {
+func (ct *FFTUniEncryption[T]) UnmarshalBinary(data []byte) error {
 	buf := bytes.NewBuffer(data)
 	_, err := ct.ReadFrom(buf)
 	return err

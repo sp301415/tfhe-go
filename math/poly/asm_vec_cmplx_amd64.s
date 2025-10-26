@@ -4,21 +4,21 @@
 
 #include "textflag.h"
 
-// func addCmplxAssignAVX2(v0 []float64, v1 []float64, vOut []float64)
+// func addCmplxToAVX2(vOut []float64, v0 []float64, v1 []float64)
 // Requires: AVX
-TEXT ·addCmplxAssignAVX2(SB), NOSPLIT, $0-72
-	MOVQ v0_base+0(FP), AX
-	MOVQ v1_base+24(FP), CX
-	MOVQ vOut_base+48(FP), DX
-	MOVQ vOut_len+56(FP), BX
+TEXT ·addCmplxToAVX2(SB), NOSPLIT, $0-72
+	MOVQ vOut_base+0(FP), AX
+	MOVQ v0_base+24(FP), CX
+	MOVQ v1_base+48(FP), DX
+	MOVQ vOut_len+8(FP), BX
 	XORQ SI, SI
 	JMP  loop_end
 
 loop_body:
-	VMOVUPD (AX)(SI*8), Y0
-	VMOVUPD (CX)(SI*8), Y1
+	VMOVUPD (CX)(SI*8), Y0
+	VMOVUPD (DX)(SI*8), Y1
 	VADDPD  Y1, Y0, Y0
-	VMOVUPD Y0, (DX)(SI*8)
+	VMOVUPD Y0, (AX)(SI*8)
 	ADDQ    $0x04, SI
 
 loop_end:
@@ -26,21 +26,21 @@ loop_end:
 	JL   loop_body
 	RET
 
-// func subCmplxAssignAVX2(v0 []float64, v1 []float64, vOut []float64)
+// func subCmplxToAVX2(vOut []float64, v0 []float64, v1 []float64)
 // Requires: AVX
-TEXT ·subCmplxAssignAVX2(SB), NOSPLIT, $0-72
-	MOVQ v0_base+0(FP), AX
-	MOVQ v1_base+24(FP), CX
-	MOVQ vOut_base+48(FP), DX
-	MOVQ vOut_len+56(FP), BX
+TEXT ·subCmplxToAVX2(SB), NOSPLIT, $0-72
+	MOVQ vOut_base+0(FP), AX
+	MOVQ v0_base+24(FP), CX
+	MOVQ v1_base+48(FP), DX
+	MOVQ vOut_len+8(FP), BX
 	XORQ SI, SI
 	JMP  loop_end
 
 loop_body:
-	VMOVUPD (AX)(SI*8), Y0
-	VMOVUPD (CX)(SI*8), Y1
+	VMOVUPD (CX)(SI*8), Y0
+	VMOVUPD (DX)(SI*8), Y1
 	VSUBPD  Y1, Y0, Y0
-	VMOVUPD Y0, (DX)(SI*8)
+	VMOVUPD Y0, (AX)(SI*8)
 	ADDQ    $0x04, SI
 
 loop_end:
@@ -48,20 +48,20 @@ loop_end:
 	JL   loop_body
 	RET
 
-// func negCmplxAssignAVX2(v0 []float64, vOut []float64)
+// func negCmplxToAVX2(vOut []float64, v []float64)
 // Requires: AVX
-TEXT ·negCmplxAssignAVX2(SB), NOSPLIT, $0-48
-	MOVQ   v0_base+0(FP), AX
-	MOVQ   vOut_base+24(FP), CX
-	MOVQ   vOut_len+32(FP), DX
+TEXT ·negCmplxToAVX2(SB), NOSPLIT, $0-48
+	MOVQ   vOut_base+0(FP), AX
+	MOVQ   v_base+24(FP), CX
+	MOVQ   vOut_len+8(FP), DX
 	VXORPD Y0, Y0, Y0
 	XORQ   BX, BX
 	JMP    loop_end
 
 loop_body:
-	VMOVUPD (AX)(BX*8), Y1
+	VMOVUPD (CX)(BX*8), Y1
 	VSUBPD  Y1, Y0, Y1
-	VMOVUPD Y1, (CX)(BX*8)
+	VMOVUPD Y1, (AX)(BX*8)
 	ADDQ    $0x04, BX
 
 loop_end:
@@ -69,20 +69,20 @@ loop_end:
 	JL   loop_body
 	RET
 
-// func floatMulCmplxAssignAVX2(v0 []float64, c float64, vOut []float64)
+// func floatMulCmplxToAVX2(vOut []float64, v []float64, c float64)
 // Requires: AVX
-TEXT ·floatMulCmplxAssignAVX2(SB), NOSPLIT, $0-56
-	MOVQ         v0_base+0(FP), AX
-	MOVQ         vOut_base+32(FP), CX
-	MOVQ         vOut_len+40(FP), DX
-	VBROADCASTSD c+24(FP), Y0
+TEXT ·floatMulCmplxToAVX2(SB), NOSPLIT, $0-56
+	MOVQ         vOut_base+0(FP), AX
+	MOVQ         v_base+24(FP), CX
+	MOVQ         vOut_len+8(FP), DX
+	VBROADCASTSD c+48(FP), Y0
 	XORQ         BX, BX
 	JMP          loop_end
 
 loop_body:
-	VMOVUPD (AX)(BX*8), Y1
+	VMOVUPD (CX)(BX*8), Y1
 	VMULPD  Y0, Y1, Y1
-	VMOVUPD Y1, (CX)(BX*8)
+	VMOVUPD Y1, (AX)(BX*8)
 	ADDQ    $0x04, BX
 
 loop_end:
@@ -90,13 +90,13 @@ loop_end:
 	JL   loop_body
 	RET
 
-// func floatMulAddCmplxAssignAVX2(v0 []float64, c float64, vOut []float64)
+// func floatMulAddCmplxToAVX2(vOut []float64, v []float64, c float64)
 // Requires: AVX, FMA3
-TEXT ·floatMulAddCmplxAssignAVX2(SB), NOSPLIT, $0-56
-	MOVQ         v0_base+0(FP), AX
-	MOVQ         vOut_base+32(FP), CX
-	MOVQ         vOut_len+40(FP), DX
-	VBROADCASTSD c+24(FP), Y0
+TEXT ·floatMulAddCmplxToAVX2(SB), NOSPLIT, $0-56
+	MOVQ         v_base+24(FP), AX
+	MOVQ         vOut_base+0(FP), CX
+	MOVQ         vOut_len+8(FP), DX
+	VBROADCASTSD c+48(FP), Y0
 	XORQ         BX, BX
 	JMP          loop_end
 
@@ -112,21 +112,21 @@ loop_end:
 	JL   loop_body
 	RET
 
-// func floatMulSubCmplxAssignAVX2(v0 []float64, c float64, vOut []float64)
+// func floatMulSubCmplxToAVX2(vOut []float64, v []float64, c float64)
 // Requires: AVX, FMA3
-TEXT ·floatMulSubCmplxAssignAVX2(SB), NOSPLIT, $0-56
-	MOVQ         v0_base+0(FP), AX
-	MOVQ         vOut_base+32(FP), CX
-	MOVQ         vOut_len+40(FP), DX
-	VBROADCASTSD c+24(FP), Y0
+TEXT ·floatMulSubCmplxToAVX2(SB), NOSPLIT, $0-56
+	MOVQ         vOut_base+0(FP), AX
+	MOVQ         v_base+24(FP), CX
+	MOVQ         vOut_len+8(FP), DX
+	VBROADCASTSD c+48(FP), Y0
 	XORQ         BX, BX
 	JMP          loop_end
 
 loop_body:
-	VMOVUPD      (AX)(BX*8), Y1
-	VMOVUPD      (CX)(BX*8), Y2
+	VMOVUPD      (CX)(BX*8), Y1
+	VMOVUPD      (AX)(BX*8), Y2
 	VFNMADD231PD Y0, Y1, Y2
-	VMOVUPD      Y2, (CX)(BX*8)
+	VMOVUPD      Y2, (AX)(BX*8)
 	ADDQ         $0x04, BX
 
 loop_end:
@@ -134,26 +134,26 @@ loop_end:
 	JL   loop_body
 	RET
 
-// func cmplxMulCmplxAssignAVX2(v0 []float64, c complex128, vOut []float64)
+// func cmplxMulCmplxToAVX2(vOut []float64, v []float64, c complex128)
 // Requires: AVX, FMA3
-TEXT ·cmplxMulCmplxAssignAVX2(SB), NOSPLIT, $0-64
-	MOVQ         v0_base+0(FP), AX
-	MOVQ         vOut_base+40(FP), CX
-	MOVQ         vOut_len+48(FP), DX
-	VBROADCASTSD c_real+24(FP), Y0
-	VBROADCASTSD c_imag+32(FP), Y1
+TEXT ·cmplxMulCmplxToAVX2(SB), NOSPLIT, $0-64
+	MOVQ         vOut_base+0(FP), AX
+	MOVQ         v_base+24(FP), CX
+	MOVQ         vOut_len+8(FP), DX
+	VBROADCASTSD c_real+48(FP), Y0
+	VBROADCASTSD c_imag+56(FP), Y1
 	XORQ         BX, BX
 	JMP          loop_end
 
 loop_body:
-	VMOVUPD      (AX)(BX*8), Y2
-	VMOVUPD      32(AX)(BX*8), Y3
+	VMOVUPD      (CX)(BX*8), Y2
+	VMOVUPD      32(CX)(BX*8), Y3
 	VMULPD       Y0, Y2, Y4
 	VFNMADD231PD Y1, Y3, Y4
 	VMULPD       Y0, Y3, Y3
 	VFMADD231PD  Y1, Y2, Y3
-	VMOVUPD      Y4, (CX)(BX*8)
-	VMOVUPD      Y3, 32(CX)(BX*8)
+	VMOVUPD      Y4, (AX)(BX*8)
+	VMOVUPD      Y3, 32(AX)(BX*8)
 	ADDQ         $0x08, BX
 
 loop_end:
@@ -161,28 +161,28 @@ loop_end:
 	JL   loop_body
 	RET
 
-// func cmplxMulAddCmplxAssignAVX2(v0 []float64, c complex128, vOut []float64)
+// func cmplxMulAddCmplxToAVX2(vOut []float64, v []float64, c complex128)
 // Requires: AVX, FMA3
-TEXT ·cmplxMulAddCmplxAssignAVX2(SB), NOSPLIT, $0-64
-	MOVQ         v0_base+0(FP), AX
-	MOVQ         vOut_base+40(FP), CX
-	MOVQ         vOut_len+48(FP), DX
-	VBROADCASTSD c_real+24(FP), Y0
-	VBROADCASTSD c_imag+32(FP), Y1
+TEXT ·cmplxMulAddCmplxToAVX2(SB), NOSPLIT, $0-64
+	MOVQ         vOut_base+0(FP), AX
+	MOVQ         v_base+24(FP), CX
+	MOVQ         vOut_len+8(FP), DX
+	VBROADCASTSD c_real+48(FP), Y0
+	VBROADCASTSD c_imag+56(FP), Y1
 	XORQ         BX, BX
 	JMP          loop_end
 
 loop_body:
-	VMOVUPD      (AX)(BX*8), Y2
-	VMOVUPD      32(AX)(BX*8), Y3
-	VMOVUPD      (CX)(BX*8), Y4
-	VMOVUPD      32(CX)(BX*8), Y5
+	VMOVUPD      (CX)(BX*8), Y2
+	VMOVUPD      32(CX)(BX*8), Y3
+	VMOVUPD      (AX)(BX*8), Y4
+	VMOVUPD      32(AX)(BX*8), Y5
 	VFMADD231PD  Y0, Y2, Y4
 	VFNMADD231PD Y1, Y3, Y4
 	VFMADD231PD  Y0, Y3, Y5
 	VFMADD231PD  Y1, Y2, Y5
-	VMOVUPD      Y4, (CX)(BX*8)
-	VMOVUPD      Y5, 32(CX)(BX*8)
+	VMOVUPD      Y4, (AX)(BX*8)
+	VMOVUPD      Y5, 32(AX)(BX*8)
 	ADDQ         $0x08, BX
 
 loop_end:
@@ -190,28 +190,28 @@ loop_end:
 	JL   loop_body
 	RET
 
-// func cmplxMulSubCmplxAssignAVX2(v0 []float64, c complex128, vOut []float64)
+// func cmplxMulSubCmplxToAVX2(vOut []float64, v []float64, c complex128)
 // Requires: AVX, FMA3
-TEXT ·cmplxMulSubCmplxAssignAVX2(SB), NOSPLIT, $0-64
-	MOVQ         v0_base+0(FP), AX
-	MOVQ         vOut_base+40(FP), CX
-	MOVQ         vOut_len+48(FP), DX
-	VBROADCASTSD c_real+24(FP), Y0
-	VBROADCASTSD c_imag+32(FP), Y1
+TEXT ·cmplxMulSubCmplxToAVX2(SB), NOSPLIT, $0-64
+	MOVQ         vOut_base+0(FP), AX
+	MOVQ         v_base+24(FP), CX
+	MOVQ         vOut_len+8(FP), DX
+	VBROADCASTSD c_real+48(FP), Y0
+	VBROADCASTSD c_imag+56(FP), Y1
 	XORQ         BX, BX
 	JMP          loop_end
 
 loop_body:
-	VMOVUPD      (AX)(BX*8), Y2
-	VMOVUPD      32(AX)(BX*8), Y3
-	VMOVUPD      (CX)(BX*8), Y4
-	VMOVUPD      32(CX)(BX*8), Y5
+	VMOVUPD      (CX)(BX*8), Y2
+	VMOVUPD      32(CX)(BX*8), Y3
+	VMOVUPD      (AX)(BX*8), Y4
+	VMOVUPD      32(AX)(BX*8), Y5
 	VFNMADD231PD Y0, Y2, Y4
 	VFMADD231PD  Y1, Y3, Y4
 	VFNMADD231PD Y0, Y3, Y5
 	VFNMADD231PD Y1, Y2, Y5
-	VMOVUPD      Y4, (CX)(BX*8)
-	VMOVUPD      Y5, 32(CX)(BX*8)
+	VMOVUPD      Y4, (AX)(BX*8)
+	VMOVUPD      Y5, 32(AX)(BX*8)
 	ADDQ         $0x08, BX
 
 loop_end:
@@ -219,27 +219,27 @@ loop_end:
 	JL   loop_body
 	RET
 
-// func elementWiseMulCmplxAssignAVX2(v0 []float64, v1 []float64, vOut []float64)
+// func mulCmplxToAVX2(vOut []float64, v0 []float64, v1 []float64)
 // Requires: AVX, FMA3
-TEXT ·elementWiseMulCmplxAssignAVX2(SB), NOSPLIT, $0-72
-	MOVQ v0_base+0(FP), AX
-	MOVQ v1_base+24(FP), CX
-	MOVQ vOut_base+48(FP), DX
-	MOVQ vOut_len+56(FP), BX
+TEXT ·mulCmplxToAVX2(SB), NOSPLIT, $0-72
+	MOVQ vOut_base+0(FP), AX
+	MOVQ v0_base+24(FP), CX
+	MOVQ v1_base+48(FP), DX
+	MOVQ vOut_len+8(FP), BX
 	XORQ SI, SI
 	JMP  loop_end
 
 loop_body:
-	VMOVUPD      (AX)(SI*8), Y0
-	VMOVUPD      32(AX)(SI*8), Y1
-	VMOVUPD      (CX)(SI*8), Y2
-	VMOVUPD      32(CX)(SI*8), Y3
+	VMOVUPD      (CX)(SI*8), Y0
+	VMOVUPD      32(CX)(SI*8), Y1
+	VMOVUPD      (DX)(SI*8), Y2
+	VMOVUPD      32(DX)(SI*8), Y3
 	VMULPD       Y0, Y2, Y4
 	VFNMADD231PD Y1, Y3, Y4
 	VMULPD       Y0, Y3, Y0
 	VFMADD231PD  Y1, Y2, Y0
-	VMOVUPD      Y4, (DX)(SI*8)
-	VMOVUPD      Y0, 32(DX)(SI*8)
+	VMOVUPD      Y4, (AX)(SI*8)
+	VMOVUPD      Y0, 32(AX)(SI*8)
 	ADDQ         $0x08, SI
 
 loop_end:
@@ -247,29 +247,29 @@ loop_end:
 	JL   loop_body
 	RET
 
-// func elementWiseMulAddCmplxAssignAVX2(v0 []float64, v1 []float64, vOut []float64)
+// func mulAddCmplxToAVX2(vOut []float64, v0 []float64, v1 []float64)
 // Requires: AVX, FMA3
-TEXT ·elementWiseMulAddCmplxAssignAVX2(SB), NOSPLIT, $0-72
-	MOVQ v0_base+0(FP), AX
-	MOVQ v1_base+24(FP), CX
-	MOVQ vOut_base+48(FP), DX
-	MOVQ vOut_len+56(FP), BX
+TEXT ·mulAddCmplxToAVX2(SB), NOSPLIT, $0-72
+	MOVQ vOut_base+0(FP), AX
+	MOVQ v0_base+24(FP), CX
+	MOVQ v1_base+48(FP), DX
+	MOVQ vOut_len+8(FP), BX
 	XORQ SI, SI
 	JMP  loop_end
 
 loop_body:
-	VMOVUPD      (AX)(SI*8), Y0
-	VMOVUPD      32(AX)(SI*8), Y1
-	VMOVUPD      (CX)(SI*8), Y2
-	VMOVUPD      32(CX)(SI*8), Y3
-	VMOVUPD      (DX)(SI*8), Y4
-	VMOVUPD      32(DX)(SI*8), Y5
+	VMOVUPD      (CX)(SI*8), Y0
+	VMOVUPD      32(CX)(SI*8), Y1
+	VMOVUPD      (DX)(SI*8), Y2
+	VMOVUPD      32(DX)(SI*8), Y3
+	VMOVUPD      (AX)(SI*8), Y4
+	VMOVUPD      32(AX)(SI*8), Y5
 	VFMADD231PD  Y0, Y2, Y4
 	VFNMADD231PD Y1, Y3, Y4
 	VFMADD231PD  Y0, Y3, Y5
 	VFMADD231PD  Y1, Y2, Y5
-	VMOVUPD      Y4, (DX)(SI*8)
-	VMOVUPD      Y5, 32(DX)(SI*8)
+	VMOVUPD      Y4, (AX)(SI*8)
+	VMOVUPD      Y5, 32(AX)(SI*8)
 	ADDQ         $0x08, SI
 
 loop_end:
@@ -277,29 +277,29 @@ loop_end:
 	JL   loop_body
 	RET
 
-// func elementWiseMulSubCmplxAssignAVX2(v0 []float64, v1 []float64, vOut []float64)
+// func mulSubCmplxToAVX2(vOut []float64, v0 []float64, v1 []float64)
 // Requires: AVX, FMA3
-TEXT ·elementWiseMulSubCmplxAssignAVX2(SB), NOSPLIT, $0-72
-	MOVQ v0_base+0(FP), AX
-	MOVQ v1_base+24(FP), CX
-	MOVQ vOut_base+48(FP), DX
-	MOVQ vOut_len+56(FP), BX
+TEXT ·mulSubCmplxToAVX2(SB), NOSPLIT, $0-72
+	MOVQ vOut_base+0(FP), AX
+	MOVQ v0_base+24(FP), CX
+	MOVQ v1_base+48(FP), DX
+	MOVQ vOut_len+8(FP), BX
 	XORQ SI, SI
 	JMP  loop_end
 
 loop_body:
-	VMOVUPD      (AX)(SI*8), Y0
-	VMOVUPD      32(AX)(SI*8), Y1
-	VMOVUPD      (CX)(SI*8), Y2
-	VMOVUPD      32(CX)(SI*8), Y3
-	VMOVUPD      (DX)(SI*8), Y4
-	VMOVUPD      32(DX)(SI*8), Y5
+	VMOVUPD      (CX)(SI*8), Y0
+	VMOVUPD      32(CX)(SI*8), Y1
+	VMOVUPD      (DX)(SI*8), Y2
+	VMOVUPD      32(DX)(SI*8), Y3
+	VMOVUPD      (AX)(SI*8), Y4
+	VMOVUPD      32(AX)(SI*8), Y5
 	VFNMADD231PD Y0, Y2, Y4
 	VFMADD231PD  Y1, Y3, Y4
 	VFNMADD231PD Y0, Y3, Y5
 	VFNMADD231PD Y1, Y2, Y5
-	VMOVUPD      Y4, (DX)(SI*8)
-	VMOVUPD      Y5, 32(DX)(SI*8)
+	VMOVUPD      Y4, (AX)(SI*8)
+	VMOVUPD      Y5, 32(AX)(SI*8)
 	ADDQ         $0x08, SI
 
 loop_end:

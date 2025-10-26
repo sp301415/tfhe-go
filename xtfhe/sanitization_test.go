@@ -10,7 +10,7 @@ import (
 
 var (
 	sanitizationParams = xtfhe.ParamsSanitizeBinary.Compile()
-	sanitizationEnc    = tfhe.NewEncryptor(sanitizationParams.BaseParameters())
+	sanitizationEnc    = tfhe.NewEncryptor(sanitizationParams.BaseParams())
 	sanitizationEval   = xtfhe.NewSanitizer(sanitizationParams, sanitizationEnc.GenPublicKey(), sanitizationEnc.GenEvaluationKeyParallel())
 )
 

@@ -27,7 +27,7 @@ func (sk LWESecretKey[T]) Copy() LWESecretKey[T] {
 
 // CopyFrom copies values from the key.
 func (sk *LWESecretKey[T]) CopyFrom(skIn LWESecretKey[T]) {
-	vec.CopyAssign(skIn.Value, sk.Value)
+	copy(sk.Value, skIn.Value)
 }
 
 // Clear clears the key.
@@ -59,11 +59,11 @@ func NewLWEPublicKey[T TorusInt](params Parameters[T]) LWEPublicKey[T] {
 	return LWEPublicKey[T]{Value: pk}
 }
 
-// NewLWEPublicKeyCustom creates a new LWEPublicKey with given dimension and polyDegree.
-func NewLWEPublicKeyCustom[T TorusInt](glweRank, polyDegree int) LWEPublicKey[T] {
+// NewLWEPublicKeyCustom creates a new LWEPublicKey with given dimension and polyRank.
+func NewLWEPublicKeyCustom[T TorusInt](glweRank, polyRank int) LWEPublicKey[T] {
 	pk := make([]GLWECiphertext[T], glweRank)
 	for i := 0; i < glweRank; i++ {
-		pk[i] = NewGLWECiphertextCustom[T](glweRank, polyDegree)
+		pk[i] = NewGLWECiphertextCustom[T](glweRank, polyRank)
 	}
 	return LWEPublicKey[T]{Value: pk}
 }
@@ -144,7 +144,7 @@ func (ct LWECiphertext[T]) Copy() LWECiphertext[T] {
 
 // CopyFrom copies values from the ciphertext.
 func (ct *LWECiphertext[T]) CopyFrom(ctIn LWECiphertext[T]) {
-	vec.CopyAssign(ctIn.Value, ct.Value)
+	copy(ct.Value, ctIn.Value)
 }
 
 // Clear clears the ciphertext.
@@ -154,7 +154,7 @@ func (ct *LWECiphertext[T]) Clear() {
 
 // LevCiphertext is a leveled LWE ciphertext, decomposed according to GadgetParameters.
 type LevCiphertext[T TorusInt] struct {
-	GadgetParameters GadgetParameters[T]
+	GadgetParams GadgetParameters[T]
 
 	// Value has length Level.
 	Value []LWECiphertext[T]
@@ -166,7 +166,7 @@ func NewLevCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetParam
 	for i := 0; i < gadgetParams.level; i++ {
 		ct[i] = NewLWECiphertext(params)
 	}
-	return LevCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
+	return LevCiphertext[T]{Value: ct, GadgetParams: gadgetParams}
 }
 
 // NewLevCiphertextCustom creates a new LevCiphertext with given dimension.
@@ -175,7 +175,7 @@ func NewLevCiphertextCustom[T TorusInt](lweDimension int, gadgetParams GadgetPar
 	for i := 0; i < gadgetParams.level; i++ {
 		ct[i] = NewLWECiphertextCustom[T](lweDimension)
 	}
-	return LevCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
+	return LevCiphertext[T]{Value: ct, GadgetParams: gadgetParams}
 }
 
 // Copy returns a copy of the ciphertext.
@@ -184,7 +184,7 @@ func (ct LevCiphertext[T]) Copy() LevCiphertext[T] {
 	for i := range ct.Value {
 		ctCopy[i] = ct.Value[i].Copy()
 	}
-	return LevCiphertext[T]{Value: ctCopy, GadgetParameters: ct.GadgetParameters}
+	return LevCiphertext[T]{Value: ctCopy, GadgetParams: ct.GadgetParams}
 }
 
 // CopyFrom copies values from the ciphertext.
@@ -192,7 +192,7 @@ func (ct *LevCiphertext[T]) CopyFrom(ctIn LevCiphertext[T]) {
 	for i := range ct.Value {
 		ct.Value[i].CopyFrom(ctIn.Value[i])
 	}
-	ct.GadgetParameters = ctIn.GadgetParameters
+	ct.GadgetParams = ctIn.GadgetParams
 }
 
 // Clear clears the ciphertext.
@@ -205,7 +205,7 @@ func (ct *LevCiphertext[T]) Clear() {
 // GSWCiphertext represents an encrypted GSW ciphertext,
 // which is a DefaultLWEDimension+1 collection of Lev ciphertexts.
 type GSWCiphertext[T TorusInt] struct {
-	GadgetParameters GadgetParameters[T]
+	GadgetParams GadgetParameters[T]
 
 	// Value has length DefaultLWEDimension + 1.
 	Value []LevCiphertext[T]
@@ -218,7 +218,7 @@ func NewGSWCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetParam
 	for i := 0; i < lweDimension+1; i++ {
 		ct[i] = NewLevCiphertext(params, gadgetParams)
 	}
-	return GSWCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
+	return GSWCiphertext[T]{Value: ct, GadgetParams: gadgetParams}
 }
 
 // NewGSWCiphertextCustom creates a new GSW ciphertext with given dimension.
@@ -227,7 +227,7 @@ func NewGSWCiphertextCustom[T TorusInt](lweDimension int, gadgetParams GadgetPar
 	for i := 0; i < lweDimension+1; i++ {
 		ct[i] = NewLevCiphertextCustom(lweDimension, gadgetParams)
 	}
-	return GSWCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
+	return GSWCiphertext[T]{Value: ct, GadgetParams: gadgetParams}
 }
 
 // Copy returns a copy of the ciphertext.
@@ -236,7 +236,7 @@ func (ct GSWCiphertext[T]) Copy() GSWCiphertext[T] {
 	for i := range ct.Value {
 		ctCopy[i] = ct.Value[i].Copy()
 	}
-	return GSWCiphertext[T]{Value: ctCopy, GadgetParameters: ct.GadgetParameters}
+	return GSWCiphertext[T]{Value: ctCopy, GadgetParams: ct.GadgetParams}
 }
 
 // CopyFrom copies values from the ciphertext.
@@ -244,7 +244,7 @@ func (ct *GSWCiphertext[T]) CopyFrom(ctIn GSWCiphertext[T]) {
 	for i := range ct.Value {
 		ct.Value[i].CopyFrom(ctIn.Value[i])
 	}
-	ct.GadgetParameters = ctIn.GadgetParameters
+	ct.GadgetParams = ctIn.GadgetParams
 }
 
 // Clear clears the ciphertext.

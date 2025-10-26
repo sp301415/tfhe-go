@@ -14,29 +14,29 @@ type ManyLUTEvaluator[T tfhe.TorusInt] struct {
 	// Evaluator is an embedded Evaluator for this ManyLUTEvaluator.
 	*tfhe.Evaluator[T]
 
-	// Parameters is the parameters for this ManyLUTEvaluator.
-	Parameters ManyLUTParameters[T]
+	// Params is the parameters for this ManyLUTEvaluator.
+	Params ManyLUTParameters[T]
 
-	buffer manyLUTEvaluationBuffer[T]
+	buf manyLUTEvaluatorBuffer[T]
 }
 
-// manyLUTEvaluationBuffer is a buffer for ManyLUTEvaluator.
-type manyLUTEvaluationBuffer[T tfhe.TorusInt] struct {
-	// ctFourierAcc is the fourier transformed accumulator in Blind Rotation.
-	ctFourierAcc tfhe.FourierGLWECiphertext[T]
-	// ctBlockFourierAcc is the auxiliary accumulator in BlindRotateBlock.
-	ctBlockFourierAcc tfhe.FourierGLWECiphertext[T]
-	// ctAccFourierDecomposed is the decomposed ctAcc in Blind Rotation.
-	ctAccFourierDecomposed [][]poly.FourierPoly
+// manyLUTEvaluatorBuffer is a buffer for ManyLUTEvaluator.
+type manyLUTEvaluatorBuffer[T tfhe.TorusInt] struct {
+	// fctAcc is the fourier transformed accumulator in Blind Rotation.
+	fctAcc tfhe.FFTGLWECiphertext[T]
+	// fctBlockAcc is the auxiliary accumulator in BlindRotateBlock.
+	fctBlockAcc tfhe.FFTGLWECiphertext[T]
+	// fctAccDcmp is the decomposed ctAcc in Blind Rotation.
+	fctAccDcmp [][]poly.FFTPoly
 	// fMono is the fourier transformed monomial in Blind Rotation.
-	fMono poly.FourierPoly
+	fMono poly.FFTPoly
 
 	// ctRotate is the blind rotated GLWE ciphertext for bootstrapping.
 	ctRotate tfhe.GLWECiphertext[T]
 	// ctExtract is the extracted LWE ciphertext after Blind Rotation.
 	ctExtract tfhe.LWECiphertext[T]
-	// ctKeySwitchForBootstrap is the LWEDimension sized ciphertext from keyswitching for bootstrapping.
-	ctKeySwitchForBootstrap tfhe.LWECiphertext[T]
+	// ctKeySwitch is the LWEDimension sized ciphertext from keyswitching for bootstrapping.
+	ctKeySwitch tfhe.LWECiphertext[T]
 
 	// lut is an empty lut, used for BlindRotateFunc.
 	lut tfhe.LookUpTable[T]
@@ -45,35 +45,35 @@ type manyLUTEvaluationBuffer[T tfhe.TorusInt] struct {
 // NewManyLUTEvaluator creates a new ManyLUTEvaluator.
 func NewManyLUTEvaluator[T tfhe.TorusInt](params ManyLUTParameters[T], evk tfhe.EvaluationKey[T]) *ManyLUTEvaluator[T] {
 	return &ManyLUTEvaluator[T]{
-		Evaluator: tfhe.NewEvaluator(params.baseParameters, evk),
+		Evaluator: tfhe.NewEvaluator(params.baseParams, evk),
 
-		Parameters: params,
+		Params: params,
 
-		buffer: newManyLUTEvaluationBuffer(params),
+		buf: newManyLUTEvaluatorBuffer(params),
 	}
 }
 
-// newManyLUTEvaluationBuffer creates a new manyLUTEvaluationBuffer.
-func newManyLUTEvaluationBuffer[T tfhe.TorusInt](params ManyLUTParameters[T]) manyLUTEvaluationBuffer[T] {
-	ctAccFourierDecomposed := make([][]poly.FourierPoly, params.baseParameters.GLWERank()+1)
-	for i := 0; i < params.baseParameters.GLWERank()+1; i++ {
-		ctAccFourierDecomposed[i] = make([]poly.FourierPoly, params.baseParameters.BlindRotateParameters().Level())
-		for j := 0; j < params.baseParameters.BlindRotateParameters().Level(); j++ {
-			ctAccFourierDecomposed[i][j] = poly.NewFourierPoly(params.baseParameters.PolyDegree())
+// newManyLUTEvaluatorBuffer creates a new manyLUTEvaluatorBuffer.
+func newManyLUTEvaluatorBuffer[T tfhe.TorusInt](params ManyLUTParameters[T]) manyLUTEvaluatorBuffer[T] {
+	fctAccDcmp := make([][]poly.FFTPoly, params.baseParams.GLWERank()+1)
+	for i := 0; i < params.baseParams.GLWERank()+1; i++ {
+		fctAccDcmp[i] = make([]poly.FFTPoly, params.baseParams.BlindRotateParams().Level())
+		for j := 0; j < params.baseParams.BlindRotateParams().Level(); j++ {
+			fctAccDcmp[i][j] = poly.NewFFTPoly(params.baseParams.PolyRank())
 		}
 	}
 
-	return manyLUTEvaluationBuffer[T]{
-		ctFourierAcc:           tfhe.NewFourierGLWECiphertext(params.baseParameters),
-		ctBlockFourierAcc:      tfhe.NewFourierGLWECiphertext(params.baseParameters),
-		ctAccFourierDecomposed: ctAccFourierDecomposed,
-		fMono:                  poly.NewFourierPoly(params.baseParameters.PolyDegree()),
+	return manyLUTEvaluatorBuffer[T]{
+		fctAcc:      tfhe.NewFFTGLWECiphertext(params.baseParams),
+		fctBlockAcc: tfhe.NewFFTGLWECiphertext(params.baseParams),
+		fctAccDcmp:  fctAccDcmp,
+		fMono:       poly.NewFFTPoly(params.baseParams.PolyRank()),
 
-		ctRotate:                tfhe.NewGLWECiphertext(params.baseParameters),
-		ctExtract:               tfhe.NewLWECiphertextCustom[T](params.baseParameters.GLWEDimension()),
-		ctKeySwitchForBootstrap: tfhe.NewLWECiphertextCustom[T](params.baseParameters.LWEDimension()),
+		ctRotate:    tfhe.NewGLWECiphertext(params.baseParams),
+		ctExtract:   tfhe.NewLWECiphertextCustom[T](params.baseParams.GLWEDimension()),
+		ctKeySwitch: tfhe.NewLWECiphertextCustom[T](params.baseParams.LWEDimension()),
 
-		lut: tfhe.NewLookUpTable(params.baseParameters),
+		lut: tfhe.NewLUT(params.baseParams),
 	}
 }
 
@@ -81,8 +81,8 @@ func newManyLUTEvaluationBuffer[T tfhe.TorusInt](params ManyLUTParameters[T]) ma
 // Returned Evaluator is safe for concurrent use.
 func (e *ManyLUTEvaluator[T]) ShallowCopy() *ManyLUTEvaluator[T] {
 	return &ManyLUTEvaluator[T]{
-		Evaluator:  e.Evaluator.ShallowCopy(),
-		Parameters: e.Parameters,
-		buffer:     newManyLUTEvaluationBuffer(e.Parameters),
+		Evaluator: e.Evaluator.ShallowCopy(),
+		Params:    e.Params,
+		buf:       newManyLUTEvaluatorBuffer(e.Params),
 	}
 }

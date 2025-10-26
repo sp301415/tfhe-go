@@ -82,27 +82,27 @@ func (s *CDTSampler[T]) Sample() T {
 	return T(int64(x) + s.offset)
 }
 
-// SampleVecAssign samples Gaussian values and writes it to vOut.
-func (s *CDTSampler[T]) SampleVecAssign(vOut []T) {
+// SampleVecTo samples Gaussian values and writes it to vOut.
+func (s *CDTSampler[T]) SampleVecTo(vOut []T) {
 	for i := range vOut {
 		vOut[i] = s.Sample()
 	}
 }
 
-// SamplePolyAssign samples Gaussian values and writes it to pOut.
-func (s *CDTSampler[T]) SamplePolyAssign(pOut poly.Poly[T]) {
-	s.SampleVecAssign(pOut.Coeffs)
+// SamplePolyTo samples Gaussian values and writes it to pOut.
+func (s *CDTSampler[T]) SamplePolyTo(pOut poly.Poly[T]) {
+	s.SampleVecTo(pOut.Coeffs)
 }
 
-// SamplePolyAddAssign samples Gaussian values and adds to pOut.
-func (s *CDTSampler[T]) SamplePolyAddAssign(pOut poly.Poly[T]) {
+// SamplePolyAddTo samples Gaussian values and adds to pOut.
+func (s *CDTSampler[T]) SamplePolyAddTo(pOut poly.Poly[T]) {
 	for i := range pOut.Coeffs {
 		pOut.Coeffs[i] += s.Sample()
 	}
 }
 
-// SamplePolySubAssign samples Gaussian values and subtracts from pOut.
-func (s *CDTSampler[T]) SamplePolySubAssign(pOut poly.Poly[T]) {
+// SamplePolySubTo samples Gaussian values and subtracts from pOut.
+func (s *CDTSampler[T]) SamplePolySubTo(pOut poly.Poly[T]) {
 	for i := range pOut.Coeffs {
 		pOut.Coeffs[i] -= s.Sample()
 	}

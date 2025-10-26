@@ -13,21 +13,21 @@ import (
 //
 // Encoder is safe for concurrent use.
 type Encoder[T TorusInt] struct {
-	// Parameters is the parameters for this Encoder.
-	Parameters Parameters[T]
+	// Params is the parameters for this Encoder.
+	Params Parameters[T]
 }
 
 // NewEncoder returns a initialized Encoder with given parameters.
 func NewEncoder[T TorusInt](params Parameters[T]) *Encoder[T] {
 	return &Encoder[T]{
-		Parameters: params,
+		Params: params,
 	}
 }
 
 // EncodeLWE encodes integer message to LWE plaintext.
 // Parameter's MessageModulus and Scale are used.
 func (e *Encoder[T]) EncodeLWE(message int) LWEPlaintext[T] {
-	return e.EncodeLWECustom(message, e.Parameters.messageModulus, e.Parameters.scale)
+	return e.EncodeLWECustom(message, e.Params.messageModulus, e.Params.scale)
 }
 
 // EncodeLWECustom encodes integer message to LWE plaintext
@@ -45,7 +45,7 @@ func (e *Encoder[T]) EncodeLWECustom(message int, messageModulus, scale T) LWEPl
 // DecodeLWE decodes LWE plaintext to integer message.
 // Parameter's MessageModulus and Scale are used.
 func (e *Encoder[T]) DecodeLWE(pt LWEPlaintext[T]) int {
-	return e.DecodeLWECustom(pt, e.Parameters.messageModulus, e.Parameters.scale)
+	return e.DecodeLWECustom(pt, e.Params.messageModulus, e.Params.scale)
 }
 
 // DecodeLWECustom decodes LWE plaintext to integer message
@@ -55,102 +55,102 @@ func (e *Encoder[T]) DecodeLWE(pt LWEPlaintext[T]) int {
 func (e *Encoder[T]) DecodeLWECustom(pt LWEPlaintext[T], messageModulus, scale T) int {
 	decoded := num.DivRound(pt.Value, scale)
 	if messageModulus == 0 {
-		messageModulus = T(math.Round(math.Exp2(float64(e.Parameters.logQ)) / float64(scale)))
+		messageModulus = T(math.Round(math.Exp2(float64(e.Params.logQ)) / float64(scale)))
 	}
 	return int(decoded % messageModulus)
 }
 
-// EncodeGLWE encodes up to Parameters.PolyDegree integer messages into one GLWE plaintext.
+// EncodeGLWE encodes up to Parameters.PolyRank integer messages into one GLWE plaintext.
 // Parameter's MessageModulus and Scale are used.
 //
-//   - If len(messages) < PolyDegree, the leftovers are padded with zero.
-//   - If len(messages) > PolyDegree, the leftovers are discarded.
+//   - If len(messages) < PolyRank, the leftovers are padded with zero.
+//   - If len(messages) > PolyRank, the leftovers are discarded.
 func (e *Encoder[T]) EncodeGLWE(messages []int) GLWEPlaintext[T] {
-	pt := NewGLWEPlaintext(e.Parameters)
-	e.EncodeGLWEAssign(messages, pt)
-	return pt
+	ptOut := NewGLWEPlaintext(e.Params)
+	e.EncodeGLWETo(ptOut, messages)
+	return ptOut
 }
 
-// EncodeGLWEAssign encodes up to Parameters.PolyDegree integer messages into one GLWE plaintext.
+// EncodeGLWETo encodes up to Parameters.PolyRank integer messages into one GLWE plaintext.
 // Parameter's MessageModulus and Scale are used.
 //
-//   - If len(messages) < PolyDegree, the leftovers are padded with zero.
-//   - If len(messages) > PolyDegree, the leftovers are discarded.
-func (e *Encoder[T]) EncodeGLWEAssign(messages []int, pt GLWEPlaintext[T]) {
-	e.EncodeGLWECustomAssign(messages, e.Parameters.messageModulus, e.Parameters.scale, pt)
+//   - If len(messages) < PolyRank, the leftovers are padded with zero.
+//   - If len(messages) > PolyRank, the leftovers are discarded.
+func (e *Encoder[T]) EncodeGLWETo(ptOut GLWEPlaintext[T], messages []int) {
+	e.EncodeGLWECustomTo(ptOut, messages, e.Params.messageModulus, e.Params.scale)
 }
 
 // EncodeGLWECustom encodes integer message to GLWE plaintext
 // using custom MessageModulus and Scale.
 //
 //   - If MessageModulus = 0, then no modulus reduction is performed.
-//   - If len(messages) < PolyDegree, the leftovers are padded with zero.
-//   - If len(messages) > PolyDegree, the leftovers are discarded.
+//   - If len(messages) < PolyRank, the leftovers are padded with zero.
+//   - If len(messages) > PolyRank, the leftovers are discarded.
 func (e *Encoder[T]) EncodeGLWECustom(messages []int, messageModulus, scale T) GLWEPlaintext[T] {
-	pt := NewGLWEPlaintext(e.Parameters)
-	e.EncodeGLWECustomAssign(messages, messageModulus, scale, pt)
-	return pt
+	ptOut := NewGLWEPlaintext(e.Params)
+	e.EncodeGLWECustomTo(ptOut, messages, messageModulus, scale)
+	return ptOut
 }
 
-// EncodeGLWECustomAssign encodes integer message to GLWE plaintext
+// EncodeGLWECustomTo encodes integer message to GLWE plaintext
 // using custom MessageModulus and Scale.
 //
 //   - If MessageModulus = 0, then no modulus reduction is performed.
-//   - If len(messages) < PolyDegree, the leftovers are padded with zero.
-//   - If len(messages) > PolyDegree, the leftovers are discarded.
-func (e *Encoder[T]) EncodeGLWECustomAssign(messages []int, messageModulus, scale T, pt GLWEPlaintext[T]) {
-	length := num.Min(e.Parameters.polyDegree, len(messages))
+//   - If len(messages) < PolyRank, the leftovers are padded with zero.
+//   - If len(messages) > PolyRank, the leftovers are discarded.
+func (e *Encoder[T]) EncodeGLWECustomTo(ptOut GLWEPlaintext[T], messages []int, messageModulus, scale T) {
+	length := num.Min(e.Params.polyRank, len(messages))
 	for i := 0; i < length; i++ {
-		pt.Value.Coeffs[i] = T(messages[i])
+		ptOut.Value.Coeffs[i] = T(messages[i])
 		if messageModulus != 0 {
-			pt.Value.Coeffs[i] %= messageModulus
+			ptOut.Value.Coeffs[i] %= messageModulus
 		}
-		pt.Value.Coeffs[i] *= scale
+		ptOut.Value.Coeffs[i] *= scale
 	}
-	vec.Fill(pt.Value.Coeffs[length:], 0)
+	vec.Fill(ptOut.Value.Coeffs[length:], 0)
 }
 
 // DecodeGLWE decodes GLWE plaintext to integer message.
 // Parameter's MessageModulus and Scale are used.
-// The returned messages are always of length PolyDegree.
+// The returned messages are always of length PolyRank.
 func (e *Encoder[T]) DecodeGLWE(pt GLWEPlaintext[T]) []int {
-	messages := make([]int, e.Parameters.polyDegree)
-	e.DecodeGLWEAssign(pt, messages)
-	return messages
+	messagesOut := make([]int, e.Params.polyRank)
+	e.DecodeGLWETo(messagesOut, pt)
+	return messagesOut
 }
 
-// DecodeGLWEAssign decodes GLWE plaintext to integer message.
+// DecodeGLWETo decodes GLWE plaintext to integer message.
 // Parameter's MessageModulus and Scale are used.
 //
-//   - If len(messagesOut) < PolyDegree, the leftovers are discarded.
-//   - If len(messagesOut) > PolyDegree, only the first PolyDegree elements are written.
-func (e *Encoder[T]) DecodeGLWEAssign(pt GLWEPlaintext[T], messagesOut []int) {
-	e.DecodeGLWECustomAssign(pt, e.Parameters.messageModulus, e.Parameters.scale, messagesOut)
+//   - If len(messagesOut) < PolyRank, the leftovers are discarded.
+//   - If len(messagesOut) > PolyRank, only the first PolyRank elements are written.
+func (e *Encoder[T]) DecodeGLWETo(messagesOut []int, pt GLWEPlaintext[T]) {
+	e.DecodeGLWECustomTo(messagesOut, pt, e.Params.messageModulus, e.Params.scale)
 }
 
 // DecodeGLWECustom decodes GLWE plaintext to integer message
 // using custom MessageModulus and Scale.
-// The returned messages are always of length PolyDegree.
+// The returned messages are always of length PolyRank.
 //
 // If MessageModulus = 0, then no modulus reduction is performed.
 func (e *Encoder[T]) DecodeGLWECustom(pt GLWEPlaintext[T], messageModulus, scale T) []int {
-	messages := make([]int, e.Parameters.polyDegree)
-	e.DecodeGLWECustomAssign(pt, messageModulus, scale, messages)
-	return messages
+	messagesOut := make([]int, e.Params.polyRank)
+	e.DecodeGLWECustomTo(messagesOut, pt, messageModulus, scale)
+	return messagesOut
 }
 
-// DecodeGLWECustomAssign decodes GLWE plaintext to integer message
+// DecodeGLWECustomTo decodes GLWE plaintext to integer message
 // using custom MessageModulus and Scale.
 //
 //   - If MessageModulus = 0, then it is automatically set to round(Q / scale).
-//   - If len(messagesOut) < PolyDegree, the leftovers are discarded.
-//   - If len(messagesOut) > PolyDegree, only the first PolyDegree elements are written.
-func (e *Encoder[T]) DecodeGLWECustomAssign(pt GLWEPlaintext[T], messageModulus, scale T, messagesOut []int) {
-	length := num.Min(e.Parameters.polyDegree, len(messagesOut))
+//   - If len(messagesOut) < PolyRank, the leftovers are discarded.
+//   - If len(messagesOut) > PolyRank, only the first PolyRank elements are written.
+func (e *Encoder[T]) DecodeGLWECustomTo(messagesOut []int, pt GLWEPlaintext[T], messageModulus, scale T) {
+	length := num.Min(e.Params.polyRank, len(messagesOut))
 	for i := 0; i < length; i++ {
 		decoded := num.DivRound(pt.Value.Coeffs[i], scale)
 		if messageModulus == 0 {
-			messageModulus = T(math.Round(math.Exp2(float64(e.Parameters.logQ)) / float64(scale)))
+			messageModulus = T(math.Round(math.Exp2(float64(e.Params.logQ)) / float64(scale)))
 		}
 		messagesOut[i] = int(decoded % messageModulus)
 	}

@@ -77,11 +77,11 @@ func TestFFTAssembly(t *testing.T) {
 	tw, twInv := genTwiddleFactors(N)
 
 	t.Run("FFT", func(t *testing.T) {
-		vec.CmplxToFloat4Assign(coeffs, coeffsAVX2)
+		vec.CmplxToFloat4To(coeffsAVX2, coeffs)
 		fftInPlace(coeffsAVX2, tw)
-		vec.Float4ToCmplxAssign(coeffsAVX2, coeffsAVX2Out)
+		vec.Float4ToCmplxTo(coeffsAVX2Out, coeffsAVX2)
 
-		vec.ElementWiseMulAssign(coeffs, twist, coeffs)
+		vec.MulTo(coeffs, coeffs, twist)
 		fftInPlaceRef(coeffs, twRef)
 
 		for i := 0; i < N; i++ {
@@ -92,12 +92,12 @@ func TestFFTAssembly(t *testing.T) {
 	})
 
 	t.Run("InvFFT", func(t *testing.T) {
-		vec.CmplxToFloat4Assign(coeffs, coeffsAVX2)
+		vec.CmplxToFloat4To(coeffsAVX2, coeffs)
 		ifftInPlace(coeffsAVX2, twInv)
-		vec.Float4ToCmplxAssign(coeffsAVX2, coeffsAVX2Out)
+		vec.Float4ToCmplxTo(coeffsAVX2Out, coeffsAVX2)
 
 		invFFTInPlaceRef(coeffs, twInvRef)
-		vec.ElementWiseMulAssign(coeffs, twistInv, coeffs)
+		vec.MulTo(coeffs, coeffs, twistInv)
 
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(coeffs[i]-coeffsAVX2Out[i]) > eps {

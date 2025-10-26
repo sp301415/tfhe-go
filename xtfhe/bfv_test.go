@@ -59,7 +59,7 @@ func BenchmarkBFVMul(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		bfvEval.MulAssign(ct0, ct1, ctMul)
+		bfvEval.MulTo(ctMul, ct0, ct1)
 	}
 }
 
@@ -69,6 +69,6 @@ func BenchmarkBFVRingPack(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		bfvEval.LWEToGLWECiphertextAssign(ctLWE, ctGLWE)
+		bfvEval.LWEToGLWECiphertextTo(ctGLWE, ctLWE)
 	}
 }

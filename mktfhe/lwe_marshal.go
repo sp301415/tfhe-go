@@ -37,9 +37,9 @@ func vecWriteTo[T tfhe.TorusInt](v []T, w io.Writer) (n int64, err error) {
 	return
 }
 
-// vecWriteToBuffered implements the [io.WriterTo] interface for a vector of T, using a buffer.
+// vecWriteToBuf implements the [io.WriterTo] interface for a vector of T, using a buffer.
 // Assumes the length of the buffer is exactly the byte length of v.
-func vecWriteToBuffered[T tfhe.TorusInt](v []T, buf []byte, w io.Writer) (n int64, err error) {
+func vecWriteToBuf[T tfhe.TorusInt](v []T, buf []byte, w io.Writer) (n int64, err error) {
 	var nWrite int
 
 	var z T
@@ -95,9 +95,9 @@ func vecReadFrom[T tfhe.TorusInt](v []T, r io.Reader) (n int64, err error) {
 	return
 }
 
-// vecReadFromBuffered implements the [io.ReaderFrom] interface for a vector of T, using a buffer.
+// vecReadFromBuf implements the [io.ReaderFrom] interface for a vector of T, using a buffer.
 // Assumes the length of the buffer is exactly the byte length of v.
-func vecReadFromBuffered[T tfhe.TorusInt](v []T, buf []byte, r io.Reader) (n int64, err error) {
+func vecReadFromBuf[T tfhe.TorusInt](v []T, buf []byte, r io.Reader) (n int64, err error) {
 	var nRead int
 
 	var z T

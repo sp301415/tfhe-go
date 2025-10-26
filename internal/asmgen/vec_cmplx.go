@@ -5,13 +5,13 @@ import (
 	. "github.com/mmcloughlin/avo/operand"
 )
 
-func addCmplxAssignAVX2() {
-	TEXT("addCmplxAssignAVX2", NOSPLIT, "func(v0, v1, vOut []float64)")
+func addCmplxToAVX2() {
+	TEXT("addCmplxToAVX2", NOSPLIT, "func(vOut, v0, v1 []float64)")
 	Pragma("noescape")
 
+	vOut := Load(Param("vOut").Base(), GP64())
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
-	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	i := GP64()
@@ -38,13 +38,13 @@ func addCmplxAssignAVX2() {
 	RET()
 }
 
-func subCmplxAssignAVX2() {
-	TEXT("subCmplxAssignAVX2", NOSPLIT, "func(v0, v1, vOut []float64)")
+func subCmplxToAVX2() {
+	TEXT("subCmplxToAVX2", NOSPLIT, "func(vOut, v0, v1 []float64)")
 	Pragma("noescape")
 
+	vOut := Load(Param("vOut").Base(), GP64())
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
-	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	i := GP64()
@@ -71,12 +71,12 @@ func subCmplxAssignAVX2() {
 	RET()
 }
 
-func negCmplxAssignAVX2() {
-	TEXT("negCmplxAssignAVX2", NOSPLIT, "func(v0, vOut []float64)")
+func negCmplxToAVX2() {
+	TEXT("negCmplxToAVX2", NOSPLIT, "func(vOut, v []float64)")
 	Pragma("noescape")
 
-	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
+	v := Load(Param("v").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	zero := YMM()
@@ -87,11 +87,11 @@ func negCmplxAssignAVX2() {
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
-	x0 := YMM()
-	VMOVUPD(Mem{Base: v0, Index: i, Scale: 8}, x0)
+	x := YMM()
+	VMOVUPD(Mem{Base: v, Index: i, Scale: 8}, x)
 
 	xOut := YMM()
-	VSUBPD(x0, zero, xOut)
+	VSUBPD(x, zero, xOut)
 
 	VMOVUPD(xOut, Mem{Base: vOut, Index: i, Scale: 8})
 
@@ -104,27 +104,27 @@ func negCmplxAssignAVX2() {
 	RET()
 }
 
-func floatMulCmplxAssignAVX2() {
-	TEXT("floatMulCmplxAssignAVX2", NOSPLIT, "func(v0 []float64, c float64, vOut []float64)")
+func floatMulCmplxToAVX2() {
+	TEXT("floatMulCmplxToAVX2", NOSPLIT, "func(vOut, v []float64, c float64)")
 	Pragma("noescape")
 
-	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
+	v := Load(Param("v").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	c := YMM()
-	VBROADCASTSD(NewParamAddr("c", 24), c)
+	VBROADCASTSD(NewParamAddr("c", 48), c)
 
 	i := GP64()
 	XORQ(i, i)
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
-	x0 := YMM()
-	VMOVUPD(Mem{Base: v0, Index: i, Scale: 8}, x0)
+	x := YMM()
+	VMOVUPD(Mem{Base: v, Index: i, Scale: 8}, x)
 
 	xOut := YMM()
-	VMULPD(c, x0, xOut)
+	VMULPD(c, x, xOut)
 
 	VMOVUPD(xOut, Mem{Base: vOut, Index: i, Scale: 8})
 
@@ -137,28 +137,28 @@ func floatMulCmplxAssignAVX2() {
 	RET()
 }
 
-func floatMulAddCmplxAssignAVX2() {
-	TEXT("floatMulAddCmplxAssignAVX2", NOSPLIT, "func(v0 []float64, c float64, vOut []float64)")
+func floatMulAddCmplxToAVX2() {
+	TEXT("floatMulAddCmplxToAVX2", NOSPLIT, "func(vOut, v []float64, c float64)")
 	Pragma("noescape")
 
-	v0 := Load(Param("v0").Base(), GP64())
+	v := Load(Param("v").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	c := YMM()
-	VBROADCASTSD(NewParamAddr("c", 24), c)
+	VBROADCASTSD(NewParamAddr("c", 48), c)
 
 	i := GP64()
 	XORQ(i, i)
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
-	x0 := YMM()
-	VMOVUPD(Mem{Base: v0, Index: i, Scale: 8}, x0)
+	x := YMM()
+	VMOVUPD(Mem{Base: v, Index: i, Scale: 8}, x)
 	xOut := YMM()
 	VMOVUPD(Mem{Base: vOut, Index: i, Scale: 8}, xOut)
 
-	VFMADD231PD(c, x0, xOut)
+	VFMADD231PD(c, x, xOut)
 
 	VMOVUPD(xOut, Mem{Base: vOut, Index: i, Scale: 8})
 
@@ -171,28 +171,28 @@ func floatMulAddCmplxAssignAVX2() {
 	RET()
 }
 
-func floatMulSubCmplxAssignAVX2() {
-	TEXT("floatMulSubCmplxAssignAVX2", NOSPLIT, "func(v0 []float64, c float64, vOut []float64)")
+func floatMulSubCmplxToAVX2() {
+	TEXT("floatMulSubCmplxToAVX2", NOSPLIT, "func(vOut, v []float64, c float64)")
 	Pragma("noescape")
 
-	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
+	v := Load(Param("v").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	c := YMM()
-	VBROADCASTSD(NewParamAddr("c", 24), c)
+	VBROADCASTSD(NewParamAddr("c", 48), c)
 
 	i := GP64()
 	XORQ(i, i)
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
-	x0 := YMM()
-	VMOVUPD(Mem{Base: v0, Index: i, Scale: 8}, x0)
+	x := YMM()
+	VMOVUPD(Mem{Base: v, Index: i, Scale: 8}, x)
 	xOut := YMM()
 	VMOVUPD(Mem{Base: vOut, Index: i, Scale: 8}, xOut)
 
-	VFNMADD231PD(c, x0, xOut)
+	VFNMADD231PD(c, x, xOut)
 
 	VMOVUPD(xOut, Mem{Base: vOut, Index: i, Scale: 8})
 
@@ -205,34 +205,34 @@ func floatMulSubCmplxAssignAVX2() {
 	RET()
 }
 
-func cmplxMulCmplxAssignAVX2() {
-	TEXT("cmplxMulCmplxAssignAVX2", NOSPLIT, "func(v0 []float64, c complex128, vOut []float64)")
+func cmplxMulCmplxToAVX2() {
+	TEXT("cmplxMulCmplxToAVX2", NOSPLIT, "func(vOut, v []float64, c complex128)")
 	Pragma("noescape")
 
-	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
+	v := Load(Param("v").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	cReal, cImag := YMM(), YMM()
-	VBROADCASTSD(NewParamAddr("c_real", 24), cReal)
-	VBROADCASTSD(NewParamAddr("c_imag", 32), cImag)
+	VBROADCASTSD(NewParamAddr("c_real", 48), cReal)
+	VBROADCASTSD(NewParamAddr("c_imag", 56), cImag)
 
 	i := GP64()
 	XORQ(i, i)
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
-	x0Real, x0Imag := YMM(), YMM()
-	VMOVUPD(Mem{Base: v0, Index: i, Scale: 8}, x0Real)
-	VMOVUPD(Mem{Base: v0, Index: i, Scale: 8, Disp: 32}, x0Imag)
+	xReal, xImag := YMM(), YMM()
+	VMOVUPD(Mem{Base: v, Index: i, Scale: 8}, xReal)
+	VMOVUPD(Mem{Base: v, Index: i, Scale: 8, Disp: 32}, xImag)
 
 	xOutReal := YMM()
-	VMULPD(cReal, x0Real, xOutReal)
-	VFNMADD231PD(cImag, x0Imag, xOutReal)
+	VMULPD(cReal, xReal, xOutReal)
+	VFNMADD231PD(cImag, xImag, xOutReal)
 
 	xOutImag := YMM()
-	VMULPD(cReal, x0Imag, xOutImag)
-	VFMADD231PD(cImag, x0Real, xOutImag)
+	VMULPD(cReal, xImag, xOutImag)
+	VFMADD231PD(cImag, xReal, xOutImag)
 
 	VMOVUPD(xOutReal, Mem{Base: vOut, Index: i, Scale: 8})
 	VMOVUPD(xOutImag, Mem{Base: vOut, Index: i, Scale: 8, Disp: 32})
@@ -246,35 +246,35 @@ func cmplxMulCmplxAssignAVX2() {
 	RET()
 }
 
-func cmplxMulAddCmplxAssignAVX2() {
-	TEXT("cmplxMulAddCmplxAssignAVX2", NOSPLIT, "func(v0 []float64, c complex128, vOut []float64)")
+func cmplxMulAddCmplxToAVX2() {
+	TEXT("cmplxMulAddCmplxToAVX2", NOSPLIT, "func(vOut, v []float64, c complex128)")
 	Pragma("noescape")
 
-	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
+	v := Load(Param("v").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	cReal, cImag := YMM(), YMM()
-	VBROADCASTSD(NewParamAddr("c_real", 24), cReal)
-	VBROADCASTSD(NewParamAddr("c_imag", 32), cImag)
+	VBROADCASTSD(NewParamAddr("c_real", 48), cReal)
+	VBROADCASTSD(NewParamAddr("c_imag", 56), cImag)
 
 	i := GP64()
 	XORQ(i, i)
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
-	x0Real, x0Imag := YMM(), YMM()
-	VMOVUPD(Mem{Base: v0, Index: i, Scale: 8}, x0Real)
-	VMOVUPD(Mem{Base: v0, Index: i, Scale: 8, Disp: 32}, x0Imag)
+	xReal, xImag := YMM(), YMM()
+	VMOVUPD(Mem{Base: v, Index: i, Scale: 8}, xReal)
+	VMOVUPD(Mem{Base: v, Index: i, Scale: 8, Disp: 32}, xImag)
 	xOutReal, xOutImag := YMM(), YMM()
 	VMOVUPD(Mem{Base: vOut, Index: i, Scale: 8}, xOutReal)
 	VMOVUPD(Mem{Base: vOut, Index: i, Scale: 8, Disp: 32}, xOutImag)
 
-	VFMADD231PD(cReal, x0Real, xOutReal)
-	VFNMADD231PD(cImag, x0Imag, xOutReal)
+	VFMADD231PD(cReal, xReal, xOutReal)
+	VFNMADD231PD(cImag, xImag, xOutReal)
 
-	VFMADD231PD(cReal, x0Imag, xOutImag)
-	VFMADD231PD(cImag, x0Real, xOutImag)
+	VFMADD231PD(cReal, xImag, xOutImag)
+	VFMADD231PD(cImag, xReal, xOutImag)
 
 	VMOVUPD(xOutReal, Mem{Base: vOut, Index: i, Scale: 8})
 	VMOVUPD(xOutImag, Mem{Base: vOut, Index: i, Scale: 8, Disp: 32})
@@ -288,35 +288,35 @@ func cmplxMulAddCmplxAssignAVX2() {
 	RET()
 }
 
-func cmplxMulSubCmplxAssignAVX2() {
-	TEXT("cmplxMulSubCmplxAssignAVX2", NOSPLIT, "func(v0 []float64, c complex128, vOut []float64)")
+func cmplxMulSubCmplxToAVX2() {
+	TEXT("cmplxMulSubCmplxToAVX2", NOSPLIT, "func(vOut, v []float64, c complex128)")
 	Pragma("noescape")
 
-	v0 := Load(Param("v0").Base(), GP64())
 	vOut := Load(Param("vOut").Base(), GP64())
+	v := Load(Param("v").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	cReal, cImag := YMM(), YMM()
-	VBROADCASTSD(NewParamAddr("c_real", 24), cReal)
-	VBROADCASTSD(NewParamAddr("c_imag", 32), cImag)
+	VBROADCASTSD(NewParamAddr("c_real", 48), cReal)
+	VBROADCASTSD(NewParamAddr("c_imag", 56), cImag)
 
 	i := GP64()
 	XORQ(i, i)
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
-	x0Real, x0Imag := YMM(), YMM()
-	VMOVUPD(Mem{Base: v0, Index: i, Scale: 8}, x0Real)
-	VMOVUPD(Mem{Base: v0, Index: i, Scale: 8, Disp: 32}, x0Imag)
+	xReal, xImag := YMM(), YMM()
+	VMOVUPD(Mem{Base: v, Index: i, Scale: 8}, xReal)
+	VMOVUPD(Mem{Base: v, Index: i, Scale: 8, Disp: 32}, xImag)
 	xOutReal, xOutImag := YMM(), YMM()
 	VMOVUPD(Mem{Base: vOut, Index: i, Scale: 8}, xOutReal)
 	VMOVUPD(Mem{Base: vOut, Index: i, Scale: 8, Disp: 32}, xOutImag)
 
-	VFNMADD231PD(cReal, x0Real, xOutReal)
-	VFMADD231PD(cImag, x0Imag, xOutReal)
+	VFNMADD231PD(cReal, xReal, xOutReal)
+	VFMADD231PD(cImag, xImag, xOutReal)
 
-	VFNMADD231PD(cReal, x0Imag, xOutImag)
-	VFNMADD231PD(cImag, x0Real, xOutImag)
+	VFNMADD231PD(cReal, xImag, xOutImag)
+	VFNMADD231PD(cImag, xReal, xOutImag)
 
 	VMOVUPD(xOutReal, Mem{Base: vOut, Index: i, Scale: 8})
 	VMOVUPD(xOutImag, Mem{Base: vOut, Index: i, Scale: 8, Disp: 32})
@@ -330,13 +330,13 @@ func cmplxMulSubCmplxAssignAVX2() {
 	RET()
 }
 
-func elementWiseMulCmplxAssignAVX2() {
-	TEXT("elementWiseMulCmplxAssignAVX2", NOSPLIT, "func(v0, v1, vOut []float64)")
+func mulCmplxToAVX2() {
+	TEXT("mulCmplxToAVX2", NOSPLIT, "func(vOut, v0, v1 []float64)")
 	Pragma("noescape")
 
+	vOut := Load(Param("vOut").Base(), GP64())
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
-	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	i := GP64()
@@ -371,13 +371,13 @@ func elementWiseMulCmplxAssignAVX2() {
 	RET()
 }
 
-func elementWiseMulAddCmplxAssignAVX2() {
-	TEXT("elementWiseMulAddCmplxAssignAVX2", NOSPLIT, "func(v0, v1, vOut []float64)")
+func mulAddCmplxToAVX2() {
+	TEXT("mulAddCmplxToAVX2", NOSPLIT, "func(vOut, v0, v1 []float64)")
 	Pragma("noescape")
 
+	vOut := Load(Param("vOut").Base(), GP64())
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
-	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	i := GP64()
@@ -413,13 +413,13 @@ func elementWiseMulAddCmplxAssignAVX2() {
 	RET()
 }
 
-func elementWiseMulSubCmplxAssignAVX2() {
-	TEXT("elementWiseMulSubCmplxAssignAVX2", NOSPLIT, "func(v0, v1, vOut []float64)")
+func mulSubCmplxToAVX2() {
+	TEXT("mulSubCmplxToAVX2", NOSPLIT, "func(vOut, v0, v1 []float64)")
 	Pragma("noescape")
 
+	vOut := Load(Param("vOut").Base(), GP64())
 	v0 := Load(Param("v0").Base(), GP64())
 	v1 := Load(Param("v1").Base(), GP64())
-	vOut := Load(Param("vOut").Base(), GP64())
 	N := Load(Param("vOut").Len(), GP64())
 
 	i := GP64()

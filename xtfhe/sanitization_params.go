@@ -9,8 +9,8 @@ import (
 
 // SanitizationParametersLiteral is a structure for TFHE Sanitization Parameters.
 type SanitizationParametersLiteral[T tfhe.TorusInt] struct {
-	// BaseParametersLiteral is a base parameters for this SanitizationParametersLiteral.
-	BaseParametersLiteral tfhe.ParametersLiteral[T]
+	// BaseParams is a base parameters for this SanitizationParametersLiteral.
+	BaseParams tfhe.ParametersLiteral[T]
 
 	// RandSigma is the standard deviation used for
 	// Discrete Gaussian sampling in Rand operation.
@@ -31,13 +31,13 @@ type SanitizationParametersLiteral[T tfhe.TorusInt] struct {
 // If there is any invalid parameter in the literal, it panics.
 // Default parameters are guaranteed to be compiled without panics.
 func (p SanitizationParametersLiteral[T]) Compile() SanitizationParameters[T] {
-	baseParameters := p.BaseParametersLiteral.Compile()
+	baseParameters := p.BaseParams.Compile()
 
 	switch {
 	case baseParameters.GLWERank() != 1:
 		panic("GLWERank not 1")
-	case baseParameters.PolyDegree() != baseParameters.LookUpTableSize():
-		panic("PolyDegree does not equal LookUpTableSize")
+	case baseParameters.PolyRank() != baseParameters.LUTSize():
+		panic("PolyRank does not equal LUTSize")
 	case baseParameters.BootstrapOrder() != tfhe.OrderKeySwitchBlindRotate:
 		panic("BootstrapOrder not OrderKeySwitchBlindRotate")
 	case p.RandSigma <= 0:
@@ -51,7 +51,7 @@ func (p SanitizationParametersLiteral[T]) Compile() SanitizationParameters[T] {
 	}
 
 	return SanitizationParameters[T]{
-		baseParameters: baseParameters,
+		baseParams: baseParameters,
 
 		floatQ: math.Exp2(float64(num.SizeT[T]())),
 
@@ -65,8 +65,8 @@ func (p SanitizationParametersLiteral[T]) Compile() SanitizationParameters[T] {
 
 // SanitizationParameters is a parameter set for TFHE Sanitization.
 type SanitizationParameters[T tfhe.TorusInt] struct {
-	// baseParameters is a base parameters for this SanitizationParameters.
-	baseParameters tfhe.Parameters[T]
+	// baseParams is a base parameters for this SanitizationParameters.
+	baseParams tfhe.Parameters[T]
 
 	// floatQ is the value of Q as float64.
 	floatQ float64
@@ -86,9 +86,9 @@ type SanitizationParameters[T tfhe.TorusInt] struct {
 	linEvalTau float64
 }
 
-// BaseParameters returns the base parameters for this SanitizationParameters.
-func (p SanitizationParameters[T]) BaseParameters() tfhe.Parameters[T] {
-	return p.baseParameters
+// BaseParams returns the base parameters for this SanitizationParameters.
+func (p SanitizationParameters[T]) BaseParams() tfhe.Parameters[T] {
+	return p.baseParams
 }
 
 // RandSigma returns the standard deviation used for

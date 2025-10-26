@@ -45,7 +45,7 @@ func TestParams(t *testing.T) {
 
 func TestEncryptor(t *testing.T) {
 	messages := []int{1, 2, 3}
-	gadgetParams := params.KeySwitchParameters()
+	gadgetParams := params.KeySwitchParams()
 
 	t.Run("LWE", func(t *testing.T) {
 		for _, m := range messages {
@@ -95,24 +95,24 @@ func TestEncryptor(t *testing.T) {
 		assert.Equal(t, messages, enc.DecryptGGSW(ct)[:len(messages)])
 	})
 
-	t.Run("FourierGLWE", func(t *testing.T) {
-		ct := enc.EncryptFourierGLWE(messages)
-		assert.Equal(t, messages, enc.DecryptFourierGLWE(ct)[:len(messages)])
+	t.Run("FFTGLWE", func(t *testing.T) {
+		ct := enc.EncryptFFTGLWE(messages)
+		assert.Equal(t, messages, enc.DecryptFFTGLWE(ct)[:len(messages)])
 	})
 
-	t.Run("PublicFourierGLWE", func(t *testing.T) {
-		ct := pkEnc.EncryptFourierGLWE(messages)
-		assert.Equal(t, messages, enc.DecryptFourierGLWE(ct)[:len(messages)])
+	t.Run("PublicFFTGLWE", func(t *testing.T) {
+		ct := pkEnc.EncryptFFTGLWE(messages)
+		assert.Equal(t, messages, enc.DecryptFFTGLWE(ct)[:len(messages)])
 	})
 
-	t.Run("FourierGLev", func(t *testing.T) {
-		ct := enc.EncryptFourierGLev(messages, gadgetParams)
-		assert.Equal(t, messages, enc.DecryptFourierGLev(ct)[:len(messages)])
+	t.Run("FFTGLev", func(t *testing.T) {
+		ct := enc.EncryptFFTGLev(messages, gadgetParams)
+		assert.Equal(t, messages, enc.DecryptFFTGLev(ct)[:len(messages)])
 	})
 
-	t.Run("FourierGGSW", func(t *testing.T) {
-		ct := enc.EncryptFourierGGSW(messages, gadgetParams)
-		assert.Equal(t, messages, enc.DecryptFourierGGSW(ct)[:len(messages)])
+	t.Run("FFTGGSW", func(t *testing.T) {
+		ct := enc.EncryptFFTGGSW(messages, gadgetParams)
+		assert.Equal(t, messages, enc.DecryptFFTGGSW(ct)[:len(messages)])
 	})
 }
 
@@ -123,9 +123,9 @@ func TestEvaluator(t *testing.T) {
 		ct := enc.EncryptGLWE(messages)
 
 		mul := 2
-		ctMul := enc.EncryptFourierGGSW([]int{mul}, params.KeySwitchParameters())
+		ctMul := enc.EncryptFFTGGSW([]int{mul}, params.KeySwitchParams())
 
-		ctOut := eval.ExternalProductGLWE(ctMul, ct)
+		ctOut := eval.ExternalProdGLWE(ctMul, ct)
 
 		for i, m := range messages {
 			assert.Equal(t, mul*m, enc.DecryptGLWE(ctOut)[i])
@@ -138,7 +138,7 @@ func TestEvaluator(t *testing.T) {
 		for _, i := range []int{0, 1} {
 			ct0 := enc.EncryptGLWE(messagesPool[0])
 			ct1 := enc.EncryptGLWE(messagesPool[1])
-			ctGGSW := enc.EncryptFourierGGSW([]int{i}, params.BlindRotateParameters())
+			ctGGSW := enc.EncryptFFTGGSW([]int{i}, params.BlindRotateParams())
 
 			ctOut := eval.CMux(ctGGSW, ct0, ct1)
 
@@ -157,7 +157,7 @@ func TestEvaluator(t *testing.T) {
 		ctLWEIn := enc.EncryptLWE(messages[0])
 		ctGLWEIn := enc.EncryptGLWE(messages)
 
-		kskLWE := encOut.GenLWEKeySwitchKey(enc.DefaultLWESecretKey(), params.KeySwitchParameters())
+		kskLWE := encOut.GenLWEKeySwitchKey(enc.DefaultLWESecretKey(), params.KeySwitchParams())
 		kskGLWE := encOut.GenGLWEKeySwitchKey(enc.SecretKey.GLWEKey, kskGLWEParams)
 
 		ctLWEOut := eval.KeySwitchLWE(ctLWEIn, kskLWE)
@@ -171,7 +171,7 @@ func TestEvaluator(t *testing.T) {
 		f := func(x int) int { return 2 * x }
 
 		paramsOriginal := params.Literal().WithBlockSize(1).Compile()
-		evalOriginal := tfhe.NewEvaluator(paramsOriginal, eval.EvaluationKey)
+		evalOriginal := tfhe.NewEvaluator(paramsOriginal, eval.EvalKey)
 
 		for _, m := range messages {
 			ct := enc.EncryptLWE(m)
@@ -193,8 +193,8 @@ func TestEvaluator(t *testing.T) {
 	t.Run("BootstrapExtendedFunc", func(t *testing.T) {
 		f := func(x int) int { return 2 * x }
 
-		paramsExtended := params.Literal().WithLookUpTableSize(params.PolyDegree() << 1).Compile()
-		extendedEvaluator := tfhe.NewEvaluator(paramsExtended, eval.EvaluationKey)
+		paramsExtended := params.Literal().WithLUTSize(params.PolyRank() << 1).Compile()
+		extendedEvaluator := tfhe.NewEvaluator(paramsExtended, eval.EvalKey)
 
 		for _, m := range messages {
 			ct := enc.EncryptLWE(m)
@@ -242,7 +242,7 @@ func TestMarshal(t *testing.T) {
 	t.Run("LevCiphertext", func(t *testing.T) {
 		var ctIn, ctOut tfhe.LevCiphertext[uint64]
 
-		ctIn = enc.EncryptLev(0, params.KeySwitchParameters())
+		ctIn = enc.EncryptLev(0, params.KeySwitchParams())
 		n, err = ctIn.WriteTo(&buf)
 		assert.Equal(t, int(n), ctIn.ByteSize())
 		assert.NoError(t, err)
@@ -257,7 +257,7 @@ func TestMarshal(t *testing.T) {
 	t.Run("GSWCiphertext", func(t *testing.T) {
 		var ctIn, ctOut tfhe.GSWCiphertext[uint64]
 
-		ctIn = enc.EncryptGSW(0, params.KeySwitchParameters())
+		ctIn = enc.EncryptGSW(0, params.KeySwitchParams())
 		n, err = ctIn.WriteTo(&buf)
 		assert.Equal(t, int(n), ctIn.ByteSize())
 		assert.NoError(t, err)
@@ -287,7 +287,7 @@ func TestMarshal(t *testing.T) {
 	t.Run("GLevCiphertext", func(t *testing.T) {
 		var ctIn, ctOut tfhe.GLevCiphertext[uint64]
 
-		ctIn = enc.EncryptGLev([]int{0}, params.KeySwitchParameters())
+		ctIn = enc.EncryptGLev([]int{0}, params.KeySwitchParams())
 		n, err = ctIn.WriteTo(&buf)
 		assert.Equal(t, int(n), ctIn.ByteSize())
 		assert.NoError(t, err)
@@ -302,7 +302,7 @@ func TestMarshal(t *testing.T) {
 	t.Run("GGSWCiphertext", func(t *testing.T) {
 		var ctIn, ctOut tfhe.GGSWCiphertext[uint64]
 
-		ctIn = enc.EncryptGGSW([]int{0}, params.KeySwitchParameters())
+		ctIn = enc.EncryptGGSW([]int{0}, params.KeySwitchParams())
 		n, err = ctIn.WriteTo(&buf)
 		assert.Equal(t, int(n), ctIn.ByteSize())
 		assert.NoError(t, err)
@@ -314,10 +314,10 @@ func TestMarshal(t *testing.T) {
 		assert.Equal(t, ctIn, ctOut)
 	})
 
-	t.Run("FourierGLWECiphertext", func(t *testing.T) {
-		var ctIn, ctOut tfhe.FourierGLWECiphertext[uint64]
+	t.Run("FFTGLWECiphertext", func(t *testing.T) {
+		var ctIn, ctOut tfhe.FFTGLWECiphertext[uint64]
 
-		ctIn = enc.EncryptFourierGLWE([]int{0})
+		ctIn = enc.EncryptFFTGLWE([]int{0})
 		n, err = ctIn.WriteTo(&buf)
 		assert.Equal(t, int(n), ctIn.ByteSize())
 		assert.NoError(t, err)
@@ -329,10 +329,10 @@ func TestMarshal(t *testing.T) {
 		assert.Equal(t, ctIn, ctOut)
 	})
 
-	t.Run("FourierGLevCiphertext", func(t *testing.T) {
-		var ctIn, ctOut tfhe.FourierGLevCiphertext[uint64]
+	t.Run("FFTGLevCiphertext", func(t *testing.T) {
+		var ctIn, ctOut tfhe.FFTGLevCiphertext[uint64]
 
-		ctIn = enc.EncryptFourierGLev([]int{0}, params.KeySwitchParameters())
+		ctIn = enc.EncryptFFTGLev([]int{0}, params.KeySwitchParams())
 		n, err = ctIn.WriteTo(&buf)
 		assert.Equal(t, int(n), ctIn.ByteSize())
 		assert.NoError(t, err)
@@ -344,10 +344,10 @@ func TestMarshal(t *testing.T) {
 		assert.Equal(t, ctIn, ctOut)
 	})
 
-	t.Run("FourierGGSWCiphertext", func(t *testing.T) {
-		var ctIn, ctOut tfhe.FourierGGSWCiphertext[uint64]
+	t.Run("FFTGGSWCiphertext", func(t *testing.T) {
+		var ctIn, ctOut tfhe.FFTGGSWCiphertext[uint64]
 
-		ctIn = enc.EncryptFourierGGSW([]int{0}, params.KeySwitchParameters())
+		ctIn = enc.EncryptFFTGGSW([]int{0}, params.KeySwitchParams())
 		n, err = ctIn.WriteTo(&buf)
 		assert.Equal(t, int(n), ctIn.ByteSize())
 		assert.NoError(t, err)
@@ -392,7 +392,7 @@ func TestMarshal(t *testing.T) {
 	t.Run("EvaluationKey", func(t *testing.T) {
 		var evkIn, evkOut tfhe.EvaluationKey[uint64]
 
-		evkIn = eval.EvaluationKey
+		evkIn = eval.EvalKey
 		n, err = evkIn.WriteTo(&buf)
 		assert.Equal(t, int(n), evkIn.ByteSize())
 		assert.NoError(t, err)
@@ -407,7 +407,7 @@ func TestMarshal(t *testing.T) {
 	t.Run("GLWEKeySwitchKey", func(t *testing.T) {
 		var kskIn, kskOut tfhe.GLWEKeySwitchKey[uint64]
 
-		kskIn = enc.GenGLWEKeySwitchKey(enc.SecretKey.GLWEKey, params.KeySwitchParameters())
+		kskIn = enc.GenGLWEKeySwitchKey(enc.SecretKey.GLWEKey, params.KeySwitchParams())
 		n, err = kskIn.WriteTo(&buf)
 		assert.Equal(t, int(n), kskIn.ByteSize())
 		assert.NoError(t, err)
@@ -441,11 +441,11 @@ func BenchmarkProgrammableBootstrap(b *testing.B) {
 
 		ct := enc.EncryptLWE(0)
 		ctOut := ct.Copy()
-		lut := eval.GenLookUpTable(func(x int) int { return 2*x + 1 })
+		lut := eval.GenLUT(func(x int) int { return 2*x + 1 })
 
 		b.Run(fmt.Sprintf("prec=%v", num.Log2(params.MessageModulus())), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				eval.BootstrapLUTAssign(ct, lut, ctOut)
+				eval.BootstrapLUTTo(ctOut, ct, lut)
 			}
 		})
 	}
@@ -479,7 +479,7 @@ func ExampleEvaluator_CMux() {
 
 	ct0 := enc.EncryptGLWE([]int{2})
 	ct1 := enc.EncryptGLWE([]int{5})
-	ctFlag := enc.EncryptFourierGGSW([]int{1}, gadgetParams)
+	ctFlag := enc.EncryptFFTGGSW([]int{1}, gadgetParams)
 
 	// We don't need evaluation key for CMUX.
 	eval := tfhe.NewEvaluator(params, tfhe.EvaluationKey[uint64]{})

@@ -11,9 +11,9 @@ import (
 // ByteSize returns the size of the key in bytes.
 func (sk GLWESecretKey[T]) ByteSize() int {
 	glweRank := len(sk.Value)
-	polyDegree := sk.Value[0].Degree()
+	polyRank := sk.Value[0].Rank()
 
-	return 16 + glweRank*polyDegree*num.ByteSizeT[T]()
+	return 16 + glweRank*polyRank*num.ByteSizeT[T]()
 }
 
 // headerWriteTo writes the header.
@@ -28,8 +28,8 @@ func (sk GLWESecretKey[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 	}
 	n += int64(nWrite)
 
-	polyDegree := sk.Value[0].Degree()
-	binary.BigEndian.PutUint64(buf[:], uint64(polyDegree))
+	polyRank := sk.Value[0].Rank()
+	binary.BigEndian.PutUint64(buf[:], uint64(polyRank))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
 	}
@@ -42,11 +42,11 @@ func (sk GLWESecretKey[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 func (sk GLWESecretKey[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
 
-	polyDegree := sk.Value[0].Degree()
-	buf := make([]byte, polyDegree*num.ByteSizeT[T]())
+	polyRank := sk.Value[0].Rank()
+	buf := make([]byte, polyRank*num.ByteSizeT[T]())
 
 	for i := range sk.Value {
-		if nWrite, err = vecWriteToBuffered(sk.Value[i].Coeffs, buf, w); err != nil {
+		if nWrite, err = vecWriteToBuf(sk.Value[i].Coeffs, buf, w); err != nil {
 			return n + nWrite, err
 		}
 		n += nWrite
@@ -60,7 +60,7 @@ func (sk GLWESecretKey[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 // The encoded form is as follows:
 //
 //	[8] GLWERank
-//	[8] PolyDegree
+//	[8] PolyRank
 //	    Value
 func (sk GLWESecretKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
@@ -97,9 +97,9 @@ func (sk *GLWESecretKey[T]) headerReadFrom(r io.Reader) (n int64, err error) {
 		return n + int64(nRead), err
 	}
 	n += int64(nRead)
-	polyDegree := int(binary.BigEndian.Uint64(buf[:]))
+	polyRank := int(binary.BigEndian.Uint64(buf[:]))
 
-	*sk = NewGLWESecretKeyCustom[T](glweRank, polyDegree)
+	*sk = NewGLWESecretKeyCustom[T](glweRank, polyRank)
 
 	return
 }
@@ -108,11 +108,11 @@ func (sk *GLWESecretKey[T]) headerReadFrom(r io.Reader) (n int64, err error) {
 func (sk *GLWESecretKey[T]) valueReadFrom(r io.Reader) (n int64, err error) {
 	var nRead int64
 
-	polyDegree := sk.Value[0].Degree()
-	buf := make([]byte, polyDegree*num.ByteSizeT[T]())
+	polyRank := sk.Value[0].Rank()
+	buf := make([]byte, polyRank*num.ByteSizeT[T]())
 
 	for i := range sk.Value {
-		if nRead, err = vecReadFromBuffered(sk.Value[i].Coeffs, buf, r); err != nil {
+		if nRead, err = vecReadFromBuf(sk.Value[i].Coeffs, buf, r); err != nil {
 			return n + nRead, err
 		}
 		n += nRead
@@ -155,9 +155,9 @@ func (sk *GLWESecretKey[T]) UnmarshalBinary(data []byte) error {
 // ByteSize returns the size of the key in bytes.
 func (pk GLWEPublicKey[T]) ByteSize() int {
 	glweRank := len(pk.Value)
-	polyDegree := pk.Value[0].Value[0].Degree()
+	polyRank := pk.Value[0].Value[0].Rank()
 
-	return 16 + glweRank*(glweRank+1)*polyDegree*num.ByteSizeT[T]()
+	return 16 + glweRank*(glweRank+1)*polyRank*num.ByteSizeT[T]()
 }
 
 // headerWriteTo writes the header.
@@ -172,8 +172,8 @@ func (pk GLWEPublicKey[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 	}
 	n += int64(nWrite)
 
-	polyDegree := pk.Value[0].Value[0].Degree()
-	binary.BigEndian.PutUint64(buf[:], uint64(polyDegree))
+	polyRank := pk.Value[0].Value[0].Rank()
+	binary.BigEndian.PutUint64(buf[:], uint64(polyRank))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
 	}
@@ -186,12 +186,12 @@ func (pk GLWEPublicKey[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 func (pk GLWEPublicKey[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
 
-	polyDegree := pk.Value[0].Value[0].Degree()
-	buf := make([]byte, polyDegree*num.ByteSizeT[T]())
+	polyRank := pk.Value[0].Value[0].Rank()
+	buf := make([]byte, polyRank*num.ByteSizeT[T]())
 
 	for i := range pk.Value {
 		for j := range pk.Value[i].Value {
-			if nWrite, err = vecWriteToBuffered(pk.Value[i].Value[j].Coeffs, buf, w); err != nil {
+			if nWrite, err = vecWriteToBuf(pk.Value[i].Value[j].Coeffs, buf, w); err != nil {
 				return n + nWrite, err
 			}
 			n += nWrite
@@ -206,7 +206,7 @@ func (pk GLWEPublicKey[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 // The encoded form is as follows:
 //
 //	[8] GLWERank
-//	[8] PolyDegree
+//	[8] PolyRank
 //	    Value
 func (pk GLWEPublicKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
@@ -243,9 +243,9 @@ func (pk *GLWEPublicKey[T]) headerReadFrom(r io.Reader) (n int64, err error) {
 		return n + int64(nRead), err
 	}
 	n += int64(nRead)
-	polyDegree := int(binary.BigEndian.Uint64(buf[:]))
+	polyRank := int(binary.BigEndian.Uint64(buf[:]))
 
-	*pk = NewGLWEPublicKeyCustom[T](glweRank, polyDegree)
+	*pk = NewGLWEPublicKeyCustom[T](glweRank, polyRank)
 
 	return
 }
@@ -254,12 +254,12 @@ func (pk *GLWEPublicKey[T]) headerReadFrom(r io.Reader) (n int64, err error) {
 func (pk *GLWEPublicKey[T]) valueReadFrom(r io.Reader) (n int64, err error) {
 	var nRead int64
 
-	polyDegree := pk.Value[0].Value[0].Degree()
-	buf := make([]byte, polyDegree*num.ByteSizeT[T]())
+	polyRank := pk.Value[0].Value[0].Rank()
+	buf := make([]byte, polyRank*num.ByteSizeT[T]())
 
 	for i := range pk.Value {
 		for j := range pk.Value[i].Value {
-			if nRead, err = vecReadFromBuffered(pk.Value[i].Value[j].Coeffs, buf, r); err != nil {
+			if nRead, err = vecReadFromBuf(pk.Value[i].Value[j].Coeffs, buf, r); err != nil {
 				return n + nRead, err
 			}
 			n += nRead
@@ -302,9 +302,9 @@ func (pk *GLWEPublicKey[T]) UnmarshalBinary(data []byte) error {
 
 // ByteSize returns the size of the plaintext in bytes.
 func (pt GLWEPlaintext[T]) ByteSize() int {
-	polyDegree := pt.Value.Degree()
+	polyRank := pt.Value.Rank()
 
-	return 8 + polyDegree*num.ByteSizeT[T]()
+	return 8 + polyRank*num.ByteSizeT[T]()
 }
 
 // headerWriteTo writes the header.
@@ -312,8 +312,8 @@ func (pt GLWEPlaintext[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int
 	var buf [8]byte
 
-	polyDegree := pt.Value.Degree()
-	binary.BigEndian.PutUint64(buf[:], uint64(polyDegree))
+	polyRank := pt.Value.Rank()
+	binary.BigEndian.PutUint64(buf[:], uint64(polyRank))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
 	}
@@ -338,7 +338,7 @@ func (pt GLWEPlaintext[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 //
 // The encoded form is as follows:
 //
-//	[8] PolyDegree
+//	[8] PolyRank
 //	    Value
 func (pt GLWEPlaintext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
@@ -369,9 +369,9 @@ func (pt *GLWEPlaintext[T]) headerReadFrom(r io.Reader) (n int64, err error) {
 		return n + int64(nRead), err
 	}
 	n += int64(nRead)
-	polyDegree := int(binary.BigEndian.Uint64(buf[:]))
+	polyRank := int(binary.BigEndian.Uint64(buf[:]))
 
-	*pt = NewGLWEPlaintextCustom[T](polyDegree)
+	*pt = NewGLWEPlaintextCustom[T](polyRank)
 
 	return
 }
@@ -415,9 +415,9 @@ func (pt *GLWEPlaintext[T]) UnmarshalBinary(data []byte) error {
 // ByteSize returns the size of the ciphertext in bytes.
 func (ct GLWECiphertext[T]) ByteSize() int {
 	glweRank := len(ct.Value) - 1
-	polyDegree := ct.Value[0].Degree()
+	polyRank := ct.Value[0].Rank()
 
-	return 16 + (glweRank+1)*polyDegree*num.ByteSizeT[T]()
+	return 16 + (glweRank+1)*polyRank*num.ByteSizeT[T]()
 }
 
 // headerWriteTo writes the header.
@@ -432,8 +432,8 @@ func (ct GLWECiphertext[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 	}
 	n += int64(nWrite)
 
-	polyDegree := ct.Value[0].Degree()
-	binary.BigEndian.PutUint64(buf[:], uint64(polyDegree))
+	polyRank := ct.Value[0].Rank()
+	binary.BigEndian.PutUint64(buf[:], uint64(polyRank))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
 	}
@@ -446,11 +446,11 @@ func (ct GLWECiphertext[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 func (ct GLWECiphertext[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
 
-	polyDegree := ct.Value[0].Degree()
-	buf := make([]byte, polyDegree*num.ByteSizeT[T]())
+	polyRank := ct.Value[0].Rank()
+	buf := make([]byte, polyRank*num.ByteSizeT[T]())
 
 	for _, p := range ct.Value {
-		if nWrite, err = vecWriteToBuffered(p.Coeffs, buf, w); err != nil {
+		if nWrite, err = vecWriteToBuf(p.Coeffs, buf, w); err != nil {
 			return n + nWrite, err
 		}
 		n += nWrite
@@ -464,7 +464,7 @@ func (ct GLWECiphertext[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 // The encoded form is as follows:
 //
 //	[8] GLWERank
-//	[8] PolyDegree
+//	[8] PolyRank
 //	    Value
 func (ct GLWECiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
@@ -501,9 +501,9 @@ func (ct *GLWECiphertext[T]) headerReadFrom(r io.Reader) (n int64, err error) {
 		return n + int64(nRead), err
 	}
 	n += int64(nRead)
-	polyDegree := int(binary.BigEndian.Uint64(buf[:]))
+	polyRank := int(binary.BigEndian.Uint64(buf[:]))
 
-	*ct = NewGLWECiphertextCustom[T](glweRank, polyDegree)
+	*ct = NewGLWECiphertextCustom[T](glweRank, polyRank)
 
 	return
 }
@@ -512,11 +512,11 @@ func (ct *GLWECiphertext[T]) headerReadFrom(r io.Reader) (n int64, err error) {
 func (ct *GLWECiphertext[T]) valueReadFrom(r io.Reader) (n int64, err error) {
 	var nRead int64
 
-	polyDegree := ct.Value[0].Degree()
-	buf := make([]byte, polyDegree*num.ByteSizeT[T]())
+	polyRank := ct.Value[0].Rank()
+	buf := make([]byte, polyRank*num.ByteSizeT[T]())
 
 	for _, p := range ct.Value {
-		if nRead, err = vecReadFromBuffered(p.Coeffs, buf, r); err != nil {
+		if nRead, err = vecReadFromBuf(p.Coeffs, buf, r); err != nil {
 			return n + nRead, err
 		}
 		n += nRead
@@ -560,9 +560,9 @@ func (ct *GLWECiphertext[T]) UnmarshalBinary(data []byte) error {
 func (ct GLevCiphertext[T]) ByteSize() int {
 	level := len(ct.Value)
 	glweRank := len(ct.Value[0].Value) - 1
-	polyDegree := ct.Value[0].Value[0].Degree()
+	polyRank := ct.Value[0].Value[0].Rank()
 
-	return 32 + level*(glweRank+1)*polyDegree*num.ByteSizeT[T]()
+	return 32 + level*(glweRank+1)*polyRank*num.ByteSizeT[T]()
 }
 
 // headerWriteTo writes the header.
@@ -570,7 +570,7 @@ func (ct GLevCiphertext[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int
 	var buf [8]byte
 
-	base := ct.GadgetParameters.base
+	base := ct.GadgetParams.base
 	binary.BigEndian.PutUint64(buf[:], uint64(base))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
@@ -591,8 +591,8 @@ func (ct GLevCiphertext[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 	}
 	n += int64(nWrite)
 
-	polyDegree := ct.Value[0].Value[0].Degree()
-	binary.BigEndian.PutUint64(buf[:], uint64(polyDegree))
+	polyRank := ct.Value[0].Value[0].Rank()
+	binary.BigEndian.PutUint64(buf[:], uint64(polyRank))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
 	}
@@ -605,12 +605,12 @@ func (ct GLevCiphertext[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 func (ct GLevCiphertext[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
 
-	polyDegree := ct.Value[0].Value[0].Degree()
-	buf := make([]byte, polyDegree*num.ByteSizeT[T]())
+	polyRank := ct.Value[0].Value[0].Rank()
+	buf := make([]byte, polyRank*num.ByteSizeT[T]())
 
 	for i := range ct.Value {
 		for j := range ct.Value[i].Value {
-			if nWrite, err = vecWriteToBuffered(ct.Value[i].Value[j].Coeffs, buf, w); err != nil {
+			if nWrite, err = vecWriteToBuf(ct.Value[i].Value[j].Coeffs, buf, w); err != nil {
 				return n + nWrite, err
 			}
 			n += nWrite
@@ -627,7 +627,7 @@ func (ct GLevCiphertext[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 //	[8] Base
 //	[8] Level
 //	[8] GLWERank
-//	[8] PolyDegree
+//	[8] PolyRank
 //	    Value
 func (ct GLevCiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
@@ -676,9 +676,9 @@ func (ct *GLevCiphertext[T]) headerReadFrom(r io.Reader) (n int64, err error) {
 		return n + int64(nRead), err
 	}
 	n += int64(nRead)
-	polyDegree := int(binary.BigEndian.Uint64(buf[:]))
+	polyRank := int(binary.BigEndian.Uint64(buf[:]))
 
-	*ct = NewGLevCiphertextCustom(glweRank, polyDegree, GadgetParametersLiteral[T]{Base: base, Level: level}.Compile())
+	*ct = NewGLevCiphertextCustom(glweRank, polyRank, GadgetParametersLiteral[T]{Base: base, Level: level}.Compile())
 
 	return
 }
@@ -687,12 +687,12 @@ func (ct *GLevCiphertext[T]) headerReadFrom(r io.Reader) (n int64, err error) {
 func (ct *GLevCiphertext[T]) valueReadFrom(r io.Reader) (n int64, err error) {
 	var nRead int64
 
-	polyDegree := ct.Value[0].Value[0].Degree()
-	buf := make([]byte, polyDegree*num.ByteSizeT[T]())
+	polyRank := ct.Value[0].Value[0].Rank()
+	buf := make([]byte, polyRank*num.ByteSizeT[T]())
 
 	for i := range ct.Value {
 		for j := range ct.Value[i].Value {
-			if nRead, err = vecReadFromBuffered(ct.Value[i].Value[j].Coeffs, buf, r); err != nil {
+			if nRead, err = vecReadFromBuf(ct.Value[i].Value[j].Coeffs, buf, r); err != nil {
 				return n + nRead, err
 			}
 			n += nRead
@@ -737,9 +737,9 @@ func (ct *GLevCiphertext[T]) UnmarshalBinary(data []byte) error {
 func (ct GGSWCiphertext[T]) ByteSize() int {
 	glweRank := len(ct.Value) - 1
 	level := len(ct.Value[0].Value)
-	polyDegree := ct.Value[0].Value[0].Value[0].Degree()
+	polyRank := ct.Value[0].Value[0].Value[0].Rank()
 
-	return 32 + (glweRank+1)*level*(glweRank+1)*polyDegree*num.ByteSizeT[T]()
+	return 32 + (glweRank+1)*level*(glweRank+1)*polyRank*num.ByteSizeT[T]()
 }
 
 // headerWriteTo writes the header.
@@ -747,7 +747,7 @@ func (ct GGSWCiphertext[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int
 	var buf [8]byte
 
-	base := ct.GadgetParameters.base
+	base := ct.GadgetParams.base
 	binary.BigEndian.PutUint64(buf[:], uint64(base))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
@@ -768,8 +768,8 @@ func (ct GGSWCiphertext[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 	}
 	n += int64(nWrite)
 
-	polyDegree := ct.Value[0].Value[0].Value[0].Degree()
-	binary.BigEndian.PutUint64(buf[:], uint64(polyDegree))
+	polyRank := ct.Value[0].Value[0].Value[0].Rank()
+	binary.BigEndian.PutUint64(buf[:], uint64(polyRank))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
 	}
@@ -782,13 +782,13 @@ func (ct GGSWCiphertext[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 func (ct GGSWCiphertext[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
 
-	polyDegree := ct.Value[0].Value[0].Value[0].Degree()
-	buf := make([]byte, polyDegree*num.ByteSizeT[T]())
+	polyRank := ct.Value[0].Value[0].Value[0].Rank()
+	buf := make([]byte, polyRank*num.ByteSizeT[T]())
 
 	for i := range ct.Value {
 		for j := range ct.Value[i].Value {
 			for k := range ct.Value[i].Value[j].Value {
-				if nWrite, err = vecWriteToBuffered(ct.Value[i].Value[j].Value[k].Coeffs, buf, w); err != nil {
+				if nWrite, err = vecWriteToBuf(ct.Value[i].Value[j].Value[k].Coeffs, buf, w); err != nil {
 					return n + nWrite, err
 				}
 				n += nWrite
@@ -806,7 +806,7 @@ func (ct GGSWCiphertext[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 //	[8] Base
 //	[8] Level
 //	[8] GLWERank
-//	[8] PolyDegree
+//	[8] PolyRank
 //	    Value
 func (ct GGSWCiphertext[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
@@ -855,9 +855,9 @@ func (ct *GGSWCiphertext[T]) headerReadFrom(r io.Reader) (n int64, err error) {
 		return n + int64(nRead), err
 	}
 	n += int64(nRead)
-	polyDegree := int(binary.BigEndian.Uint64(buf[:]))
+	polyRank := int(binary.BigEndian.Uint64(buf[:]))
 
-	*ct = NewGGSWCiphertextCustom(glweRank, polyDegree, GadgetParametersLiteral[T]{Base: base, Level: level}.Compile())
+	*ct = NewGGSWCiphertextCustom(glweRank, polyRank, GadgetParametersLiteral[T]{Base: base, Level: level}.Compile())
 
 	return
 }
@@ -866,13 +866,13 @@ func (ct *GGSWCiphertext[T]) headerReadFrom(r io.Reader) (n int64, err error) {
 func (ct *GGSWCiphertext[T]) valueReadFrom(r io.Reader) (n int64, err error) {
 	var nRead int64
 
-	polyDegree := ct.Value[0].Value[0].Value[0].Degree()
-	buf := make([]byte, polyDegree*num.ByteSizeT[T]())
+	polyRank := ct.Value[0].Value[0].Value[0].Rank()
+	buf := make([]byte, polyRank*num.ByteSizeT[T]())
 
 	for i := range ct.Value {
 		for j := range ct.Value[i].Value {
 			for k := range ct.Value[i].Value[j].Value {
-				if nRead, err = vecReadFromBuffered(ct.Value[i].Value[j].Value[k].Coeffs, buf, r); err != nil {
+				if nRead, err = vecReadFromBuf(ct.Value[i].Value[j].Value[k].Coeffs, buf, r); err != nil {
 					return n + nRead, err
 				}
 				n += nRead

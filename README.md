@@ -61,7 +61,7 @@ enc := tfhe.NewEncryptor(params)
 
 ct0 := enc.EncryptGLWE([]int{2})
 ct1 := enc.EncryptGLWE([]int{5})
-ctFlag := enc.EncryptFourierGGSW([]int{1}, gadgetParams)
+ctFlag := enc.EncryptFFTGGSW([]int{1}, gadgetParams)
 
 // We don't need evaluation key for CMUX.
 eval := tfhe.NewEvaluator(params, tfhe.EvaluationKey[uint64]{})
@@ -103,8 +103,8 @@ eval := tfhe.NewBinaryEvaluator(params, enc.GenEvaluationKeyParallel())
 ctXNOR := tfhe.NewLWECiphertext(params)
 ctOut := eval.XNOR(ct0[0], ct1[0])
 for i := 1; i < bits; i++ {
-	eval.XNORAssign(ct0[i], ct1[i], ctXNOR)
-	eval.ANDAssign(ctXNOR, ctOut, ctOut)
+  eval.XNORTo(ctXNOR, ct0[i], ct1[i])
+  eval.ANDTo(ctOut, ctXNOR, ctOut)
 }
 
 fmt.Println(enc.DecryptLWEBool(ctOut))

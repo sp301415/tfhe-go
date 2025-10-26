@@ -1,24 +1,24 @@
 package tfhe
 
-// EncryptFourierGLWE encodes and encrypts integer messages to FourierGLWE ciphertext.
-func (e *PublicEncryptor[T]) EncryptFourierGLWE(messages []int) FourierGLWECiphertext[T] {
-	return e.EncryptFourierGLWEPlaintext(e.EncodeGLWE(messages))
+// EncryptFFTGLWE encodes and encrypts integer messages to FFTGLWE ciphertext.
+func (e *PublicEncryptor[T]) EncryptFFTGLWE(messages []int) FFTGLWECiphertext[T] {
+	return e.EncryptFFTGLWEPlaintext(e.EncodeGLWE(messages))
 }
 
-// EncryptFourierGLWEAssign encrypts and encrypts integer messages to FourierGLWE ciphertext and writes it to ctOut.
-func (e *PublicEncryptor[T]) EncryptFourierGLWEAssign(messages []int, ctOut FourierGLWECiphertext[T]) {
-	e.EncryptFourierGLWEPlaintextAssign(e.EncodeGLWE(messages), ctOut)
+// EncryptFFTGLWETo encrypts and encrypts integer messages to FFTGLWE ciphertext and writes it to ctOut.
+func (e *PublicEncryptor[T]) EncryptFFTGLWETo(ctOut FFTGLWECiphertext[T], messages []int) {
+	e.EncryptFFTGLWEPlaintextTo(ctOut, e.EncodeGLWE(messages))
 }
 
-// EncryptFourierGLWEPlaintext encrypts GLWE plaintext to FourierGLWE ciphertext.
-func (e *PublicEncryptor[T]) EncryptFourierGLWEPlaintext(pt GLWEPlaintext[T]) FourierGLWECiphertext[T] {
-	ct := NewFourierGLWECiphertext(e.Parameters)
-	e.EncryptFourierGLWEPlaintextAssign(pt, ct)
-	return ct
+// EncryptFFTGLWEPlaintext encrypts GLWE plaintext to FFTGLWE ciphertext.
+func (e *PublicEncryptor[T]) EncryptFFTGLWEPlaintext(pt GLWEPlaintext[T]) FFTGLWECiphertext[T] {
+	ctOut := NewFFTGLWECiphertext(e.Params)
+	e.EncryptFFTGLWEPlaintextTo(ctOut, pt)
+	return ctOut
 }
 
-// EncryptFourierGLWEPlaintextAssign encrypts GLWE plaintext to FourierGLWE ciphertext and writes it to ctOut.
-func (e *PublicEncryptor[T]) EncryptFourierGLWEPlaintextAssign(pt GLWEPlaintext[T], ctOut FourierGLWECiphertext[T]) {
-	e.EncryptGLWEPlaintextAssign(pt, e.buffer.ctGLWE)
-	e.ToFourierGLWECiphertextAssign(e.buffer.ctGLWE, ctOut)
+// EncryptFFTGLWEPlaintextTo encrypts GLWE plaintext to FFTGLWE ciphertext and writes it to ctOut.
+func (e *PublicEncryptor[T]) EncryptFFTGLWEPlaintextTo(ctOut FFTGLWECiphertext[T], pt GLWEPlaintext[T]) {
+	e.EncryptGLWEPlaintextTo(e.buf.ctGLWE, pt)
+	e.FFTGLWECiphertextTo(ctOut, e.buf.ctGLWE)
 }

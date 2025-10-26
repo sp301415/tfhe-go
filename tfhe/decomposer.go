@@ -14,17 +14,17 @@ type Decomposer[T TorusInt] struct {
 	// PolyEvaluator is a PolyEvaluator for this Decomposer.
 	PolyEvaluator *poly.Evaluator[T]
 
-	buffer decompositionBuffer[T]
+	buf decomposerBuffer[T]
 }
 
-// decompositionBuffer is a buffer for Decomposer.
-type decompositionBuffer[T TorusInt] struct {
-	// scalarDecomposed is the scalarDecomposed scalar.
-	scalarDecomposed []T
-	// polyDecomposed is the decomposed polynomial.
-	polyDecomposed []poly.Poly[T]
-	// polyFourierDecomposed is the decomposed polynomial in Fourier domain.
-	polyFourierDecomposed []poly.FourierPoly
+// decomposerBuffer is a buffer for Decomposer.
+type decomposerBuffer[T TorusInt] struct {
+	// cDcmp is the cDcmp scalar.
+	cDcmp []T
+	// pDcmp is the decomposed polynomial.
+	pDcmp []poly.Poly[T]
+	// fpDcmp is the decomposed polynomial in Fourier domain.
+	fpDcmp []poly.FFTPoly
 }
 
 // NewDecomposer creates a new Decomposer.
@@ -32,87 +32,87 @@ func NewDecomposer[T TorusInt](N int) *Decomposer[T] {
 	return &Decomposer[T]{
 		PolyEvaluator: poly.NewEvaluator[T](N),
 
-		buffer: decompositionBuffer[T]{},
+		buf: decomposerBuffer[T]{},
 	}
 }
 
 // ShallowCopy returns a shallow copy of this Decomposer.
 // Returned Decomposer is safe for concurrent use.
 func (d *Decomposer[T]) ShallowCopy() *Decomposer[T] {
-	decompositionBufferCopy := decompositionBuffer[T]{
-		scalarDecomposed:      make([]T, len(d.buffer.scalarDecomposed)),
-		polyDecomposed:        make([]poly.Poly[T], len(d.buffer.polyDecomposed)),
-		polyFourierDecomposed: make([]poly.FourierPoly, len(d.buffer.polyFourierDecomposed)),
+	bufCopy := decomposerBuffer[T]{
+		cDcmp:  make([]T, len(d.buf.cDcmp)),
+		pDcmp:  make([]poly.Poly[T], len(d.buf.pDcmp)),
+		fpDcmp: make([]poly.FFTPoly, len(d.buf.fpDcmp)),
 	}
 
-	for i := range decompositionBufferCopy.polyDecomposed {
-		decompositionBufferCopy.polyDecomposed[i] = d.PolyEvaluator.NewPoly()
+	for i := range bufCopy.pDcmp {
+		bufCopy.pDcmp[i] = d.PolyEvaluator.NewPoly()
 	}
-	for i := range decompositionBufferCopy.polyFourierDecomposed {
-		decompositionBufferCopy.polyFourierDecomposed[i] = d.PolyEvaluator.NewFourierPoly()
+	for i := range bufCopy.fpDcmp {
+		bufCopy.fpDcmp[i] = d.PolyEvaluator.NewFFTPoly()
 	}
 
 	return &Decomposer[T]{
 		PolyEvaluator: d.PolyEvaluator.ShallowCopy(),
 
-		buffer: decompositionBufferCopy,
+		buf: bufCopy,
 	}
 }
 
-// ScalarDecomposedBuffer returns a internal buffer for scalar decomposition with respect to gadgetParams.
+// ScalarBuffer returns a internal buffer for scalar decomposition with respect to gadgetParams.
 //
 // You can also set the length of the internal buffer by calling this function and ignoring the return value.
-func (d *Decomposer[T]) ScalarDecomposedBuffer(gadgetParams GadgetParameters[T]) []T {
-	if len(d.buffer.scalarDecomposed) >= gadgetParams.level {
-		return d.buffer.scalarDecomposed[:gadgetParams.level]
+func (d *Decomposer[T]) ScalarBuffer(gadgetParams GadgetParameters[T]) []T {
+	if len(d.buf.cDcmp) >= gadgetParams.level {
+		return d.buf.cDcmp[:gadgetParams.level]
 	}
 
-	oldLen := len(d.buffer.scalarDecomposed)
-	d.buffer.scalarDecomposed = append(d.buffer.scalarDecomposed, make([]T, gadgetParams.level-oldLen)...)
-	return d.buffer.scalarDecomposed
+	oldLen := len(d.buf.cDcmp)
+	d.buf.cDcmp = append(d.buf.cDcmp, make([]T, gadgetParams.level-oldLen)...)
+	return d.buf.cDcmp
 }
 
-// PolyDecomposedBuffer returns a internal buffer for polynomial decomposition with respect to gadgetParams.
+// PolyBuffer returns a internal buffer for polynomial decomposition with respect to gadgetParams.
 //
 // You can also set the length of the internal buffer by calling this function and ignoring the return value.
-func (d *Decomposer[T]) PolyDecomposedBuffer(gadgetParams GadgetParameters[T]) []poly.Poly[T] {
-	if len(d.buffer.polyDecomposed) >= gadgetParams.level {
-		return d.buffer.polyDecomposed[:gadgetParams.level]
+func (d *Decomposer[T]) PolyBuffer(gadgetParams GadgetParameters[T]) []poly.Poly[T] {
+	if len(d.buf.pDcmp) >= gadgetParams.level {
+		return d.buf.pDcmp[:gadgetParams.level]
 	}
 
-	oldLen := len(d.buffer.polyDecomposed)
-	d.buffer.polyDecomposed = append(d.buffer.polyDecomposed, make([]poly.Poly[T], gadgetParams.level-oldLen)...)
+	oldLen := len(d.buf.pDcmp)
+	d.buf.pDcmp = append(d.buf.pDcmp, make([]poly.Poly[T], gadgetParams.level-oldLen)...)
 	for i := oldLen; i < gadgetParams.level; i++ {
-		d.buffer.polyDecomposed[i] = d.PolyEvaluator.NewPoly()
+		d.buf.pDcmp[i] = d.PolyEvaluator.NewPoly()
 	}
-	return d.buffer.polyDecomposed
+	return d.buf.pDcmp
 }
 
-// PolyFourierDecomposedBuffer returns a internal buffer for polynomial decomposition in Fourier domain with respect to gadgetParams.
+// FFTPolyBuffer returns a internal buffer for polynomial decomposition in Fourier domain with respect to gadgetParams.
 //
 // You can also set the length of the internal buffer by calling this function and ignoring the return value.
-func (d *Decomposer[T]) PolyFourierDecomposedBuffer(gadgetParams GadgetParameters[T]) []poly.FourierPoly {
-	if len(d.buffer.polyFourierDecomposed) >= gadgetParams.level {
-		return d.buffer.polyFourierDecomposed[:gadgetParams.level]
+func (d *Decomposer[T]) FFTPolyBuffer(gadgetParams GadgetParameters[T]) []poly.FFTPoly {
+	if len(d.buf.fpDcmp) >= gadgetParams.level {
+		return d.buf.fpDcmp[:gadgetParams.level]
 	}
 
-	oldLen := len(d.buffer.polyFourierDecomposed)
-	d.buffer.polyFourierDecomposed = append(d.buffer.polyFourierDecomposed, make([]poly.FourierPoly, gadgetParams.level-oldLen)...)
+	oldLen := len(d.buf.fpDcmp)
+	d.buf.fpDcmp = append(d.buf.fpDcmp, make([]poly.FFTPoly, gadgetParams.level-oldLen)...)
 	for i := oldLen; i < gadgetParams.level; i++ {
-		d.buffer.polyFourierDecomposed[i] = d.PolyEvaluator.NewFourierPoly()
+		d.buf.fpDcmp[i] = d.PolyEvaluator.NewFFTPoly()
 	}
-	return d.buffer.polyFourierDecomposed
+	return d.buf.fpDcmp
 }
 
 // DecomposeScalar decomposes x with respect to gadgetParams.
 func (d *Decomposer[T]) DecomposeScalar(x T, gadgetParams GadgetParameters[T]) []T {
 	decomposedOut := make([]T, gadgetParams.level)
-	d.DecomposeScalarAssign(x, gadgetParams, decomposedOut)
+	d.DecomposeScalarTo(decomposedOut, x, gadgetParams)
 	return decomposedOut
 }
 
-// DecomposeScalarAssign decomposes x with respect to gadgetParams and writes it to decomposedOut.
-func (d *Decomposer[T]) DecomposeScalarAssign(x T, gadgetParams GadgetParameters[T], decomposedOut []T) {
+// DecomposeScalarTo decomposes x with respect to gadgetParams and writes it to decomposedOut.
+func (d *Decomposer[T]) DecomposeScalarTo(decomposedOut []T, x T, gadgetParams GadgetParameters[T]) {
 	u := num.DivRoundBits(x, gadgetParams.LogLastBaseQ())
 	for i := gadgetParams.level - 1; i >= 1; i-- {
 		decomposedOut[i] = u & (gadgetParams.base - 1)
@@ -128,33 +128,33 @@ func (d *Decomposer[T]) DecomposeScalarAssign(x T, gadgetParams GadgetParameters
 func (d *Decomposer[T]) DecomposePoly(p poly.Poly[T], gadgetParams GadgetParameters[T]) []poly.Poly[T] {
 	decomposedOut := make([]poly.Poly[T], gadgetParams.level)
 	for i := 0; i < gadgetParams.level; i++ {
-		decomposedOut[i] = poly.NewPoly[T](p.Degree())
+		decomposedOut[i] = poly.NewPoly[T](p.Rank())
 	}
-	d.DecomposePolyAssign(p, gadgetParams, decomposedOut)
+	d.DecomposePolyTo(decomposedOut, p, gadgetParams)
 	return decomposedOut
 }
 
-// DecomposePolyAssign decomposes p with respect to gadgetParams and writes it to decomposedOut.
-func (d *Decomposer[T]) DecomposePolyAssign(p poly.Poly[T], gadgetParams GadgetParameters[T], decomposedOut []poly.Poly[T]) {
-	decomposePolyAssign(p, gadgetParams, decomposedOut)
+// DecomposePolyTo decomposes p with respect to gadgetParams and writes it to decomposedOut.
+func (d *Decomposer[T]) DecomposePolyTo(decomposedOut []poly.Poly[T], p poly.Poly[T], gadgetParams GadgetParameters[T]) {
+	decomposePolyTo(decomposedOut, p, gadgetParams)
 }
 
 // FourierDecomposePoly decomposes p with respect to gadgetParams in Fourier domain.
-func (d *Decomposer[T]) FourierDecomposePoly(p poly.Poly[T], gadgetParams GadgetParameters[T]) []poly.FourierPoly {
-	decomposedOut := make([]poly.FourierPoly, gadgetParams.level)
+func (d *Decomposer[T]) FourierDecomposePoly(p poly.Poly[T], gadgetParams GadgetParameters[T]) []poly.FFTPoly {
+	decomposedOut := make([]poly.FFTPoly, gadgetParams.level)
 	for i := 0; i < gadgetParams.level; i++ {
-		decomposedOut[i] = d.PolyEvaluator.NewFourierPoly()
+		decomposedOut[i] = d.PolyEvaluator.NewFFTPoly()
 	}
-	d.FourierDecomposePolyAssign(p, gadgetParams, decomposedOut)
+	d.FourierDecomposePolyTo(decomposedOut, p, gadgetParams)
 	return decomposedOut
 }
 
-// FourierDecomposePolyAssign decomposes p with respect to gadgetParams in Fourier domain and writes it to decomposedOut.
-func (d *Decomposer[T]) FourierDecomposePolyAssign(p poly.Poly[T], gadgetParams GadgetParameters[T], decomposedOut []poly.FourierPoly) {
-	polyDecomposed := d.PolyDecomposedBuffer(gadgetParams)
-	decomposePolyAssign(p, gadgetParams, polyDecomposed)
+// FourierDecomposePolyTo decomposes p with respect to gadgetParams in Fourier domain and writes it to decomposedOut.
+func (d *Decomposer[T]) FourierDecomposePolyTo(decomposedOut []poly.FFTPoly, p poly.Poly[T], gadgetParams GadgetParameters[T]) {
+	pDcmp := d.PolyBuffer(gadgetParams)
+	decomposePolyTo(pDcmp, p, gadgetParams)
 	for i := 0; i < gadgetParams.level; i++ {
-		d.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[i], decomposedOut[i])
+		d.PolyEvaluator.FFTTo(decomposedOut[i], pDcmp[i])
 	}
 }
 
@@ -169,14 +169,14 @@ func (d *Decomposer[T]) RecomposeScalar(decomposed []T, gadgetParams GadgetParam
 
 // RecomposePoly recomposes decomposed with respect to gadgetParams.
 func (d *Decomposer[T]) RecomposePoly(decomposed []poly.Poly[T], gadgetParams GadgetParameters[T]) poly.Poly[T] {
-	pOut := poly.NewPoly[T](decomposed[0].Degree())
-	d.RecomposePolyAssign(decomposed, gadgetParams, pOut)
+	pOut := poly.NewPoly[T](decomposed[0].Rank())
+	d.RecomposePolyTo(pOut, decomposed, gadgetParams)
 	return pOut
 }
 
-// RecomposePolyAssign recomposes decomposed with respect to gadgetParams and writes it to pOut.
-func (d *Decomposer[T]) RecomposePolyAssign(decomposed []poly.Poly[T], gadgetParams GadgetParameters[T], pOut poly.Poly[T]) {
-	for i := 0; i < pOut.Degree(); i++ {
+// RecomposePolyTo recomposes decomposed with respect to gadgetParams and writes it to pOut.
+func (d *Decomposer[T]) RecomposePolyTo(pOut poly.Poly[T], decomposed []poly.Poly[T], gadgetParams GadgetParameters[T]) {
+	for i := 0; i < pOut.Rank(); i++ {
 		pOut.Coeffs[i] = 0
 		for j := 0; j < gadgetParams.level; j++ {
 			pOut.Coeffs[i] += decomposed[j].Coeffs[i] << gadgetParams.LogBaseQ(j)

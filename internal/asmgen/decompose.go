@@ -9,12 +9,12 @@ func decomposeConstants() {
 	ConstData("ONE", U64(1))
 }
 
-func decomposePolyAssignUint32AVX2() {
-	TEXT("decomposePolyAssignUint32AVX2", NOSPLIT, "func(p []uint32, base uint32, logBase uint32, logLastBaseQ uint32, decomposedOut [][]uint32)")
+func decomposePolyToUint32AVX2() {
+	TEXT("decomposePolyToUint32AVX2", NOSPLIT, "func(decomposedOut [][]uint32, p []uint32, base uint32, logBase uint32, logLastBaseQ uint32)")
 	Pragma("noescape")
 
-	p := Load(Param("p").Base(), GP64())
 	decomposedOut := Load(Param("decomposedOut").Base(), GP64())
+	p := Load(Param("p").Base(), GP64())
 
 	N := Load(Param("p").Len(), GP64())
 	level := Load(Param("decomposedOut").Len(), GP64())
@@ -22,9 +22,9 @@ func decomposePolyAssignUint32AVX2() {
 	// VET: go vet complains about VBROADCASTD on uint32 values.
 	// See https://github.com/golang/go/issues/47625.
 	base, logBase, logLastBaseQ := YMM(), YMM(), YMM()
-	VPBROADCASTD(NewParamAddr("base", 24), base)
-	VPBROADCASTD(NewParamAddr("logBase", 28), logBase)
-	VPBROADCASTD(NewParamAddr("logLastBaseQ", 32), logLastBaseQ)
+	VPBROADCASTD(NewParamAddr("base", 48), base)
+	VPBROADCASTD(NewParamAddr("logBase", 52), logBase)
+	VPBROADCASTD(NewParamAddr("logLastBaseQ", 56), logLastBaseQ)
 
 	one := YMM()
 	VPBROADCASTD(NewDataAddr(NewStaticSymbol("ONE"), 0), one)
@@ -105,20 +105,20 @@ func decomposePolyAssignUint32AVX2() {
 	RET()
 }
 
-func decomposePolyAssignUint64AVX2() {
-	TEXT("decomposePolyAssignUint64AVX2", NOSPLIT, "func(p []uint64, base uint64, logBase uint64, logLastBaseQ uint64, decomposedOut [][]uint64)")
+func decomposePolyToUint64AVX2() {
+	TEXT("decomposePolyToUint64AVX2", NOSPLIT, "func(decomposedOut [][]uint64, p []uint64, base uint64, logBase uint64, logLastBaseQ uint64)")
 	Pragma("noescape")
 
-	p := Load(Param("p").Base(), GP64())
 	decomposedOut := Load(Param("decomposedOut").Base(), GP64())
+	p := Load(Param("p").Base(), GP64())
 
 	N := Load(Param("p").Len(), GP64())
 	level := Load(Param("decomposedOut").Len(), GP64())
 
 	base, logBase, logLastBaseQ := YMM(), YMM(), YMM()
-	VPBROADCASTQ(NewParamAddr("base", 24), base)
-	VPBROADCASTQ(NewParamAddr("logBase", 32), logBase)
-	VPBROADCASTQ(NewParamAddr("logLastBaseQ", 40), logLastBaseQ)
+	VPBROADCASTQ(NewParamAddr("base", 48), base)
+	VPBROADCASTQ(NewParamAddr("logBase", 56), logBase)
+	VPBROADCASTQ(NewParamAddr("logLastBaseQ", 64), logLastBaseQ)
 
 	one := YMM()
 	VPBROADCASTQ(NewDataAddr(NewStaticSymbol("ONE"), 0), one)

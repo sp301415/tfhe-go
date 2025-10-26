@@ -2,197 +2,197 @@ package tfhe
 
 import "github.com/sp301415/tfhe-go/math/poly"
 
-// FourierGLWESecretKey is a GLWE key in Fourier domain.
-type FourierGLWESecretKey[T TorusInt] struct {
+// FFTGLWESecretKey is a GLWE key in Fourier domain.
+type FFTGLWESecretKey[T TorusInt] struct {
 	// Value has length GLWERank.
-	Value []poly.FourierPoly
+	Value []poly.FFTPoly
 }
 
-// NewFourierGLWESecretKey creates a new FourierGLWESecretKey.
-func NewFourierGLWESecretKey[T TorusInt](params Parameters[T]) FourierGLWESecretKey[T] {
-	sk := make([]poly.FourierPoly, params.glweRank)
+// NewFFTGLWESecretKey creates a new FFTGLWESecretKey.
+func NewFFTGLWESecretKey[T TorusInt](params Parameters[T]) FFTGLWESecretKey[T] {
+	sk := make([]poly.FFTPoly, params.glweRank)
 	for i := range sk {
-		sk[i] = poly.NewFourierPoly(params.polyDegree)
+		sk[i] = poly.NewFFTPoly(params.polyRank)
 	}
-	return FourierGLWESecretKey[T]{Value: sk}
+	return FFTGLWESecretKey[T]{Value: sk}
 }
 
-// NewFourierGLWESecretKeyCustom creates a new FourierGLWESecretKey with given dimension and polyDegree.
-func NewFourierGLWESecretKeyCustom[T TorusInt](glweRank, polyDegree int) FourierGLWESecretKey[T] {
-	sk := make([]poly.FourierPoly, glweRank)
+// NewFFTGLWESecretKeyCustom creates a new FFTGLWESecretKey with given dimension and polyRank.
+func NewFFTGLWESecretKeyCustom[T TorusInt](glweRank, polyRank int) FFTGLWESecretKey[T] {
+	sk := make([]poly.FFTPoly, glweRank)
 	for i := range sk {
-		sk[i] = poly.NewFourierPoly(polyDegree)
+		sk[i] = poly.NewFFTPoly(polyRank)
 	}
-	return FourierGLWESecretKey[T]{Value: sk}
+	return FFTGLWESecretKey[T]{Value: sk}
 }
 
 // Copy returns a copy of the key.
-func (sk FourierGLWESecretKey[T]) Copy() FourierGLWESecretKey[T] {
-	skCopy := make([]poly.FourierPoly, len(sk.Value))
+func (sk FFTGLWESecretKey[T]) Copy() FFTGLWESecretKey[T] {
+	skCopy := make([]poly.FFTPoly, len(sk.Value))
 	for i := range skCopy {
 		skCopy[i] = sk.Value[i].Copy()
 	}
-	return FourierGLWESecretKey[T]{Value: skCopy}
+	return FFTGLWESecretKey[T]{Value: skCopy}
 }
 
 // CopyFrom copies values from the key.
-func (sk *FourierGLWESecretKey[T]) CopyFrom(skIn FourierGLWESecretKey[T]) {
+func (sk *FFTGLWESecretKey[T]) CopyFrom(skIn FFTGLWESecretKey[T]) {
 	for i := range sk.Value {
 		sk.Value[i].CopyFrom(skIn.Value[i])
 	}
 }
 
 // Clear clears the key.
-func (sk *FourierGLWESecretKey[T]) Clear() {
+func (sk *FFTGLWESecretKey[T]) Clear() {
 	for i := range sk.Value {
 		sk.Value[i].Clear()
 	}
 }
 
-// FourierGLWECiphertext is a GLWE ciphertext in Fourier domain.
-type FourierGLWECiphertext[T TorusInt] struct {
+// FFTGLWECiphertext is a GLWE ciphertext in Fourier domain.
+type FFTGLWECiphertext[T TorusInt] struct {
 	// Value is ordered as [body, mask],
 	// since Go doesn't provide an easy way to take last element of slice.
 	// Therefore, value has length GLWERank + 1.
-	Value []poly.FourierPoly
+	Value []poly.FFTPoly
 }
 
-// NewFourierGLWECiphertext creates a new FourierGLWECiphertext.
-func NewFourierGLWECiphertext[T TorusInt](params Parameters[T]) FourierGLWECiphertext[T] {
-	ct := make([]poly.FourierPoly, params.glweRank+1)
+// NewFFTGLWECiphertext creates a new FFTGLWECiphertext.
+func NewFFTGLWECiphertext[T TorusInt](params Parameters[T]) FFTGLWECiphertext[T] {
+	ct := make([]poly.FFTPoly, params.glweRank+1)
 	for i := range ct {
-		ct[i] = poly.NewFourierPoly(params.polyDegree)
+		ct[i] = poly.NewFFTPoly(params.polyRank)
 	}
-	return FourierGLWECiphertext[T]{Value: ct}
+	return FFTGLWECiphertext[T]{Value: ct}
 }
 
-// NewFourierGLWECiphertextCustom creates a new FourierGLWECiphertext with given dimension and polyDegree.
-func NewFourierGLWECiphertextCustom[T TorusInt](glweRank, polyDegree int) FourierGLWECiphertext[T] {
-	ct := make([]poly.FourierPoly, glweRank+1)
+// NewFFTGLWECiphertextCustom creates a new FFTGLWECiphertext with given dimension and polyRank.
+func NewFFTGLWECiphertextCustom[T TorusInt](glweRank, polyRank int) FFTGLWECiphertext[T] {
+	ct := make([]poly.FFTPoly, glweRank+1)
 	for i := range ct {
-		ct[i] = poly.NewFourierPoly(polyDegree)
+		ct[i] = poly.NewFFTPoly(polyRank)
 	}
-	return FourierGLWECiphertext[T]{Value: ct}
+	return FFTGLWECiphertext[T]{Value: ct}
 }
 
 // Copy returns a copy of the ciphertext.
-func (ct FourierGLWECiphertext[T]) Copy() FourierGLWECiphertext[T] {
-	ctCopy := make([]poly.FourierPoly, len(ct.Value))
+func (ct FFTGLWECiphertext[T]) Copy() FFTGLWECiphertext[T] {
+	ctCopy := make([]poly.FFTPoly, len(ct.Value))
 	for i := range ctCopy {
 		ctCopy[i] = ct.Value[i].Copy()
 	}
-	return FourierGLWECiphertext[T]{Value: ctCopy}
+	return FFTGLWECiphertext[T]{Value: ctCopy}
 }
 
 // CopyFrom copies values from the ciphertext.
-func (ct *FourierGLWECiphertext[T]) CopyFrom(ctIn FourierGLWECiphertext[T]) {
+func (ct *FFTGLWECiphertext[T]) CopyFrom(ctIn FFTGLWECiphertext[T]) {
 	for i := range ct.Value {
 		ct.Value[i].CopyFrom(ctIn.Value[i])
 	}
 }
 
 // Clear clears the ciphertext.
-func (ct *FourierGLWECiphertext[T]) Clear() {
+func (ct *FFTGLWECiphertext[T]) Clear() {
 	for i := range ct.Value {
 		ct.Value[i].Clear()
 	}
 }
 
-// FourierGLevCiphertext is a leveled GLWE ciphertext in Fourier domain.
-type FourierGLevCiphertext[T TorusInt] struct {
-	GadgetParameters GadgetParameters[T]
+// FFTGLevCiphertext is a leveled GLWE ciphertext in Fourier domain.
+type FFTGLevCiphertext[T TorusInt] struct {
+	GadgetParams GadgetParameters[T]
 
 	// Value has length Level.
-	Value []FourierGLWECiphertext[T]
+	Value []FFTGLWECiphertext[T]
 }
 
-// NewFourierGLevCiphertext creates a new FourierGLevCiphertext.
-func NewFourierGLevCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetParameters[T]) FourierGLevCiphertext[T] {
-	ct := make([]FourierGLWECiphertext[T], gadgetParams.level)
+// NewFFTGLevCiphertext creates a new FFTGLevCiphertext.
+func NewFFTGLevCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetParameters[T]) FFTGLevCiphertext[T] {
+	ct := make([]FFTGLWECiphertext[T], gadgetParams.level)
 	for i := 0; i < gadgetParams.level; i++ {
-		ct[i] = NewFourierGLWECiphertext(params)
+		ct[i] = NewFFTGLWECiphertext(params)
 	}
-	return FourierGLevCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
+	return FFTGLevCiphertext[T]{Value: ct, GadgetParams: gadgetParams}
 }
 
-// NewFourierGLevCiphertextCustom creates a new FourierGLevCiphertext with given dimension and polyDegree.
-func NewFourierGLevCiphertextCustom[T TorusInt](glweRank, polyDegree int, gadgetParams GadgetParameters[T]) FourierGLevCiphertext[T] {
-	ct := make([]FourierGLWECiphertext[T], gadgetParams.level)
+// NewFFTGLevCiphertextCustom creates a new FFTGLevCiphertext with given dimension and polyRank.
+func NewFFTGLevCiphertextCustom[T TorusInt](glweRank, polyRank int, gadgetParams GadgetParameters[T]) FFTGLevCiphertext[T] {
+	ct := make([]FFTGLWECiphertext[T], gadgetParams.level)
 	for i := 0; i < gadgetParams.level; i++ {
-		ct[i] = NewFourierGLWECiphertextCustom[T](glweRank, polyDegree)
+		ct[i] = NewFFTGLWECiphertextCustom[T](glweRank, polyRank)
 	}
-	return FourierGLevCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
+	return FFTGLevCiphertext[T]{Value: ct, GadgetParams: gadgetParams}
 }
 
 // Copy returns a copy of the ciphertext.
-func (ct FourierGLevCiphertext[T]) Copy() FourierGLevCiphertext[T] {
-	ctCopy := make([]FourierGLWECiphertext[T], len(ct.Value))
+func (ct FFTGLevCiphertext[T]) Copy() FFTGLevCiphertext[T] {
+	ctCopy := make([]FFTGLWECiphertext[T], len(ct.Value))
 	for i := range ct.Value {
 		ctCopy[i] = ct.Value[i].Copy()
 	}
-	return FourierGLevCiphertext[T]{Value: ctCopy, GadgetParameters: ct.GadgetParameters}
+	return FFTGLevCiphertext[T]{Value: ctCopy, GadgetParams: ct.GadgetParams}
 }
 
 // CopyFrom copies values from the ciphertext.
-func (ct *FourierGLevCiphertext[T]) CopyFrom(ctIn FourierGLevCiphertext[T]) {
+func (ct *FFTGLevCiphertext[T]) CopyFrom(ctIn FFTGLevCiphertext[T]) {
 	for i := range ct.Value {
 		ct.Value[i].CopyFrom(ctIn.Value[i])
 	}
-	ct.GadgetParameters = ctIn.GadgetParameters
+	ct.GadgetParams = ctIn.GadgetParams
 }
 
 // Clear clears the ciphertext.
-func (ct *FourierGLevCiphertext[T]) Clear() {
+func (ct *FFTGLevCiphertext[T]) Clear() {
 	for i := range ct.Value {
 		ct.Value[i].Clear()
 	}
 }
 
-// FourierGGSWCiphertext represents an encrypted GGSW ciphertext in Fourier domain.
-type FourierGGSWCiphertext[T TorusInt] struct {
-	GadgetParameters GadgetParameters[T]
+// FFTGGSWCiphertext represents an encrypted GGSW ciphertext in Fourier domain.
+type FFTGGSWCiphertext[T TorusInt] struct {
+	GadgetParams GadgetParameters[T]
 
 	// Value has length GLWERank + 1.
-	Value []FourierGLevCiphertext[T]
+	Value []FFTGLevCiphertext[T]
 }
 
-// NewFourierGGSWCiphertext creates a new GGSW ciphertext.
-func NewFourierGGSWCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetParameters[T]) FourierGGSWCiphertext[T] {
-	ct := make([]FourierGLevCiphertext[T], params.glweRank+1)
+// NewFFTGGSWCiphertext creates a new GGSW ciphertext.
+func NewFFTGGSWCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetParameters[T]) FFTGGSWCiphertext[T] {
+	ct := make([]FFTGLevCiphertext[T], params.glweRank+1)
 	for i := 0; i < params.glweRank+1; i++ {
-		ct[i] = NewFourierGLevCiphertext(params, gadgetParams)
+		ct[i] = NewFFTGLevCiphertext(params, gadgetParams)
 	}
-	return FourierGGSWCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
+	return FFTGGSWCiphertext[T]{Value: ct, GadgetParams: gadgetParams}
 }
 
-// NewFourierGGSWCiphertextCustom creates a new GGSW ciphertext with given dimension and polyDegree.
-func NewFourierGGSWCiphertextCustom[T TorusInt](glweRank, polyDegree int, gadgetParams GadgetParameters[T]) FourierGGSWCiphertext[T] {
-	ct := make([]FourierGLevCiphertext[T], glweRank+1)
+// NewFFTGGSWCiphertextCustom creates a new GGSW ciphertext with given dimension and polyRank.
+func NewFFTGGSWCiphertextCustom[T TorusInt](glweRank, polyRank int, gadgetParams GadgetParameters[T]) FFTGGSWCiphertext[T] {
+	ct := make([]FFTGLevCiphertext[T], glweRank+1)
 	for i := 0; i < glweRank+1; i++ {
-		ct[i] = NewFourierGLevCiphertextCustom(glweRank, polyDegree, gadgetParams)
+		ct[i] = NewFFTGLevCiphertextCustom(glweRank, polyRank, gadgetParams)
 	}
-	return FourierGGSWCiphertext[T]{Value: ct, GadgetParameters: gadgetParams}
+	return FFTGGSWCiphertext[T]{Value: ct, GadgetParams: gadgetParams}
 }
 
 // Copy returns a copy of the ciphertext.
-func (ct FourierGGSWCiphertext[T]) Copy() FourierGGSWCiphertext[T] {
-	ctCopy := make([]FourierGLevCiphertext[T], len(ct.Value))
+func (ct FFTGGSWCiphertext[T]) Copy() FFTGGSWCiphertext[T] {
+	ctCopy := make([]FFTGLevCiphertext[T], len(ct.Value))
 	for i := range ct.Value {
 		ctCopy[i] = ct.Value[i].Copy()
 	}
-	return FourierGGSWCiphertext[T]{Value: ctCopy, GadgetParameters: ct.GadgetParameters}
+	return FFTGGSWCiphertext[T]{Value: ctCopy, GadgetParams: ct.GadgetParams}
 }
 
 // CopyFrom copies values from the ciphertext.
-func (ct *FourierGGSWCiphertext[T]) CopyFrom(ctIn FourierGGSWCiphertext[T]) {
+func (ct *FFTGGSWCiphertext[T]) CopyFrom(ctIn FFTGGSWCiphertext[T]) {
 	for i := range ct.Value {
 		ct.Value[i].CopyFrom(ctIn.Value[i])
 	}
-	ct.GadgetParameters = ctIn.GadgetParameters
+	ct.GadgetParams = ctIn.GadgetParams
 }
 
 // Clear clears the ciphertext.
-func (ct *FourierGGSWCiphertext[T]) Clear() {
+func (ct *FFTGGSWCiphertext[T]) Clear() {
 	for i := range ct.Value {
 		ct.Value[i].Clear()
 	}

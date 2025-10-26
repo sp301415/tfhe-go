@@ -5,7 +5,7 @@
 package tfhe
 
 //go:noescape
-func decomposePolyAssignUint32AVX2(p []uint32, base uint32, logBase uint32, logLastBaseQ uint32, decomposedOut [][]uint32)
+func decomposePolyToUint32AVX2(decomposedOut [][]uint32, p []uint32, base uint32, logBase uint32, logLastBaseQ uint32)
 
 //go:noescape
-func decomposePolyAssignUint64AVX2(p []uint64, base uint64, logBase uint64, logLastBaseQ uint64, decomposedOut [][]uint64)
+func decomposePolyToUint64AVX2(decomposedOut [][]uint64, p []uint64, base uint64, logBase uint64, logLastBaseQ uint64)

@@ -33,7 +33,7 @@ func TestBinaryParams(t *testing.T) {
 
 		msStdDev := params.EstimateModSwitchStdDev()
 		brStdDev := params.EstimateBlindRotateStdDev()
-		ksStdDev := params.EstimateKeySwitchForBootstrapStdDev()
+		ksStdDev := params.EstimateDefaultKeySwitchStdDev()
 		maxErrorStdDev := math.Sqrt(msStdDev*msStdDev + 4*brStdDev*brStdDev + 4*ksStdDev*ksStdDev)
 
 		bound := math.Exp2(float64(params.LogQ())) / 16
@@ -45,7 +45,7 @@ func TestBinaryParams(t *testing.T) {
 		params := tfhe.ParamsBinaryCompact.Compile()
 
 		msStdDev := params.EstimateModSwitchStdDev()
-		ksStdDev := params.EstimateKeySwitchForBootstrapStdDev()
+		ksStdDev := params.EstimateDefaultKeySwitchStdDev()
 		brStdDev := params.EstimateBlindRotateStdDev()
 		maxErrorStdDev := math.Sqrt(msStdDev*msStdDev + ksStdDev*ksStdDev + 4*brStdDev*brStdDev)
 
@@ -111,7 +111,7 @@ func TestBinaryEvaluator(t *testing.T) {
 
 		ctOut := encBinary.EncryptLWEBits(0, 4)
 		for i := range ctOut {
-			evalBinary.XORAssign(ct0[i], ct1[i], ctOut[i])
+			evalBinary.XORTo(ctOut[i], ct0[i], ct1[i])
 		}
 
 		assert.Equal(t, encBinary.DecryptLWEBits(ctOut), msg0^msg1)
@@ -120,8 +120,8 @@ func TestBinaryEvaluator(t *testing.T) {
 	t.Run("BootstrapOriginal", func(t *testing.T) {
 		paramsBinaryOriginal := paramsBinary.Literal().WithBlockSize(1).Compile()
 
-		originalEncryptor := tfhe.NewBinaryEncryptorWithKey(paramsBinaryOriginal, encBinary.BaseEncryptor.SecretKey)
-		originalEvaluator := tfhe.NewBinaryEvaluator(paramsBinaryOriginal, evalBinary.BaseEvaluator.EvaluationKey)
+		originalEncryptor := tfhe.NewBinaryEncryptorWithKey(paramsBinaryOriginal, encBinary.Encryptor.SecretKey)
+		originalEvaluator := tfhe.NewBinaryEvaluator(paramsBinaryOriginal, evalBinary.Evaluator.EvalKey)
 
 		for _, tc := range tests {
 			assert.Equal(t, tc.pt0 && tc.pt1, originalEncryptor.DecryptLWEBool(originalEvaluator.AND(tc.ct0, tc.ct1)))
@@ -136,7 +136,7 @@ func BenchmarkGateBootstrap(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		evalBinary.ANDAssign(ct0, ct1, ctOut)
+		evalBinary.ANDTo(ctOut, ct0, ct1)
 	}
 }
 
@@ -154,8 +154,8 @@ func ExampleBinaryEvaluator() {
 	ctXNOR := tfhe.NewLWECiphertext(params)
 	ctOut := eval.XNOR(ct0[0], ct1[0])
 	for i := 1; i < bits; i++ {
-		eval.XNORAssign(ct0[i], ct1[i], ctXNOR)
-		eval.ANDAssign(ctXNOR, ctOut, ctOut)
+		eval.XNORTo(ctXNOR, ct0[i], ct1[i])
+		eval.ANDTo(ctOut, ctXNOR, ctOut)
 	}
 
 	fmt.Println(enc.DecryptLWEBool(ctOut))

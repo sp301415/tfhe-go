@@ -10,11 +10,11 @@ type PublicEncryptor[T tfhe.TorusInt] struct {
 	*tfhe.Encoder[T]
 	// GLWETansformer is an embedded GLWETransformer for this PublicEncryptor.
 	*GLWETransformer[T]
-	// SingleKeyPublicEncryptor is a single-key PublicEncryptor for this PublicEncryptor.
-	SingleKeyPublicEncryptor *tfhe.PublicEncryptor[T]
+	// SubEncryptor is a single-key PublicEncryptor for this PublicEncryptor.
+	SubEncryptor *tfhe.PublicEncryptor[T]
 
-	// Parameters is the parameters for this PublicEncryptor.
-	Parameters Parameters[T]
+	// Params is the parameters for this PublicEncryptor.
+	Params Parameters[T]
 	// Index is the index of the party.
 	Index int
 
@@ -22,20 +22,20 @@ type PublicEncryptor[T tfhe.TorusInt] struct {
 	// This is shared with SingleKeyPublicEncryptor.
 	PublicKey tfhe.PublicKey[T]
 
-	buffer publicEncryptionBuffer[T]
+	buf publicEncryptorBuffer[T]
 }
 
-// publicEncryptionBuffer is a buffer for public encryption.
-type publicEncryptionBuffer[T tfhe.TorusInt] struct {
+// publicEncryptorBuffer is a buffer for public encryption.
+type publicEncryptorBuffer[T tfhe.TorusInt] struct {
 	// ptGLWE is the GLWE plaintext.
 	ptGLWE tfhe.GLWEPlaintext[T]
 	// ctGLWE is the GLWE ciphertext.
 	ctGLWE GLWECiphertext[T]
 
-	// ctLWESingle is the single-key LWE ciphertext.
-	ctLWESingle tfhe.LWECiphertext[T]
-	// ctGLWESingle is the single-key GLWE ciphertext.
-	ctGLWESingle tfhe.GLWECiphertext[T]
+	// ctSubLWE is the single-key LWE ciphertext.
+	ctSubLWE tfhe.LWECiphertext[T]
+	// ctSubGLWE is the single-key GLWE ciphertext.
+	ctSubGLWE tfhe.GLWECiphertext[T]
 }
 
 // NewPublicEncryptor creates a new PublicEncryptor.
@@ -45,27 +45,27 @@ func NewPublicEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, publicKe
 	}
 
 	return &PublicEncryptor[T]{
-		Encoder:                  tfhe.NewEncoder(params.singleKeyParameters),
-		GLWETransformer:          NewGLWETransformer[T](params.PolyDegree()),
-		SingleKeyPublicEncryptor: tfhe.NewPublicEncryptor(params.singleKeyParameters, publicKey),
+		Encoder:         tfhe.NewEncoder(params.subParams),
+		GLWETransformer: NewGLWETransformer[T](params.PolyRank()),
+		SubEncryptor:    tfhe.NewPublicEncryptor(params.subParams, publicKey),
 
-		Parameters: params,
-		Index:      idx,
+		Params: params,
+		Index:  idx,
 
 		PublicKey: publicKey,
 
-		buffer: newPublicEncryptionBuffer(params),
+		buf: newPublicEncryptorBuffer(params),
 	}
 }
 
-// newPublicEncryptionBuffer allocates a new publicEncryptionBuffer.
-func newPublicEncryptionBuffer[T tfhe.TorusInt](params Parameters[T]) publicEncryptionBuffer[T] {
-	return publicEncryptionBuffer[T]{
-		ptGLWE: tfhe.NewGLWEPlaintext(params.singleKeyParameters),
+// newPublicEncryptorBuffer creates a new publicEncryptorBuffer.
+func newPublicEncryptorBuffer[T tfhe.TorusInt](params Parameters[T]) publicEncryptorBuffer[T] {
+	return publicEncryptorBuffer[T]{
+		ptGLWE: tfhe.NewGLWEPlaintext(params.subParams),
 		ctGLWE: NewGLWECiphertext(params),
 
-		ctLWESingle:  tfhe.NewLWECiphertext(params.singleKeyParameters),
-		ctGLWESingle: tfhe.NewGLWECiphertext(params.singleKeyParameters),
+		ctSubLWE:  tfhe.NewLWECiphertext(params.subParams),
+		ctSubGLWE: tfhe.NewGLWECiphertext(params.subParams),
 	}
 }
 
@@ -73,16 +73,16 @@ func newPublicEncryptionBuffer[T tfhe.TorusInt](params Parameters[T]) publicEncr
 // Returned PublicEncryptor is safe for concurrent use.
 func (e *PublicEncryptor[T]) ShallowCopy() *PublicEncryptor[T] {
 	return &PublicEncryptor[T]{
-		Encoder:                  e.Encoder,
-		GLWETransformer:          e.GLWETransformer.ShallowCopy(),
-		SingleKeyPublicEncryptor: e.SingleKeyPublicEncryptor.ShallowCopy(),
+		Encoder:         e.Encoder,
+		GLWETransformer: e.GLWETransformer.ShallowCopy(),
+		SubEncryptor:    e.SubEncryptor.ShallowCopy(),
 
-		Parameters: e.Parameters,
-		Index:      e.Index,
+		Params: e.Params,
+		Index:  e.Index,
 
 		PublicKey: e.PublicKey,
 
-		buffer: newPublicEncryptionBuffer(e.Parameters),
+		buf: newPublicEncryptorBuffer(e.Params),
 	}
 }
 
@@ -91,54 +91,54 @@ func (e *PublicEncryptor[T]) EncryptLWE(message int) LWECiphertext[T] {
 	return e.EncryptLWEPlaintext(e.EncodeLWE(message))
 }
 
-// EncryptLWEAssign encodes and encrypts integer message to LWE ciphertext and writes it to ctOut.
-func (e *PublicEncryptor[T]) EncryptLWEAssign(message int, ctOut LWECiphertext[T]) {
-	e.EncryptLWEPlaintextAssign(e.EncodeLWE(message), ctOut)
+// EncryptLWETo encodes and encrypts integer message to LWE ciphertext and writes it to ctOut.
+func (e *PublicEncryptor[T]) EncryptLWETo(ctOut LWECiphertext[T], message int) {
+	e.EncryptLWEPlaintextTo(ctOut, e.EncodeLWE(message))
 }
 
 // EncryptLWEPlaintext encrypts LWE plaintext to LWE ciphertext.
 func (e *PublicEncryptor[T]) EncryptLWEPlaintext(pt tfhe.LWEPlaintext[T]) LWECiphertext[T] {
-	ct := NewLWECiphertext(e.Parameters)
-	e.EncryptLWEPlaintextAssign(pt, ct)
-	return ct
+	ctOut := NewLWECiphertext(e.Params)
+	e.EncryptLWEPlaintextTo(ctOut, pt)
+	return ctOut
 }
 
-// EncryptLWEPlaintextAssign encrypts LWE plaintext to LWE ciphertext and writes it to ctOut.
-func (e *PublicEncryptor[T]) EncryptLWEPlaintextAssign(pt tfhe.LWEPlaintext[T], ctOut LWECiphertext[T]) {
+// EncryptLWEPlaintextTo encrypts LWE plaintext to LWE ciphertext and writes it to ctOut.
+func (e *PublicEncryptor[T]) EncryptLWEPlaintextTo(ctOut LWECiphertext[T], pt tfhe.LWEPlaintext[T]) {
 	ctOut.Value[0] = pt.Value
 	e.EncryptLWEBody(ctOut)
 }
 
 // EncryptLWEBody encrypts the value in the body of LWE ciphertext and overrides it.
 func (e *PublicEncryptor[T]) EncryptLWEBody(ct LWECiphertext[T]) {
-	e.buffer.ctLWESingle.Value[0] = ct.Value[0]
-	e.SingleKeyPublicEncryptor.EncryptLWEBody(e.buffer.ctLWESingle)
+	e.buf.ctSubLWE.Value[0] = ct.Value[0]
+	e.SubEncryptor.EncryptLWEBody(e.buf.ctSubLWE)
 
 	ct.Clear()
-	ct.CopyFromSingleKey(e.buffer.ctLWESingle, e.Index)
+	ct.CopyFromSingleKey(e.buf.ctSubLWE, e.Index)
 }
 
 // EncryptGLWE encodes and encrypts integer messages to GLWE ciphertext.
 func (e *PublicEncryptor[T]) EncryptGLWE(messages []int) GLWECiphertext[T] {
-	ctOut := NewGLWECiphertext(e.Parameters)
-	e.EncryptGLWEAssign(messages, ctOut)
+	ctOut := NewGLWECiphertext(e.Params)
+	e.EncryptGLWETo(ctOut, messages)
 	return ctOut
 }
 
-// EncryptGLWEAssign encodes and encrypts integer messages to GLWE ciphertext and writes it to ctOut.
-func (e *PublicEncryptor[T]) EncryptGLWEAssign(messages []int, ctOut GLWECiphertext[T]) {
-	e.EncryptGLWEPlaintextAssign(e.EncodeGLWE(messages), ctOut)
+// EncryptGLWETo encodes and encrypts integer messages to GLWE ciphertext and writes it to ctOut.
+func (e *PublicEncryptor[T]) EncryptGLWETo(ctOut GLWECiphertext[T], messages []int) {
+	e.EncryptGLWEPlaintextTo(ctOut, e.EncodeGLWE(messages))
 }
 
 // EncryptGLWEPlaintext encrypts GLWE plaintext to GLWE ciphertext.
 func (e *PublicEncryptor[T]) EncryptGLWEPlaintext(pt tfhe.GLWEPlaintext[T]) GLWECiphertext[T] {
-	ct := NewGLWECiphertext(e.Parameters)
-	e.EncryptGLWEPlaintextAssign(pt, ct)
-	return ct
+	ctOut := NewGLWECiphertext(e.Params)
+	e.EncryptGLWEPlaintextTo(ctOut, pt)
+	return ctOut
 }
 
-// EncryptGLWEPlaintextAssign encrypts GLWE plaintext to GLWE ciphertext and writes it to ctOut.
-func (e *PublicEncryptor[T]) EncryptGLWEPlaintextAssign(pt tfhe.GLWEPlaintext[T], ctOut GLWECiphertext[T]) {
+// EncryptGLWEPlaintextTo encrypts GLWE plaintext to GLWE ciphertext and writes it to ctOut.
+func (e *PublicEncryptor[T]) EncryptGLWEPlaintextTo(ctOut GLWECiphertext[T], pt tfhe.GLWEPlaintext[T]) {
 	ctOut.Value[0].CopyFrom(pt.Value)
 	e.EncryptGLWEBody(ctOut)
 }
@@ -146,32 +146,32 @@ func (e *PublicEncryptor[T]) EncryptGLWEPlaintextAssign(pt tfhe.GLWEPlaintext[T]
 // EncryptGLWEBody encrypts the value in the body of GLWE ciphertext and overrides it.
 // This avoids the need for most buffers.
 func (e *PublicEncryptor[T]) EncryptGLWEBody(ct GLWECiphertext[T]) {
-	e.buffer.ctGLWESingle.Value[0].CopyFrom(ct.Value[0])
-	e.SingleKeyPublicEncryptor.EncryptGLWEBody(e.buffer.ctGLWESingle)
+	e.buf.ctSubGLWE.Value[0].CopyFrom(ct.Value[0])
+	e.SubEncryptor.EncryptGLWEBody(e.buf.ctSubGLWE)
 
 	ct.Clear()
-	ct.CopyFromSingleKey(e.buffer.ctGLWESingle, e.Index)
+	ct.CopyFromSingleKey(e.buf.ctSubGLWE, e.Index)
 }
 
-// EncryptFourierGLWE encodes and encrypts integer messages to FourierGLWE ciphertext.
-func (e *PublicEncryptor[T]) EncryptFourierGLWE(messages []int) FourierGLWECiphertext[T] {
-	return e.EncryptFourierGLWEPlaintext(e.EncodeGLWE(messages))
+// EncryptFFTGLWE encodes and encrypts integer messages to FFTGLWE ciphertext.
+func (e *PublicEncryptor[T]) EncryptFFTGLWE(messages []int) FFTGLWECiphertext[T] {
+	return e.EncryptFFTGLWEPlaintext(e.EncodeGLWE(messages))
 }
 
-// EncryptFourierGLWEAssign encrypts and encrypts integer messages to FourierGLWE ciphertext and writes it to ctOut.
-func (e *PublicEncryptor[T]) EncryptFourierGLWEAssign(messages []int, ctOut FourierGLWECiphertext[T]) {
-	e.EncryptFourierGLWEPlaintextAssign(e.EncodeGLWE(messages), ctOut)
+// EncryptFFTGLWETo encrypts and encrypts integer messages to FFTGLWE ciphertext and writes it to ctOut.
+func (e *PublicEncryptor[T]) EncryptFFTGLWETo(ctOut FFTGLWECiphertext[T], messages []int) {
+	e.EncryptFFTGLWEPlaintextTo(ctOut, e.EncodeGLWE(messages))
 }
 
-// EncryptFourierGLWEPlaintext encrypts GLWE plaintext to FourierGLWE ciphertext.
-func (e *PublicEncryptor[T]) EncryptFourierGLWEPlaintext(pt tfhe.GLWEPlaintext[T]) FourierGLWECiphertext[T] {
-	ct := NewFourierGLWECiphertext(e.Parameters)
-	e.EncryptFourierGLWEPlaintextAssign(pt, ct)
-	return ct
+// EncryptFFTGLWEPlaintext encrypts GLWE plaintext to FFTGLWE ciphertext.
+func (e *PublicEncryptor[T]) EncryptFFTGLWEPlaintext(pt tfhe.GLWEPlaintext[T]) FFTGLWECiphertext[T] {
+	ctOut := NewFFTGLWECiphertext(e.Params)
+	e.EncryptFFTGLWEPlaintextTo(ctOut, pt)
+	return ctOut
 }
 
-// EncryptFourierGLWEPlaintextAssign encrypts GLWE plaintext to FourierGLWE ciphertext and writes it to ctOut.
-func (e *PublicEncryptor[T]) EncryptFourierGLWEPlaintextAssign(pt tfhe.GLWEPlaintext[T], ctOut FourierGLWECiphertext[T]) {
-	e.EncryptGLWEPlaintextAssign(pt, e.buffer.ctGLWE)
-	e.ToFourierGLWECiphertextAssign(e.buffer.ctGLWE, ctOut)
+// EncryptFFTGLWEPlaintextTo encrypts GLWE plaintext to FFTGLWE ciphertext and writes it to ctOut.
+func (e *PublicEncryptor[T]) EncryptFFTGLWEPlaintextTo(ctOut FFTGLWECiphertext[T], pt tfhe.GLWEPlaintext[T]) {
+	e.EncryptGLWEPlaintextTo(e.buf.ctGLWE, pt)
+	e.ToFFTGLWECiphertextTo(ctOut, e.buf.ctGLWE)
 }

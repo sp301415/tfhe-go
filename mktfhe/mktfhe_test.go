@@ -63,14 +63,14 @@ func TestEncryptor(t *testing.T) {
 		assert.Equal(t, messages, enc[0].UniDecrypt(ct)[:len(messages)])
 	})
 
-	t.Run("FourierGLWE", func(t *testing.T) {
-		ct := enc[0].EncryptFourierGLWE(messages)
-		assert.Equal(t, messages, dec.DecryptFourierGLWE(ct)[:len(messages)])
+	t.Run("FFTGLWE", func(t *testing.T) {
+		ct := enc[0].EncryptFFTGLWE(messages)
+		assert.Equal(t, messages, dec.DecryptFFTGLWE(ct)[:len(messages)])
 	})
 
-	t.Run("FourierUniEncryption", func(t *testing.T) {
-		ct := enc[0].FourierUniEncrypt(messages, gadgetParams)
-		assert.Equal(t, messages, enc[0].FourierUniDecrypt(ct)[:len(messages)])
+	t.Run("FFTUniEncryption", func(t *testing.T) {
+		ct := enc[0].FFTUniEncrypt(messages, gadgetParams)
+		assert.Equal(t, messages, enc[0].FFTUniDecrypt(ct)[:len(messages)])
 	})
 }
 
@@ -81,9 +81,9 @@ func TestEvaluator(t *testing.T) {
 		ct := enc[0].EncryptGLWE(messages)
 
 		mul := 1
-		ctMul := enc[0].FourierUniEncrypt([]int{mul}, params.RelinKeyParameters())
+		ctMul := enc[0].FFTUniEncrypt([]int{mul}, params.RelinKeyParameters())
 
-		ctOut := eval.HybridProductGLWE(0, ctMul, ct)
+		ctOut := eval.HybridProdGLWE(0, ctMul, ct)
 
 		for i, m := range messages {
 			assert.Equal(t, (mul*m)%int(params.MessageModulus()), dec.DecryptGLWE(ctOut)[i])
@@ -94,7 +94,7 @@ func TestEvaluator(t *testing.T) {
 		ct := enc[0].EncryptGLWE(messages)
 
 		mul := 1
-		ctMul := enc[0].SingleKeyEncryptor.EncryptFourierGLev([]int{mul}, params.AccumulatorParameters())
+		ctMul := enc[0].SubEncryptor.EncryptFFTGLev([]int{mul}, params.AccumulatorParameters())
 
 		ctOut := eval.ExternalProductGLWE(0, ctMul, ct)
 
@@ -172,10 +172,10 @@ func TestMarshal(t *testing.T) {
 		assert.Equal(t, ctIn, ctOut)
 	})
 
-	t.Run("FourierGLWECiphertext", func(t *testing.T) {
-		var ctIn, ctOut mktfhe.FourierGLWECiphertext[uint64]
+	t.Run("FFTGLWECiphertext", func(t *testing.T) {
+		var ctIn, ctOut mktfhe.FFTGLWECiphertext[uint64]
 
-		ctIn = enc[0].EncryptFourierGLWE([]int{0})
+		ctIn = enc[0].EncryptFFTGLWE([]int{0})
 		n, err = ctIn.WriteTo(&buf)
 		assert.Equal(t, int(n), ctIn.ByteSize())
 		assert.NoError(t, err)
@@ -204,10 +204,10 @@ func TestMarshal(t *testing.T) {
 		assert.Equal(t, ctIn, ctOut)
 	})
 
-	t.Run("FourierUniEncryption", func(t *testing.T) {
-		var ctIn, ctOut mktfhe.FourierUniEncryption[uint64]
+	t.Run("FFTUniEncryption", func(t *testing.T) {
+		var ctIn, ctOut mktfhe.FFTUniEncryption[uint64]
 
-		ctIn = enc[0].FourierUniEncrypt([]int{0}, params.RelinKeyParameters())
+		ctIn = enc[0].FFTUniEncrypt([]int{0}, params.RelinKeyParameters())
 		n, err = ctIn.WriteTo(&buf)
 		assert.Equal(t, int(n), ctIn.ByteSize())
 		assert.NoError(t, err)
@@ -222,7 +222,7 @@ func TestMarshal(t *testing.T) {
 	t.Run("EvaluationKey", func(t *testing.T) {
 		var evkIn, evkOut mktfhe.EvaluationKey[uint64]
 
-		evkIn = eval.EvaluationKeys[0]
+		evkIn = eval.EvalKey[0]
 		n, err = evkIn.WriteTo(&buf)
 		assert.Equal(t, int(n), evkIn.ByteSize())
 		assert.NoError(t, err)

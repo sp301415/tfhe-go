@@ -10,14 +10,14 @@ type FHEWEncryptor[T tfhe.TorusInt] struct {
 	// Encryptor is an embedded [tfhe.Encryptor] for this FHEWEncryptor.
 	*tfhe.Encryptor[T]
 
-	// Parameters is the parameters for this FHEWEncryptor.
-	Parameters FHEWParameters[T]
+	// Params is the parameters for this FHEWEncryptor.
+	Params FHEWParameters[T]
 
-	buffer fhewEncryptionBuffer[T]
+	buf fhewEncryptorBuffer[T]
 }
 
-// fhewEncryptionBuffer is a buffer for FHEWEncryptor.
-type fhewEncryptionBuffer[T tfhe.TorusInt] struct {
+// fhewEncryptorBuffer is a buffer for FHEWEncryptor.
+type fhewEncryptorBuffer[T tfhe.TorusInt] struct {
 	// skPermute is the permuted secret key.
 	skPermute tfhe.GLWESecretKey[T]
 	// ctGLWE is the standard GLWE Ciphertext for Fourier encryption / decryptions.
@@ -26,12 +26,12 @@ type fhewEncryptionBuffer[T tfhe.TorusInt] struct {
 	ptGGSW poly.Poly[T]
 }
 
-// NewFHEWEncryptor creates a new FHEWEncryptor with given parameters.
+// NewFHEWEncryptor creates a new FHEWEncryptor.
 func NewFHEWEncryptor[T tfhe.TorusInt](params FHEWParameters[T]) *FHEWEncryptor[T] {
 	encryptor := FHEWEncryptor[T]{
-		Encryptor:  tfhe.NewEncryptorWithKey(params.BaseParameters(), tfhe.SecretKey[T]{}),
-		Parameters: params,
-		buffer:     newFHEWEncryptionBuffer(params),
+		Encryptor: tfhe.NewEncryptorWithKey(params.BaseParams(), tfhe.SecretKey[T]{}),
+		Params:    params,
+		buf:       newFHEWEncryptorBuffer(params),
 	}
 	encryptor.Encryptor.SecretKey = encryptor.GenSecretKey()
 
@@ -41,18 +41,18 @@ func NewFHEWEncryptor[T tfhe.TorusInt](params FHEWParameters[T]) *FHEWEncryptor[
 // NewFHEWEncryptorWithKey creates a new FHEWEncryptor with given parameters and secret key.
 func NewFHEWEncryptorWithKey[T tfhe.TorusInt](params FHEWParameters[T], sk tfhe.SecretKey[T]) *FHEWEncryptor[T] {
 	return &FHEWEncryptor[T]{
-		Encryptor:  tfhe.NewEncryptorWithKey(params.BaseParameters(), sk),
-		Parameters: params,
-		buffer:     newFHEWEncryptionBuffer(params),
+		Encryptor: tfhe.NewEncryptorWithKey(params.BaseParams(), sk),
+		Params:    params,
+		buf:       newFHEWEncryptorBuffer(params),
 	}
 }
 
-// newFHEWEncryptionBuffer creates a new FHEWEncryptionBuffer with given parameters.
-func newFHEWEncryptionBuffer[T tfhe.TorusInt](params FHEWParameters[T]) fhewEncryptionBuffer[T] {
-	return fhewEncryptionBuffer[T]{
-		skPermute: tfhe.NewGLWESecretKey(params.BaseParameters()),
-		ctGLWE:    tfhe.NewGLWECiphertext(params.BaseParameters()),
-		ptGGSW:    poly.NewPoly[T](params.BaseParameters().PolyDegree()),
+// newFHEWEncryptorBuffer creates a new fhewEncryptorBuffer.
+func newFHEWEncryptorBuffer[T tfhe.TorusInt](params FHEWParameters[T]) fhewEncryptorBuffer[T] {
+	return fhewEncryptorBuffer[T]{
+		skPermute: tfhe.NewGLWESecretKey(params.BaseParams()),
+		ctGLWE:    tfhe.NewGLWECiphertext(params.BaseParams()),
+		ptGGSW:    poly.NewPoly[T](params.BaseParams().PolyRank()),
 	}
 }
 
@@ -60,19 +60,19 @@ func newFHEWEncryptionBuffer[T tfhe.TorusInt](params FHEWParameters[T]) fhewEncr
 // Returned Encryptor is safe for concurrent use.
 func (e *FHEWEncryptor[T]) ShallowCopy() *FHEWEncryptor[T] {
 	return &FHEWEncryptor[T]{
-		Encryptor:  e.Encryptor.ShallowCopy(),
-		Parameters: e.Parameters,
-		buffer:     newFHEWEncryptionBuffer(e.Parameters),
+		Encryptor: e.Encryptor.ShallowCopy(),
+		Params:    e.Params,
+		buf:       newFHEWEncryptorBuffer(e.Params),
 	}
 }
 
 // GenSecretKey samples a new SecretKey.
 // The SecretKey of the Encryptor is not changed.
 func (e *FHEWEncryptor[T]) GenSecretKey() tfhe.SecretKey[T] {
-	sk := tfhe.NewSecretKey(e.Parameters.baseParameters)
+	sk := tfhe.NewSecretKey(e.Params.baseParams)
 
-	e.GaussianSampler.SampleVecAssign(e.Parameters.SecretKeyStdDevQ(), sk.LWELargeKey.Value)
-	e.ToFourierGLWESecretKeyAssign(sk.GLWEKey, sk.FourierGLWEKey)
+	e.GaussianSampler.SampleVecTo(sk.LWELargeKey.Value, e.Params.SecretKeyStdDevQ())
+	e.FFTGLWESecretKeyTo(sk.FFTGLWEKey, sk.GLWEKey)
 
 	return sk
 }

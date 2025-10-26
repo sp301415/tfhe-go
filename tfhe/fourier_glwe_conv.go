@@ -29,114 +29,114 @@ func (e *GLWETransformer[T]) ShallowCopy() *GLWETransformer[T] {
 	}
 }
 
-// ToFourierGLWESecretKey transforms GLWE secret key to Fourier GLWE secret key.
-func (e *GLWETransformer[T]) ToFourierGLWESecretKey(sk GLWESecretKey[T]) FourierGLWESecretKey[T] {
-	skOut := NewFourierGLWESecretKeyCustom[T](len(sk.Value), e.PolyEvaluator.Degree())
-	e.ToFourierGLWESecretKeyAssign(sk, skOut)
+// FFTGLWESecretKey transforms GLWE secret key to Fourier GLWE secret key.
+func (e *GLWETransformer[T]) FFTGLWESecretKey(sk GLWESecretKey[T]) FFTGLWESecretKey[T] {
+	skOut := NewFFTGLWESecretKeyCustom[T](len(sk.Value), e.PolyEvaluator.Rank())
+	e.FFTGLWESecretKeyTo(skOut, sk)
 	return skOut
 }
 
-// ToFourierGLWESecretKeyAssign transforms GLWE secret key to Fourier GLWE secret key and writes it to skOut.
-func (e *GLWETransformer[T]) ToFourierGLWESecretKeyAssign(sk GLWESecretKey[T], skOut FourierGLWESecretKey[T]) {
-	for i := 0; i < len(sk.Value); i++ {
-		e.PolyEvaluator.ToFourierPolyAssign(sk.Value[i], skOut.Value[i])
+// FFTGLWESecretKeyTo transforms GLWE secret key to Fourier GLWE secret key and writes it to skOut.
+func (e *GLWETransformer[T]) FFTGLWESecretKeyTo(skOut FFTGLWESecretKey[T], sk GLWESecretKey[T]) {
+	for i := 0; i < len(skOut.Value); i++ {
+		e.PolyEvaluator.FFTTo(skOut.Value[i], sk.Value[i])
 	}
 }
 
-// ToGLWESecretKey transforms Fourier GLWE secret key to GLWE secret key.
-func (e *GLWETransformer[T]) ToGLWESecretKey(sk FourierGLWESecretKey[T]) GLWESecretKey[T] {
-	skOut := NewGLWESecretKeyCustom[T](len(sk.Value), e.PolyEvaluator.Degree())
-	e.ToGLWESecretKeyAssign(sk, skOut)
+// InvFFTGLWESecretKey transforms Fourier GLWE secret key to GLWE secret key.
+func (e *GLWETransformer[T]) InvFFTGLWESecretKey(sk FFTGLWESecretKey[T]) GLWESecretKey[T] {
+	skOut := NewGLWESecretKeyCustom[T](len(sk.Value), e.PolyEvaluator.Rank())
+	e.InvFFTGLWESecretKeyTo(skOut, sk)
 	return skOut
 }
 
-// ToGLWESecretKeyAssign transforms Fourier GLWE secret key to GLWE secret key and writes it to skOut.
-func (e *GLWETransformer[T]) ToGLWESecretKeyAssign(sk FourierGLWESecretKey[T], skOut GLWESecretKey[T]) {
-	for i := 0; i < len(sk.Value); i++ {
-		e.PolyEvaluator.ToPolyAssign(sk.Value[i], skOut.Value[i])
+// InvFFTGLWESecretKeyTo transforms Fourier GLWE secret key to GLWE secret key and writes it to skOut.
+func (e *GLWETransformer[T]) InvFFTGLWESecretKeyTo(skOut GLWESecretKey[T], sk FFTGLWESecretKey[T]) {
+	for i := 0; i < len(skOut.Value); i++ {
+		e.PolyEvaluator.InvFFTTo(skOut.Value[i], sk.Value[i])
 	}
 }
 
-// ToFourierGLWECiphertext transforms GLWE ciphertext to Fourier GLWE ciphertext.
-func (e *GLWETransformer[T]) ToFourierGLWECiphertext(ct GLWECiphertext[T]) FourierGLWECiphertext[T] {
-	ctOut := NewFourierGLWECiphertextCustom[T](len(ct.Value)-1, e.PolyEvaluator.Degree())
-	e.ToFourierGLWECiphertextAssign(ct, ctOut)
+// FFTGLWECiphertext transforms GLWE ciphertext to Fourier GLWE ciphertext.
+func (e *GLWETransformer[T]) FFTGLWECiphertext(ct GLWECiphertext[T]) FFTGLWECiphertext[T] {
+	ctOut := NewFFTGLWECiphertextCustom[T](len(ct.Value)-1, e.PolyEvaluator.Rank())
+	e.FFTGLWECiphertextTo(ctOut, ct)
 	return ctOut
 }
 
-// ToFourierGLWECiphertextAssign transforms GLWE ciphertext to Fourier GLWE ciphertext and writes it to ctOut.
-func (e *GLWETransformer[T]) ToFourierGLWECiphertextAssign(ct GLWECiphertext[T], ctOut FourierGLWECiphertext[T]) {
+// FFTGLWECiphertextTo transforms GLWE ciphertext to Fourier GLWE ciphertext and writes it to ctOut.
+func (e *GLWETransformer[T]) FFTGLWECiphertextTo(ctOut FFTGLWECiphertext[T], ct GLWECiphertext[T]) {
+	for i := 0; i < len(ctOut.Value); i++ {
+		e.PolyEvaluator.FFTTo(ctOut.Value[i], ct.Value[i])
+	}
+}
+
+// InvFFTGLWECiphertext transforms Fourier GLWE ciphertext to GLWE ciphertext.
+func (e *GLWETransformer[T]) InvFFTGLWECiphertext(ct FFTGLWECiphertext[T]) GLWECiphertext[T] {
+	ctOut := NewGLWECiphertextCustom[T](len(ct.Value)-1, e.PolyEvaluator.Rank())
+	e.InvFFTGLWECiphertextTo(ctOut, ct)
+	return ctOut
+}
+
+// InvFFTGLWECiphertextTo transforms Fourier GLWE ciphertext to GLWE ciphertext and writes it to ctOut.
+func (e *GLWETransformer[T]) InvFFTGLWECiphertextTo(ctOut GLWECiphertext[T], ct FFTGLWECiphertext[T]) {
 	for i := 0; i < len(ct.Value); i++ {
-		e.PolyEvaluator.ToFourierPolyAssign(ct.Value[i], ctOut.Value[i])
+		e.PolyEvaluator.InvFFTTo(ctOut.Value[i], ct.Value[i])
 	}
 }
 
-// ToGLWECiphertext transforms Fourier GLWE ciphertext to GLWE ciphertext.
-func (e *GLWETransformer[T]) ToGLWECiphertext(ct FourierGLWECiphertext[T]) GLWECiphertext[T] {
-	ctOut := NewGLWECiphertextCustom[T](len(ct.Value)-1, e.PolyEvaluator.Degree())
-	e.ToGLWECiphertextAssign(ct, ctOut)
+// FFTGLevCiphertext transforms GLev ciphertext to Fourier GLev ciphertext.
+func (e *GLWETransformer[T]) FFTGLevCiphertext(ct GLevCiphertext[T]) FFTGLevCiphertext[T] {
+	ctOut := NewFFTGLevCiphertextCustom(len(ct.Value[0].Value)-1, e.PolyEvaluator.Rank(), ct.GadgetParams)
+	e.FFTGLevCiphertextTo(ctOut, ct)
 	return ctOut
 }
 
-// ToGLWECiphertextAssign transforms Fourier GLWE ciphertext to GLWE ciphertext and writes it to ctOut.
-func (e *GLWETransformer[T]) ToGLWECiphertextAssign(ct FourierGLWECiphertext[T], ctOut GLWECiphertext[T]) {
+// FFTGLevCiphertextTo transforms GLev ciphertext to Fourier GLev ciphertext and writes it to ctOut.
+func (e *GLWETransformer[T]) FFTGLevCiphertextTo(ctOut FFTGLevCiphertext[T], ct GLevCiphertext[T]) {
+	for i := 0; i < ctOut.GadgetParams.level; i++ {
+		e.FFTGLWECiphertextTo(ctOut.Value[i], ct.Value[i])
+	}
+}
+
+// InvFFTGLevCiphertext transforms Fourier GLev ciphertext to GLev ciphertext.
+func (e *GLWETransformer[T]) InvFFTGLevCiphertext(ct FFTGLevCiphertext[T]) GLevCiphertext[T] {
+	ctOut := NewGLevCiphertextCustom(len(ct.Value[0].Value)-1, e.PolyEvaluator.Rank(), ct.GadgetParams)
+	e.InvFFTGLevCiphertextTo(ctOut, ct)
+	return ctOut
+}
+
+// InvFFTGLevCiphertextTo transforms Fourier GLev ciphertext to GLev ciphertext and writes it to ctOut.
+func (e *GLWETransformer[T]) InvFFTGLevCiphertextTo(ctOut GLevCiphertext[T], ct FFTGLevCiphertext[T]) {
+	for i := 0; i < ctOut.GadgetParams.level; i++ {
+		e.InvFFTGLWECiphertextTo(ctOut.Value[i], ct.Value[i])
+	}
+}
+
+// FFTGGSWCiphertext transforms GGSW ciphertext to Fourier GGSW ciphertext.
+func (e *GLWETransformer[T]) FFTGGSWCiphertext(ct GGSWCiphertext[T]) FFTGGSWCiphertext[T] {
+	ctOut := NewFFTGGSWCiphertextCustom(len(ct.Value)-1, e.PolyEvaluator.Rank(), ct.GadgetParams)
+	e.FFTGGSWCiphertextTo(ctOut, ct)
+	return ctOut
+}
+
+// FFTGGSWCiphertextTo transforms GGSW ciphertext to Fourier GGSW ciphertext and writes it to ctOut.
+func (e *GLWETransformer[T]) FFTGGSWCiphertextTo(ctOut FFTGGSWCiphertext[T], ct GGSWCiphertext[T]) {
 	for i := 0; i < len(ct.Value); i++ {
-		e.PolyEvaluator.ToPolyAssign(ct.Value[i], ctOut.Value[i])
+		e.FFTGLevCiphertextTo(ctOut.Value[i], ct.Value[i])
 	}
 }
 
-// ToFourierGLevCiphertext transforms GLev ciphertext to Fourier GLev ciphertext.
-func (e *GLWETransformer[T]) ToFourierGLevCiphertext(ct GLevCiphertext[T]) FourierGLevCiphertext[T] {
-	ctOut := NewFourierGLevCiphertextCustom(len(ct.Value[0].Value)-1, e.PolyEvaluator.Degree(), ct.GadgetParameters)
-	e.ToFourierGLevCiphertextAssign(ct, ctOut)
+// InvFFTGGSWCiphertext transforms Fourier GGSW ciphertext to GGSW ciphertext.
+func (e *GLWETransformer[T]) InvFFTGGSWCiphertext(ct FFTGGSWCiphertext[T]) GGSWCiphertext[T] {
+	ctOut := NewGGSWCiphertextCustom(len(ct.Value)-1, e.PolyEvaluator.Rank(), ct.GadgetParams)
+	e.InvFFTGGSWCiphertextTo(ctOut, ct)
 	return ctOut
 }
 
-// ToFourierGLevCiphertextAssign transforms GLev ciphertext to Fourier GLev ciphertext and writes it to ctOut.
-func (e *GLWETransformer[T]) ToFourierGLevCiphertextAssign(ct GLevCiphertext[T], ctOut FourierGLevCiphertext[T]) {
-	for i := 0; i < ct.GadgetParameters.level; i++ {
-		e.ToFourierGLWECiphertextAssign(ct.Value[i], ctOut.Value[i])
-	}
-}
-
-// ToGLevCiphertext transforms Fourier GLev ciphertext to GLev ciphertext.
-func (e *GLWETransformer[T]) ToGLevCiphertext(ct FourierGLevCiphertext[T]) GLevCiphertext[T] {
-	ctOut := NewGLevCiphertextCustom(len(ct.Value[0].Value)-1, e.PolyEvaluator.Degree(), ct.GadgetParameters)
-	e.ToGLevCiphertextAssign(ct, ctOut)
-	return ctOut
-}
-
-// ToGLevCiphertextAssign transforms Fourier GLev ciphertext to GLev ciphertext and writes it to ctOut.
-func (e *GLWETransformer[T]) ToGLevCiphertextAssign(ct FourierGLevCiphertext[T], ctOut GLevCiphertext[T]) {
-	for i := 0; i < ct.GadgetParameters.level; i++ {
-		e.ToGLWECiphertextAssign(ct.Value[i], ctOut.Value[i])
-	}
-}
-
-// ToFourierGGSWCiphertext transforms GGSW ciphertext to Fourier GGSW ciphertext.
-func (e *GLWETransformer[T]) ToFourierGGSWCiphertext(ct GGSWCiphertext[T]) FourierGGSWCiphertext[T] {
-	ctOut := NewFourierGGSWCiphertextCustom(len(ct.Value)-1, e.PolyEvaluator.Degree(), ct.GadgetParameters)
-	e.ToFourierGGSWCiphertextAssign(ct, ctOut)
-	return ctOut
-}
-
-// ToFourierGGSWCiphertextAssign transforms GGSW ciphertext to Fourier GGSW ciphertext and writes it to ctOut.
-func (e *GLWETransformer[T]) ToFourierGGSWCiphertextAssign(ct GGSWCiphertext[T], ctOut FourierGGSWCiphertext[T]) {
+// InvFFTGGSWCiphertextTo transforms Fourier GGSW ciphertext to GGSW ciphertext and writes it to ctOut.
+func (e *GLWETransformer[T]) InvFFTGGSWCiphertextTo(ctOut GGSWCiphertext[T], ct FFTGGSWCiphertext[T]) {
 	for i := 0; i < len(ct.Value); i++ {
-		e.ToFourierGLevCiphertextAssign(ct.Value[i], ctOut.Value[i])
-	}
-}
-
-// ToGGSWCiphertext transforms Fourier GGSW ciphertext to GGSW ciphertext.
-func (e *GLWETransformer[T]) ToGGSWCiphertext(ct FourierGGSWCiphertext[T]) GGSWCiphertext[T] {
-	ctOut := NewGGSWCiphertextCustom(len(ct.Value)-1, e.PolyEvaluator.Degree(), ct.GadgetParameters)
-	e.ToGGSWCiphertextAssign(ct, ctOut)
-	return ctOut
-}
-
-// ToGGSWCiphertextAssign transforms Fourier GGSW ciphertext to GGSW ciphertext and writes it to ctOut.
-func (e *GLWETransformer[T]) ToGGSWCiphertextAssign(ct FourierGGSWCiphertext[T], ctOut GGSWCiphertext[T]) {
-	for i := 0; i < len(ct.Value); i++ {
-		e.ToGLevCiphertextAssign(ct.Value[i], ctOut.Value[i])
+		e.InvFFTGLevCiphertextTo(ctOut.Value[i], ct.Value[i])
 	}
 }

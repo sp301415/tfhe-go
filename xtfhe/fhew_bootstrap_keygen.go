@@ -28,7 +28,7 @@ type FHEWEvaluationKey[T tfhe.TorusInt] struct {
 func (e *FHEWEncryptor[T]) GenEvaluationKey() FHEWEvaluationKey[T] {
 	return FHEWEvaluationKey[T]{
 		BlindRotateKey: e.GenBlindRotateKey(),
-		KeySwitchKey:   e.GenKeySwitchKeyForBootstrap(),
+		KeySwitchKey:   e.GenDefaultKeySwitchKey(),
 		GaloisKey:      e.GenGaloisKey(),
 	}
 }
@@ -37,7 +37,7 @@ func (e *FHEWEncryptor[T]) GenEvaluationKey() FHEWEvaluationKey[T] {
 func (e *FHEWEncryptor[T]) GenEvaluationKeyParallel() FHEWEvaluationKey[T] {
 	return FHEWEvaluationKey[T]{
 		BlindRotateKey: e.GenBlindRotateKeyParallel(),
-		KeySwitchKey:   e.GenKeySwitchKeyForBootstrapParallel(),
+		KeySwitchKey:   e.GenDefaultKeySwitchKeyParallel(),
 		GaloisKey:      e.GenGaloisKey(),
 	}
 }
@@ -47,9 +47,9 @@ func (e *FHEWEncryptor[T]) GenEvaluationKeyParallel() FHEWEvaluationKey[T] {
 // This can take a long time.
 // Use [*FHEWEncryptor.GenBlindRotateKeyParallel] for better key generation performance.
 func (e *FHEWEncryptor[T]) GenBlindRotateKey() tfhe.BlindRotateKey[T] {
-	brk := tfhe.NewBlindRotateKey(e.Parameters.baseParameters)
+	brk := tfhe.NewBlindRotateKey(e.Params.baseParams)
 
-	for i := 0; i < e.Parameters.baseParameters.LWEDimension(); i++ {
+	for i := 0; i < e.Params.baseParams.LWEDimension(); i++ {
 		var sMonoIdx int
 
 		var z T
@@ -60,18 +60,18 @@ func (e *FHEWEncryptor[T]) GenBlindRotateKey() tfhe.BlindRotateKey[T] {
 			sMonoIdx = int(int64(e.SecretKey.LWEKey.Value[i]))
 		}
 
-		for j := 0; j < e.Parameters.baseParameters.GLWERank()+1; j++ {
+		for j := 0; j < e.Params.baseParams.GLWERank()+1; j++ {
 			if j == 0 {
-				e.buffer.ptGGSW.Clear()
-				e.buffer.ptGGSW.Coeffs[0] = 1
-				e.PolyEvaluator.MonomialMulPolyInPlace(e.buffer.ptGGSW, sMonoIdx)
+				e.buf.ptGGSW.Clear()
+				e.buf.ptGGSW.Coeffs[0] = 1
+				e.PolyEvaluator.MonomialMulPolyInPlace(e.buf.ptGGSW, sMonoIdx)
 			} else {
-				e.PolyEvaluator.MonomialMulPolyAssign(e.SecretKey.GLWEKey.Value[j-1], sMonoIdx, e.buffer.ptGGSW)
+				e.PolyEvaluator.MonomialMulPolyTo(e.buf.ptGGSW, e.SecretKey.GLWEKey.Value[j-1], sMonoIdx)
 			}
-			for k := 0; k < e.Parameters.baseParameters.BlindRotateParameters().Level(); k++ {
-				e.PolyEvaluator.ScalarMulPolyAssign(e.buffer.ptGGSW, e.Parameters.baseParameters.BlindRotateParameters().BaseQ(k), e.buffer.ctGLWE.Value[0])
-				e.EncryptGLWEBody(e.buffer.ctGLWE)
-				e.ToFourierGLWECiphertextAssign(e.buffer.ctGLWE, brk.Value[i].Value[j].Value[k])
+			for k := 0; k < e.Params.baseParams.BlindRotateParams().Level(); k++ {
+				e.PolyEvaluator.ScalarMulPolyTo(e.buf.ctGLWE.Value[0], e.buf.ptGGSW, e.Params.baseParams.BlindRotateParams().BaseQ(k))
+				e.EncryptGLWEBody(e.buf.ctGLWE)
+				e.FFTGLWECiphertextTo(brk.Value[i].Value[j].Value[k], e.buf.ctGLWE)
 			}
 		}
 	}
@@ -81,9 +81,9 @@ func (e *FHEWEncryptor[T]) GenBlindRotateKey() tfhe.BlindRotateKey[T] {
 
 // GenBlindRotateKeyParallel samples a new bootstrapping key in parallel.
 func (e *FHEWEncryptor[T]) GenBlindRotateKeyParallel() tfhe.BlindRotateKey[T] {
-	brk := tfhe.NewBlindRotateKey(e.Parameters.baseParameters)
+	brk := tfhe.NewBlindRotateKey(e.Params.baseParams)
 
-	workSize := e.Parameters.baseParameters.LWEDimension() * (e.Parameters.baseParameters.GLWERank() + 1)
+	workSize := e.Params.baseParams.LWEDimension() * (e.Params.baseParams.GLWERank() + 1)
 	chunkCount := num.Min(runtime.NumCPU(), num.Sqrt(workSize))
 
 	encryptorPool := make([]*FHEWEncryptor[T], chunkCount)
@@ -94,8 +94,8 @@ func (e *FHEWEncryptor[T]) GenBlindRotateKeyParallel() tfhe.BlindRotateKey[T] {
 	jobs := make(chan [2]int)
 	go func() {
 		defer close(jobs)
-		for i := 0; i < e.Parameters.baseParameters.LWEDimension(); i++ {
-			for j := 0; j < e.Parameters.baseParameters.GLWERank()+1; j++ {
+		for i := 0; i < e.Params.baseParams.LWEDimension(); i++ {
+			for j := 0; j < e.Params.baseParams.GLWERank()+1; j++ {
 				jobs <- [2]int{i, j}
 			}
 		}
@@ -120,16 +120,16 @@ func (e *FHEWEncryptor[T]) GenBlindRotateKeyParallel() tfhe.BlindRotateKey[T] {
 				}
 
 				if j == 0 {
-					eIdx.buffer.ptGGSW.Clear()
-					eIdx.buffer.ptGGSW.Coeffs[0] = 1
-					eIdx.PolyEvaluator.MonomialMulPolyInPlace(eIdx.buffer.ptGGSW, sMonoIdx)
+					eIdx.buf.ptGGSW.Clear()
+					eIdx.buf.ptGGSW.Coeffs[0] = 1
+					eIdx.PolyEvaluator.MonomialMulPolyInPlace(eIdx.buf.ptGGSW, sMonoIdx)
 				} else {
-					eIdx.PolyEvaluator.MonomialMulPolyAssign(eIdx.SecretKey.GLWEKey.Value[j-1], sMonoIdx, eIdx.buffer.ptGGSW)
+					eIdx.PolyEvaluator.MonomialMulPolyTo(eIdx.buf.ptGGSW, eIdx.SecretKey.GLWEKey.Value[j-1], sMonoIdx)
 				}
-				for k := 0; k < eIdx.Parameters.baseParameters.BlindRotateParameters().Level(); k++ {
-					eIdx.PolyEvaluator.ScalarMulPolyAssign(eIdx.buffer.ptGGSW, eIdx.Parameters.baseParameters.BlindRotateParameters().BaseQ(k), eIdx.buffer.ctGLWE.Value[0])
-					eIdx.EncryptGLWEBody(eIdx.buffer.ctGLWE)
-					eIdx.ToFourierGLWECiphertextAssign(eIdx.buffer.ctGLWE, brk.Value[i].Value[j].Value[k])
+				for k := 0; k < eIdx.Params.baseParams.BlindRotateParams().Level(); k++ {
+					eIdx.PolyEvaluator.ScalarMulPolyTo(eIdx.buf.ctGLWE.Value[0], eIdx.buf.ptGGSW, eIdx.Params.baseParams.BlindRotateParams().BaseQ(k))
+					eIdx.EncryptGLWEBody(eIdx.buf.ctGLWE)
+					eIdx.FFTGLWECiphertextTo(brk.Value[i].Value[j].Value[k], eIdx.buf.ctGLWE)
 				}
 			}
 			wg.Done()
@@ -142,19 +142,19 @@ func (e *FHEWEncryptor[T]) GenBlindRotateKeyParallel() tfhe.BlindRotateKey[T] {
 
 // GenGaloisKey samples a new Galois key for bootstrapping.
 func (e *FHEWEncryptor[T]) GenGaloisKey() []tfhe.GLWEKeySwitchKey[T] {
-	glk := make([]tfhe.GLWEKeySwitchKey[T], e.Parameters.windowSize+1)
+	glk := make([]tfhe.GLWEKeySwitchKey[T], e.Params.windowSize+1)
 
-	for j := 0; j < e.Parameters.baseParameters.GLWERank(); j++ {
-		e.PolyEvaluator.PermutePolyAssign(e.SecretKey.GLWEKey.Value[j], -5, e.buffer.skPermute.Value[j])
+	for j := 0; j < e.Params.baseParams.GLWERank(); j++ {
+		e.PolyEvaluator.PermutePolyTo(e.buf.skPermute.Value[j], e.SecretKey.GLWEKey.Value[j], -5)
 	}
-	glk[0] = e.GenGLWEKeySwitchKey(e.buffer.skPermute, e.Parameters.baseParameters.BlindRotateParameters())
+	glk[0] = e.GenGLWEKeySwitchKey(e.buf.skPermute, e.Params.baseParams.BlindRotateParams())
 
-	for i := 1; i < e.Parameters.windowSize+1; i++ {
-		d := num.ModExp(5, i, 2*e.Parameters.baseParameters.PolyDegree())
-		for j := 0; j < e.Parameters.baseParameters.GLWERank(); j++ {
-			e.PolyEvaluator.PermutePolyAssign(e.SecretKey.GLWEKey.Value[j], d, e.buffer.skPermute.Value[j])
+	for i := 1; i < e.Params.windowSize+1; i++ {
+		d := num.ModExp(5, i, 2*e.Params.baseParams.PolyRank())
+		for j := 0; j < e.Params.baseParams.GLWERank(); j++ {
+			e.PolyEvaluator.PermutePolyTo(e.buf.skPermute.Value[j], e.SecretKey.GLWEKey.Value[j], d)
 		}
-		glk[i] = e.GenGLWEKeySwitchKey(e.buffer.skPermute, e.Parameters.baseParameters.BlindRotateParameters())
+		glk[i] = e.GenGLWEKeySwitchKey(e.buf.skPermute, e.Params.baseParams.BlindRotateParams())
 	}
 
 	return glk

@@ -13,25 +13,25 @@ type Poly[T num.Integer] struct {
 	Coeffs []T
 }
 
-// NewPoly creates a polynomial with degree N with empty coefficients.
+// NewPoly creates a polynomial with rank N with empty coefficients.
 //
-// Panics when N is not a power of two, or when N is smaller than MinDegree or larger than MaxDegree.
+// Panics when N is not a power of two, or when N is smaller than [MinRank].
 func NewPoly[T num.Integer](N int) Poly[T] {
 	switch {
 	case !num.IsPowerOfTwo(N):
-		panic("degree not power of two")
-	case N < MinDegree:
-		panic("degree smaller than MinDegree")
+		panic("NewPoly: rank not power of two")
+	case N < MinRank:
+		panic("NewPoly: rank smaller than MinRank")
 	}
 
 	return Poly[T]{Coeffs: make([]T, N)}
 }
 
 // From creates a new polynomial from given coefficient slice.
-// The given slice is copied, and extended to degree N.
+// The given slice is copied, and extended to rank N.
 func From[T num.Integer](coeffs []T, N int) Poly[T] {
 	p := NewPoly[T](N)
-	vec.CopyAssign(coeffs, p.Coeffs)
+	copy(p.Coeffs, coeffs)
 	return p
 }
 
@@ -41,13 +41,13 @@ func (p Poly[T]) Copy() Poly[T] {
 }
 
 // CopyFrom copies p0 to p.
-func (p *Poly[T]) CopyFrom(p0 Poly[T]) {
-	vec.CopyAssign(p0.Coeffs, p.Coeffs)
+func (p *Poly[T]) CopyFrom(pIn Poly[T]) {
+	copy(p.Coeffs, pIn.Coeffs)
 }
 
-// Degree returns the degree of the polynomial.
+// Rank returns the rank of the polynomial.
 // This is equivalent with length of coefficients.
-func (p Poly[T]) Degree() int {
+func (p Poly[T]) Rank() int {
 	return len(p.Coeffs)
 }
 
@@ -61,9 +61,9 @@ func (p Poly[T]) Equals(p0 Poly[T]) bool {
 	return vec.Equals(p.Coeffs, p0.Coeffs)
 }
 
-// FourierPoly is a fourier transformed polynomial over C[X]/(X^N/2 + 1).
+// FFTPoly is a fourier transformed polynomial over C[X]/(X^N/2 + 1).
 // This corresponds to a polynomial over Z_Q[X]/(X^N + 1).
-type FourierPoly struct {
+type FFTPoly struct {
 	// Coeffs is represented as float-4 complex vector
 	// for efficient computation.
 	//
@@ -78,50 +78,50 @@ type FourierPoly struct {
 	Coeffs []float64
 }
 
-// NewFourierPoly creates a fourier polynomial with degree N/2 with empty coefficients.
+// NewFFTPoly creates a fourier polynomial with rank N/2 with empty coefficients.
 //
-// Panics when N is not a power of two, or when N is smaller than MinDegree.
-func NewFourierPoly(N int) FourierPoly {
+// Panics when N is not a power of two, or when N is smaller than [MinRank].
+func NewFFTPoly(N int) FFTPoly {
 	switch {
 	case !num.IsPowerOfTwo(N):
-		panic("degree not power of two")
-	case N < MinDegree:
-		panic("degree smaller than MinDegree")
+		panic("NewFFTPoly: rank not power of two")
+	case N < MinRank:
+		panic("NewFFTPoly: rank smaller than MinRank")
 	}
 
-	return FourierPoly{Coeffs: make([]float64, N)}
+	return FFTPoly{Coeffs: make([]float64, N)}
 }
 
-// Degree returns the (doubled) degree of the polynomial.
-func (p FourierPoly) Degree() int {
+// Rank returns the (doubled) rank of the polynomial.
+func (p FFTPoly) Rank() int {
 	return len(p.Coeffs)
 }
 
 // Copy returns a copy of the polynomial.
-func (p FourierPoly) Copy() FourierPoly {
-	return FourierPoly{Coeffs: vec.Copy(p.Coeffs)}
+func (p FFTPoly) Copy() FFTPoly {
+	return FFTPoly{Coeffs: vec.Copy(p.Coeffs)}
 }
 
 // CopyFrom copies p0 to p.
-func (p *FourierPoly) CopyFrom(p0 FourierPoly) {
-	vec.CopyAssign(p0.Coeffs, p.Coeffs)
+func (p *FFTPoly) CopyFrom(pIn FFTPoly) {
+	copy(p.Coeffs, pIn.Coeffs)
 }
 
 // Clear clears all the coefficients to zero.
-func (p FourierPoly) Clear() {
+func (p FFTPoly) Clear() {
 	vec.Fill(p.Coeffs, 0)
 }
 
 // Equals checks if p0 is equal with p.
 // Note that due to floating point errors,
 // this function may return false even if p0 and p are equal.
-func (p FourierPoly) Equals(p0 FourierPoly) bool {
+func (p FFTPoly) Equals(p0 FFTPoly) bool {
 	return vec.Equals(p.Coeffs, p0.Coeffs)
 }
 
 // Approx checks if p0 is approximately equal with p,
 // with a difference smaller than eps.
-func (p FourierPoly) Approx(p0 FourierPoly, eps float64) bool {
+func (p FFTPoly) Approx(p0 FFTPoly, eps float64) bool {
 	for i := range p.Coeffs {
 		if math.Abs(p.Coeffs[i]-p0.Coeffs[i]) > eps {
 			return false

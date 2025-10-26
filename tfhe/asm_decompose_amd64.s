@@ -7,16 +7,16 @@
 DATA ONE<>+0(SB)/8, $0x0000000000000001
 GLOBL ONE<>(SB), RODATA|NOPTR, $8
 
-// func decomposePolyAssignUint32AVX2(p []uint32, base uint32, logBase uint32, logLastBaseQ uint32, decomposedOut [][]uint32)
+// func decomposePolyToUint32AVX2(decomposedOut [][]uint32, p []uint32, base uint32, logBase uint32, logLastBaseQ uint32)
 // Requires: AVX, AVX2
-TEXT ·decomposePolyAssignUint32AVX2(SB), NOSPLIT, $0-64
-	MOVQ         p_base+0(FP), AX
-	MOVQ         decomposedOut_base+40(FP), CX
-	MOVQ         p_len+8(FP), DX
-	MOVQ         decomposedOut_len+48(FP), BX
-	VPBROADCASTD base+24(FP), Y0
-	VPBROADCASTD logBase+28(FP), Y1
-	VPBROADCASTD logLastBaseQ+32(FP), Y2
+TEXT ·decomposePolyToUint32AVX2(SB), NOSPLIT, $0-60
+	MOVQ         decomposedOut_base+0(FP), AX
+	MOVQ         p_base+24(FP), CX
+	MOVQ         p_len+32(FP), DX
+	MOVQ         decomposedOut_len+8(FP), BX
+	VPBROADCASTD base+48(FP), Y0
+	VPBROADCASTD logBase+52(FP), Y1
+	VPBROADCASTD logLastBaseQ+56(FP), Y2
 	VPBROADCASTD ONE<>+0(SB), Y3
 	VPSUBD       Y3, Y0, Y4
 	VPSRLD       $0x01, Y0, Y0
@@ -25,7 +25,7 @@ TEXT ·decomposePolyAssignUint32AVX2(SB), NOSPLIT, $0-64
 	JMP          N_loop_end
 
 N_loop_body:
-	VMOVDQU (AX)(SI*4), Y6
+	VMOVDQU (CX)(SI*4), Y6
 	VPSRLVD Y2, Y6, Y7
 	VPSLLD  $0x01, Y6, Y6
 	VPSRLVD Y2, Y6, Y6
@@ -46,7 +46,7 @@ level_loop_body:
 	VANDPD  Y0, Y7, Y8
 	VPSLLD  $0x01, Y8, Y8
 	VPSUBD  Y8, Y7, Y7
-	MOVQ    (CX)(R8*8), R9
+	MOVQ    (AX)(R8*8), R9
 	VMOVDQU Y7, (R9)(SI*4)
 	SUBQ    $0x01, DI
 	SUBQ    $0x03, R8
@@ -58,7 +58,7 @@ level_loop_end:
 	VANDPD  Y0, Y6, Y7
 	VPSLLD  $0x01, Y7, Y7
 	VPSUBD  Y7, Y6, Y6
-	MOVQ    (CX), DI
+	MOVQ    (AX), DI
 	VMOVDQU Y6, (DI)(SI*4)
 	ADDQ    $0x08, SI
 
@@ -67,16 +67,16 @@ N_loop_end:
 	JL   N_loop_body
 	RET
 
-// func decomposePolyAssignUint64AVX2(p []uint64, base uint64, logBase uint64, logLastBaseQ uint64, decomposedOut [][]uint64)
+// func decomposePolyToUint64AVX2(decomposedOut [][]uint64, p []uint64, base uint64, logBase uint64, logLastBaseQ uint64)
 // Requires: AVX, AVX2
-TEXT ·decomposePolyAssignUint64AVX2(SB), NOSPLIT, $0-72
-	MOVQ         p_base+0(FP), AX
-	MOVQ         decomposedOut_base+48(FP), CX
-	MOVQ         p_len+8(FP), DX
-	MOVQ         decomposedOut_len+56(FP), BX
-	VPBROADCASTQ base+24(FP), Y0
-	VPBROADCASTQ logBase+32(FP), Y1
-	VPBROADCASTQ logLastBaseQ+40(FP), Y2
+TEXT ·decomposePolyToUint64AVX2(SB), NOSPLIT, $0-72
+	MOVQ         decomposedOut_base+0(FP), AX
+	MOVQ         p_base+24(FP), CX
+	MOVQ         p_len+32(FP), DX
+	MOVQ         decomposedOut_len+8(FP), BX
+	VPBROADCASTQ base+48(FP), Y0
+	VPBROADCASTQ logBase+56(FP), Y1
+	VPBROADCASTQ logLastBaseQ+64(FP), Y2
 	VPBROADCASTQ ONE<>+0(SB), Y3
 	VPSUBQ       Y3, Y0, Y4
 	VPSRLQ       $0x01, Y0, Y0
@@ -85,7 +85,7 @@ TEXT ·decomposePolyAssignUint64AVX2(SB), NOSPLIT, $0-72
 	JMP          N_loop_end
 
 N_loop_body:
-	VMOVDQU (AX)(SI*8), Y6
+	VMOVDQU (CX)(SI*8), Y6
 	VPSRLVQ Y2, Y6, Y7
 	VPSLLQ  $0x01, Y6, Y6
 	VPSRLVQ Y2, Y6, Y6
@@ -106,7 +106,7 @@ level_loop_body:
 	VANDPD  Y0, Y7, Y8
 	VPSLLQ  $0x01, Y8, Y8
 	VPSUBQ  Y8, Y7, Y7
-	MOVQ    (CX)(R8*8), R9
+	MOVQ    (AX)(R8*8), R9
 	VMOVDQU Y7, (R9)(SI*8)
 	SUBQ    $0x01, DI
 	SUBQ    $0x03, R8
@@ -118,7 +118,7 @@ level_loop_end:
 	VANDPD  Y0, Y6, Y7
 	VPSLLQ  $0x01, Y7, Y7
 	VPSUBQ  Y7, Y6, Y6
-	MOVQ    (CX), DI
+	MOVQ    (AX), DI
 	VMOVDQU Y6, (DI)(SI*8)
 	ADDQ    $0x04, SI
 

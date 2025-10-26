@@ -5,10 +5,10 @@ import "github.com/sp301415/tfhe-go/tfhe"
 var (
 	// ParamsBinaryParty2 is a parameter set for binary TFHE with 2 parties.
 	ParamsBinaryParty2 = ParametersLiteral[uint64]{
-		SingleKeyParametersLiteral: tfhe.ParametersLiteral[uint64]{
+		SubParams: tfhe.ParametersLiteral[uint64]{
 			LWEDimension: 560,
 			GLWERank:     1,
-			PolyDegree:   2048,
+			PolyRank:     2048,
 
 			LWEStdDev:  0.0000305,
 			GLWEStdDev: 0.00000000000000000463,
@@ -17,11 +17,11 @@ var (
 
 			MessageModulus: 1 << 1,
 
-			BlindRotateParameters: tfhe.GadgetParametersLiteral[uint64]{
+			BlindRotateParams: tfhe.GadgetParametersLiteral[uint64]{
 				Base:  1 << 12,
 				Level: 3,
 			},
-			KeySwitchParameters: tfhe.GadgetParametersLiteral[uint64]{
+			KeySwitchParams: tfhe.GadgetParametersLiteral[uint64]{
 				Base:  1 << 2,
 				Level: 8,
 			},
@@ -31,11 +31,11 @@ var (
 
 		PartyCount: 2,
 
-		AccumulatorParameters: tfhe.GadgetParametersLiteral[uint64]{
+		AccumulatorParams: tfhe.GadgetParametersLiteral[uint64]{
 			Base:  1 << 6,
 			Level: 2,
 		},
-		RelinKeyParameters: tfhe.GadgetParametersLiteral[uint64]{
+		RelinKeyParams: tfhe.GadgetParametersLiteral[uint64]{
 			Base:  1 << 10,
 			Level: 3,
 		},
@@ -43,10 +43,10 @@ var (
 
 	// ParamsBinaryParty4 is a parameter set for binary TFHE with 4 parties.
 	ParamsBinaryParty4 = ParametersLiteral[uint64]{
-		SingleKeyParametersLiteral: tfhe.ParametersLiteral[uint64]{
+		SubParams: tfhe.ParametersLiteral[uint64]{
 			LWEDimension: 560,
 			GLWERank:     1,
-			PolyDegree:   2048,
+			PolyRank:     2048,
 
 			LWEStdDev:  0.0000305,
 			GLWEStdDev: 0.00000000000000000463,
@@ -55,11 +55,11 @@ var (
 
 			MessageModulus: 1 << 1,
 
-			BlindRotateParameters: tfhe.GadgetParametersLiteral[uint64]{
+			BlindRotateParams: tfhe.GadgetParametersLiteral[uint64]{
 				Base:  1 << 8,
 				Level: 5,
 			},
-			KeySwitchParameters: tfhe.GadgetParametersLiteral[uint64]{
+			KeySwitchParams: tfhe.GadgetParametersLiteral[uint64]{
 				Base:  1 << 2,
 				Level: 8,
 			},
@@ -69,11 +69,11 @@ var (
 
 		PartyCount: 4,
 
-		AccumulatorParameters: tfhe.GadgetParametersLiteral[uint64]{
+		AccumulatorParams: tfhe.GadgetParametersLiteral[uint64]{
 			Base:  1 << 8,
 			Level: 2,
 		},
-		RelinKeyParameters: tfhe.GadgetParametersLiteral[uint64]{
+		RelinKeyParams: tfhe.GadgetParametersLiteral[uint64]{
 			Base:  1 << 6,
 			Level: 7,
 		},
@@ -81,10 +81,10 @@ var (
 
 	// ParamsBinaryParty8 is a parameter set for binary TFHE with 8 parties.
 	ParamsBinaryParty8 = ParametersLiteral[uint64]{
-		SingleKeyParametersLiteral: tfhe.ParametersLiteral[uint64]{
+		SubParams: tfhe.ParametersLiteral[uint64]{
 			LWEDimension: 560,
 			GLWERank:     1,
-			PolyDegree:   2048,
+			PolyRank:     2048,
 
 			LWEStdDev:  0.0000305,
 			GLWEStdDev: 0.00000000000000000463,
@@ -93,11 +93,11 @@ var (
 
 			MessageModulus: 1 << 1,
 
-			BlindRotateParameters: tfhe.GadgetParametersLiteral[uint64]{
+			BlindRotateParams: tfhe.GadgetParametersLiteral[uint64]{
 				Base:  1 << 9,
 				Level: 4,
 			},
-			KeySwitchParameters: tfhe.GadgetParametersLiteral[uint64]{
+			KeySwitchParams: tfhe.GadgetParametersLiteral[uint64]{
 				Base:  1 << 2,
 				Level: 8,
 			},
@@ -107,11 +107,11 @@ var (
 
 		PartyCount: 8,
 
-		AccumulatorParameters: tfhe.GadgetParametersLiteral[uint64]{
+		AccumulatorParams: tfhe.GadgetParametersLiteral[uint64]{
 			Base:  1 << 6,
 			Level: 3,
 		},
-		RelinKeyParameters: tfhe.GadgetParametersLiteral[uint64]{
+		RelinKeyParams: tfhe.GadgetParametersLiteral[uint64]{
 			Base:  1 << 4,
 			Level: 8,
 		},
@@ -119,10 +119,10 @@ var (
 
 	// ParamsBinaryParty16 is a parameter set for binary TFHE with 16 parties.
 	ParamsBinaryParty16 = ParametersLiteral[uint64]{
-		SingleKeyParametersLiteral: tfhe.ParametersLiteral[uint64]{
+		SubParams: tfhe.ParametersLiteral[uint64]{
 			LWEDimension: 560,
 			GLWERank:     1,
-			PolyDegree:   2048,
+			PolyRank:     2048,
 
 			LWEStdDev:  0.0000305,
 			GLWEStdDev: 0.00000000000000000463,
@@ -131,11 +131,11 @@ var (
 
 			MessageModulus: 1 << 1,
 
-			BlindRotateParameters: tfhe.GadgetParametersLiteral[uint64]{
+			BlindRotateParams: tfhe.GadgetParametersLiteral[uint64]{
 				Base:  1 << 8,
 				Level: 5,
 			},
-			KeySwitchParameters: tfhe.GadgetParametersLiteral[uint64]{
+			KeySwitchParams: tfhe.GadgetParametersLiteral[uint64]{
 				Base:  1 << 2,
 				Level: 8,
 			},
@@ -145,11 +145,11 @@ var (
 
 		PartyCount: 16,
 
-		AccumulatorParameters: tfhe.GadgetParametersLiteral[uint64]{
+		AccumulatorParams: tfhe.GadgetParametersLiteral[uint64]{
 			Base:  1 << 6,
 			Level: 3,
 		},
-		RelinKeyParameters: tfhe.GadgetParametersLiteral[uint64]{
+		RelinKeyParams: tfhe.GadgetParametersLiteral[uint64]{
 			Base:  1 << 4,
 			Level: 9,
 		},
@@ -157,10 +157,10 @@ var (
 
 	// ParamsBinaryParty32 is a parameter set for binary TFHE with 32 parties.
 	ParamsBinaryParty32 = ParametersLiteral[uint64]{
-		SingleKeyParametersLiteral: tfhe.ParametersLiteral[uint64]{
+		SubParams: tfhe.ParametersLiteral[uint64]{
 			LWEDimension: 560,
 			GLWERank:     1,
-			PolyDegree:   2048,
+			PolyRank:     2048,
 
 			LWEStdDev:  0.0000305,
 			GLWEStdDev: 0.00000000000000000463,
@@ -169,11 +169,11 @@ var (
 
 			MessageModulus: 1 << 1,
 
-			BlindRotateParameters: tfhe.GadgetParametersLiteral[uint64]{
+			BlindRotateParams: tfhe.GadgetParametersLiteral[uint64]{
 				Base:  1 << 7,
 				Level: 6,
 			},
-			KeySwitchParameters: tfhe.GadgetParametersLiteral[uint64]{
+			KeySwitchParams: tfhe.GadgetParametersLiteral[uint64]{
 				Base:  1 << 2,
 				Level: 8,
 			},
@@ -183,11 +183,11 @@ var (
 
 		PartyCount: 32,
 
-		AccumulatorParameters: tfhe.GadgetParametersLiteral[uint64]{
+		AccumulatorParams: tfhe.GadgetParametersLiteral[uint64]{
 			Base:  1 << 7,
 			Level: 3,
 		},
-		RelinKeyParameters: tfhe.GadgetParametersLiteral[uint64]{
+		RelinKeyParams: tfhe.GadgetParametersLiteral[uint64]{
 			Base:  1 << 2,
 			Level: 16,
 		},

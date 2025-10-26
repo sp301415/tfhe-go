@@ -11,7 +11,7 @@ import (
 
 var (
 	cbParams = xtfhe.ParamsCircuitBootstrapMedium.Compile()
-	cbEnc    = tfhe.NewEncryptor(cbParams.BaseParameters())
+	cbEnc    = tfhe.NewEncryptor(cbParams.Params())
 	cbKeyGen = xtfhe.NewCircuitBootstrapKeyGenerator(cbParams, cbEnc.SecretKey)
 	cbEval   = xtfhe.NewCircuitBootstrapper(cbParams, cbEnc.GenEvaluationKeyParallel(), cbKeyGen.GenCircuitBootstrapKey())
 )
@@ -22,8 +22,8 @@ func TestCircuitBootstrap(t *testing.T) {
 
 	for _, c := range []int{0, 1} {
 		ctLWE := cbEnc.EncryptLWE(c)
-		ctFourierGGSW := cbEval.CircuitBootstrap(ctLWE)
-		ctGLWEOut := cbEval.ExternalProductGLWE(ctFourierGGSW, ctGLWE)
+		ctFFTGGSW := cbEval.CircuitBootstrap(ctLWE)
+		ctGLWEOut := cbEval.ExternalProdGLWE(ctFFTGGSW, ctGLWE)
 
 		msgGLWEOut := cbEnc.DecryptGLWE(ctGLWEOut)[:len(msgGLWE)]
 		assert.Equal(t, msgGLWEOut, vec.ScalarMul(msgGLWE, c))

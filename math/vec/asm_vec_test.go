@@ -33,103 +33,103 @@ func TestVec(t *testing.T) {
 		w1[i] = r.Uint64()
 	}
 
-	t.Run("AddAssign", func(t *testing.T) {
+	t.Run("AddTo", func(t *testing.T) {
 		for i := 0; i < N; i++ {
 			vOut[i] = v0[i] + v1[i]
 			wOut[i] = w0[i] + w1[i]
 		}
-		vec.AddAssign(v0, v1, vOutAVX)
-		vec.AddAssign(w0, w1, wOutAVX)
+		vec.AddTo(vOutAVX, v0, v1)
+		vec.AddTo(wOutAVX, w0, w1)
 
 		assert.Equal(t, vOut, vOutAVX)
 		assert.Equal(t, wOut, wOutAVX)
 	})
 
-	t.Run("SubAssign", func(t *testing.T) {
+	t.Run("SubTo", func(t *testing.T) {
 		for i := 0; i < N; i++ {
 			vOut[i] = v0[i] - v1[i]
 			wOut[i] = w0[i] - w1[i]
 		}
-		vec.SubAssign(v0, v1, vOutAVX)
-		vec.SubAssign(w0, w1, wOutAVX)
+		vec.SubTo(vOutAVX, v0, v1)
+		vec.SubTo(wOutAVX, w0, w1)
 
 		assert.Equal(t, vOut, vOutAVX)
 		assert.Equal(t, wOut, wOutAVX)
 	})
 
-	t.Run("ScalarMulAssign", func(t *testing.T) {
+	t.Run("ScalarMulTo", func(t *testing.T) {
 		cv := vOut[0]
 		cw := wOut[0]
 		for i := 0; i < N; i++ {
 			vOut[i] = cv * v0[i]
 			wOut[i] = cw * w0[i]
 		}
-		vec.ScalarMulAssign(v0, cv, vOutAVX)
-		vec.ScalarMulAssign(w0, cw, wOutAVX)
+		vec.ScalarMulTo(vOutAVX, v0, cv)
+		vec.ScalarMulTo(wOutAVX, w0, cw)
 
 		assert.Equal(t, vOut, vOutAVX)
 		assert.Equal(t, wOut, wOutAVX)
 	})
 
-	t.Run("ScalarMulAddAssign", func(t *testing.T) {
+	t.Run("ScalarMulAddTo", func(t *testing.T) {
 		cv := vOut[0]
 		cw := wOut[0]
 		for i := 0; i < N; i++ {
 			vOut[i] += cv * v0[i]
 			wOut[i] += cw * w0[i]
 		}
-		vec.ScalarMulAddAssign(v0, cv, vOutAVX)
-		vec.ScalarMulAddAssign(w0, cw, wOutAVX)
+		vec.ScalarMulAddTo(vOutAVX, v0, cv)
+		vec.ScalarMulAddTo(wOutAVX, w0, cw)
 
 		assert.Equal(t, vOut, vOutAVX)
 		assert.Equal(t, wOut, wOutAVX)
 	})
 
-	t.Run("ScalarMulSubAssign", func(t *testing.T) {
+	t.Run("ScalarMulSubTo", func(t *testing.T) {
 		cv := vOut[0]
 		cw := wOut[0]
 		for i := 0; i < N; i++ {
 			vOut[i] -= cv * v0[i]
 			wOut[i] -= cw * w0[i]
 		}
-		vec.ScalarMulSubAssign(v0, cv, vOutAVX)
-		vec.ScalarMulSubAssign(w0, cw, wOutAVX)
+		vec.ScalarMulSubTo(vOutAVX, v0, cv)
+		vec.ScalarMulSubTo(wOutAVX, w0, cw)
 
 		assert.Equal(t, vOut, vOutAVX)
 		assert.Equal(t, wOut, wOutAVX)
 	})
 
-	t.Run("ElementWiseMulAssign", func(t *testing.T) {
+	t.Run("MulTo", func(t *testing.T) {
 		for i := 0; i < N; i++ {
 			vOut[i] = v0[i] * v1[i]
 			wOut[i] = w0[i] * w1[i]
 		}
-		vec.ElementWiseMulAssign(v0, v1, vOutAVX)
-		vec.ElementWiseMulAssign(w0, w1, wOutAVX)
+		vec.MulTo(vOutAVX, v0, v1)
+		vec.MulTo(wOutAVX, w0, w1)
 
 		assert.Equal(t, vOut, vOutAVX)
 		assert.Equal(t, wOut, wOutAVX)
 	})
 
-	t.Run("ElementWiseMulAddAssign", func(t *testing.T) {
+	t.Run("MulAddTo", func(t *testing.T) {
 		for i := 0; i < N; i++ {
 			vOut[i] += v0[i] * v1[i]
 			wOut[i] += w0[i] * w1[i]
 		}
-		vec.ElementWiseMulAddAssign(v0, v1, vOutAVX)
-		vec.ElementWiseMulAddAssign(w0, w1, wOutAVX)
+		vec.MulAddTo(vOutAVX, v0, v1)
+		vec.MulAddTo(wOutAVX, w0, w1)
 
 		assert.Equal(t, vOut, vOutAVX)
 		assert.Equal(t, wOut, wOutAVX)
 	})
 
-	t.Run("ElementWiseMulSubAssign", func(t *testing.T) {
+	t.Run("MulSubTo", func(t *testing.T) {
 		for i := 0; i < N; i++ {
 			vOut[i] -= v0[i] * v1[i]
 			wOut[i] -= w0[i] * w1[i]
 		}
-		vec.ElementWiseMulSubAssign(v0, v1, vOutAVX)
-		vec.ElementWiseMulSubAssign(w0, w1, wOutAVX)
+		vec.MulSubTo(vOutAVX, v0, v1)
+		vec.MulSubTo(wOutAVX, w0, w1)
 
 		assert.Equal(t, vOut, vOutAVX)
 		assert.Equal(t, wOut, wOutAVX)

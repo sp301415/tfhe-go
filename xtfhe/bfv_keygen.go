@@ -24,16 +24,16 @@ type BFVKeyGenerator[T tfhe.TorusInt] struct {
 	// PolyEvaluator is a PolyEvaluator for this BFVKeyGenerator.
 	PolyEvaluator *poly.Evaluator[T]
 
-	// Parameters is the parameters for this BFVKeyGenerator.
-	Parameters tfhe.Parameters[T]
+	// Params is the parameters for this BFVKeyGenerator.
+	Params tfhe.Parameters[T]
 }
 
 // NewBFVKeyGenerator creates a new BFVKeyGenerator.
 func NewBFVKeyGenerator[T tfhe.TorusInt](params tfhe.Parameters[T], sk tfhe.SecretKey[T]) *BFVKeyGenerator[T] {
 	return &BFVKeyGenerator[T]{
 		BaseEncryptor: tfhe.NewEncryptorWithKey(params, sk),
-		PolyEvaluator: poly.NewEvaluator[T](params.PolyDegree()),
-		Parameters:    params,
+		PolyEvaluator: poly.NewEvaluator[T](params.PolyRank()),
+		Params:        params,
 	}
 }
 
@@ -42,7 +42,7 @@ func (kg *BFVKeyGenerator[T]) ShallowCopy() *BFVKeyGenerator[T] {
 	return &BFVKeyGenerator[T]{
 		BaseEncryptor: kg.BaseEncryptor.ShallowCopy(),
 		PolyEvaluator: kg.PolyEvaluator.ShallowCopy(),
-		Parameters:    kg.Parameters,
+		Params:        kg.Params,
 	}
 }
 
@@ -56,20 +56,20 @@ func (kg *BFVKeyGenerator[T]) GenEvaluationKey(idx []int, kskParams tfhe.GadgetP
 
 // GenRelinKey generates a relinearization key for BFV multiplication.
 func (kg *BFVKeyGenerator[T]) GenRelinKey(kskParams tfhe.GadgetParameters[T]) tfhe.GLWEKeySwitchKey[T] {
-	rlkRank := kg.Parameters.GLWERank() * (kg.Parameters.GLWERank() + 1) / 2
-	skOut := tfhe.NewGLWESecretKeyCustom[T](rlkRank, kg.Parameters.PolyDegree())
-	fskOut := tfhe.NewFourierGLWESecretKeyCustom[T](rlkRank, kg.Parameters.PolyDegree())
+	rlkRank := kg.Params.GLWERank() * (kg.Params.GLWERank() + 1) / 2
+	skOut := tfhe.NewGLWESecretKeyCustom[T](rlkRank, kg.Params.PolyRank())
+	fskOut := tfhe.NewFFTGLWESecretKeyCustom[T](rlkRank, kg.Params.PolyRank())
 
 	skOutIdx := 0
-	for i := 0; i < kg.Parameters.GLWERank(); i++ {
-		for j := i; j < kg.Parameters.GLWERank(); j++ {
-			kg.BaseEncryptor.PolyEvaluator.MulFourierPolyAssign(kg.BaseEncryptor.SecretKey.FourierGLWEKey.Value[i], kg.BaseEncryptor.SecretKey.FourierGLWEKey.Value[j], fskOut.Value[skOutIdx])
+	for i := 0; i < kg.Params.GLWERank(); i++ {
+		for j := i; j < kg.Params.GLWERank(); j++ {
+			kg.BaseEncryptor.PolyEvaluator.MulFFTPolyTo(fskOut.Value[skOutIdx], kg.BaseEncryptor.SecretKey.FFTGLWEKey.Value[i], kg.BaseEncryptor.SecretKey.FFTGLWEKey.Value[j])
 			skOutIdx++
 		}
 	}
 
 	for i := range fskOut.Value {
-		kg.BaseEncryptor.PolyEvaluator.ToPolyAssignUnsafe(fskOut.Value[i], skOut.Value[i])
+		kg.BaseEncryptor.PolyEvaluator.InvFFTToUnsafe(skOut.Value[i], fskOut.Value[i])
 	}
 
 	return kg.BaseEncryptor.GenGLWEKeySwitchKey(skOut, kskParams)
@@ -78,25 +78,25 @@ func (kg *BFVKeyGenerator[T]) GenRelinKey(kskParams tfhe.GadgetParameters[T]) tf
 // GenGaloisKeys generate galois keys for BFV automorphism.
 func (kg *BFVKeyGenerator[T]) GenGaloisKeys(idx []int, kskParams tfhe.GadgetParameters[T]) map[int]tfhe.GLWEKeySwitchKey[T] {
 	galKeys := make(map[int]tfhe.GLWEKeySwitchKey[T], len(idx))
-	skOut := tfhe.NewGLWESecretKey(kg.Parameters)
+	skOut := tfhe.NewGLWESecretKey(kg.Params)
 
 	for _, d := range idx {
-		for i := 0; i < kg.Parameters.GLWERank(); i++ {
-			kg.BaseEncryptor.PolyEvaluator.PermutePolyAssign(kg.BaseEncryptor.SecretKey.GLWEKey.Value[i], d, skOut.Value[i])
+		for i := 0; i < kg.Params.GLWERank(); i++ {
+			kg.BaseEncryptor.PolyEvaluator.PermutePolyTo(skOut.Value[i], kg.BaseEncryptor.SecretKey.GLWEKey.Value[i], d)
 		}
 		galKeys[d] = kg.BaseEncryptor.GenGLWEKeySwitchKey(skOut, kskParams)
 	}
 	return galKeys
 }
 
-// GenGaloisKeysAssign generates automorphism keys for BFV automorphism and assigns them to the given map.
+// GenGaloisKeysTo generates automorphism keys for BFV automorphism and assigns them to the given map.
 // If a key for a given automorphism degree already exists in the map, it will be overwritten.
-func (kg *BFVKeyGenerator[T]) GenGaloisKeysAssign(idx []int, kskParams tfhe.GadgetParameters[T], galKeysOut map[int]tfhe.GLWEKeySwitchKey[T]) {
-	skOut := tfhe.NewGLWESecretKey(kg.Parameters)
+func (kg *BFVKeyGenerator[T]) GenGaloisKeysTo(galKeysOut map[int]tfhe.GLWEKeySwitchKey[T], idx []int, kskParams tfhe.GadgetParameters[T]) {
+	skOut := tfhe.NewGLWESecretKey(kg.Params)
 
 	for _, d := range idx {
-		for i := 0; i < kg.Parameters.GLWERank(); i++ {
-			kg.BaseEncryptor.PolyEvaluator.PermutePolyAssign(kg.BaseEncryptor.SecretKey.GLWEKey.Value[i], d, skOut.Value[i])
+		for i := 0; i < kg.Params.GLWERank(); i++ {
+			kg.BaseEncryptor.PolyEvaluator.PermutePolyTo(skOut.Value[i], kg.BaseEncryptor.SecretKey.GLWEKey.Value[i], d)
 		}
 		galKeysOut[d] = kg.BaseEncryptor.GenGLWEKeySwitchKey(skOut, kskParams)
 	}
@@ -104,19 +104,19 @@ func (kg *BFVKeyGenerator[T]) GenGaloisKeysAssign(idx []int, kskParams tfhe.Gadg
 
 // GenGaloisKeysForLWEToGLWECiphertext generates automorphism keys for BFV automorphism for LWE to GLWE packing.
 func (kg *BFVKeyGenerator[T]) GenGaloisKeysForLWEToGLWECiphertext(kskParams tfhe.GadgetParameters[T]) map[int]tfhe.GLWEKeySwitchKey[T] {
-	auts := make([]int, kg.Parameters.LogPolyDegree())
+	auts := make([]int, kg.Params.LogPolyRank())
 	for i := range auts {
-		auts[i] = 1<<(kg.Parameters.LogPolyDegree()-i) + 1
+		auts[i] = 1<<(kg.Params.LogPolyRank()-i) + 1
 	}
 	return kg.GenGaloisKeys(auts, kskParams)
 }
 
-// GenGaloisKeysForLWEToGLWECiphertextAssign generates automorphism keys for BFV automorphism for LWE to GLWE packing and assigns them to the given map.
+// GenGaloisKeysForLWEToGLWECiphertextTo generates automorphism keys for BFV automorphism for LWE to GLWE packing and assigns them to the given map.
 // If a key for a given automorphism degree already exists in the map, it will be overwritten.
-func (kg *BFVKeyGenerator[T]) GenGaloisKeysForLWEToGLWECiphertextAssign(kskParams tfhe.GadgetParameters[T], galKeysOut map[int]tfhe.GLWEKeySwitchKey[T]) {
-	auts := make([]int, kg.Parameters.LogPolyDegree())
+func (kg *BFVKeyGenerator[T]) GenGaloisKeysForLWEToGLWECiphertextTo(galKeysOut map[int]tfhe.GLWEKeySwitchKey[T], kskParams tfhe.GadgetParameters[T]) {
+	auts := make([]int, kg.Params.LogPolyRank())
 	for i := range auts {
-		auts[i] = 1<<(kg.Parameters.LogPolyDegree()-i) + 1
+		auts[i] = 1<<(kg.Params.LogPolyRank()-i) + 1
 	}
-	kg.GenGaloisKeysAssign(auts, kskParams, galKeysOut)
+	kg.GenGaloisKeysTo(galKeysOut, auts, kskParams)
 }

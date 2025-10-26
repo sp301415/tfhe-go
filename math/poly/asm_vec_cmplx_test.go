@@ -28,9 +28,9 @@ func TestVecCmplxAssembly(t *testing.T) {
 	vOutAVX2Float4 := make([]float64, 2*N)
 
 	t.Run("Add", func(t *testing.T) {
-		vec.AddAssign(v0, v1, vOut)
-		addCmplxAssign(v0Float4, v1Float4, vOutAVX2Float4)
-		vec.Float4ToCmplxAssign(vOutAVX2Float4, vOutAVX2)
+		vec.AddTo(vOut, v0, v1)
+		addCmplxTo(vOutAVX2Float4, v0Float4, v1Float4)
+		vec.Float4ToCmplxTo(vOutAVX2, vOutAVX2Float4)
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
 				t.Fatalf("Add: %v != %v", vOut[i], vOutAVX2[i])
@@ -39,9 +39,9 @@ func TestVecCmplxAssembly(t *testing.T) {
 	})
 
 	t.Run("Sub", func(t *testing.T) {
-		vec.SubAssign(v0, v1, vOut)
-		subCmplxAssign(v0Float4, v1Float4, vOutAVX2Float4)
-		vec.Float4ToCmplxAssign(vOutAVX2Float4, vOutAVX2)
+		vec.SubTo(vOut, v0, v1)
+		subCmplxTo(vOutAVX2Float4, v0Float4, v1Float4)
+		vec.Float4ToCmplxTo(vOutAVX2, vOutAVX2Float4)
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
 				t.Fatalf("Sub: %v != %v", vOut[i], vOutAVX2[i])
@@ -50,9 +50,9 @@ func TestVecCmplxAssembly(t *testing.T) {
 	})
 
 	t.Run("Neg", func(t *testing.T) {
-		vec.NegAssign(v0, vOut)
-		negCmplxAssign(v0Float4, vOutAVX2Float4)
-		vec.Float4ToCmplxAssign(vOutAVX2Float4, vOutAVX2)
+		vec.NegTo(vOut, v0)
+		negCmplxTo(vOutAVX2Float4, v0Float4)
+		vec.Float4ToCmplxTo(vOutAVX2, vOutAVX2Float4)
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
 				t.Fatalf("Neg: %v != %v", vOut[i], vOutAVX2[i])
@@ -62,9 +62,9 @@ func TestVecCmplxAssembly(t *testing.T) {
 
 	t.Run("FloatMul", func(t *testing.T) {
 		c := r.Float64()
-		vec.ScalarMulAssign(v0, complex(c, 0), vOut)
-		floatMulCmplxAssign(v0Float4, c, vOutAVX2Float4)
-		vec.Float4ToCmplxAssign(vOutAVX2Float4, vOutAVX2)
+		vec.ScalarMulTo(vOut, v0, complex(c, 0))
+		floatMulCmplxTo(vOutAVX2Float4, v0Float4, c)
+		vec.Float4ToCmplxTo(vOutAVX2, vOutAVX2Float4)
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
 				t.Fatalf("FloatMul: %v != %v", vOut[i], vOutAVX2[i])
@@ -77,9 +77,9 @@ func TestVecCmplxAssembly(t *testing.T) {
 		vec.Fill(vOutAVX2Float4, 0)
 
 		c := r.Float64()
-		vec.ScalarMulAddAssign(v0, complex(c, 0), vOut)
-		floatMulAddCmplxAssign(v0Float4, c, vOutAVX2Float4)
-		vec.Float4ToCmplxAssign(vOutAVX2Float4, vOutAVX2)
+		vec.ScalarMulAddTo(vOut, v0, complex(c, 0))
+		floatMulAddCmplxTo(vOutAVX2Float4, v0Float4, c)
+		vec.Float4ToCmplxTo(vOutAVX2, vOutAVX2Float4)
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
 				t.Fatalf("FloatMulAdd: %v != %v", vOut[i], vOutAVX2[i])
@@ -92,9 +92,9 @@ func TestVecCmplxAssembly(t *testing.T) {
 		vec.Fill(vOutAVX2Float4, 0)
 
 		c := r.Float64()
-		vec.ScalarMulSubAssign(v0, complex(c, 0), vOut)
-		floatMulSubCmplxAssign(v0Float4, c, vOutAVX2Float4)
-		vec.Float4ToCmplxAssign(vOutAVX2Float4, vOutAVX2)
+		vec.ScalarMulSubTo(vOut, v0, complex(c, 0))
+		floatMulSubCmplxTo(vOutAVX2Float4, v0Float4, c)
+		vec.Float4ToCmplxTo(vOutAVX2, vOutAVX2Float4)
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
 				t.Fatalf("FloatMulSub: %v != %v", vOut[i], vOutAVX2[i])
@@ -104,9 +104,9 @@ func TestVecCmplxAssembly(t *testing.T) {
 
 	t.Run("CmplxMul", func(t *testing.T) {
 		c := complex(r.Float64(), r.Float64())
-		vec.ScalarMulAssign(v0, c, vOut)
-		cmplxMulCmplxAssign(v0Float4, c, vOutAVX2Float4)
-		vec.Float4ToCmplxAssign(vOutAVX2Float4, vOutAVX2)
+		vec.ScalarMulTo(vOut, v0, c)
+		cmplxMulCmplxTo(vOutAVX2Float4, v0Float4, c)
+		vec.Float4ToCmplxTo(vOutAVX2, vOutAVX2Float4)
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
 				t.Fatalf("CmplxMul: %v != %v", vOut[i], vOutAVX2[i])
@@ -119,9 +119,9 @@ func TestVecCmplxAssembly(t *testing.T) {
 		vec.Fill(vOutAVX2Float4, 0)
 
 		c := complex(r.Float64(), r.Float64())
-		vec.ScalarMulAddAssign(v0, c, vOut)
-		cmplxMulAddCmplxAssign(v0Float4, c, vOutAVX2Float4)
-		vec.Float4ToCmplxAssign(vOutAVX2Float4, vOutAVX2)
+		vec.ScalarMulAddTo(vOut, v0, c)
+		cmplxMulAddCmplxTo(vOutAVX2Float4, v0Float4, c)
+		vec.Float4ToCmplxTo(vOutAVX2, vOutAVX2Float4)
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
 				t.Fatalf("CmplxMulAdd: %v != %v", vOut[i], vOutAVX2[i])
@@ -134,9 +134,9 @@ func TestVecCmplxAssembly(t *testing.T) {
 		vec.Fill(vOutAVX2Float4, 0)
 
 		c := complex(r.Float64(), r.Float64())
-		vec.ScalarMulSubAssign(v0, c, vOut)
-		cmplxMulSubCmplxAssign(v0Float4, c, vOutAVX2Float4)
-		vec.Float4ToCmplxAssign(vOutAVX2Float4, vOutAVX2)
+		vec.ScalarMulSubTo(vOut, v0, c)
+		cmplxMulSubCmplxTo(vOutAVX2Float4, v0Float4, c)
+		vec.Float4ToCmplxTo(vOutAVX2, vOutAVX2Float4)
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
 				t.Fatalf("CmplxMulSub: %v != %v", vOut[i], vOutAVX2[i])
@@ -145,9 +145,9 @@ func TestVecCmplxAssembly(t *testing.T) {
 	})
 
 	t.Run("Mul", func(t *testing.T) {
-		vec.ElementWiseMulAssign(v0, v1, vOut)
-		elementWiseMulCmplxAssign(v0Float4, v1Float4, vOutAVX2Float4)
-		vec.Float4ToCmplxAssign(vOutAVX2Float4, vOutAVX2)
+		vec.MulTo(vOut, v0, v1)
+		mulCmplxTo(vOutAVX2Float4, v0Float4, v1Float4)
+		vec.Float4ToCmplxTo(vOutAVX2, vOutAVX2Float4)
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
 				t.Fatalf("Mul: %v != %v", vOut[i], vOutAVX2[i])
@@ -159,9 +159,9 @@ func TestVecCmplxAssembly(t *testing.T) {
 		vec.Fill(vOut, 0)
 		vec.Fill(vOutAVX2Float4, 0)
 
-		vec.ElementWiseMulAddAssign(v0, v1, vOut)
-		elementWiseMulAddCmplxAssign(v0Float4, v1Float4, vOutAVX2Float4)
-		vec.Float4ToCmplxAssign(vOutAVX2Float4, vOutAVX2)
+		vec.MulAddTo(vOut, v0, v1)
+		mulAddCmplxTo(vOutAVX2Float4, v0Float4, v1Float4)
+		vec.Float4ToCmplxTo(vOutAVX2, vOutAVX2Float4)
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
 				t.Fatalf("MulAdd: %v != %v", vOut[i], vOutAVX2[i])
@@ -173,9 +173,9 @@ func TestVecCmplxAssembly(t *testing.T) {
 		vec.Fill(vOut, 0)
 		vec.Fill(vOutAVX2Float4, 0)
 
-		vec.ElementWiseMulSubAssign(v0, v1, vOut)
-		elementWiseMulSubCmplxAssign(v0Float4, v1Float4, vOutAVX2Float4)
-		vec.Float4ToCmplxAssign(vOutAVX2Float4, vOutAVX2)
+		vec.MulSubTo(vOut, v0, v1)
+		mulSubCmplxTo(vOutAVX2Float4, v0Float4, v1Float4)
+		vec.Float4ToCmplxTo(vOutAVX2, vOutAVX2Float4)
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(vOut[i]-vOutAVX2[i]) > eps {
 				t.Fatalf("MulSub: %v != %v", vOut[i], vOutAVX2[i])

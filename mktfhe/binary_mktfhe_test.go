@@ -21,8 +21,8 @@ var (
 		1: encBinary[1].GenEvaluationKeyParallel(),
 	})
 	decBinary = mktfhe.NewBinaryDecryptor(paramsBinary, map[int]tfhe.SecretKey[uint64]{
-		0: encBinary[0].BaseEncryptor.SecretKey,
-		1: encBinary[1].BaseEncryptor.SecretKey,
+		0: encBinary[0].Encryptor.SecretKey,
+		1: encBinary[1].Encryptor.SecretKey,
 	})
 )
 
@@ -140,7 +140,7 @@ func TestBinaryEvaluator(t *testing.T) {
 
 		ctOut := encBinary[0].EncryptLWEBits(0, 4)
 		for i := range ctOut {
-			evalBinary.XORAssign(ct0[i], ct1[i], ctOut[i])
+			evalBinary.XORTo(ctOut[i], ct0[i], ct1[i])
 		}
 
 		assert.Equal(t, decBinary.DecryptLWEBits(ctOut), msg0^msg1)
@@ -154,7 +154,7 @@ func BenchmarkGateBootstrap(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		evalBinary.ANDAssign(ct0, ct1, ctOut)
+		evalBinary.ANDTo(ctOut, ct0, ct1)
 	}
 }
 
@@ -165,7 +165,7 @@ func BenchmarkGateBootstrapParallel(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		evalBinary.ANDParallelAssign(ct0, ct1, ctOut)
+		evalBinary.ANDParallelTo(ctOut, ct0, ct1)
 	}
 }
 
@@ -187,8 +187,8 @@ func ExampleBinaryEvaluator() {
 	// However, in multi-key TFHE, this procedure is very difficult and slow.
 	// Therefore, we use a trusted third party for decryption.
 	dec := mktfhe.NewBinaryDecryptor(params, map[int]tfhe.SecretKey[uint64]{
-		0: enc0.BaseEncryptor.SecretKey,
-		1: enc1.BaseEncryptor.SecretKey,
+		0: enc0.Encryptor.SecretKey,
+		1: enc1.Encryptor.SecretKey,
 	})
 
 	ct0 := enc0.EncryptLWEBool(true)

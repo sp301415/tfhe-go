@@ -5,317 +5,317 @@ import (
 	"github.com/sp301415/tfhe-go/math/vec"
 )
 
-// GadgetProductLWE returns the gadget product between c and ctLev.
-func (e *Evaluator[T]) GadgetProductLWE(ctLev LevCiphertext[T], c T) LWECiphertext[T] {
-	ctOut := NewLWECiphertext(e.Parameters)
-	e.GadgetProductLWEAssign(ctLev, c, ctOut)
+// GadgetProdLWE returns the gadget product between c and ctLev.
+func (e *Evaluator[T]) GadgetProdLWE(ctLev LevCiphertext[T], c T) LWECiphertext[T] {
+	ctOut := NewLWECiphertext(e.Params)
+	e.GadgetProdLWETo(ctOut, ctLev, c)
 	return ctOut
 }
 
-// GadgetProductLWEAssign computes the gadget product between c and ctLev and writes it to ctLWEOut.
-func (e *Evaluator[T]) GadgetProductLWEAssign(ctLev LevCiphertext[T], c T, ctLWEOut LWECiphertext[T]) {
-	scalarDecomposed := e.Decomposer.ScalarDecomposedBuffer(ctLev.GadgetParameters)
+// GadgetProdLWETo computes the gadget product between c and ctLev and writes it to ctLWEOut.
+func (e *Evaluator[T]) GadgetProdLWETo(ctLWEOut LWECiphertext[T], ctLev LevCiphertext[T], c T) {
+	cDcmp := e.Decomposer.ScalarBuffer(ctLev.GadgetParams)
 
-	e.Decomposer.DecomposeScalarAssign(c, ctLev.GadgetParameters, scalarDecomposed)
-	vec.ScalarMulAssign(ctLev.Value[0].Value, scalarDecomposed[0], ctLWEOut.Value)
-	for i := 1; i < ctLev.GadgetParameters.level; i++ {
-		vec.ScalarMulAddAssign(ctLev.Value[i].Value, scalarDecomposed[i], ctLWEOut.Value)
+	e.Decomposer.DecomposeScalarTo(cDcmp, c, ctLev.GadgetParams)
+	vec.ScalarMulTo(ctLWEOut.Value, ctLev.Value[0].Value, cDcmp[0])
+	for i := 1; i < ctLev.GadgetParams.level; i++ {
+		vec.ScalarMulAddTo(ctLWEOut.Value, ctLev.Value[i].Value, cDcmp[i])
 	}
 }
 
-// GadgetProductAddLWEAssign computes the gadget product between c and ctLev and adds it to ctLWEOut.
-func (e *Evaluator[T]) GadgetProductAddLWEAssign(ctLev LevCiphertext[T], c T, ctLWEOut LWECiphertext[T]) {
-	scalarDecomposed := e.Decomposer.ScalarDecomposedBuffer(ctLev.GadgetParameters)
+// GadgetProdAddLWETo computes the gadget product between c and ctLev and adds it to ctLWEOut.
+func (e *Evaluator[T]) GadgetProdAddLWETo(ctLWEOut LWECiphertext[T], ctLev LevCiphertext[T], c T) {
+	cDcmp := e.Decomposer.ScalarBuffer(ctLev.GadgetParams)
 
-	e.Decomposer.DecomposeScalarAssign(c, ctLev.GadgetParameters, scalarDecomposed)
-	for i := 0; i < ctLev.GadgetParameters.level; i++ {
-		vec.ScalarMulAddAssign(ctLev.Value[i].Value, scalarDecomposed[i], ctLWEOut.Value)
+	e.Decomposer.DecomposeScalarTo(cDcmp, c, ctLev.GadgetParams)
+	for i := 0; i < ctLev.GadgetParams.level; i++ {
+		vec.ScalarMulAddTo(ctLWEOut.Value, ctLev.Value[i].Value, cDcmp[i])
 	}
 }
 
-// GadgetProductSubLWEAssign computes the gadget product between c and ctLev and subtracts it from ctLWEOut.
-func (e *Evaluator[T]) GadgetProductSubLWEAssign(ctLev LevCiphertext[T], c T, ctLWEOut LWECiphertext[T]) {
-	scalarDecomposed := e.Decomposer.ScalarDecomposedBuffer(ctLev.GadgetParameters)
+// GadgetProdSubLWETo computes the gadget product between c and ctLev and subtracts it from ctLWEOut.
+func (e *Evaluator[T]) GadgetProdSubLWETo(ctLWEOut LWECiphertext[T], ctLev LevCiphertext[T], c T) {
+	cDcmp := e.Decomposer.ScalarBuffer(ctLev.GadgetParams)
 
-	e.Decomposer.DecomposeScalarAssign(c, ctLev.GadgetParameters, scalarDecomposed)
-	for i := 0; i < ctLev.GadgetParameters.level; i++ {
-		vec.ScalarMulSubAssign(ctLev.Value[i].Value, scalarDecomposed[i], ctLWEOut.Value)
+	e.Decomposer.DecomposeScalarTo(cDcmp, c, ctLev.GadgetParams)
+	for i := 0; i < ctLev.GadgetParams.level; i++ {
+		vec.ScalarMulSubTo(ctLWEOut.Value, ctLev.Value[i].Value, cDcmp[i])
 	}
 }
 
-// GadgetProductGLWE returns the gadget product between p and ctFourierGLev.
-func (e *Evaluator[T]) GadgetProductGLWE(ctFourierGLev FourierGLevCiphertext[T], p poly.Poly[T]) GLWECiphertext[T] {
-	ctOut := NewGLWECiphertext(e.Parameters)
-	e.GadgetProductGLWEAssign(ctFourierGLev, p, ctOut)
+// GadgetProdGLWE returns the gadget product between p and ctFFTGLev.
+func (e *Evaluator[T]) GadgetProdGLWE(ctFFTGLev FFTGLevCiphertext[T], p poly.Poly[T]) GLWECiphertext[T] {
+	ctOut := NewGLWECiphertext(e.Params)
+	e.GadgetProdGLWETo(ctOut, ctFFTGLev, p)
 	return ctOut
 }
 
-// GadgetProductGLWEAssign computes the gadget product between p and ctFourierGLev and writes it to ctGLWEOut.
-func (e *Evaluator[T]) GadgetProductGLWEAssign(ctFourierGLev FourierGLevCiphertext[T], p poly.Poly[T], ctGLWEOut GLWECiphertext[T]) {
-	polyDecomposed := e.Decomposer.PolyDecomposedBuffer(ctFourierGLev.GadgetParameters)
-	polyFourierDecomposed := e.Decomposer.PolyFourierDecomposedBuffer(ctFourierGLev.GadgetParameters)
+// GadgetProdGLWETo computes the gadget product between p and ctFFTGLev and writes it to ctGLWEOut.
+func (e *Evaluator[T]) GadgetProdGLWETo(ctGLWEOut GLWECiphertext[T], ctFFTGLev FFTGLevCiphertext[T], p poly.Poly[T]) {
+	pDcmp := e.Decomposer.PolyBuffer(ctFFTGLev.GadgetParams)
+	fpDcmp := e.Decomposer.FFTPolyBuffer(ctFFTGLev.GadgetParams)
 
-	e.Decomposer.DecomposePolyAssign(p, ctFourierGLev.GadgetParameters, polyDecomposed)
-	for i := 0; i < ctFourierGLev.GadgetParameters.level; i++ {
-		e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[i], polyFourierDecomposed[i])
+	e.Decomposer.DecomposePolyTo(pDcmp, p, ctFFTGLev.GadgetParams)
+	for i := 0; i < ctFFTGLev.GadgetParams.level; i++ {
+		e.PolyEvaluator.FFTTo(fpDcmp[i], pDcmp[i])
 	}
 
-	e.FourierPolyMulFourierGLWEAssign(ctFourierGLev.Value[0], polyFourierDecomposed[0], e.buffer.ctProdFourierGLWE)
-	for i := 1; i < ctFourierGLev.GadgetParameters.level; i++ {
-		e.FourierPolyMulAddFourierGLWEAssign(ctFourierGLev.Value[i], polyFourierDecomposed[i], e.buffer.ctProdFourierGLWE)
+	e.FFTPolyMulFFTGLWETo(e.buf.fctProdGLWE, ctFFTGLev.Value[0], fpDcmp[0])
+	for i := 1; i < ctFFTGLev.GadgetParams.level; i++ {
+		e.FFTPolyMulAddFFTGLWETo(e.buf.fctProdGLWE, ctFFTGLev.Value[i], fpDcmp[i])
 	}
 
-	for i := 0; i < e.Parameters.glweRank+1; i++ {
-		e.PolyEvaluator.ToPolyAssignUnsafe(e.buffer.ctProdFourierGLWE.Value[i], ctGLWEOut.Value[i])
-	}
-}
-
-// GadgetProductAddGLWEAssign computes the gadget product between p and ctFourierGLev and adds it to ctGLWEOut.
-func (e *Evaluator[T]) GadgetProductAddGLWEAssign(ctFourierGLev FourierGLevCiphertext[T], p poly.Poly[T], ctGLWEOut GLWECiphertext[T]) {
-	polyDecomposed := e.Decomposer.PolyDecomposedBuffer(ctFourierGLev.GadgetParameters)
-	polyFourierDecomposed := e.Decomposer.PolyFourierDecomposedBuffer(ctFourierGLev.GadgetParameters)
-
-	e.Decomposer.DecomposePolyAssign(p, ctFourierGLev.GadgetParameters, polyDecomposed)
-	for i := 0; i < ctFourierGLev.GadgetParameters.level; i++ {
-		e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[i], polyFourierDecomposed[i])
-	}
-
-	e.FourierPolyMulFourierGLWEAssign(ctFourierGLev.Value[0], polyFourierDecomposed[0], e.buffer.ctProdFourierGLWE)
-	for i := 1; i < ctFourierGLev.GadgetParameters.level; i++ {
-		e.FourierPolyMulAddFourierGLWEAssign(ctFourierGLev.Value[i], polyFourierDecomposed[i], e.buffer.ctProdFourierGLWE)
-	}
-
-	for i := 0; i < e.Parameters.glweRank+1; i++ {
-		e.PolyEvaluator.ToPolyAddAssignUnsafe(e.buffer.ctProdFourierGLWE.Value[i], ctGLWEOut.Value[i])
+	for i := 0; i < e.Params.glweRank+1; i++ {
+		e.PolyEvaluator.InvFFTToUnsafe(ctGLWEOut.Value[i], e.buf.fctProdGLWE.Value[i])
 	}
 }
 
-// GadgetProductSubGLWEAssign computes the gadget product between p and ctFourierGLev and subtracts it from ctGLWEOut.
-func (e *Evaluator[T]) GadgetProductSubGLWEAssign(ctFourierGLev FourierGLevCiphertext[T], p poly.Poly[T], ctGLWEOut GLWECiphertext[T]) {
-	polyDecomposed := e.Decomposer.PolyDecomposedBuffer(ctFourierGLev.GadgetParameters)
-	polyFourierDecomposed := e.Decomposer.PolyFourierDecomposedBuffer(ctFourierGLev.GadgetParameters)
+// GadgetProdAddGLWETo computes the gadget product between p and ctFFTGLev and adds it to ctGLWEOut.
+func (e *Evaluator[T]) GadgetProdAddGLWETo(ctGLWEOut GLWECiphertext[T], ctFFTGLev FFTGLevCiphertext[T], p poly.Poly[T]) {
+	pDcmp := e.Decomposer.PolyBuffer(ctFFTGLev.GadgetParams)
+	fpDcmp := e.Decomposer.FFTPolyBuffer(ctFFTGLev.GadgetParams)
 
-	e.Decomposer.DecomposePolyAssign(p, ctFourierGLev.GadgetParameters, polyDecomposed)
-	for i := 0; i < ctFourierGLev.GadgetParameters.level; i++ {
-		e.PolyEvaluator.ToFourierPolyAssign(polyDecomposed[i], polyFourierDecomposed[i])
+	e.Decomposer.DecomposePolyTo(pDcmp, p, ctFFTGLev.GadgetParams)
+	for i := 0; i < ctFFTGLev.GadgetParams.level; i++ {
+		e.PolyEvaluator.FFTTo(fpDcmp[i], pDcmp[i])
 	}
 
-	e.FourierPolyMulFourierGLWEAssign(ctFourierGLev.Value[0], polyFourierDecomposed[0], e.buffer.ctProdFourierGLWE)
-	for i := 1; i < ctFourierGLev.GadgetParameters.level; i++ {
-		e.FourierPolyMulAddFourierGLWEAssign(ctFourierGLev.Value[i], polyFourierDecomposed[i], e.buffer.ctProdFourierGLWE)
+	e.FFTPolyMulFFTGLWETo(e.buf.fctProdGLWE, ctFFTGLev.Value[0], fpDcmp[0])
+	for i := 1; i < ctFFTGLev.GadgetParams.level; i++ {
+		e.FFTPolyMulAddFFTGLWETo(e.buf.fctProdGLWE, ctFFTGLev.Value[i], fpDcmp[i])
 	}
 
-	for i := 0; i < e.Parameters.glweRank+1; i++ {
-		e.PolyEvaluator.ToPolySubAssignUnsafe(e.buffer.ctProdFourierGLWE.Value[i], ctGLWEOut.Value[i])
-	}
-}
-
-// GadgetProductFourierDecomposedFourierGLWEAssign computes the gadget product between fourier decomposed p and ctFourierGLev and writes it to ctFourierGLWEOut.
-func (e *Evaluator[T]) GadgetProductFourierDecomposedFourierGLWEAssign(ctFourierGLev FourierGLevCiphertext[T], pDecomposed []poly.FourierPoly, ctFourierGLWEOut FourierGLWECiphertext[T]) {
-	e.FourierPolyMulFourierGLWEAssign(ctFourierGLev.Value[0], pDecomposed[0], ctFourierGLWEOut)
-	for i := 1; i < ctFourierGLev.GadgetParameters.level; i++ {
-		e.FourierPolyMulAddFourierGLWEAssign(ctFourierGLev.Value[i], pDecomposed[i], ctFourierGLWEOut)
+	for i := 0; i < e.Params.glweRank+1; i++ {
+		e.PolyEvaluator.InvFFTAddToUnsafe(ctGLWEOut.Value[i], e.buf.fctProdGLWE.Value[i])
 	}
 }
 
-// GadgetProductFourierDecomposedAddFourierGLWEAssign computes the gadget product between fourier decomposed p and ctFourierGLev and adds it to ctFourierGLWEOut.
-func (e *Evaluator[T]) GadgetProductFourierDecomposedAddFourierGLWEAssign(ctFourierGLev FourierGLevCiphertext[T], pDecomposed []poly.FourierPoly, ctFourierGLWEOut FourierGLWECiphertext[T]) {
-	for i := 0; i < ctFourierGLev.GadgetParameters.level; i++ {
-		e.FourierPolyMulAddFourierGLWEAssign(ctFourierGLev.Value[i], pDecomposed[i], ctFourierGLWEOut)
+// GadgetProdSubGLWETo computes the gadget product between p and ctFFTGLev and subtracts it from ctGLWEOut.
+func (e *Evaluator[T]) GadgetProdSubGLWETo(ctGLWEOut GLWECiphertext[T], ctFFTGLev FFTGLevCiphertext[T], p poly.Poly[T]) {
+	pDcmp := e.Decomposer.PolyBuffer(ctFFTGLev.GadgetParams)
+	fpDcmp := e.Decomposer.FFTPolyBuffer(ctFFTGLev.GadgetParams)
+
+	e.Decomposer.DecomposePolyTo(pDcmp, p, ctFFTGLev.GadgetParams)
+	for i := 0; i < ctFFTGLev.GadgetParams.level; i++ {
+		e.PolyEvaluator.FFTTo(fpDcmp[i], pDcmp[i])
+	}
+
+	e.FFTPolyMulFFTGLWETo(e.buf.fctProdGLWE, ctFFTGLev.Value[0], fpDcmp[0])
+	for i := 1; i < ctFFTGLev.GadgetParams.level; i++ {
+		e.FFTPolyMulAddFFTGLWETo(e.buf.fctProdGLWE, ctFFTGLev.Value[i], fpDcmp[i])
+	}
+
+	for i := 0; i < e.Params.glweRank+1; i++ {
+		e.PolyEvaluator.InvFFTSubToUnsafe(ctGLWEOut.Value[i], e.buf.fctProdGLWE.Value[i])
 	}
 }
 
-// GadgetProductFourierDecomposedSubFourierGLWEAssign computes the gadget product between fourier decomposed p and ctFourierGLev and subtracts it from ctFourierGLWEOut.
-func (e *Evaluator[T]) GadgetProductFourierDecomposedSubFourierGLWEAssign(ctFourierGLev FourierGLevCiphertext[T], pDecomposed []poly.FourierPoly, ctFourierGLWEOut FourierGLWECiphertext[T]) {
-	for i := 0; i < ctFourierGLev.GadgetParameters.level; i++ {
-		e.FourierPolyMulSubFourierGLWEAssign(ctFourierGLev.Value[i], pDecomposed[i], ctFourierGLWEOut)
+// GadgetProdFFTGLWETo computes the gadget product between fourier decomposed p and ctFFTGLev and writes it to ctFFTGLWEOut.
+func (e *Evaluator[T]) GadgetProdFFTGLWETo(ctFFTGLWEOut FFTGLWECiphertext[T], ctFFTGLev FFTGLevCiphertext[T], pDcmp []poly.FFTPoly) {
+	e.FFTPolyMulFFTGLWETo(ctFFTGLWEOut, ctFFTGLev.Value[0], pDcmp[0])
+	for i := 1; i < ctFFTGLev.GadgetParams.level; i++ {
+		e.FFTPolyMulAddFFTGLWETo(ctFFTGLWEOut, ctFFTGLev.Value[i], pDcmp[i])
 	}
 }
 
-// ExternalProductLWE returns the external product between ctGSW and ctLWE.
-func (e *Evaluator[T]) ExternalProductLWE(ctGSW GSWCiphertext[T], ctLWE LWECiphertext[T]) LWECiphertext[T] {
-	ctOut := NewLWECiphertext(e.Parameters)
-	e.ExternalProductLWEAssign(ctGSW, ctLWE, ctOut)
+// GadgetProdAddFFTGLWETo computes the gadget product between fourier decomposed p and ctFFTGLev and adds it to ctFFTGLWEOut.
+func (e *Evaluator[T]) GadgetProdAddFFTGLWETo(ctFFTGLWEOut FFTGLWECiphertext[T], ctFFTGLev FFTGLevCiphertext[T], pDcmp []poly.FFTPoly) {
+	for i := 0; i < ctFFTGLev.GadgetParams.level; i++ {
+		e.FFTPolyMulAddFFTGLWETo(ctFFTGLWEOut, ctFFTGLev.Value[i], pDcmp[i])
+	}
+}
+
+// GadgetProdSubFFTGLWETo computes the gadget product between fourier decomposed p and ctFFTGLev and subtracts it from ctFFTGLWEOut.
+func (e *Evaluator[T]) GadgetProdSubFFTGLWETo(ctFFTGLWEOut FFTGLWECiphertext[T], ctFFTGLev FFTGLevCiphertext[T], pDcmp []poly.FFTPoly) {
+	for i := 0; i < ctFFTGLev.GadgetParams.level; i++ {
+		e.FFTPolyMulSubFFTGLWETo(ctFFTGLWEOut, ctFFTGLev.Value[i], pDcmp[i])
+	}
+}
+
+// ExternalProdLWE returns the external product between ctGSW and ctLWE.
+func (e *Evaluator[T]) ExternalProdLWE(ctGSW GSWCiphertext[T], ctLWE LWECiphertext[T]) LWECiphertext[T] {
+	ctOut := NewLWECiphertext(e.Params)
+	e.ExternalProdLWETo(ctOut, ctGSW, ctLWE)
 	return ctOut
 }
 
-// ExternalProductLWEAssign computes the external product between ctGSW and ctLWE and writes it to ctOut.
-func (e *Evaluator[T]) ExternalProductLWEAssign(ctGSW GSWCiphertext[T], ctLWE LWECiphertext[T], ctLWEOut LWECiphertext[T]) {
-	decomposed := e.Decomposer.ScalarDecomposedBuffer(ctGSW.GadgetParameters)
+// ExternalProdLWETo computes the external product between ctGSW and ctLWE and writes it to ctOut.
+func (e *Evaluator[T]) ExternalProdLWETo(ctLWEOut LWECiphertext[T], ctGSW GSWCiphertext[T], ctLWE LWECiphertext[T]) {
+	cDcmp := e.Decomposer.ScalarBuffer(ctGSW.GadgetParams)
 
-	e.Decomposer.DecomposeScalarAssign(ctLWE.Value[0], ctGSW.GadgetParameters, decomposed)
-	vec.ScalarMulAssign(ctGSW.Value[0].Value[0].Value, decomposed[0], e.buffer.ctProdLWE.Value)
-	for j := 1; j < ctGSW.GadgetParameters.level; j++ {
-		vec.ScalarMulAddAssign(ctGSW.Value[0].Value[j].Value, decomposed[j], e.buffer.ctProdLWE.Value)
+	e.Decomposer.DecomposeScalarTo(cDcmp, ctLWE.Value[0], ctGSW.GadgetParams)
+	vec.ScalarMulTo(e.buf.ctProdLWE.Value, ctGSW.Value[0].Value[0].Value, cDcmp[0])
+	for j := 1; j < ctGSW.GadgetParams.level; j++ {
+		vec.ScalarMulAddTo(e.buf.ctProdLWE.Value, ctGSW.Value[0].Value[j].Value, cDcmp[j])
 	}
 
-	for i := 1; i < e.Parameters.DefaultLWEDimension()+1; i++ {
-		e.Decomposer.DecomposeScalarAssign(ctLWE.Value[i], ctGSW.GadgetParameters, decomposed)
-		for j := 0; j < ctGSW.GadgetParameters.level; j++ {
-			vec.ScalarMulAddAssign(ctGSW.Value[i].Value[j].Value, decomposed[j], e.buffer.ctProdLWE.Value)
+	for i := 1; i < e.Params.DefaultLWEDimension()+1; i++ {
+		e.Decomposer.DecomposeScalarTo(cDcmp, ctLWE.Value[i], ctGSW.GadgetParams)
+		for j := 0; j < ctGSW.GadgetParams.level; j++ {
+			vec.ScalarMulAddTo(e.buf.ctProdLWE.Value, ctGSW.Value[i].Value[j].Value, cDcmp[j])
 		}
 	}
 
-	ctLWEOut.CopyFrom(e.buffer.ctProdLWE)
+	ctLWEOut.CopyFrom(e.buf.ctProdLWE)
 }
 
-// ExternalProductAddLWEAssign computes the external product between ctGSW and ctLWE and adds it to ctLWEOut.
-func (e *Evaluator[T]) ExternalProductAddLWEAssign(ctGSW GSWCiphertext[T], ctLWE LWECiphertext[T], ctLWEOut LWECiphertext[T]) {
-	decomposed := e.Decomposer.ScalarDecomposedBuffer(ctGSW.GadgetParameters)
+// ExternalProdAddLWETo computes the external product between ctGSW and ctLWE and adds it to ctLWEOut.
+func (e *Evaluator[T]) ExternalProdAddLWETo(ctLWEOut LWECiphertext[T], ctGSW GSWCiphertext[T], ctLWE LWECiphertext[T]) {
+	cDcmp := e.Decomposer.ScalarBuffer(ctGSW.GadgetParams)
 
-	e.Decomposer.DecomposeScalarAssign(ctLWE.Value[0], ctGSW.GadgetParameters, decomposed)
-	vec.ScalarMulAssign(ctGSW.Value[0].Value[0].Value, decomposed[0], e.buffer.ctProdLWE.Value)
-	for j := 1; j < ctGSW.GadgetParameters.level; j++ {
-		vec.ScalarMulAddAssign(ctGSW.Value[0].Value[j].Value, decomposed[j], e.buffer.ctProdLWE.Value)
+	e.Decomposer.DecomposeScalarTo(cDcmp, ctLWE.Value[0], ctGSW.GadgetParams)
+	vec.ScalarMulTo(e.buf.ctProdLWE.Value, ctGSW.Value[0].Value[0].Value, cDcmp[0])
+	for j := 1; j < ctGSW.GadgetParams.level; j++ {
+		vec.ScalarMulAddTo(e.buf.ctProdLWE.Value, ctGSW.Value[0].Value[j].Value, cDcmp[j])
 	}
 
-	for i := 1; i < e.Parameters.DefaultLWEDimension()+1; i++ {
-		e.Decomposer.DecomposeScalarAssign(ctLWE.Value[i], ctGSW.GadgetParameters, decomposed)
-		for j := 0; j < ctGSW.GadgetParameters.level; j++ {
-			vec.ScalarMulAddAssign(ctGSW.Value[i].Value[j].Value, decomposed[j], e.buffer.ctProdLWE.Value)
+	for i := 1; i < e.Params.DefaultLWEDimension()+1; i++ {
+		e.Decomposer.DecomposeScalarTo(cDcmp, ctLWE.Value[i], ctGSW.GadgetParams)
+		for j := 0; j < ctGSW.GadgetParams.level; j++ {
+			vec.ScalarMulAddTo(e.buf.ctProdLWE.Value, ctGSW.Value[i].Value[j].Value, cDcmp[j])
 		}
 	}
 
-	e.AddLWEAssign(ctLWEOut, e.buffer.ctProdLWE, ctLWEOut)
+	e.AddLWETo(ctLWEOut, ctLWEOut, e.buf.ctProdLWE)
 }
 
-// ExternalProductSubLWEAssign computes the external product between ctGSW and ctLWE and subtracts it from ctLWEOut.
-func (e *Evaluator[T]) ExternalProductSubLWEAssign(ctGSW GSWCiphertext[T], ctLWE LWECiphertext[T], ctLWEOut LWECiphertext[T]) {
-	decomposed := e.Decomposer.ScalarDecomposedBuffer(ctGSW.GadgetParameters)
+// ExternalProdSubLWETo computes the external product between ctGSW and ctLWE and subtracts it from ctLWEOut.
+func (e *Evaluator[T]) ExternalProdSubLWETo(ctLWEOut LWECiphertext[T], ctGSW GSWCiphertext[T], ctLWE LWECiphertext[T]) {
+	cDcmp := e.Decomposer.ScalarBuffer(ctGSW.GadgetParams)
 
-	e.Decomposer.DecomposeScalarAssign(ctLWE.Value[0], ctGSW.GadgetParameters, decomposed)
-	vec.ScalarMulAssign(ctGSW.Value[0].Value[0].Value, decomposed[0], e.buffer.ctProdLWE.Value)
-	for j := 1; j < ctGSW.GadgetParameters.level; j++ {
-		vec.ScalarMulAddAssign(ctGSW.Value[0].Value[j].Value, decomposed[j], e.buffer.ctProdLWE.Value)
+	e.Decomposer.DecomposeScalarTo(cDcmp, ctLWE.Value[0], ctGSW.GadgetParams)
+	vec.ScalarMulTo(e.buf.ctProdLWE.Value, ctGSW.Value[0].Value[0].Value, cDcmp[0])
+	for j := 1; j < ctGSW.GadgetParams.level; j++ {
+		vec.ScalarMulAddTo(e.buf.ctProdLWE.Value, ctGSW.Value[0].Value[j].Value, cDcmp[j])
 	}
 
-	for i := 1; i < e.Parameters.DefaultLWEDimension()+1; i++ {
-		e.Decomposer.DecomposeScalarAssign(ctLWE.Value[i], ctGSW.GadgetParameters, decomposed)
-		for j := 0; j < ctGSW.GadgetParameters.level; j++ {
-			vec.ScalarMulAddAssign(ctGSW.Value[i].Value[j].Value, decomposed[j], e.buffer.ctProdLWE.Value)
+	for i := 1; i < e.Params.DefaultLWEDimension()+1; i++ {
+		e.Decomposer.DecomposeScalarTo(cDcmp, ctLWE.Value[i], ctGSW.GadgetParams)
+		for j := 0; j < ctGSW.GadgetParams.level; j++ {
+			vec.ScalarMulAddTo(e.buf.ctProdLWE.Value, ctGSW.Value[i].Value[j].Value, cDcmp[j])
 		}
 	}
 
-	e.SubLWEAssign(ctLWEOut, e.buffer.ctProdLWE, ctLWEOut)
+	e.SubLWETo(ctLWEOut, ctLWEOut, e.buf.ctProdLWE)
 }
 
-// ExternalProductGLWE returns the external product between ctFourierGGSW and ctGLWE.
-func (e *Evaluator[T]) ExternalProductGLWE(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE GLWECiphertext[T]) GLWECiphertext[T] {
-	ctOut := NewGLWECiphertext(e.Parameters)
-	e.ExternalProductGLWEAssign(ctFourierGGSW, ctGLWE, ctOut)
+// ExternalProdGLWE returns the external product between ctFFTGGSW and ctGLWE.
+func (e *Evaluator[T]) ExternalProdGLWE(ctFFTGGSW FFTGGSWCiphertext[T], ctGLWE GLWECiphertext[T]) GLWECiphertext[T] {
+	ctOut := NewGLWECiphertext(e.Params)
+	e.ExternalProdGLWETo(ctOut, ctFFTGGSW, ctGLWE)
 	return ctOut
 }
 
-// ExternalProductGLWEAssign computes the external product between ctFourierGGSW and ctGLWE and writes it to ctOut.
-func (e *Evaluator[T]) ExternalProductGLWEAssign(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
-	polyDecomposed := e.Decomposer.PolyDecomposedBuffer(ctFourierGGSW.GadgetParameters)
+// ExternalProdGLWETo computes the external product between ctFFTGGSW and ctGLWE and writes it to ctOut.
+func (e *Evaluator[T]) ExternalProdGLWETo(ctGLWEOut GLWECiphertext[T], ctFFTGGSW FFTGGSWCiphertext[T], ctGLWE GLWECiphertext[T]) {
+	pDcmp := e.Decomposer.PolyBuffer(ctFFTGGSW.GadgetParams)
 
-	e.Decomposer.DecomposePolyAssign(ctGLWE.Value[0], ctFourierGGSW.GadgetParameters, polyDecomposed)
-	e.PolyMulFourierGLWEAssign(ctFourierGGSW.Value[0].Value[0], polyDecomposed[0], e.buffer.ctProdFourierGLWE)
-	for j := 1; j < ctFourierGGSW.GadgetParameters.level; j++ {
-		e.PolyMulAddFourierGLWEAssign(ctFourierGGSW.Value[0].Value[j], polyDecomposed[j], e.buffer.ctProdFourierGLWE)
+	e.Decomposer.DecomposePolyTo(pDcmp, ctGLWE.Value[0], ctFFTGGSW.GadgetParams)
+	e.PolyMulFFTGLWETo(e.buf.fctProdGLWE, ctFFTGGSW.Value[0].Value[0], pDcmp[0])
+	for j := 1; j < ctFFTGGSW.GadgetParams.level; j++ {
+		e.PolyMulAddFFTGLWETo(e.buf.fctProdGLWE, ctFFTGGSW.Value[0].Value[j], pDcmp[j])
 	}
 
-	for i := 1; i < e.Parameters.glweRank+1; i++ {
-		e.Decomposer.DecomposePolyAssign(ctGLWE.Value[i], ctFourierGGSW.GadgetParameters, polyDecomposed)
-		for j := 0; j < ctFourierGGSW.GadgetParameters.level; j++ {
-			e.PolyMulAddFourierGLWEAssign(ctFourierGGSW.Value[i].Value[j], polyDecomposed[j], e.buffer.ctProdFourierGLWE)
+	for i := 1; i < e.Params.glweRank+1; i++ {
+		e.Decomposer.DecomposePolyTo(pDcmp, ctGLWE.Value[i], ctFFTGGSW.GadgetParams)
+		for j := 0; j < ctFFTGGSW.GadgetParams.level; j++ {
+			e.PolyMulAddFFTGLWETo(e.buf.fctProdGLWE, ctFFTGGSW.Value[i].Value[j], pDcmp[j])
 		}
 	}
 
-	for i := 0; i < e.Parameters.glweRank+1; i++ {
-		e.PolyEvaluator.ToPolyAssignUnsafe(e.buffer.ctProdFourierGLWE.Value[i], ctGLWEOut.Value[i])
+	for i := 0; i < e.Params.glweRank+1; i++ {
+		e.PolyEvaluator.InvFFTToUnsafe(ctGLWEOut.Value[i], e.buf.fctProdGLWE.Value[i])
 	}
 }
 
-// ExternalProductAddGLWEAssign computes the external product between ctFourierGGSW and ctGLWE and adds it to ctGLWEOut.
-func (e *Evaluator[T]) ExternalProductAddGLWEAssign(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
-	polyDecomposed := e.Decomposer.PolyDecomposedBuffer(ctFourierGGSW.GadgetParameters)
+// ExternalProdAddGLWETo computes the external product between ctFFTGGSW and ctGLWE and adds it to ctGLWEOut.
+func (e *Evaluator[T]) ExternalProdAddGLWETo(ctGLWEOut GLWECiphertext[T], ctFFTGGSW FFTGGSWCiphertext[T], ctGLWE GLWECiphertext[T]) {
+	pDcmp := e.Decomposer.PolyBuffer(ctFFTGGSW.GadgetParams)
 
-	e.Decomposer.DecomposePolyAssign(ctGLWE.Value[0], ctFourierGGSW.GadgetParameters, polyDecomposed)
-	e.PolyMulFourierGLWEAssign(ctFourierGGSW.Value[0].Value[0], polyDecomposed[0], e.buffer.ctProdFourierGLWE)
-	for j := 1; j < ctFourierGGSW.GadgetParameters.level; j++ {
-		e.PolyMulAddFourierGLWEAssign(ctFourierGGSW.Value[0].Value[j], polyDecomposed[j], e.buffer.ctProdFourierGLWE)
+	e.Decomposer.DecomposePolyTo(pDcmp, ctGLWE.Value[0], ctFFTGGSW.GadgetParams)
+	e.PolyMulFFTGLWETo(e.buf.fctProdGLWE, ctFFTGGSW.Value[0].Value[0], pDcmp[0])
+	for j := 1; j < ctFFTGGSW.GadgetParams.level; j++ {
+		e.PolyMulAddFFTGLWETo(e.buf.fctProdGLWE, ctFFTGGSW.Value[0].Value[j], pDcmp[j])
 	}
 
-	for i := 1; i < e.Parameters.glweRank+1; i++ {
-		e.Decomposer.DecomposePolyAssign(ctGLWE.Value[i], ctFourierGGSW.GadgetParameters, polyDecomposed)
-		for j := 0; j < ctFourierGGSW.GadgetParameters.level; j++ {
-			e.PolyMulAddFourierGLWEAssign(ctFourierGGSW.Value[i].Value[j], polyDecomposed[j], e.buffer.ctProdFourierGLWE)
+	for i := 1; i < e.Params.glweRank+1; i++ {
+		e.Decomposer.DecomposePolyTo(pDcmp, ctGLWE.Value[i], ctFFTGGSW.GadgetParams)
+		for j := 0; j < ctFFTGGSW.GadgetParams.level; j++ {
+			e.PolyMulAddFFTGLWETo(e.buf.fctProdGLWE, ctFFTGGSW.Value[i].Value[j], pDcmp[j])
 		}
 	}
 
-	for i := 0; i < e.Parameters.glweRank+1; i++ {
-		e.PolyEvaluator.ToPolyAddAssignUnsafe(e.buffer.ctProdFourierGLWE.Value[i], ctGLWEOut.Value[i])
+	for i := 0; i < e.Params.glweRank+1; i++ {
+		e.PolyEvaluator.InvFFTAddToUnsafe(ctGLWEOut.Value[i], e.buf.fctProdGLWE.Value[i])
 	}
 }
 
-// ExternalProductSubGLWEAssign computes the external product between ctFourierGGSW and ctGLWE and subtracts it from ctGLWEOut.
-func (e *Evaluator[T]) ExternalProductSubGLWEAssign(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
-	polyDecomposed := e.Decomposer.PolyDecomposedBuffer(ctFourierGGSW.GadgetParameters)
+// ExternalProdSubGLWETo computes the external product between ctFFTGGSW and ctGLWE and subtracts it from ctGLWEOut.
+func (e *Evaluator[T]) ExternalProdSubGLWETo(ctGLWEOut GLWECiphertext[T], ctFFTGGSW FFTGGSWCiphertext[T], ctGLWE GLWECiphertext[T]) {
+	pDcmp := e.Decomposer.PolyBuffer(ctFFTGGSW.GadgetParams)
 
-	e.Decomposer.DecomposePolyAssign(ctGLWE.Value[0], ctFourierGGSW.GadgetParameters, polyDecomposed)
-	e.PolyMulFourierGLWEAssign(ctFourierGGSW.Value[0].Value[0], polyDecomposed[0], e.buffer.ctProdFourierGLWE)
-	for j := 1; j < ctFourierGGSW.GadgetParameters.level; j++ {
-		e.PolyMulAddFourierGLWEAssign(ctFourierGGSW.Value[0].Value[j], polyDecomposed[j], e.buffer.ctProdFourierGLWE)
+	e.Decomposer.DecomposePolyTo(pDcmp, ctGLWE.Value[0], ctFFTGGSW.GadgetParams)
+	e.PolyMulFFTGLWETo(e.buf.fctProdGLWE, ctFFTGGSW.Value[0].Value[0], pDcmp[0])
+	for j := 1; j < ctFFTGGSW.GadgetParams.level; j++ {
+		e.PolyMulAddFFTGLWETo(e.buf.fctProdGLWE, ctFFTGGSW.Value[0].Value[j], pDcmp[j])
 	}
 
-	for i := 1; i < e.Parameters.glweRank+1; i++ {
-		e.Decomposer.DecomposePolyAssign(ctGLWE.Value[i], ctFourierGGSW.GadgetParameters, polyDecomposed)
-		for j := 0; j < ctFourierGGSW.GadgetParameters.level; j++ {
-			e.PolyMulAddFourierGLWEAssign(ctFourierGGSW.Value[i].Value[j], polyDecomposed[j], e.buffer.ctProdFourierGLWE)
+	for i := 1; i < e.Params.glweRank+1; i++ {
+		e.Decomposer.DecomposePolyTo(pDcmp, ctGLWE.Value[i], ctFFTGGSW.GadgetParams)
+		for j := 0; j < ctFFTGGSW.GadgetParams.level; j++ {
+			e.PolyMulAddFFTGLWETo(e.buf.fctProdGLWE, ctFFTGGSW.Value[i].Value[j], pDcmp[j])
 		}
 	}
 
-	for i := 0; i < e.Parameters.glweRank+1; i++ {
-		e.PolyEvaluator.ToPolySubAssignUnsafe(e.buffer.ctProdFourierGLWE.Value[i], ctGLWEOut.Value[i])
+	for i := 0; i < e.Params.glweRank+1; i++ {
+		e.PolyEvaluator.InvFFTSubToUnsafe(ctGLWEOut.Value[i], e.buf.fctProdGLWE.Value[i])
 	}
 }
 
-// ExternalProductFourierDecomposedFourierGLWEAssign computes the external product between ctFourierGGSW and fourier decomposed ctGLWE and writes it to ctFourierGLWEOut.
-func (e *Evaluator[T]) ExternalProductFourierDecomposedFourierGLWEAssign(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWEDecomposed [][]poly.FourierPoly, ctFourierGLWEOut FourierGLWECiphertext[T]) {
-	e.FourierPolyMulFourierGLWEAssign(ctFourierGGSW.Value[0].Value[0], ctGLWEDecomposed[0][0], ctFourierGLWEOut)
-	for j := 1; j < ctFourierGGSW.GadgetParameters.level; j++ {
-		e.FourierPolyMulAddFourierGLWEAssign(ctFourierGGSW.Value[0].Value[j], ctGLWEDecomposed[0][j], ctFourierGLWEOut)
+// ExternalProdFFTGLWETo computes the external product between ctFFTGGSW and fourier decomposed ctGLWE and writes it to ctFFTGLWEOut.
+func (e *Evaluator[T]) ExternalProdFFTGLWETo(ctFFTGLWEOut FFTGLWECiphertext[T], ctFFTGGSW FFTGGSWCiphertext[T], ctGLWEDcmp [][]poly.FFTPoly) {
+	e.FFTPolyMulFFTGLWETo(ctFFTGLWEOut, ctFFTGGSW.Value[0].Value[0], ctGLWEDcmp[0][0])
+	for j := 1; j < ctFFTGGSW.GadgetParams.level; j++ {
+		e.FFTPolyMulAddFFTGLWETo(ctFFTGLWEOut, ctFFTGGSW.Value[0].Value[j], ctGLWEDcmp[0][j])
 	}
 
-	for i := 1; i < e.Parameters.glweRank+1; i++ {
-		for j := 0; j < ctFourierGGSW.GadgetParameters.level; j++ {
-			e.FourierPolyMulAddFourierGLWEAssign(ctFourierGGSW.Value[i].Value[j], ctGLWEDecomposed[i][j], ctFourierGLWEOut)
-		}
-	}
-}
-
-// ExternalProductFourierDecomposedAddFourierGLWEAssign computes the external product between ctFourierGGSW and fourier decomposed ctGLWE and adds it to ctFourierGLWEOut.
-func (e *Evaluator[T]) ExternalProductFourierDecomposedAddFourierGLWEAssign(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWEDecomposed [][]poly.FourierPoly, ctFourierGLWEOut FourierGLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.glweRank+1; i++ {
-		for j := 0; j < ctFourierGGSW.GadgetParameters.level; j++ {
-			e.FourierPolyMulAddFourierGLWEAssign(ctFourierGGSW.Value[i].Value[j], ctGLWEDecomposed[i][j], ctFourierGLWEOut)
+	for i := 1; i < e.Params.glweRank+1; i++ {
+		for j := 0; j < ctFFTGGSW.GadgetParams.level; j++ {
+			e.FFTPolyMulAddFFTGLWETo(ctFFTGLWEOut, ctFFTGGSW.Value[i].Value[j], ctGLWEDcmp[i][j])
 		}
 	}
 }
 
-// ExternalProductFourierDecomposedSubFourierGLWEAssign computes the external product between ctFourierGGSW and fourier decomposed ctGLWE and subtracts it from ctFourierGLWEOut.
-func (e *Evaluator[T]) ExternalProductFourierDecomposedSubFourierGLWEAssign(ctFourierGGSW FourierGGSWCiphertext[T], ctGLWEDecomposed [][]poly.FourierPoly, ctFourierGLWEOut FourierGLWECiphertext[T]) {
-	for i := 0; i < e.Parameters.glweRank+1; i++ {
-		for j := 0; j < ctFourierGGSW.GadgetParameters.level; j++ {
-			e.FourierPolyMulSubFourierGLWEAssign(ctFourierGGSW.Value[i].Value[j], ctGLWEDecomposed[i][j], ctFourierGLWEOut)
+// ExternalProdAddFFTGLWETo computes the external product between ctFFTGGSW and fourier decomposed ctGLWE and adds it to ctFFTGLWEOut.
+func (e *Evaluator[T]) ExternalProdAddFFTGLWETo(ctFFTGLWEOut FFTGLWECiphertext[T], ctFFTGGSW FFTGGSWCiphertext[T], ctGLWEDcmp [][]poly.FFTPoly) {
+	for i := 0; i < e.Params.glweRank+1; i++ {
+		for j := 0; j < ctFFTGGSW.GadgetParams.level; j++ {
+			e.FFTPolyMulAddFFTGLWETo(ctFFTGLWEOut, ctFFTGGSW.Value[i].Value[j], ctGLWEDcmp[i][j])
 		}
 	}
 }
 
-// CMux returns the mux gate between ctFourierGGSW, ct0 and ct1: so ctOut = ct0 + ctFourierGGSW * (ct1 - ct0).
-// CMux essentially acts as an if clause; if ctFourierGGSW = 0, ct0 is returned, and if ctFourierGGSW = 1, ct1 is returned.
-func (e *Evaluator[T]) CMux(ctFourierGGSW FourierGGSWCiphertext[T], ct0, ct1 GLWECiphertext[T]) GLWECiphertext[T] {
-	ctOut := NewGLWECiphertext(e.Parameters)
-	e.CMuxAssign(ctFourierGGSW, ct0, ct1, ctOut)
+// ExternalProdSubFFTGLWETo computes the external product between ctFFTGGSW and fourier decomposed ctGLWE and subtracts it from ctFFTGLWEOut.
+func (e *Evaluator[T]) ExternalProdSubFFTGLWETo(ctFFTGLWEOut FFTGLWECiphertext[T], ctFFTGGSW FFTGGSWCiphertext[T], ctGLWEDcmp [][]poly.FFTPoly) {
+	for i := 0; i < e.Params.glweRank+1; i++ {
+		for j := 0; j < ctFFTGGSW.GadgetParams.level; j++ {
+			e.FFTPolyMulSubFFTGLWETo(ctFFTGLWEOut, ctFFTGGSW.Value[i].Value[j], ctGLWEDcmp[i][j])
+		}
+	}
+}
+
+// CMux returns the mux gate between ctFFTGGSW, ct0 and ct1: so ctOut = ct0 + ctFFTGGSW * (ct1 - ct0).
+// CMux essentially acts as an if clause; if ctFFTGGSW = 0, ct0 is returned, and if ctFFTGGSW = 1, ct1 is returned.
+func (e *Evaluator[T]) CMux(ctFFTGGSW FFTGGSWCiphertext[T], ct0, ct1 GLWECiphertext[T]) GLWECiphertext[T] {
+	ctOut := NewGLWECiphertext(e.Params)
+	e.CMuxTo(ctOut, ctFFTGGSW, ct0, ct1)
 	return ctOut
 }
 
-// CMuxAssign computes the mux gate between ctFourierGGSW, ct0 and ct1: so ctOut = ct0 + ctFourierGGSW * (ct1 - ct0) and writes it to ctOut.
-// CMux essentially acts as an if clause; if ctFourierGGSW = 0, ct0 is returned, and if ctFourierGGSW = 1, ct1 is returned.
-func (e *Evaluator[T]) CMuxAssign(ctFourierGGSW FourierGGSWCiphertext[T], ct0, ct1, ctOut GLWECiphertext[T]) {
+// CMuxTo computes the mux gate between ctFFTGGSW, ct0 and ct1: so ctOut = ct0 + ctFFTGGSW * (ct1 - ct0) and writes it to ctOut.
+// CMux essentially acts as an if clause; if ctFFTGGSW = 0, ct0 is returned, and if ctFFTGGSW = 1, ct1 is returned.
+func (e *Evaluator[T]) CMuxTo(ctOut GLWECiphertext[T], ctFFTGGSW FFTGGSWCiphertext[T], ct0, ct1 GLWECiphertext[T]) {
 	ctOut.CopyFrom(ct0)
-	e.SubGLWEAssign(ct1, ct0, e.buffer.ctCMux)
-	e.ExternalProductAddGLWEAssign(ctFourierGGSW, e.buffer.ctCMux, ctOut)
+	e.SubGLWETo(e.buf.ctCMux, ct1, ct0)
+	e.ExternalProdAddGLWETo(ctOut, ctFFTGGSW, e.buf.ctCMux)
 }

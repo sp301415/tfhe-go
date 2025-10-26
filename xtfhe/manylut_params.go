@@ -7,10 +7,10 @@ import (
 
 // ManyLUTParametersLiteral is a structure for PBSManyLUT Parameters.
 //
-// PolyDegree does not equal LookUpTableSize.
+// PolyRank does not equal LUTSize.
 type ManyLUTParametersLiteral[T tfhe.TorusInt] struct {
-	// BaseParametersLiteral is a base parameters for this ManyLUTParametersLiteral.
-	BaseParametersLiteral tfhe.ParametersLiteral[T]
+	// BaseParams is a base parameters for this ManyLUTParametersLiteral.
+	BaseParams tfhe.ParametersLiteral[T]
 
 	// LUTCount is the number of LUTs that can be evaluated at once.
 	// LUTCount must be a power of 2.
@@ -21,17 +21,17 @@ type ManyLUTParametersLiteral[T tfhe.TorusInt] struct {
 // If there is any invalid parameter in the literal, it panics.
 // Default parameters are guaranteed to be compiled without panics.
 func (p ManyLUTParametersLiteral[T]) Compile() ManyLUTParameters[T] {
-	baseParameters := p.BaseParametersLiteral.Compile()
+	baseParams := p.BaseParams.Compile()
 
 	switch {
-	case baseParameters.PolyDegree() != baseParameters.LookUpTableSize():
-		panic("PolyDegree does not equal LookUpTableSize")
+	case baseParams.PolyRank() != baseParams.LUTSize():
+		panic("PolyRank does not equal LUTSize")
 	case !num.IsPowerOfTwo(p.LUTCount):
 		panic("lutCount not power of two")
 	}
 
 	return ManyLUTParameters[T]{
-		baseParameters: baseParameters,
+		baseParams: baseParams,
 
 		lutCount:    p.LUTCount,
 		logLUTCount: num.Log2(p.LUTCount),
@@ -40,8 +40,8 @@ func (p ManyLUTParametersLiteral[T]) Compile() ManyLUTParameters[T] {
 
 // ManyLUTParameters is a parameter set for PBSManyLUT.
 type ManyLUTParameters[T tfhe.TorusInt] struct {
-	// baseParameters is a base parameters for this ManyLUTParameters.
-	baseParameters tfhe.Parameters[T]
+	// baseParams is a base parameters for this ManyLUTParameters.
+	baseParams tfhe.Parameters[T]
 
 	// LUTCount is the number of LUTs that can be evaluated at once.
 	// LUTCount must be a power of 2.
@@ -50,9 +50,9 @@ type ManyLUTParameters[T tfhe.TorusInt] struct {
 	logLUTCount int
 }
 
-// BaseParameters returns the base parameters for this ManyLUTParameters.
-func (p ManyLUTParameters[T]) BaseParameters() tfhe.Parameters[T] {
-	return p.baseParameters
+// BaseParams returns the base parameters for this ManyLUTParameters.
+func (p ManyLUTParameters[T]) BaseParams() tfhe.Parameters[T] {
+	return p.baseParams
 }
 
 // LUTCount returns the number of LUTs that can be evaluated at once.

@@ -85,19 +85,19 @@ func (s *GaussianSampler[T]) normFloat() float64 {
 // Panics when stdDev < 0.
 func (s *GaussianSampler[T]) Sample(stdDev float64) T {
 	if stdDev < 0 {
-		panic("standard deviation not positive")
+		panic("Sample: standard deviation not positive")
 	}
 
 	return T(int64(math.Round(s.normFloat() * stdDev)))
 }
 
-// SampleVecAssign samples rounded gaussian values
+// SampleVecTo samples rounded gaussian values
 // with standard deviation stdDev, and writes it to vOut.
 //
 // Panics when stdDev < 0.
-func (s *GaussianSampler[T]) SampleVecAssign(stdDev float64, vOut []T) {
+func (s *GaussianSampler[T]) SampleVecTo(vOut []T, stdDev float64) {
 	if stdDev < 0 {
-		panic("standard deviation not positive")
+		panic("SampleVecTo: standard deviation not positive")
 	}
 
 	for i := range vOut {
@@ -105,21 +105,21 @@ func (s *GaussianSampler[T]) SampleVecAssign(stdDev float64, vOut []T) {
 	}
 }
 
-// SamplePolyAssign samples rounded gaussian values
+// SamplePolyTo samples rounded gaussian values
 // with standard deviation stdDev, and writes it to pOut.
 //
 // Panics when stdDev < 0.
-func (s *GaussianSampler[T]) SamplePolyAssign(stdDev float64, pOut poly.Poly[T]) {
-	s.SampleVecAssign(stdDev, pOut.Coeffs)
+func (s *GaussianSampler[T]) SamplePolyTo(pOut poly.Poly[T], stdDev float64) {
+	s.SampleVecTo(pOut.Coeffs, stdDev)
 }
 
-// SamplePolyAddAssign samples rounded gaussian values
+// SamplePolyAddTo samples rounded gaussian values
 // with standard deviation stdDev, and adds to pOut.
 //
 // Panics when stdDev < 0.
-func (s *GaussianSampler[T]) SamplePolyAddAssign(stdDev float64, pOut poly.Poly[T]) {
+func (s *GaussianSampler[T]) SamplePolyAddTo(pOut poly.Poly[T], stdDev float64) {
 	if stdDev < 0 {
-		panic("standard deviation not positive")
+		panic("SamplePolyAddTo: standard deviation not positive")
 	}
 
 	for i := range pOut.Coeffs {
@@ -127,13 +127,13 @@ func (s *GaussianSampler[T]) SamplePolyAddAssign(stdDev float64, pOut poly.Poly[
 	}
 }
 
-// SamplePolySubAssign samples rounded gaussian values
+// SamplePolySubTo samples rounded gaussian values
 // with standard deviation stdDev, and subtracts from pOut.
 //
 // Panics when stdDev < 0.
-func (s *GaussianSampler[T]) SamplePolySubAssign(stdDev float64, pOut poly.Poly[T]) {
+func (s *GaussianSampler[T]) SamplePolySubTo(pOut poly.Poly[T], stdDev float64) {
 	if stdDev < 0 {
-		panic("standard deviation not positive")
+		panic("SamplePolySubTo: standard deviation not positive")
 	}
 
 	for i := range pOut.Coeffs {

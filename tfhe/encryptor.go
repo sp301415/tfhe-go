@@ -17,8 +17,8 @@ type Encryptor[T TorusInt] struct {
 	// GLWETransformer is an embedded GLWETransformer for this Encryptor.
 	*GLWETransformer[T]
 
-	// Parameters is the parameters for this Encryptor.
-	Parameters Parameters[T]
+	// Params is the parameters for this Encryptor.
+	Params Parameters[T]
 
 	// UniformSampler is used for sampling the mask of encryptions.
 	UniformSampler *csprng.UniformSampler[T]
@@ -37,11 +37,11 @@ type Encryptor[T TorusInt] struct {
 	// For encrypting/decrypting LWE ciphertexts, use [*Encryptor DefaultLWEKey].
 	SecretKey SecretKey[T]
 
-	buffer encryptionBuffer[T]
+	buf encryptorBuffer[T]
 }
 
-// encryptionBuffer is a buffer for Encryptor.
-type encryptionBuffer[T TorusInt] struct {
+// encryptorBuffer is a buffer for Encryptor.
+type encryptorBuffer[T TorusInt] struct {
 	// ptGLWE is the GLWE plaintext for GLWE encryption / decryptions.
 	ptGLWE GLWEPlaintext[T]
 	// ctGLWE is the standard GLWE Ciphertext for Fourier encryption / decryptions.
@@ -56,17 +56,17 @@ func NewEncryptor[T TorusInt](params Parameters[T]) *Encryptor[T] {
 	// Fill samplers to call encryptor.GenSecretKey()
 	encryptor := Encryptor[T]{
 		Encoder:         NewEncoder(params),
-		GLWETransformer: NewGLWETransformer[T](params.polyDegree),
+		GLWETransformer: NewGLWETransformer[T](params.polyRank),
 
-		Parameters: params,
+		Params: params,
 
 		UniformSampler:  csprng.NewUniformSampler[T](),
 		BinarySampler:   csprng.NewBinarySampler[T](),
 		GaussianSampler: csprng.NewGaussianSampler[T](),
 
-		PolyEvaluator: poly.NewEvaluator[T](params.polyDegree),
+		PolyEvaluator: poly.NewEvaluator[T](params.polyRank),
 
-		buffer: newEncryptionBuffer(params),
+		buf: newEncryptorBuffer(params),
 	}
 
 	encryptor.SecretKey = encryptor.GenSecretKey()
@@ -79,28 +79,28 @@ func NewEncryptor[T TorusInt](params Parameters[T]) *Encryptor[T] {
 func NewEncryptorWithKey[T TorusInt](params Parameters[T], sk SecretKey[T]) *Encryptor[T] {
 	return &Encryptor[T]{
 		Encoder:         NewEncoder(params),
-		GLWETransformer: NewGLWETransformer[T](params.polyDegree),
+		GLWETransformer: NewGLWETransformer[T](params.polyRank),
 
-		Parameters: params,
+		Params: params,
 
 		UniformSampler:  csprng.NewUniformSampler[T](),
 		BinarySampler:   csprng.NewBinarySampler[T](),
 		GaussianSampler: csprng.NewGaussianSampler[T](),
 
-		PolyEvaluator: poly.NewEvaluator[T](params.polyDegree),
+		PolyEvaluator: poly.NewEvaluator[T](params.polyRank),
 
 		SecretKey: sk,
 
-		buffer: newEncryptionBuffer(params),
+		buf: newEncryptorBuffer(params),
 	}
 }
 
-// newEncryptionBuffer creates a new encryptionBuffer.
-func newEncryptionBuffer[T TorusInt](params Parameters[T]) encryptionBuffer[T] {
-	return encryptionBuffer[T]{
+// newEncryptorBuffer creates a new encryptorBuffer.
+func newEncryptorBuffer[T TorusInt](params Parameters[T]) encryptorBuffer[T] {
+	return encryptorBuffer[T]{
 		ptGLWE: NewGLWEPlaintext(params),
 		ctGLWE: NewGLWECiphertext(params),
-		ptGGSW: poly.NewPoly[T](params.polyDegree),
+		ptGGSW: poly.NewPoly[T](params.polyRank),
 	}
 }
 
@@ -111,7 +111,7 @@ func (e *Encryptor[T]) ShallowCopy() *Encryptor[T] {
 		Encoder:         e.Encoder,
 		GLWETransformer: e.GLWETransformer.ShallowCopy(),
 
-		Parameters: e.Parameters,
+		Params: e.Params,
 
 		UniformSampler:  csprng.NewUniformSampler[T](),
 		BinarySampler:   csprng.NewBinarySampler[T](),
@@ -121,7 +121,7 @@ func (e *Encryptor[T]) ShallowCopy() *Encryptor[T] {
 
 		PolyEvaluator: e.PolyEvaluator.ShallowCopy(),
 
-		buffer: newEncryptionBuffer(e.Parameters),
+		buf: newEncryptorBuffer(e.Params),
 	}
 }
 
@@ -129,7 +129,7 @@ func (e *Encryptor[T]) ShallowCopy() *Encryptor[T] {
 // Returns LWELargeKey if BootstrapOrder is OrderKeySwitchBlindRotate,
 // or LWEKey otherwise.
 func (e *Encryptor[T]) DefaultLWESecretKey() LWESecretKey[T] {
-	if e.Parameters.bootstrapOrder == OrderKeySwitchBlindRotate {
+	if e.Params.bootstrapOrder == OrderKeySwitchBlindRotate {
 		return e.SecretKey.LWELargeKey
 	}
 	return e.SecretKey.LWEKey
@@ -138,16 +138,16 @@ func (e *Encryptor[T]) DefaultLWESecretKey() LWESecretKey[T] {
 // GenSecretKey samples a new SecretKey.
 // The SecretKey of the Encryptor is not changed.
 func (e *Encryptor[T]) GenSecretKey() SecretKey[T] {
-	sk := NewSecretKey(e.Parameters)
+	sk := NewSecretKey(e.Params)
 
-	if e.Parameters.blockSize == 1 {
-		e.BinarySampler.SampleVecAssign(sk.LWELargeKey.Value)
+	if e.Params.blockSize == 1 {
+		e.BinarySampler.SampleVecTo(sk.LWELargeKey.Value)
 	} else {
-		e.BinarySampler.SampleBlockVecAssign(e.Parameters.blockSize, sk.LWELargeKey.Value[:e.Parameters.lweDimension])
-		e.BinarySampler.SampleVecAssign(sk.LWELargeKey.Value[e.Parameters.lweDimension:])
+		e.BinarySampler.SampleBlockVecTo(sk.LWELargeKey.Value[:e.Params.lweDimension], e.Params.blockSize)
+		e.BinarySampler.SampleVecTo(sk.LWELargeKey.Value[e.Params.lweDimension:])
 	}
 
-	e.ToFourierGLWESecretKeyAssign(sk.GLWEKey, sk.FourierGLWEKey)
+	e.FFTGLWESecretKeyTo(sk.FFTGLWEKey, sk.GLWEKey)
 
 	return sk
 }
@@ -156,28 +156,28 @@ func (e *Encryptor[T]) GenSecretKey() SecretKey[T] {
 //
 // Panics when the parameters do not support public key encryption.
 func (e *Encryptor[T]) GenPublicKey() PublicKey[T] {
-	if !e.Parameters.IsPublicKeyEncryptable() {
+	if !e.Params.IsPublicKeyEncryptable() {
 		panic("Parameters do not support public key encryption")
 	}
 
-	pk := NewPublicKey(e.Parameters)
+	pk := NewPublicKey(e.Params)
 
-	for i := 0; i < e.Parameters.glweRank; i++ {
+	for i := 0; i < e.Params.glweRank; i++ {
 		e.EncryptGLWEBody(pk.GLWEKey.Value[i])
 	}
 
-	skRev := NewGLWESecretKey(e.Parameters)
-	fskRev := NewFourierGLWESecretKey(e.Parameters)
-	for i := 0; i < e.Parameters.glweRank; i++ {
-		vec.ReverseAssign(e.SecretKey.GLWEKey.Value[i].Coeffs, skRev.Value[i].Coeffs)
+	skRev := NewGLWESecretKey(e.Params)
+	fskRev := NewFFTGLWESecretKey(e.Params)
+	for i := 0; i < e.Params.glweRank; i++ {
+		vec.ReverseTo(skRev.Value[i].Coeffs, e.SecretKey.GLWEKey.Value[i].Coeffs)
 	}
-	e.ToFourierGLWESecretKeyAssign(skRev, fskRev)
+	e.FFTGLWESecretKeyTo(fskRev, skRev)
 
-	for i := 0; i < e.Parameters.glweRank; i++ {
-		e.GaussianSampler.SamplePolyAssign(e.Parameters.GLWEStdDevQ(), pk.LWEKey.Value[i].Value[0])
-		for j := 1; j < e.Parameters.glweRank+1; j++ {
-			e.UniformSampler.SamplePolyAssign(pk.LWEKey.Value[i].Value[j])
-			e.PolyEvaluator.ShortFourierPolyMulSubPolyAssign(pk.LWEKey.Value[i].Value[j], fskRev.Value[j-1], pk.LWEKey.Value[i].Value[0])
+	for i := 0; i < e.Params.glweRank; i++ {
+		e.GaussianSampler.SamplePolyTo(pk.LWEKey.Value[i].Value[0], e.Params.GLWEStdDevQ())
+		for j := 1; j < e.Params.glweRank+1; j++ {
+			e.UniformSampler.SamplePolyTo(pk.LWEKey.Value[i].Value[j])
+			e.PolyEvaluator.ShortFFTPolyMulSubPolyTo(pk.LWEKey.Value[i].Value[0], pk.LWEKey.Value[i].Value[j], fskRev.Value[j-1])
 		}
 	}
 

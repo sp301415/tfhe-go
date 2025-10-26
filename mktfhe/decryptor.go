@@ -19,12 +19,12 @@ type Decryptor[T tfhe.TorusInt] struct {
 	*tfhe.Encoder[T]
 	// GLWETransformer is an embedded GLWETransformer for this Decryptor.
 	*GLWETransformer[T]
-	// SingleKeyDecryptors are single-key Encryptors for this Decryptor.
+	// SubDecryptors are single-key Encryptors for this Decryptor.
 	// If a secret key of a given index does not exist, it is nil.
-	SingleKeyDecryptors []*tfhe.Encryptor[T]
+	SubDecryptors []*tfhe.Encryptor[T]
 
-	// Parameters is the parameters for the decryptor.
-	Parameters Parameters[T]
+	// Params is the parameters for the decryptor.
+	Params Parameters[T]
 	// PartyBitMap is a bitmap for parties.
 	// If a party of a given index exists, it is true.
 	PartyBitMap []bool
@@ -34,20 +34,20 @@ type Decryptor[T tfhe.TorusInt] struct {
 	// If a secret key of a given index does not exist, it is empty.
 	SecretKeys []tfhe.SecretKey[T]
 
-	buffer decryptionBuffer[T]
+	buf decryptorBuffer[T]
 }
 
-// decryptionBuffer is a buffer for decryption.
-type decryptionBuffer[T tfhe.TorusInt] struct {
+// decryptorBuffer is a buffer for decryption.
+type decryptorBuffer[T tfhe.TorusInt] struct {
 	// ptGLWE is the GLWE plaintext.
 	ptGLWE tfhe.GLWEPlaintext[T]
 	// ctGLWE is the GLWE ciphertext.
 	ctGLWE GLWECiphertext[T]
 
-	// ctLWESingle is the LWE ciphertext.
-	ctLWESingle tfhe.LWECiphertext[T]
-	// ctGLWESingle is the GLWE ciphertext.
-	ctGLWESingle tfhe.GLWECiphertext[T]
+	// ctSubLWE is the LWE ciphertext.
+	ctSubLWE tfhe.LWECiphertext[T]
+	// ctSubGLWE is the GLWE ciphertext.
+	ctSubGLWE tfhe.GLWECiphertext[T]
 }
 
 // NewDecryptor creates a new Decryptor.
@@ -57,40 +57,40 @@ func NewDecryptor[T tfhe.TorusInt](params Parameters[T], sk map[int]tfhe.SecretK
 	singleKeys := make([]tfhe.SecretKey[T], len(sk))
 	partyBitMap := make([]bool, params.PartyCount())
 	for i := range sk {
-		singleEncs[i] = tfhe.NewEncryptorWithKey(params.singleKeyParameters, sk[i])
+		singleEncs[i] = tfhe.NewEncryptorWithKey(params.subParams, sk[i])
 		singleKeys[i] = sk[i]
 		partyBitMap[i] = true
 	}
 
 	return &Decryptor[T]{
-		Encoder:             tfhe.NewEncoder(params.singleKeyParameters),
-		GLWETransformer:     NewGLWETransformer[T](params.PolyDegree()),
-		SingleKeyDecryptors: singleEncs,
+		Encoder:         tfhe.NewEncoder(params.subParams),
+		GLWETransformer: NewGLWETransformer[T](params.PolyRank()),
+		SubDecryptors:   singleEncs,
 
-		Parameters:  params,
+		Params:      params,
 		PartyBitMap: partyBitMap,
 
 		SecretKeys: singleKeys,
 
-		buffer: newDecryptionBuffer(params),
+		buf: newDecryptorBuffer(params),
 	}
 }
 
-// newDecryptionBuffer creates a new decryptionBuffer.
-func newDecryptionBuffer[T tfhe.TorusInt](params Parameters[T]) decryptionBuffer[T] {
-	return decryptionBuffer[T]{
-		ptGLWE: tfhe.NewGLWEPlaintext(params.singleKeyParameters),
+// newDecryptorBuffer creates a new decryptorBuffer.
+func newDecryptorBuffer[T tfhe.TorusInt](params Parameters[T]) decryptorBuffer[T] {
+	return decryptorBuffer[T]{
+		ptGLWE: tfhe.NewGLWEPlaintext(params.subParams),
 		ctGLWE: NewGLWECiphertext(params),
 
-		ctLWESingle:  tfhe.NewLWECiphertext(params.singleKeyParameters),
-		ctGLWESingle: tfhe.NewGLWECiphertext(params.singleKeyParameters),
+		ctSubLWE:  tfhe.NewLWECiphertext(params.subParams),
+		ctSubGLWE: tfhe.NewGLWECiphertext(params.subParams),
 	}
 }
 
 // AddSecretKey adds a secret key to this Decryptor.
 // If a secret key of a given index already exists, it is overwritten.
 func (d *Decryptor[T]) AddSecretKey(idx int, sk tfhe.SecretKey[T]) {
-	d.SingleKeyDecryptors[idx] = tfhe.NewEncryptorWithKey(d.Parameters.singleKeyParameters, sk)
+	d.SubDecryptors[idx] = tfhe.NewEncryptorWithKey(d.Params.subParams, sk)
 	d.SecretKeys[idx] = sk
 	d.PartyBitMap[idx] = true
 }
@@ -98,24 +98,24 @@ func (d *Decryptor[T]) AddSecretKey(idx int, sk tfhe.SecretKey[T]) {
 // ShallowCopy returns a shallow copy of this Decryptor.
 // Returned Decryptor is safe for concurrent use.
 func (d *Decryptor[T]) ShallowCopy() *Decryptor[T] {
-	decs := make([]*tfhe.Encryptor[T], d.Parameters.partyCount)
-	for i, dec := range d.SingleKeyDecryptors {
+	decs := make([]*tfhe.Encryptor[T], d.Params.partyCount)
+	for i, dec := range d.SubDecryptors {
 		if dec != nil {
 			decs[i] = dec.ShallowCopy()
 		}
 	}
 
 	return &Decryptor[T]{
-		Encoder:             d.Encoder,
-		GLWETransformer:     d.GLWETransformer.ShallowCopy(),
-		SingleKeyDecryptors: decs,
+		Encoder:         d.Encoder,
+		GLWETransformer: d.GLWETransformer.ShallowCopy(),
+		SubDecryptors:   decs,
 
-		Parameters:  d.Parameters,
+		Params:      d.Params,
 		PartyBitMap: vec.Copy(d.PartyBitMap),
 
 		SecretKeys: vec.Copy(d.SecretKeys),
 
-		buffer: d.buffer,
+		buf: d.buf,
 	}
 }
 
@@ -126,66 +126,66 @@ func (d *Decryptor[T]) DecryptLWE(ct LWECiphertext[T]) int {
 
 // DecryptLWEPlaintext decrypts LWE ciphertext to LWE plaintext.
 func (d *Decryptor[T]) DecryptLWEPlaintext(ct LWECiphertext[T]) tfhe.LWEPlaintext[T] {
-	pt := ct.Value[0]
+	ptOut := ct.Value[0]
 	for i, ok := range d.PartyBitMap {
 		if ok {
-			ctMask := ct.Value[1+i*d.Parameters.singleKeyParameters.DefaultLWEDimension() : 1+(i+1)*d.Parameters.singleKeyParameters.DefaultLWEDimension()]
-			pt += vec.Dot(ctMask, d.SingleKeyDecryptors[i].DefaultLWESecretKey().Value)
+			ctMask := ct.Value[1+i*d.Params.subParams.DefaultLWEDimension() : 1+(i+1)*d.Params.subParams.DefaultLWEDimension()]
+			ptOut += vec.Dot(ctMask, d.SubDecryptors[i].DefaultLWESecretKey().Value)
 		}
 	}
-	return tfhe.LWEPlaintext[T]{Value: pt}
+	return tfhe.LWEPlaintext[T]{Value: ptOut}
 }
 
 // DecryptGLWE decrypts and decodes GLWE ciphertext to integer message.
 func (d *Decryptor[T]) DecryptGLWE(ct GLWECiphertext[T]) []int {
-	d.DecryptGLWEPlaintextAssign(ct, d.buffer.ptGLWE)
-	return d.DecodeGLWE(d.buffer.ptGLWE)
+	d.DecryptGLWEPhaseTo(d.buf.ptGLWE, ct)
+	return d.DecodeGLWE(d.buf.ptGLWE)
 }
 
-// DecryptGLWEAssign decrypts and decodes GLWE ciphertext to integer message and writes it to messagesOut.
-func (d *Decryptor[T]) DecryptGLWEAssign(ct GLWECiphertext[T], messagesOut []int) {
-	d.DecryptGLWEPlaintextAssign(ct, d.buffer.ptGLWE)
-	d.DecodeGLWEAssign(d.buffer.ptGLWE, messagesOut)
+// DecryptGLWETo decrypts and decodes GLWE ciphertext to integer message and writes it to messagesOut.
+func (d *Decryptor[T]) DecryptGLWETo(messagesOut []int, ct GLWECiphertext[T]) {
+	d.DecryptGLWEPhaseTo(d.buf.ptGLWE, ct)
+	d.DecodeGLWETo(messagesOut, d.buf.ptGLWE)
 }
 
-// DecryptGLWEPlaintext decrypts GLWE ciphertext to GLWE plaintext.
-func (d *Decryptor[T]) DecryptGLWEPlaintext(ct GLWECiphertext[T]) tfhe.GLWEPlaintext[T] {
-	pt := tfhe.NewGLWEPlaintext(d.Parameters.singleKeyParameters)
-	d.DecryptGLWEPlaintextAssign(ct, pt)
-	return pt
-}
-
-// DecryptGLWEPlaintextAssign decrypts GLWE ciphertext to GLWE plaintext and writes it to ptOut.
-func (d *Decryptor[T]) DecryptGLWEPlaintextAssign(ct GLWECiphertext[T], ptOut tfhe.GLWEPlaintext[T]) {
-	d.buffer.ctGLWESingle.Value[0].CopyFrom(ct.Value[0])
-	for i, ok := range d.PartyBitMap {
-		if ok {
-			d.buffer.ctGLWESingle.Value[1].CopyFrom(ct.Value[1+i])
-			d.SingleKeyDecryptors[i].DecryptGLWEPhaseAssign(d.buffer.ctGLWESingle, tfhe.GLWEPlaintext[T]{Value: d.buffer.ctGLWESingle.Value[0]})
-		}
-	}
-	ptOut.Value.CopyFrom(d.buffer.ctGLWESingle.Value[0])
-}
-
-// DecryptFourierGLWE decrypts and decodes FourierGLWE ciphertext to integer message.
-func (d *Decryptor[T]) DecryptFourierGLWE(ct FourierGLWECiphertext[T]) []int {
-	return d.DecodeGLWE(d.DecryptFourierGLWEPlaintext(ct))
-}
-
-// DecryptFourierGLWEAssign decrypts and decodes FourierGLWE ciphertext to integer message and writes it to messagesOut.
-func (d *Decryptor[T]) DecryptFourierGLWEAssign(ct FourierGLWECiphertext[T], messagesOut []int) {
-	d.DecodeGLWEAssign(d.DecryptFourierGLWEPlaintext(ct), messagesOut)
-}
-
-// DecryptFourierGLWEPlaintext decrypts FourierGLWE ciphertext to GLWE plaintext.
-func (d *Decryptor[T]) DecryptFourierGLWEPlaintext(ct FourierGLWECiphertext[T]) tfhe.GLWEPlaintext[T] {
-	ptOut := tfhe.NewGLWEPlaintext(d.Parameters.singleKeyParameters)
-	d.DecryptFourierGLWEPlaintextAssign(ct, ptOut)
+// DecryptGLWEPhase decrypts GLWE ciphertext to GLWE plaintext.
+func (d *Decryptor[T]) DecryptGLWEPhase(ct GLWECiphertext[T]) tfhe.GLWEPlaintext[T] {
+	ptOut := tfhe.NewGLWEPlaintext(d.Params.subParams)
+	d.DecryptGLWEPhaseTo(ptOut, ct)
 	return ptOut
 }
 
-// DecryptFourierGLWEPlaintextAssign decrypts FourierGLWE ciphertext to GLWE plaintext and writes it to ptOut.
-func (d *Decryptor[T]) DecryptFourierGLWEPlaintextAssign(ct FourierGLWECiphertext[T], ptOut tfhe.GLWEPlaintext[T]) {
-	d.ToGLWECiphertextAssign(ct, d.buffer.ctGLWE)
-	d.DecryptGLWEPlaintextAssign(d.buffer.ctGLWE, ptOut)
+// DecryptGLWEPhaseTo decrypts GLWE ciphertext to GLWE plaintext and writes it to ptOut.
+func (d *Decryptor[T]) DecryptGLWEPhaseTo(ptOut tfhe.GLWEPlaintext[T], ct GLWECiphertext[T]) {
+	d.buf.ctSubGLWE.Value[0].CopyFrom(ct.Value[0])
+	for i, ok := range d.PartyBitMap {
+		if ok {
+			d.buf.ctSubGLWE.Value[1].CopyFrom(ct.Value[1+i])
+			d.SubDecryptors[i].DecryptGLWEPhaseTo(tfhe.GLWEPlaintext[T]{Value: d.buf.ctSubGLWE.Value[0]}, d.buf.ctSubGLWE)
+		}
+	}
+	ptOut.Value.CopyFrom(d.buf.ctSubGLWE.Value[0])
+}
+
+// DecryptFFTGLWE decrypts and decodes FFTGLWE ciphertext to integer message.
+func (d *Decryptor[T]) DecryptFFTGLWE(ct FFTGLWECiphertext[T]) []int {
+	return d.DecodeGLWE(d.DecryptFFTGLWEPhase(ct))
+}
+
+// DecryptFFTGLWETo decrypts and decodes FFTGLWE ciphertext to integer message and writes it to messagesOut.
+func (d *Decryptor[T]) DecryptFFTGLWETo(messagesOut []int, ct FFTGLWECiphertext[T]) {
+	d.DecodeGLWETo(messagesOut, d.DecryptFFTGLWEPhase(ct))
+}
+
+// DecryptFFTGLWEPhase decrypts FFTGLWE ciphertext to GLWE plaintext.
+func (d *Decryptor[T]) DecryptFFTGLWEPhase(ct FFTGLWECiphertext[T]) tfhe.GLWEPlaintext[T] {
+	ptOut := tfhe.NewGLWEPlaintext(d.Params.subParams)
+	d.DecryptFFTGLWEPhaseTo(ptOut, ct)
+	return ptOut
+}
+
+// DecryptFFTGLWEPhaseTo decrypts FFTGLWE ciphertext to GLWE plaintext and writes it to ptOut.
+func (d *Decryptor[T]) DecryptFFTGLWEPhaseTo(ptOut tfhe.GLWEPlaintext[T], ct FFTGLWECiphertext[T]) {
+	d.ToGLWECiphertextTo(d.buf.ctGLWE, ct)
+	d.DecryptGLWEPhaseTo(ptOut, d.buf.ctGLWE)
 }

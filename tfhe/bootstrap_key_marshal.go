@@ -11,7 +11,7 @@ func (evk EvaluationKey[T]) ByteSize() int {
 	if len(evk.KeySwitchKey.Value) > 0 {
 		return 1 + evk.BlindRotateKey.ByteSize() + evk.KeySwitchKey.ByteSize()
 	} else {
-		return 1 + evk.BlindRotateKey.ByteSize() + evk.KeySwitchKey.GadgetParameters.ByteSize()
+		return 1 + evk.BlindRotateKey.ByteSize() + evk.KeySwitchKey.GadgetParams.ByteSize()
 	}
 }
 
@@ -44,7 +44,7 @@ func (evk EvaluationKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	n += nWrite64
 
 	if isKeySwitchKeyPresent == 0 {
-		if nWrite64, err = evk.KeySwitchKey.GadgetParameters.WriteTo(w); err != nil {
+		if nWrite64, err = evk.KeySwitchKey.GadgetParams.WriteTo(w); err != nil {
 			return n + nWrite64, err
 		}
 		n += nWrite64
@@ -116,9 +116,9 @@ func (brk BlindRotateKey[T]) ByteSize() int {
 	lweDimension := len(brk.Value)
 	glweRank := len(brk.Value[0].Value) - 1
 	level := len(brk.Value[0].Value[0].Value)
-	polyDegree := brk.Value[0].Value[0].Value[0].Value[0].Degree()
+	polyRank := brk.Value[0].Value[0].Value[0].Value[0].Rank()
 
-	return 40 + lweDimension*(glweRank+1)*level*(glweRank+1)*polyDegree*8
+	return 40 + lweDimension*(glweRank+1)*level*(glweRank+1)*polyRank*8
 }
 
 // headerWriteTo writes the header.
@@ -154,8 +154,8 @@ func (brk BlindRotateKey[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 	}
 	n += int64(nWrite)
 
-	polyDegree := brk.Value[0].Value[0].Value[0].Value[0].Degree()
-	binary.BigEndian.PutUint64(buf[:], uint64(polyDegree))
+	polyRank := brk.Value[0].Value[0].Value[0].Value[0].Rank()
+	binary.BigEndian.PutUint64(buf[:], uint64(polyRank))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
 	}
@@ -168,14 +168,14 @@ func (brk BlindRotateKey[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 func (brk BlindRotateKey[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
 
-	polyDegree := brk.Value[0].Value[0].Value[0].Value[0].Degree()
-	buf := make([]byte, polyDegree*8)
+	polyRank := brk.Value[0].Value[0].Value[0].Value[0].Rank()
+	buf := make([]byte, polyRank*8)
 
 	for i := range brk.Value {
 		for j := range brk.Value[i].Value {
 			for k := range brk.Value[i].Value[j].Value {
 				for l := range brk.Value[i].Value[j].Value[k].Value {
-					if nWrite, err = floatVecWriteToBuffered(brk.Value[i].Value[j].Value[k].Value[l].Coeffs, buf, w); err != nil {
+					if nWrite, err = floatVecWriteToBuf(brk.Value[i].Value[j].Value[k].Value[l].Coeffs, buf, w); err != nil {
 						return n + nWrite, err
 					}
 					n += nWrite
@@ -195,7 +195,7 @@ func (brk BlindRotateKey[T]) valueWriteTo(w io.Writer) (n int64, err error) {
 //	[8] Level
 //	[8] LWEDimension
 //	[8] GLWERank
-//	[8] PolyDegree
+//	[8] PolyRank
 //	    Value
 func (brk BlindRotateKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
@@ -250,9 +250,9 @@ func (brk *BlindRotateKey[T]) headerReadFrom(r io.Reader) (n int64, err error) {
 		return n + int64(nRead), err
 	}
 	n += int64(nRead)
-	polyDegree := int(binary.BigEndian.Uint64(buf[:]))
+	polyRank := int(binary.BigEndian.Uint64(buf[:]))
 
-	*brk = NewBlindRotateKeyCustom(lweDimension, glweRank, polyDegree, GadgetParametersLiteral[T]{Base: base, Level: level}.Compile())
+	*brk = NewBlindRotateKeyCustom(lweDimension, glweRank, polyRank, GadgetParametersLiteral[T]{Base: base, Level: level}.Compile())
 
 	return
 }
@@ -261,14 +261,14 @@ func (brk *BlindRotateKey[T]) headerReadFrom(r io.Reader) (n int64, err error) {
 func (brk *BlindRotateKey[T]) valueReadFrom(r io.Reader) (n int64, err error) {
 	var nRead int64
 
-	polyDegree := brk.Value[0].Value[0].Value[0].Value[0].Degree()
-	buf := make([]byte, polyDegree*8)
+	polyRank := brk.Value[0].Value[0].Value[0].Value[0].Rank()
+	buf := make([]byte, polyRank*8)
 
 	for i := range brk.Value {
 		for j := range brk.Value[i].Value {
 			for k := range brk.Value[i].Value[j].Value {
 				for l := range brk.Value[i].Value[j].Value[k].Value {
-					if nRead, err = floatVecReadFromBuffered(brk.Value[i].Value[j].Value[k].Value[l].Coeffs, buf, r); err != nil {
+					if nRead, err = floatVecReadFromBuf(brk.Value[i].Value[j].Value[k].Value[l].Coeffs, buf, r); err != nil {
 						return n + nRead, err
 					}
 					n += nRead

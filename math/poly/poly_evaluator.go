@@ -9,13 +9,13 @@ import (
 )
 
 const (
-	// MinDegree is the minimum degree of polynomial that Evaluator can handle.
+	// MinRank is the minimum rank of polynomial that Evaluator can handle.
 	// Currently, this is set to 2^4, because AVX2 implementation of FFT and inverse FFT
 	// handles first/last two loops separately.
-	MinDegree = 1 << 4
+	MinRank = 1 << 4
 
 	// ShortLogBound is a maximum bound for the coefficients of "short" polynomials
-	// used in [*Evaluator.ShortFourierPolyMulPoly] functions.
+	// used in [*Evaluator.ShortFFTPolyMul] functions.
 	// Currently, this is set to 8 bits.
 	ShortLogBound = 8
 
@@ -27,8 +27,8 @@ const (
 // Evaluator computes polynomial operations over the N-th cyclotomic ring.
 //
 // Operations usually take two forms: for example,
-//   - Op(p0, p1) adds p0, p1, allocates a new polynomial to store the result and returns it.
-//   - OpAssign(p0, p1, pOut) adds p0, p1 and writes the result to pre-allocated pOut without returning.
+//   - Op(p0, p1) operates on p0, p1, allocates a new polynomial to store the result and returns it.
+//   - OpTo(pOut, p0, p1) operates on p0, p1 and writes the result to pre-allocated pOut without returning.
 //
 // Note that in most cases, p0, p1, and fpOut can overlap.
 // However, for operations that cannot, InPlace methods are implemented separately.
@@ -39,8 +39,8 @@ const (
 // Evaluator is not safe for concurrent use.
 // Use [*Evaluator.ShallowCopy] to get a safe copy.
 type Evaluator[T num.Integer] struct {
-	// degree is the degree of polynomial that this transformer can handle.
-	degree int
+	// rank is the rank of polynomial that this transformer can handle.
+	rank int
 	// q is a float64 value of Q.
 	q float64
 
@@ -59,36 +59,36 @@ type Evaluator[T num.Integer] struct {
 	// Equivalent to BitReverse([-1, 3, 7, ..., 2N-3]).
 	twMonoIdx []int
 
-	buffer evaluationBuffer[T]
+	buf evaluatorBuffer[T]
 }
 
-// evaluationBuffer is a buffer for Evaluator.
-type evaluationBuffer[T num.Integer] struct {
+// evaluatorBuffer is a buffer for Evaluator.
+type evaluatorBuffer[T num.Integer] struct {
 	// pOut is the intermediate output polynomial for InPlace operations.
 	pOut Poly[T]
 	// fpOut is the intermediate output fourier polynomial for InPlace operations.
-	fpOut FourierPoly
+	fpOut FFTPoly
 
 	// fp is the FFT value of p.
-	fp FourierPoly
+	fp FFTPoly
 	// fpInv is the InvFFT value of fp.
-	fpInv FourierPoly
+	fpInv FFTPoly
 
-	// pSplit is the split value of p0 in [*Evaluator.ShortFourierPolyMulPoly].
+	// pSplit is the split value of p0 in [*Evaluator.ShortFFTPolyMul].
 	pSplit Poly[T]
-	// fpShortSplit is the fourier transformed pSplit in [*Evaluator.ShortFourierPolyMulPoly].
-	fpShortSplit []FourierPoly
+	// fpSplit is the fourier transformed pSplit in [*Evaluator.ShortFFTPolyMul].
+	fpSplit []FFTPoly
 }
 
-// NewEvaluator creates a new Evaluator with degree N.
+// NewEvaluator creates a new Evaluator with rank N.
 //
-// Panics when N is not a power of two, or when N is smaller than MinDegree or larger than MaxDegree.
+// Panics when N is not a power of two, or when N is smaller than [MinRank].
 func NewEvaluator[T num.Integer](N int) *Evaluator[T] {
 	switch {
 	case !num.IsPowerOfTwo(N):
-		panic("degree not power of two")
-	case N < MinDegree:
-		panic("degree smaller than MinDegree")
+		panic("NewEvaluator: rank not power of two")
+	case N < MinRank:
+		panic("NewEvaluator: rank smaller than MinRank")
 	}
 
 	Q := math.Exp2(float64(num.SizeT[T]()))
@@ -109,15 +109,15 @@ func NewEvaluator[T num.Integer](N int) *Evaluator[T] {
 	vec.BitReverseInPlace(twMonoIdx)
 
 	return &Evaluator[T]{
-		degree: N,
-		q:      Q,
+		rank: N,
+		q:    Q,
 
 		tw:        tw,
 		twInv:     twInv,
 		twMono:    twMono,
 		twMonoIdx: twMonoIdx,
 
-		buffer: newEvaluationBuffer[T](N),
+		buf: newEvaluatorBuffer[T](N),
 	}
 }
 
@@ -160,31 +160,31 @@ func splitParameters[T num.Integer](N int) (splitBits T, splitCount int) {
 	return
 }
 
-// splitParametersShort generates splitBits and splitCount for [*Evaluator.ShortFourierPolyMulPoly].
-func splitParametersShort[T num.Integer](N int) (splitBits T, splitCount int) {
+// splitParamsShort generates splitBits and splitCount for [*Evaluator.ShortFFTPolyMulPoly].
+func splitParamsShort[T num.Integer](N int) (splitBits T, splitCount int) {
 	splitBits = T(splitLogBound-2*ShortLogBound-num.Log2(N)) / 2
 	splitCount = int(math.Ceil(float64(num.SizeT[T]()) / float64(splitBits)))
 	return
 }
 
-// newEvaluationBuffer creates a new evaluationBuffer.
-func newEvaluationBuffer[T num.Integer](N int) evaluationBuffer[T] {
-	_, splitCount := splitParametersShort[T](N)
+// newEvaluatorBuffer creates a new evaluatorBuffer.
+func newEvaluatorBuffer[T num.Integer](N int) evaluatorBuffer[T] {
+	_, splitCount := splitParamsShort[T](N)
 
-	fpShortSplit := make([]FourierPoly, splitCount)
+	fpShortSplit := make([]FFTPoly, splitCount)
 	for i := 0; i < splitCount; i++ {
-		fpShortSplit[i] = NewFourierPoly(N)
+		fpShortSplit[i] = NewFFTPoly(N)
 	}
 
-	return evaluationBuffer[T]{
+	return evaluatorBuffer[T]{
 		pOut:  NewPoly[T](N),
-		fpOut: NewFourierPoly(N),
+		fpOut: NewFFTPoly(N),
 
-		fp:    NewFourierPoly(N),
-		fpInv: NewFourierPoly(N),
+		fp:    NewFFTPoly(N),
+		fpInv: NewFFTPoly(N),
 
-		pSplit:       NewPoly[T](N),
-		fpShortSplit: fpShortSplit,
+		pSplit:  NewPoly[T](N),
+		fpSplit: fpShortSplit,
 	}
 }
 
@@ -192,29 +192,29 @@ func newEvaluationBuffer[T num.Integer](N int) evaluationBuffer[T] {
 // Returned Evaluator is safe for concurrent use.
 func (e *Evaluator[T]) ShallowCopy() *Evaluator[T] {
 	return &Evaluator[T]{
-		degree: e.degree,
-		q:      e.q,
+		rank: e.rank,
+		q:    e.q,
 
 		tw:        e.tw,
 		twInv:     e.twInv,
 		twMono:    e.twMono,
 		twMonoIdx: e.twMonoIdx,
 
-		buffer: newEvaluationBuffer[T](e.degree),
+		buf: newEvaluatorBuffer[T](e.rank),
 	}
 }
 
-// Degree returns the degree of polynomial that the evaluator can handle.
-func (e *Evaluator[T]) Degree() int {
-	return e.degree
+// Rank returns the rank of polynomial that the evaluator can handle.
+func (e *Evaluator[T]) Rank() int {
+	return e.rank
 }
 
-// NewPoly creates a new polynomial with the same degree as the evaluator.
+// NewPoly creates a new polynomial with the same rank as the evaluator.
 func (e *Evaluator[T]) NewPoly() Poly[T] {
-	return Poly[T]{Coeffs: make([]T, e.degree)}
+	return Poly[T]{Coeffs: make([]T, e.rank)}
 }
 
-// NewFourierPoly creates a new fourier polynomial with the same degree as the evaluator.
-func (e *Evaluator[T]) NewFourierPoly() FourierPoly {
-	return FourierPoly{Coeffs: make([]float64, e.degree)}
+// NewFFTPoly creates a new fourier polynomial with the same rank as the evaluator.
+func (e *Evaluator[T]) NewFFTPoly() FFTPoly {
+	return FFTPoly{Coeffs: make([]float64, e.rank)}
 }

@@ -11,9 +11,9 @@ import (
 // ByteSize returns the size of the key in bytes.
 func (sk SecretKey[T]) ByteSize() int {
 	glweRank := len(sk.GLWEKey.Value)
-	polyDegree := sk.GLWEKey.Value[0].Degree()
+	polyRank := sk.GLWEKey.Value[0].Rank()
 
-	return 24 + glweRank*polyDegree*num.ByteSizeT[T]() + glweRank*polyDegree*8
+	return 24 + glweRank*polyRank*num.ByteSizeT[T]() + glweRank*polyRank*8
 }
 
 // headerWriteTo writes the header.
@@ -35,8 +35,8 @@ func (sk SecretKey[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 	}
 	n += int64(nWrite)
 
-	polyDegree := sk.GLWEKey.Value[0].Degree()
-	binary.BigEndian.PutUint64(buf[:], uint64(polyDegree))
+	polyRank := sk.GLWEKey.Value[0].Rank()
+	binary.BigEndian.PutUint64(buf[:], uint64(polyRank))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
 	}
@@ -51,9 +51,9 @@ func (sk SecretKey[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 //
 //	[8] LWEDimension
 //	[8] GLWERank
-//	[8] PolyDegree
+//	[8] PolyRank
 //	    LWELargeKey
-//	    FourierGLWEKey
+//	    FFTGLWEKey
 func (sk SecretKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int64
 
@@ -67,7 +67,7 @@ func (sk SecretKey[T]) WriteTo(w io.Writer) (n int64, err error) {
 	}
 	n += nWrite
 
-	if nWrite, err = sk.FourierGLWEKey.valueWriteTo(w); err != nil {
+	if nWrite, err = sk.FFTGLWEKey.valueWriteTo(w); err != nil {
 		return n + nWrite, err
 	}
 	n += nWrite
@@ -100,9 +100,9 @@ func (sk *SecretKey[T]) headerReadFrom(r io.Reader) (n int64, err error) {
 		return n + int64(nRead), err
 	}
 	n += int64(nRead)
-	polyDegree := int(binary.BigEndian.Uint64(buf[:]))
+	polyRank := int(binary.BigEndian.Uint64(buf[:]))
 
-	*sk = NewSecretKeyCustom[T](lweDimension, glweRank, polyDegree)
+	*sk = NewSecretKeyCustom[T](lweDimension, glweRank, polyRank)
 
 	return
 }
@@ -121,7 +121,7 @@ func (sk *SecretKey[T]) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 	n += nRead
 
-	if nRead, err = sk.FourierGLWEKey.valueReadFrom(r); err != nil {
+	if nRead, err = sk.FFTGLWEKey.valueReadFrom(r); err != nil {
 		return n + nRead, err
 	}
 	n += nRead
