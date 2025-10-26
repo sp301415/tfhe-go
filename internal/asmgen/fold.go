@@ -121,8 +121,8 @@ func foldPolyToUint64AVX2() {
 	RET()
 }
 
-func floatModInPlaceAVX2() {
-	TEXT("floatModInPlaceAVX2", NOSPLIT, "func(coeffs []float64, q, qInv float64)")
+func floatModQInPlaceAVX2() {
+	TEXT("floatModQInPlaceAVX2", NOSPLIT, "func(coeffs []float64, q, qInv float64)")
 	Pragma("noescape")
 
 	coeffs := Load(Param("coeffs").Base(), GP64())

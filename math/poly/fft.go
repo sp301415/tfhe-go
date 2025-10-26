@@ -100,7 +100,7 @@ func (e *Evaluator[T]) InvFFT(fp FFTPoly) Poly[T] {
 func (e *Evaluator[T]) InvFFTTo(pOut Poly[T], fp FFTPoly) {
 	e.buf.fpInv.CopyFrom(fp)
 	ifftInPlace(e.buf.fpInv.Coeffs, e.twInv)
-	floatModInPlace(e.buf.fpInv.Coeffs, e.q)
+	floatModQInPlace(e.buf.fpInv.Coeffs, e.q)
 	unfoldPolyTo(pOut.Coeffs, e.buf.fpInv.Coeffs)
 }
 
@@ -108,7 +108,7 @@ func (e *Evaluator[T]) InvFFTTo(pOut Poly[T], fp FFTPoly) {
 func (e *Evaluator[T]) InvFFTAddTo(pOut Poly[T], fp FFTPoly) {
 	e.buf.fpInv.CopyFrom(fp)
 	ifftInPlace(e.buf.fpInv.Coeffs, e.twInv)
-	floatModInPlace(e.buf.fpInv.Coeffs, e.q)
+	floatModQInPlace(e.buf.fpInv.Coeffs, e.q)
 	unfoldPolyAddTo(pOut.Coeffs, e.buf.fpInv.Coeffs)
 }
 
@@ -116,7 +116,7 @@ func (e *Evaluator[T]) InvFFTAddTo(pOut Poly[T], fp FFTPoly) {
 func (e *Evaluator[T]) InvFFTSubTo(pOut Poly[T], fp FFTPoly) {
 	e.buf.fpInv.CopyFrom(fp)
 	ifftInPlace(e.buf.fpInv.Coeffs, e.twInv)
-	floatModInPlace(e.buf.fpInv.Coeffs, e.q)
+	floatModQInPlace(e.buf.fpInv.Coeffs, e.q)
 	unfoldPolySubTo(pOut.Coeffs, e.buf.fpInv.Coeffs)
 }
 
@@ -126,7 +126,7 @@ func (e *Evaluator[T]) InvFFTSubTo(pOut Poly[T], fp FFTPoly) {
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
 func (e *Evaluator[T]) InvFFTToUnsafe(pOut Poly[T], fp FFTPoly) {
 	ifftInPlace(fp.Coeffs, e.twInv)
-	floatModInPlace(fp.Coeffs, e.q)
+	floatModQInPlace(fp.Coeffs, e.q)
 	unfoldPolyTo(pOut.Coeffs, fp.Coeffs)
 }
 
@@ -136,7 +136,7 @@ func (e *Evaluator[T]) InvFFTToUnsafe(pOut Poly[T], fp FFTPoly) {
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
 func (e *Evaluator[T]) InvFFTAddToUnsafe(pOut Poly[T], fp FFTPoly) {
 	ifftInPlace(fp.Coeffs, e.twInv)
-	floatModInPlace(fp.Coeffs, e.q)
+	floatModQInPlace(fp.Coeffs, e.q)
 	unfoldPolyAddTo(pOut.Coeffs, fp.Coeffs)
 }
 
@@ -146,6 +146,6 @@ func (e *Evaluator[T]) InvFFTAddToUnsafe(pOut Poly[T], fp FFTPoly) {
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
 func (e *Evaluator[T]) InvFFTSubToUnsafe(pOut Poly[T], fp FFTPoly) {
 	ifftInPlace(fp.Coeffs, e.twInv)
-	floatModInPlace(fp.Coeffs, e.q)
+	floatModQInPlace(fp.Coeffs, e.q)
 	unfoldPolySubTo(pOut.Coeffs, fp.Coeffs)
 }

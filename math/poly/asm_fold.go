@@ -126,8 +126,8 @@ func foldPolyTo[T num.Integer](fpOut []float64, p []T) {
 	}
 }
 
-// floatModInPlace computes coeffs mod Q in place.
-func floatModInPlace(coeffs []float64, q float64) {
+// floatModQInPlace computes coeffs mod Q in place.
+func floatModQInPlace(coeffs []float64, q float64) {
 	N := len(coeffs)
 
 	for i := 0; i < N; i += 8 {

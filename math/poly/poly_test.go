@@ -17,7 +17,7 @@ func BenchmarkOps(b *testing.B) {
 	r := rand.New(rand.NewSource(0))
 
 	for _, logN := range LogN {
-		b.Run(fmt.Sprintf("logN=%v", logN), func(b *testing.B) {
+		b.Run(fmt.Sprintf("LogN=%v", logN), func(b *testing.B) {
 			N := 1 << logN
 
 			pev := poly.NewEvaluator[uint64](N)
@@ -33,25 +33,25 @@ func BenchmarkOps(b *testing.B) {
 
 			fp := pev.FFT(p0)
 
-			b.Run("op=Add", func(b *testing.B) {
+			b.Run("Add", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
 					pev.AddPolyTo(pOut, p0, p1)
 				}
 			})
 
-			b.Run("op=Sub", func(b *testing.B) {
+			b.Run("Sub", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
 					pev.SubPolyTo(pOut, p0, p1)
 				}
 			})
 
-			b.Run("op=BinaryMul", func(b *testing.B) {
+			b.Run("BinaryMul", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
 					pev.ShortFFTPolyMulPolyTo(pOut, p0, fp)
 				}
 			})
 
-			b.Run("op=Mul", func(b *testing.B) {
+			b.Run("Mul", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
 					pev.MulPolyTo(pOut, p0, p1)
 				}
@@ -60,11 +60,11 @@ func BenchmarkOps(b *testing.B) {
 	}
 }
 
-func BenchmarkFourierOps(b *testing.B) {
+func BenchmarkFFTOps(b *testing.B) {
 	r := rand.New(rand.NewSource(0))
 
 	for _, logN := range LogN {
-		b.Run(fmt.Sprintf("logN=%v", logN), func(b *testing.B) {
+		b.Run(fmt.Sprintf("LogN=%v", logN), func(b *testing.B) {
 			N := 1 << logN
 
 			pev := poly.NewEvaluator[uint64](N)
@@ -78,19 +78,19 @@ func BenchmarkFourierOps(b *testing.B) {
 				fp1.Coeffs[i] = (2*r.Float64() - 1.0) * math.Exp(63)
 			}
 
-			b.Run("op=Add", func(b *testing.B) {
+			b.Run("Add", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
 					pev.AddFFTPolyTo(fpOut, fp0, fp1)
 				}
 			})
 
-			b.Run("op=Sub", func(b *testing.B) {
+			b.Run("Sub", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
 					pev.SubFFTPolyTo(fpOut, fp0, fp1)
 				}
 			})
 
-			b.Run("op=Mul", func(b *testing.B) {
+			b.Run("Mul", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
 					pev.MulFFTPolyTo(fpOut, fp0, fp1)
 				}
@@ -99,11 +99,11 @@ func BenchmarkFourierOps(b *testing.B) {
 	}
 }
 
-func BenchmarkFourierTransform(b *testing.B) {
+func BenchmarkFFT(b *testing.B) {
 	r := rand.New(rand.NewSource(0))
 
 	for _, logN := range LogN {
-		b.Run(fmt.Sprintf("logN=%v", logN), func(b *testing.B) {
+		b.Run(fmt.Sprintf("LogN=%v", logN), func(b *testing.B) {
 			N := 1 << logN
 
 			pev := poly.NewEvaluator[uint64](N)
@@ -115,20 +115,20 @@ func BenchmarkFourierTransform(b *testing.B) {
 				p.Coeffs[i] = r.Uint64()
 			}
 
-			b.Run("op=FFT", func(b *testing.B) {
+			b.Run("FFT", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
 					pev.FFTTo(fp, p)
 				}
 			})
 
 			x := N / 3
-			b.Run("op=MonomialFFT", func(b *testing.B) {
+			b.Run("MonomialFFT", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
 					pev.MonomialFFTTo(fp, x)
 				}
 			})
 
-			b.Run("op=InvFFT", func(b *testing.B) {
+			b.Run("InvFFT", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
 					pev.InvFFTToUnsafe(p, fp)
 				}

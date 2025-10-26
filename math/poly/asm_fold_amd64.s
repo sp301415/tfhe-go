@@ -92,9 +92,9 @@ loop_end:
 	JL   loop_body
 	RET
 
-// func floatModInPlaceAVX2(coeffs []float64, q float64, qInv float64)
+// func floatModQInPlaceAVX2(coeffs []float64, q float64, qInv float64)
 // Requires: AVX
-TEXT ·floatModInPlaceAVX2(SB), NOSPLIT, $0-40
+TEXT ·floatModQInPlaceAVX2(SB), NOSPLIT, $0-40
 	MOVQ         coeffs_base+0(FP), AX
 	MOVQ         coeffs_len+8(FP), CX
 	VBROADCASTSD q+24(FP), Y0

@@ -34,7 +34,7 @@ func main() {
 		foldPolyToUint32AVX2()
 		foldPolyToUint64AVX2()
 
-		floatModInPlaceAVX2()
+		floatModQInPlaceAVX2()
 
 		unfoldPolyToUint32AVX2()
 		unfoldPolyToUint64AVX2()

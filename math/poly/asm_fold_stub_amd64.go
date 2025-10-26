@@ -11,7 +11,7 @@ func foldPolyToUint32AVX2(fpOut []float64, p []uint32)
 func foldPolyToUint64AVX2(fpOut []float64, p []uint64)
 
 //go:noescape
-func floatModInPlaceAVX2(coeffs []float64, q float64, qInv float64)
+func floatModQInPlaceAVX2(coeffs []float64, q float64, qInv float64)
 
 //go:noescape
 func unfoldPolyToUint32AVX2(pOut []uint32, fp []float64)

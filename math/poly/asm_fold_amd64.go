@@ -139,10 +139,10 @@ func foldPolyTo[T num.Integer](fpOut []float64, p []T) {
 	}
 }
 
-// floatModInPlace computes coeffs mod Q in place.
-func floatModInPlace(coeffs []float64, q float64) {
+// floatModQInPlace computes coeffs mod Q in place.
+func floatModQInPlace(coeffs []float64, q float64) {
 	if cpu.X86.HasAVX {
-		floatModInPlaceAVX2(coeffs, q, 1/q)
+		floatModQInPlaceAVX2(coeffs, q, 1/q)
 		return
 	}
 
