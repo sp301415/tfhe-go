@@ -39,9 +39,9 @@ type evaluatorBuffer[T TorusInt] struct {
 	// fpMul is the fourier transformed polynomial for multiplications.
 	fpMul poly.FFTPoly
 
-	// ctProdLWE is the LWE ciphertext buffer for ExternalProductLWE and KeySwitchLWE.
+	// ctProdLWE is the LWE ciphertext buffer for ExternalProdLWE and KeySwitchLWE.
 	ctProdLWE LWECiphertext[T]
-	// fctProdGLWE is the fourier transformed ctGLWEOut in ExternalProductGLWE and KeySwitchGLWE.
+	// fctProdGLWE is the fourier transformed ctGLWEOut in ExternalProdGLWE and KeySwitchGLWE.
 	fctProdGLWE FFTGLWECiphertext[T]
 	// ctCMux is ct1 - ct0 in CMux.
 	ctCMux GLWECiphertext[T]

@@ -184,15 +184,15 @@ func (e *Evaluator[T]) HybridProdSubGLWETo(idx int, ctFFTUniEnc FFTUniEncryption
 	}
 }
 
-// ExternalProductGLWE returns the external product between ctFFTGLev and ctGLWE.
-func (e *Evaluator[T]) ExternalProductGLWE(idx int, ctFFTGLev tfhe.FFTGLevCiphertext[T], ctGLWE GLWECiphertext[T]) GLWECiphertext[T] {
+// ExternalProdGLWE returns the external product between ctFFTGLev and ctGLWE.
+func (e *Evaluator[T]) ExternalProdGLWE(idx int, ctFFTGLev tfhe.FFTGLevCiphertext[T], ctGLWE GLWECiphertext[T]) GLWECiphertext[T] {
 	ctOut := NewGLWECiphertext(e.Params)
-	e.ExternalProductGLWETo(idx, ctFFTGLev, ctGLWE, ctOut)
+	e.ExternalProdGLWETo(idx, ctFFTGLev, ctGLWE, ctOut)
 	return ctOut
 }
 
-// ExternalProductGLWETo computes the external product between ctFFTGLev and ctGLWE and writes it to ctGLWEOut.
-func (e *Evaluator[T]) ExternalProductGLWETo(idx int, ctFFTGLev tfhe.FFTGLevCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
+// ExternalProdGLWETo computes the external product between ctFFTGLev and ctGLWE and writes it to ctGLWEOut.
+func (e *Evaluator[T]) ExternalProdGLWETo(idx int, ctFFTGLev tfhe.FFTGLevCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SubEvaluators[idx]
 
 	eIdx.GadgetProdGLWETo(e.buf.ctRelinT[0], ctFFTGLev, ctGLWE.Value[0])
@@ -214,8 +214,8 @@ func (e *Evaluator[T]) ExternalProductGLWETo(idx int, ctFFTGLev tfhe.FFTGLevCiph
 	}
 }
 
-// ExternalProductAddGLWETo computes the external product between ctFFTGLev and ctGLWE and adds it to ctGLWEOut.
-func (e *Evaluator[T]) ExternalProductAddGLWETo(idx int, ctFFTGLev tfhe.FFTGLevCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
+// ExternalProdAddGLWETo computes the external product between ctFFTGLev and ctGLWE and adds it to ctGLWEOut.
+func (e *Evaluator[T]) ExternalProdAddGLWETo(idx int, ctFFTGLev tfhe.FFTGLevCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SubEvaluators[idx]
 
 	eIdx.GadgetProdGLWETo(e.buf.ctRelinT[0], ctFFTGLev, ctGLWE.Value[0])
@@ -237,8 +237,8 @@ func (e *Evaluator[T]) ExternalProductAddGLWETo(idx int, ctFFTGLev tfhe.FFTGLevC
 	}
 }
 
-// ExternalProductSubGLWETo computes the external product between ctFFTGLev and ctGLWE and subtracts it from ctGLWEOut.
-func (e *Evaluator[T]) ExternalProductSubGLWETo(idx int, ctFFTGLev tfhe.FFTGLevCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
+// ExternalProdSubGLWETo computes the external product between ctFFTGLev and ctGLWE and subtracts it from ctGLWEOut.
+func (e *Evaluator[T]) ExternalProdSubGLWETo(idx int, ctFFTGLev tfhe.FFTGLevCiphertext[T], ctGLWE, ctGLWEOut GLWECiphertext[T]) {
 	eIdx := e.SubEvaluators[idx]
 
 	eIdx.GadgetProdGLWETo(e.buf.ctRelinT[0], ctFFTGLev, ctGLWE.Value[0])

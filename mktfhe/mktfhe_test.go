@@ -96,7 +96,7 @@ func TestEvaluator(t *testing.T) {
 		mul := 1
 		ctMul := enc[0].SubEncryptor.EncryptFFTGLev([]int{mul}, params.AccumulatorParameters())
 
-		ctOut := eval.ExternalProductGLWE(0, ctMul, ct)
+		ctOut := eval.ExternalProdGLWE(0, ctMul, ct)
 
 		for i, m := range messages {
 			assert.Equal(t, (mul*m)%int(params.MessageModulus()), dec.DecryptGLWE(ctOut)[i])

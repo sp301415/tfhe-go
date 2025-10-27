@@ -93,7 +93,7 @@ func (e *Evaluator[T]) BlindRotateTo(ctOut GLWECiphertext[T], ct LWECiphertext[T
 				e.SubEvaluators[i].BlindRotateTo(e.buf.ctAccs[i], e.buf.ctRotateIn[i], e.gadgetLUTs[j])
 				e.SubEvaluators[i].FFTGLWECiphertextTo(e.buf.fctAccs[i].Value[j], e.buf.ctAccs[i])
 			}
-			e.ExternalProductGLWETo(i, e.buf.fctAccs[i], ctOut, ctOut)
+			e.ExternalProdGLWETo(i, e.buf.fctAccs[i], ctOut, ctOut)
 		}
 	}
 }
@@ -130,7 +130,7 @@ func (e *Evaluator[T]) BlindRotateParallelTo(ctOut GLWECiphertext[T], ct LWECiph
 
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			e.ExternalProductGLWETo(i, e.buf.fctAccs[i], ctOut, ctOut)
+			e.ExternalProdGLWETo(i, e.buf.fctAccs[i], ctOut, ctOut)
 		}
 	}
 }
