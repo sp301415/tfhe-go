@@ -10,14 +10,14 @@ func decomposeConstants() {
 }
 
 func decomposePolyToUint32AVX2() {
-	TEXT("decomposePolyToUint32AVX2", NOSPLIT, "func(decomposedOut [][]uint32, p []uint32, base uint32, logBase uint32, logLastBaseQ uint32)")
+	TEXT("decomposePolyToUint32AVX2", NOSPLIT, "func(dcmpOut [][]uint32, p []uint32, base uint32, logBase uint32, logLastBaseQ uint32)")
 	Pragma("noescape")
 
-	decomposedOut := Load(Param("decomposedOut").Base(), GP64())
+	dcmpOut := Load(Param("dcmpOut").Base(), GP64())
 	p := Load(Param("p").Base(), GP64())
 
 	N := Load(Param("p").Len(), GP64())
-	level := Load(Param("decomposedOut").Len(), GP64())
+	level := Load(Param("dcmpOut").Len(), GP64())
 
 	// VET: go vet complains about VBROADCASTD on uint32 values.
 	// See https://github.com/golang/go/issues/47625.
@@ -73,9 +73,9 @@ func decomposePolyToUint32AVX2() {
 	VPSLLD(Imm(1), uCarry, uCarry)
 	VPSUBD(uCarry, u, u)
 
-	decomposedOutj := GP64()
-	MOVQ(Mem{Base: decomposedOut, Index: jj, Scale: 8}, decomposedOutj)
-	VMOVDQU(u, Mem{Base: decomposedOutj, Index: i, Scale: 4})
+	dcmpOutj := GP64()
+	MOVQ(Mem{Base: dcmpOut, Index: jj, Scale: 8}, dcmpOutj)
+	VMOVDQU(u, Mem{Base: dcmpOutj, Index: i, Scale: 4})
 
 	SUBQ(Imm(1), j)
 	SUBQ(Imm(3), jj)
@@ -92,9 +92,9 @@ func decomposePolyToUint32AVX2() {
 	VPSLLD(Imm(1), uCarry, uCarry)
 	VPSUBD(uCarry, u, u)
 
-	decomposedOut0 := GP64()
-	MOVQ(Mem{Base: decomposedOut}, decomposedOut0)
-	VMOVDQU(u, Mem{Base: decomposedOut0, Index: i, Scale: 4})
+	dcmpOut0 := GP64()
+	MOVQ(Mem{Base: dcmpOut}, dcmpOut0)
+	VMOVDQU(u, Mem{Base: dcmpOut0, Index: i, Scale: 4})
 
 	ADDQ(Imm(8), i)
 
@@ -106,14 +106,14 @@ func decomposePolyToUint32AVX2() {
 }
 
 func decomposePolyToUint64AVX2() {
-	TEXT("decomposePolyToUint64AVX2", NOSPLIT, "func(decomposedOut [][]uint64, p []uint64, base uint64, logBase uint64, logLastBaseQ uint64)")
+	TEXT("decomposePolyToUint64AVX2", NOSPLIT, "func(dcmpOut [][]uint64, p []uint64, base uint64, logBase uint64, logLastBaseQ uint64)")
 	Pragma("noescape")
 
-	decomposedOut := Load(Param("decomposedOut").Base(), GP64())
+	dcmpOut := Load(Param("dcmpOut").Base(), GP64())
 	p := Load(Param("p").Base(), GP64())
 
 	N := Load(Param("p").Len(), GP64())
-	level := Load(Param("decomposedOut").Len(), GP64())
+	level := Load(Param("dcmpOut").Len(), GP64())
 
 	base, logBase, logLastBaseQ := YMM(), YMM(), YMM()
 	VPBROADCASTQ(NewParamAddr("base", 48), base)
@@ -167,9 +167,9 @@ func decomposePolyToUint64AVX2() {
 	VPSLLQ(Imm(1), uCarry, uCarry)
 	VPSUBQ(uCarry, u, u)
 
-	decomposedOutj := GP64()
-	MOVQ(Mem{Base: decomposedOut, Index: jj, Scale: 8}, decomposedOutj)
-	VMOVDQU(u, Mem{Base: decomposedOutj, Index: i, Scale: 8})
+	dcmpOutj := GP64()
+	MOVQ(Mem{Base: dcmpOut, Index: jj, Scale: 8}, dcmpOutj)
+	VMOVDQU(u, Mem{Base: dcmpOutj, Index: i, Scale: 8})
 
 	SUBQ(Imm(1), j)
 	SUBQ(Imm(3), jj)
@@ -186,9 +186,9 @@ func decomposePolyToUint64AVX2() {
 	VPSLLQ(Imm(1), uCarry, uCarry)
 	VPSUBQ(uCarry, u, u)
 
-	decomposedOut0 := GP64()
-	MOVQ(Mem{Base: decomposedOut}, decomposedOut0)
-	VMOVDQU(u, Mem{Base: decomposedOut0, Index: i, Scale: 8})
+	dcmpOut0 := GP64()
+	MOVQ(Mem{Base: dcmpOut}, dcmpOut0)
+	VMOVDQU(u, Mem{Base: dcmpOut0, Index: i, Scale: 8})
 
 	ADDQ(Imm(4), i)
 

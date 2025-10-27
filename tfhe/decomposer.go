@@ -105,80 +105,80 @@ func (d *Decomposer[T]) FFTPolyBuffer(gadgetParams GadgetParameters[T]) []poly.F
 
 // DecomposeScalar decomposes x with respect to gadgetParams.
 func (d *Decomposer[T]) DecomposeScalar(x T, gadgetParams GadgetParameters[T]) []T {
-	decomposedOut := make([]T, gadgetParams.level)
-	d.DecomposeScalarTo(decomposedOut, x, gadgetParams)
-	return decomposedOut
+	dcmpOut := make([]T, gadgetParams.level)
+	d.DecomposeScalarTo(dcmpOut, x, gadgetParams)
+	return dcmpOut
 }
 
-// DecomposeScalarTo decomposes x with respect to gadgetParams and writes it to decomposedOut.
-func (d *Decomposer[T]) DecomposeScalarTo(decomposedOut []T, x T, gadgetParams GadgetParameters[T]) {
+// DecomposeScalarTo decomposes x with respect to gadgetParams and writes it to dcmpOut.
+func (d *Decomposer[T]) DecomposeScalarTo(dcmpOut []T, x T, gadgetParams GadgetParameters[T]) {
 	u := num.DivRoundBits(x, gadgetParams.LogLastBaseQ())
 	for i := gadgetParams.level - 1; i >= 1; i-- {
-		decomposedOut[i] = u & (gadgetParams.base - 1)
+		dcmpOut[i] = u & (gadgetParams.base - 1)
 		u >>= gadgetParams.logBase
-		u += decomposedOut[i] >> (gadgetParams.logBase - 1)
-		decomposedOut[i] -= (decomposedOut[i] & (gadgetParams.base >> 1)) << 1
+		u += dcmpOut[i] >> (gadgetParams.logBase - 1)
+		dcmpOut[i] -= (dcmpOut[i] & (gadgetParams.base >> 1)) << 1
 	}
-	decomposedOut[0] = u & (gadgetParams.base - 1)
-	decomposedOut[0] -= (decomposedOut[0] & (gadgetParams.base >> 1)) << 1
+	dcmpOut[0] = u & (gadgetParams.base - 1)
+	dcmpOut[0] -= (dcmpOut[0] & (gadgetParams.base >> 1)) << 1
 }
 
 // DecomposePoly decomposes p with respect to gadgetParams.
 func (d *Decomposer[T]) DecomposePoly(p poly.Poly[T], gadgetParams GadgetParameters[T]) []poly.Poly[T] {
-	decomposedOut := make([]poly.Poly[T], gadgetParams.level)
+	dcmpOut := make([]poly.Poly[T], gadgetParams.level)
 	for i := 0; i < gadgetParams.level; i++ {
-		decomposedOut[i] = poly.NewPoly[T](p.Rank())
+		dcmpOut[i] = poly.NewPoly[T](p.Rank())
 	}
-	d.DecomposePolyTo(decomposedOut, p, gadgetParams)
-	return decomposedOut
+	d.DecomposePolyTo(dcmpOut, p, gadgetParams)
+	return dcmpOut
 }
 
-// DecomposePolyTo decomposes p with respect to gadgetParams and writes it to decomposedOut.
-func (d *Decomposer[T]) DecomposePolyTo(decomposedOut []poly.Poly[T], p poly.Poly[T], gadgetParams GadgetParameters[T]) {
-	decomposePolyTo(decomposedOut, p, gadgetParams)
+// DecomposePolyTo decomposes p with respect to gadgetParams and writes it to dcmpOut.
+func (d *Decomposer[T]) DecomposePolyTo(dcmpOut []poly.Poly[T], p poly.Poly[T], gadgetParams GadgetParameters[T]) {
+	decomposePolyTo(dcmpOut, p, gadgetParams)
 }
 
 // FourierDecomposePoly decomposes p with respect to gadgetParams in Fourier domain.
 func (d *Decomposer[T]) FourierDecomposePoly(p poly.Poly[T], gadgetParams GadgetParameters[T]) []poly.FFTPoly {
-	decomposedOut := make([]poly.FFTPoly, gadgetParams.level)
+	dcmpOut := make([]poly.FFTPoly, gadgetParams.level)
 	for i := 0; i < gadgetParams.level; i++ {
-		decomposedOut[i] = d.PolyEvaluator.NewFFTPoly()
+		dcmpOut[i] = d.PolyEvaluator.NewFFTPoly()
 	}
-	d.FourierDecomposePolyTo(decomposedOut, p, gadgetParams)
-	return decomposedOut
+	d.FourierDecomposePolyTo(dcmpOut, p, gadgetParams)
+	return dcmpOut
 }
 
-// FourierDecomposePolyTo decomposes p with respect to gadgetParams in Fourier domain and writes it to decomposedOut.
-func (d *Decomposer[T]) FourierDecomposePolyTo(decomposedOut []poly.FFTPoly, p poly.Poly[T], gadgetParams GadgetParameters[T]) {
+// FourierDecomposePolyTo decomposes p with respect to gadgetParams in Fourier domain and writes it to dcmpOut.
+func (d *Decomposer[T]) FourierDecomposePolyTo(dcmpOut []poly.FFTPoly, p poly.Poly[T], gadgetParams GadgetParameters[T]) {
 	pDcmp := d.PolyBuffer(gadgetParams)
 	decomposePolyTo(pDcmp, p, gadgetParams)
 	for i := 0; i < gadgetParams.level; i++ {
-		d.PolyEvaluator.FFTTo(decomposedOut[i], pDcmp[i])
+		d.PolyEvaluator.FFTTo(dcmpOut[i], pDcmp[i])
 	}
 }
 
 // RecomposeScalar recomposes decomposed with respect to gadgetParams.
-func (d *Decomposer[T]) RecomposeScalar(decomposed []T, gadgetParams GadgetParameters[T]) T {
+func (d *Decomposer[T]) RecomposeScalar(dcmp []T, gadgetParams GadgetParameters[T]) T {
 	var x T
 	for i := 0; i < gadgetParams.level; i++ {
-		x += decomposed[i] << gadgetParams.LogBaseQ(i)
+		x += dcmp[i] << gadgetParams.LogBaseQ(i)
 	}
 	return x
 }
 
 // RecomposePoly recomposes decomposed with respect to gadgetParams.
-func (d *Decomposer[T]) RecomposePoly(decomposed []poly.Poly[T], gadgetParams GadgetParameters[T]) poly.Poly[T] {
-	pOut := poly.NewPoly[T](decomposed[0].Rank())
-	d.RecomposePolyTo(pOut, decomposed, gadgetParams)
+func (d *Decomposer[T]) RecomposePoly(dcmp []poly.Poly[T], gadgetParams GadgetParameters[T]) poly.Poly[T] {
+	pOut := poly.NewPoly[T](dcmp[0].Rank())
+	d.RecomposePolyTo(pOut, dcmp, gadgetParams)
 	return pOut
 }
 
 // RecomposePolyTo recomposes decomposed with respect to gadgetParams and writes it to pOut.
-func (d *Decomposer[T]) RecomposePolyTo(pOut poly.Poly[T], decomposed []poly.Poly[T], gadgetParams GadgetParameters[T]) {
+func (d *Decomposer[T]) RecomposePolyTo(pOut poly.Poly[T], dcmp []poly.Poly[T], gadgetParams GadgetParameters[T]) {
 	for i := 0; i < pOut.Rank(); i++ {
 		pOut.Coeffs[i] = 0
 		for j := 0; j < gadgetParams.level; j++ {
-			pOut.Coeffs[i] += decomposed[j].Coeffs[i] << gadgetParams.LogBaseQ(j)
+			pOut.Coeffs[i] += dcmp[j].Coeffs[i] << gadgetParams.LogBaseQ(j)
 		}
 	}
 }

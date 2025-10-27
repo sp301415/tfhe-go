@@ -42,11 +42,11 @@ func (kg *CircuitBootstrapKeyGenerator[T]) SafeCopy() *CircuitBootstrapKeyGenera
 func (kg *CircuitBootstrapKeyGenerator[T]) GenCircuitBootstrapKey() CircuitBootstrapKey[T] {
 	schemeSwitchKey := make([]tfhe.FFTGGSWCiphertext[T], kg.Params.Params().GLWERank())
 	for i := 0; i < kg.Params.Params().GLWERank(); i++ {
-		schemeSwitchKey[i] = kg.BaseEncryptor.EncryptFFTGGSWPoly(kg.BaseEncryptor.SecretKey.GLWEKey.Value[i], kg.Params.schemeSwitchParameters)
+		schemeSwitchKey[i] = kg.Encryptor.EncryptFFTGGSWPoly(kg.Encryptor.SecretKey.GLWEKey.Value[i], kg.Params.schemeSwitchParameters)
 	}
 
 	return CircuitBootstrapKey[T]{
 		SchemeSwitchKey: schemeSwitchKey,
-		TraceKeys:       kg.GenGaloisKeysForLWEToGLWECiphertext(kg.Params.traceKeySwitchParameters),
+		TraceKeys:       kg.GenGaloisKeysForPack(kg.Params.traceKeySwitchParameters),
 	}
 }

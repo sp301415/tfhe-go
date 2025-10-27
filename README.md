@@ -131,8 +131,8 @@ enc1 := mktfhe.NewBinaryEncryptor(params, 1, seed)
 // However, in multi-key TFHE, this procedure is very difficult and slow.
 // Therefore, we use a trusted third party for decryption.
 dec := mktfhe.NewBinaryDecryptor(params, map[int]tfhe.SecretKey[uint64]{
-  0: enc0.BaseEncryptor.SecretKey,
-  1: enc1.BaseEncryptor.SecretKey,
+  0: enc0.Encryptor.SecretKey,
+  1: enc1.Encryptor.SecretKey,
 })
 
 ct0 := enc0.EncryptLWEBool(true)

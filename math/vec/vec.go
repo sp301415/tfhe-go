@@ -37,8 +37,8 @@ func Fill[T any](v []T, x T) {
 }
 
 // Cast casts vector v of type []T1 to []T2.
-func Cast[T1, T2 num.Real](v []T1) []T2 {
-	vOut := make([]T2, len(v))
+func Cast[TOut, TIn num.Real](v []TIn) []TOut {
+	vOut := make([]TOut, len(v))
 	CastTo(vOut, v)
 	return vOut
 }

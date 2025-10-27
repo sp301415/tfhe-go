@@ -7,13 +7,13 @@
 DATA ONE<>+0(SB)/8, $0x0000000000000001
 GLOBL ONE<>(SB), RODATA|NOPTR, $8
 
-// func decomposePolyToUint32AVX2(decomposedOut [][]uint32, p []uint32, base uint32, logBase uint32, logLastBaseQ uint32)
+// func decomposePolyToUint32AVX2(dcmpOut [][]uint32, p []uint32, base uint32, logBase uint32, logLastBaseQ uint32)
 // Requires: AVX, AVX2
 TEXT ·decomposePolyToUint32AVX2(SB), NOSPLIT, $0-60
-	MOVQ         decomposedOut_base+0(FP), AX
+	MOVQ         dcmpOut_base+0(FP), AX
 	MOVQ         p_base+24(FP), CX
 	MOVQ         p_len+32(FP), DX
-	MOVQ         decomposedOut_len+8(FP), BX
+	MOVQ         dcmpOut_len+8(FP), BX
 	VPBROADCASTD base+48(FP), Y0
 	VPBROADCASTD logBase+52(FP), Y1
 	VPBROADCASTD logLastBaseQ+56(FP), Y2
@@ -67,13 +67,13 @@ N_loop_end:
 	JL   N_loop_body
 	RET
 
-// func decomposePolyToUint64AVX2(decomposedOut [][]uint64, p []uint64, base uint64, logBase uint64, logLastBaseQ uint64)
+// func decomposePolyToUint64AVX2(dcmpOut [][]uint64, p []uint64, base uint64, logBase uint64, logLastBaseQ uint64)
 // Requires: AVX, AVX2
 TEXT ·decomposePolyToUint64AVX2(SB), NOSPLIT, $0-72
-	MOVQ         decomposedOut_base+0(FP), AX
+	MOVQ         dcmpOut_base+0(FP), AX
 	MOVQ         p_base+24(FP), CX
 	MOVQ         p_len+32(FP), DX
-	MOVQ         decomposedOut_len+8(FP), BX
+	MOVQ         dcmpOut_len+8(FP), BX
 	VPBROADCASTQ base+48(FP), Y0
 	VPBROADCASTQ logBase+56(FP), Y1
 	VPBROADCASTQ logLastBaseQ+64(FP), Y2

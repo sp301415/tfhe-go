@@ -160,15 +160,15 @@ func (e *BFVEvaluator[T]) PermuteTo(ctOut, ct tfhe.GLWECiphertext[T], d int) {
 	e.Evaluator.KeySwitchGLWETo(ctOut, e.buf.ctPermute, e.EvalKey.GaloisKeys[d])
 }
 
-// LWEToGLWECiphertext packs a LWE ciphertext to GLWE ciphertext.
-func (e *BFVEvaluator[T]) LWEToGLWECiphertext(ct tfhe.LWECiphertext[T]) tfhe.GLWECiphertext[T] {
+// Pack packs a LWE ciphertext to GLWE ciphertext.
+func (e *BFVEvaluator[T]) Pack(ct tfhe.LWECiphertext[T]) tfhe.GLWECiphertext[T] {
 	ctOut := tfhe.NewGLWECiphertext(e.Params)
-	e.LWEToGLWECiphertextTo(ctOut, ct)
+	e.PackTo(ctOut, ct)
 	return ctOut
 }
 
-// LWEToGLWECiphertextTo packs a LWE ciphertext to GLWE ciphertext.
-func (e *BFVEvaluator[T]) LWEToGLWECiphertextTo(ctOut tfhe.GLWECiphertext[T], ct tfhe.LWECiphertext[T]) {
+// PackTo packs a LWE ciphertext to GLWE ciphertext.
+func (e *BFVEvaluator[T]) PackTo(ctOut tfhe.GLWECiphertext[T], ct tfhe.LWECiphertext[T]) {
 	ctOut.Value[0].Clear()
 	ctOut.Value[0].Coeffs[0] = ct.Value[0]
 
