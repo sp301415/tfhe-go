@@ -44,21 +44,21 @@ func (e *Evaluator[T]) KeySwitchGLWETo(ctOut, ct GLWECiphertext[T], ksk GLWEKeyS
 	fpDcmp := e.Decomposer.FFTPolyBuffer(ksk.GadgetParameters)
 
 	e.Decomposer.FourierDecomposePolyTo(fpDcmp, ct.Value[1], ksk.GadgetParameters)
-	e.FFTPolyMulFFTGLWETo(e.buf.fctProdGLWE, ksk.Value[0].Value[0], fpDcmp[0])
+	e.FFTPolyMulFFTGLWETo(e.buf.ctFFTProdGLWE, ksk.Value[0].Value[0], fpDcmp[0])
 	for j := 1; j < ksk.GadgetParameters.level; j++ {
-		e.FFTPolyMulAddFFTGLWETo(e.buf.fctProdGLWE, ksk.Value[0].Value[j], fpDcmp[j])
+		e.FFTPolyMulAddFFTGLWETo(e.buf.ctFFTProdGLWE, ksk.Value[0].Value[j], fpDcmp[j])
 	}
 
 	for i := 1; i < ksk.InputGLWERank(); i++ {
 		e.Decomposer.FourierDecomposePolyTo(fpDcmp, ct.Value[i+1], ksk.GadgetParameters)
 		for j := 0; j < ksk.GadgetParameters.level; j++ {
-			e.FFTPolyMulAddFFTGLWETo(e.buf.fctProdGLWE, ksk.Value[i].Value[j], fpDcmp[j])
+			e.FFTPolyMulAddFFTGLWETo(e.buf.ctFFTProdGLWE, ksk.Value[i].Value[j], fpDcmp[j])
 		}
 	}
 
 	ctOut.Value[0].CopyFrom(ct.Value[0])
-	e.PolyEvaluator.InvFFTAddToUnsafe(ctOut.Value[0], e.buf.fctProdGLWE.Value[0])
+	e.PolyEvaluator.InvFFTAddToUnsafe(ctOut.Value[0], e.buf.ctFFTProdGLWE.Value[0])
 	for i := 0; i < e.Params.glweRank; i++ {
-		e.PolyEvaluator.InvFFTToUnsafe(ctOut.Value[i+1], e.buf.fctProdGLWE.Value[i+1])
+		e.PolyEvaluator.InvFFTToUnsafe(ctOut.Value[i+1], e.buf.ctFFTProdGLWE.Value[i+1])
 	}
 }

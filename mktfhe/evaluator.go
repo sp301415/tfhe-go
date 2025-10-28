@@ -47,13 +47,13 @@ type Evaluator[T tfhe.TorusInt] struct {
 type evaluatorBuffer[T tfhe.TorusInt] struct {
 	// ctProd is the intermediate value in Hybrid Product.
 	ctProd GLWECiphertext[T]
-	// fctProd is the fourier transformed ctHybrid in Hybrid Product.
-	fctProd FFTGLWECiphertext[T]
+	// ctFFTProd is the fourier transformed ctHybrid in Hybrid Product.
+	ctFFTProd FFTGLWECiphertext[T]
 
-	// sctProd is the intermediate single-key ciphertext in Hybrid Product.
-	sctProd poly.Poly[T]
-	// sfctProd is the fourier transformed sctProd in Hybrid Product.
-	sfctProd poly.FFTPoly
+	// ctProdSub is the intermediate single-key ciphertext in Hybrid Product.
+	ctProdSub poly.Poly[T]
+	// ctFFTProdSub is the fourier transformed sctProd in Hybrid Product.
+	ctFFTProdSub poly.FFTPoly
 
 	// ctRelin is the intermediate value in Generalized External Product.
 	ctRelin GLWECiphertext[T]
@@ -64,8 +64,8 @@ type evaluatorBuffer[T tfhe.TorusInt] struct {
 	ctRotateIn []tfhe.LWECiphertext[T]
 	// ctAccs is the output of the accumulator of a single-key Blind Rotation.
 	ctAccs []tfhe.GLWECiphertext[T]
-	// fctAccs is the fourier transformed ctAccs.
-	fctAccs []tfhe.FFTGLevCiphertext[T]
+	// ctFFTAccs is the fourier transformed ctAccs.
+	ctFFTAccs []tfhe.FFTGLevCiphertext[T]
 
 	// ctRotate is the blind rotated GLWE ciphertext for bootstrapping.
 	ctRotate GLWECiphertext[T]
@@ -137,25 +137,25 @@ func newEvaluatorBuffer[T tfhe.TorusInt](params Parameters[T]) evaluatorBuffer[T
 	}
 
 	ctAccs := make([]tfhe.GLWECiphertext[T], params.partyCount)
-	fctAccs := make([]tfhe.FFTGLevCiphertext[T], params.partyCount)
+	ctFFTAccs := make([]tfhe.FFTGLevCiphertext[T], params.partyCount)
 	for i := 0; i < params.partyCount; i++ {
 		ctAccs[i] = tfhe.NewGLWECiphertext(params.subParams)
-		fctAccs[i] = tfhe.NewFFTGLevCiphertext(params.subParams, params.accumulatorParams)
+		ctFFTAccs[i] = tfhe.NewFFTGLevCiphertext(params.subParams, params.accumulatorParams)
 	}
 
 	return evaluatorBuffer[T]{
-		ctProd:  NewGLWECiphertext(params),
-		fctProd: NewFFTGLWECiphertext(params),
+		ctProd:    NewGLWECiphertext(params),
+		ctFFTProd: NewFFTGLWECiphertext(params),
 
-		sctProd:  poly.NewPoly[T](params.PolyRank()),
-		sfctProd: poly.NewFFTPoly(params.PolyRank()),
+		ctProdSub:    poly.NewPoly[T](params.PolyRank()),
+		ctFFTProdSub: poly.NewFFTPoly(params.PolyRank()),
 
 		ctRelin:  ctRelin,
 		ctRelinT: ctRelinT,
 
 		ctRotateIn: ctRotateIn,
 		ctAccs:     ctAccs,
-		fctAccs:    fctAccs,
+		ctFFTAccs:  ctFFTAccs,
 
 		ctRotate:   NewGLWECiphertext(params),
 		ctExtract:  NewLWECiphertextCustom[T](params.GLWEDimension()),

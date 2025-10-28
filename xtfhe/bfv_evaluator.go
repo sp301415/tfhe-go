@@ -29,11 +29,11 @@ type BFVEvaluator[T tfhe.TorusInt] struct {
 // bfvEvaluatorBuffer is a buffer for BFV type evaluation.
 type bfvEvaluatorBuffer[T tfhe.TorusInt] struct {
 	// ctFFT is the fourier transformed ciphertext for BFV multiplication.
-	fctMul [2]tfhe.FFTGLWECiphertext[T]
+	ctFFTMul [2]tfhe.FFTGLWECiphertext[T]
 	// ctTensor is the tensored ciphertext for BFV multiplication.
 	ctTensor tfhe.GLWECiphertext[T]
-	// fctTensor is the fourier transformed ctTensor.
-	fctTensor tfhe.FFTGLWECiphertext[T]
+	// ctFFTTensor is the fourier transformed ctTensor.
+	ctFFTTensor tfhe.FFTGLWECiphertext[T]
 	// ctPermute is the permuted ciphertext for BFV automorphism.
 	ctPermute tfhe.GLWECiphertext[T]
 	// ctPack is the permuted ciphertext for LWEToGLWECiphertext.
@@ -55,14 +55,14 @@ func NewBFVEvaluator[T tfhe.TorusInt](params tfhe.Parameters[T], evk BFVEvaluati
 func newBFVEvaluatorBuffer[T tfhe.TorusInt](params tfhe.Parameters[T]) bfvEvaluatorBuffer[T] {
 	tensorRank := params.GLWERank() * (params.GLWERank() + 3) / 2
 	return bfvEvaluatorBuffer[T]{
-		fctMul: [2]tfhe.FFTGLWECiphertext[T]{
+		ctFFTMul: [2]tfhe.FFTGLWECiphertext[T]{
 			tfhe.NewFFTGLWECiphertext(params),
 			tfhe.NewFFTGLWECiphertext(params),
 		},
-		ctTensor:  tfhe.NewGLWECiphertextCustom[T](tensorRank, params.PolyRank()),
-		fctTensor: tfhe.NewFFTGLWECiphertextCustom[T](tensorRank, params.PolyRank()),
-		ctPermute: tfhe.NewGLWECiphertext(params),
-		ctPack:    tfhe.NewGLWECiphertext(params),
+		ctTensor:    tfhe.NewGLWECiphertextCustom[T](tensorRank, params.PolyRank()),
+		ctFFTTensor: tfhe.NewFFTGLWECiphertextCustom[T](tensorRank, params.PolyRank()),
+		ctPermute:   tfhe.NewGLWECiphertext(params),
+		ctPack:      tfhe.NewGLWECiphertext(params),
 	}
 }
 
@@ -89,24 +89,24 @@ func (e *BFVEvaluator[T]) Tensor(ct0, ct1 tfhe.GLWECiphertext[T]) tfhe.GLWECiphe
 // TensorTo computes the tensor product of two ciphertexts and assigns the result to ctOut.
 // ctOut should have GLWERank = params.GLWERank + (params.GLWERank + 3) / 2.
 func (e *BFVEvaluator[T]) TensorTo(ctOut, ct0, ct1 tfhe.GLWECiphertext[T]) {
-	e.Evaluator.FFTGLWECiphertextTo(e.buf.fctMul[0], ct0)
-	e.Evaluator.FFTGLWECiphertextTo(e.buf.fctMul[1], ct1)
+	e.Evaluator.FFTGLWECiphertextTo(e.buf.ctFFTMul[0], ct0)
+	e.Evaluator.FFTGLWECiphertextTo(e.buf.ctFFTMul[1], ct1)
 
 	tensorIdx := 0
 	for i := 0; i < e.Params.GLWERank()+1; i++ {
-		e.PolyEvaluator.MulFFTPolyTo(e.buf.fctTensor.Value[tensorIdx], e.buf.fctMul[0].Value[i], e.buf.fctMul[1].Value[i])
+		e.PolyEvaluator.MulFFTPolyTo(e.buf.ctFFTTensor.Value[tensorIdx], e.buf.ctFFTMul[0].Value[i], e.buf.ctFFTMul[1].Value[i])
 		tensorIdx++
 		for j := i + 1; j < e.Params.GLWERank()+1; j++ {
-			e.PolyEvaluator.MulFFTPolyTo(e.buf.fctTensor.Value[tensorIdx], e.buf.fctMul[0].Value[i], e.buf.fctMul[1].Value[j])
-			e.PolyEvaluator.MulAddFFTPolyTo(e.buf.fctTensor.Value[tensorIdx], e.buf.fctMul[0].Value[j], e.buf.fctMul[1].Value[i])
+			e.PolyEvaluator.MulFFTPolyTo(e.buf.ctFFTTensor.Value[tensorIdx], e.buf.ctFFTMul[0].Value[i], e.buf.ctFFTMul[1].Value[j])
+			e.PolyEvaluator.MulAddFFTPolyTo(e.buf.ctFFTTensor.Value[tensorIdx], e.buf.ctFFTMul[0].Value[j], e.buf.ctFFTMul[1].Value[i])
 			tensorIdx++
 		}
 	}
 
 	tensorRank := e.Params.GLWERank() * (e.Params.GLWERank() + 3) / 2
 	for i := 0; i < tensorRank+1; i++ {
-		e.PolyEvaluator.FloatMulFFTPolyTo(e.buf.fctTensor.Value[i], e.buf.fctTensor.Value[i], 1/float64(e.Params.Scale()))
-		e.PolyEvaluator.InvFFTToUnsafe(e.buf.ctTensor.Value[i], e.buf.fctTensor.Value[i])
+		e.PolyEvaluator.FloatMulFFTPolyTo(e.buf.ctFFTTensor.Value[i], e.buf.ctFFTTensor.Value[i], 1/float64(e.Params.Scale()))
+		e.PolyEvaluator.InvFFTToUnsafe(e.buf.ctTensor.Value[i], e.buf.ctFFTTensor.Value[i])
 	}
 }
 

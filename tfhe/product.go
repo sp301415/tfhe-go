@@ -60,13 +60,13 @@ func (e *Evaluator[T]) GadgetProdGLWETo(ctGLWEOut GLWECiphertext[T], ctFFTGLev F
 		e.PolyEvaluator.FFTTo(fpDcmp[i], pDcmp[i])
 	}
 
-	e.FFTPolyMulFFTGLWETo(e.buf.fctProdGLWE, ctFFTGLev.Value[0], fpDcmp[0])
+	e.FFTPolyMulFFTGLWETo(e.buf.ctFFTProdGLWE, ctFFTGLev.Value[0], fpDcmp[0])
 	for i := 1; i < ctFFTGLev.GadgetParams.level; i++ {
-		e.FFTPolyMulAddFFTGLWETo(e.buf.fctProdGLWE, ctFFTGLev.Value[i], fpDcmp[i])
+		e.FFTPolyMulAddFFTGLWETo(e.buf.ctFFTProdGLWE, ctFFTGLev.Value[i], fpDcmp[i])
 	}
 
 	for i := 0; i < e.Params.glweRank+1; i++ {
-		e.PolyEvaluator.InvFFTToUnsafe(ctGLWEOut.Value[i], e.buf.fctProdGLWE.Value[i])
+		e.PolyEvaluator.InvFFTToUnsafe(ctGLWEOut.Value[i], e.buf.ctFFTProdGLWE.Value[i])
 	}
 }
 
@@ -80,13 +80,13 @@ func (e *Evaluator[T]) GadgetProdAddGLWETo(ctGLWEOut GLWECiphertext[T], ctFFTGLe
 		e.PolyEvaluator.FFTTo(fpDcmp[i], pDcmp[i])
 	}
 
-	e.FFTPolyMulFFTGLWETo(e.buf.fctProdGLWE, ctFFTGLev.Value[0], fpDcmp[0])
+	e.FFTPolyMulFFTGLWETo(e.buf.ctFFTProdGLWE, ctFFTGLev.Value[0], fpDcmp[0])
 	for i := 1; i < ctFFTGLev.GadgetParams.level; i++ {
-		e.FFTPolyMulAddFFTGLWETo(e.buf.fctProdGLWE, ctFFTGLev.Value[i], fpDcmp[i])
+		e.FFTPolyMulAddFFTGLWETo(e.buf.ctFFTProdGLWE, ctFFTGLev.Value[i], fpDcmp[i])
 	}
 
 	for i := 0; i < e.Params.glweRank+1; i++ {
-		e.PolyEvaluator.InvFFTAddToUnsafe(ctGLWEOut.Value[i], e.buf.fctProdGLWE.Value[i])
+		e.PolyEvaluator.InvFFTAddToUnsafe(ctGLWEOut.Value[i], e.buf.ctFFTProdGLWE.Value[i])
 	}
 }
 
@@ -100,13 +100,13 @@ func (e *Evaluator[T]) GadgetProdSubGLWETo(ctGLWEOut GLWECiphertext[T], ctFFTGLe
 		e.PolyEvaluator.FFTTo(fpDcmp[i], pDcmp[i])
 	}
 
-	e.FFTPolyMulFFTGLWETo(e.buf.fctProdGLWE, ctFFTGLev.Value[0], fpDcmp[0])
+	e.FFTPolyMulFFTGLWETo(e.buf.ctFFTProdGLWE, ctFFTGLev.Value[0], fpDcmp[0])
 	for i := 1; i < ctFFTGLev.GadgetParams.level; i++ {
-		e.FFTPolyMulAddFFTGLWETo(e.buf.fctProdGLWE, ctFFTGLev.Value[i], fpDcmp[i])
+		e.FFTPolyMulAddFFTGLWETo(e.buf.ctFFTProdGLWE, ctFFTGLev.Value[i], fpDcmp[i])
 	}
 
 	for i := 0; i < e.Params.glweRank+1; i++ {
-		e.PolyEvaluator.InvFFTSubToUnsafe(ctGLWEOut.Value[i], e.buf.fctProdGLWE.Value[i])
+		e.PolyEvaluator.InvFFTSubToUnsafe(ctGLWEOut.Value[i], e.buf.ctFFTProdGLWE.Value[i])
 	}
 }
 
@@ -211,20 +211,20 @@ func (e *Evaluator[T]) ExternalProdGLWETo(ctGLWEOut GLWECiphertext[T], ctFFTGGSW
 	pDcmp := e.Decomposer.PolyBuffer(ctFFTGGSW.GadgetParams)
 
 	e.Decomposer.DecomposePolyTo(pDcmp, ctGLWE.Value[0], ctFFTGGSW.GadgetParams)
-	e.PolyMulFFTGLWETo(e.buf.fctProdGLWE, ctFFTGGSW.Value[0].Value[0], pDcmp[0])
+	e.PolyMulFFTGLWETo(e.buf.ctFFTProdGLWE, ctFFTGGSW.Value[0].Value[0], pDcmp[0])
 	for j := 1; j < ctFFTGGSW.GadgetParams.level; j++ {
-		e.PolyMulAddFFTGLWETo(e.buf.fctProdGLWE, ctFFTGGSW.Value[0].Value[j], pDcmp[j])
+		e.PolyMulAddFFTGLWETo(e.buf.ctFFTProdGLWE, ctFFTGGSW.Value[0].Value[j], pDcmp[j])
 	}
 
 	for i := 1; i < e.Params.glweRank+1; i++ {
 		e.Decomposer.DecomposePolyTo(pDcmp, ctGLWE.Value[i], ctFFTGGSW.GadgetParams)
 		for j := 0; j < ctFFTGGSW.GadgetParams.level; j++ {
-			e.PolyMulAddFFTGLWETo(e.buf.fctProdGLWE, ctFFTGGSW.Value[i].Value[j], pDcmp[j])
+			e.PolyMulAddFFTGLWETo(e.buf.ctFFTProdGLWE, ctFFTGGSW.Value[i].Value[j], pDcmp[j])
 		}
 	}
 
 	for i := 0; i < e.Params.glweRank+1; i++ {
-		e.PolyEvaluator.InvFFTToUnsafe(ctGLWEOut.Value[i], e.buf.fctProdGLWE.Value[i])
+		e.PolyEvaluator.InvFFTToUnsafe(ctGLWEOut.Value[i], e.buf.ctFFTProdGLWE.Value[i])
 	}
 }
 
@@ -233,20 +233,20 @@ func (e *Evaluator[T]) ExternalProdAddGLWETo(ctGLWEOut GLWECiphertext[T], ctFFTG
 	pDcmp := e.Decomposer.PolyBuffer(ctFFTGGSW.GadgetParams)
 
 	e.Decomposer.DecomposePolyTo(pDcmp, ctGLWE.Value[0], ctFFTGGSW.GadgetParams)
-	e.PolyMulFFTGLWETo(e.buf.fctProdGLWE, ctFFTGGSW.Value[0].Value[0], pDcmp[0])
+	e.PolyMulFFTGLWETo(e.buf.ctFFTProdGLWE, ctFFTGGSW.Value[0].Value[0], pDcmp[0])
 	for j := 1; j < ctFFTGGSW.GadgetParams.level; j++ {
-		e.PolyMulAddFFTGLWETo(e.buf.fctProdGLWE, ctFFTGGSW.Value[0].Value[j], pDcmp[j])
+		e.PolyMulAddFFTGLWETo(e.buf.ctFFTProdGLWE, ctFFTGGSW.Value[0].Value[j], pDcmp[j])
 	}
 
 	for i := 1; i < e.Params.glweRank+1; i++ {
 		e.Decomposer.DecomposePolyTo(pDcmp, ctGLWE.Value[i], ctFFTGGSW.GadgetParams)
 		for j := 0; j < ctFFTGGSW.GadgetParams.level; j++ {
-			e.PolyMulAddFFTGLWETo(e.buf.fctProdGLWE, ctFFTGGSW.Value[i].Value[j], pDcmp[j])
+			e.PolyMulAddFFTGLWETo(e.buf.ctFFTProdGLWE, ctFFTGGSW.Value[i].Value[j], pDcmp[j])
 		}
 	}
 
 	for i := 0; i < e.Params.glweRank+1; i++ {
-		e.PolyEvaluator.InvFFTAddToUnsafe(ctGLWEOut.Value[i], e.buf.fctProdGLWE.Value[i])
+		e.PolyEvaluator.InvFFTAddToUnsafe(ctGLWEOut.Value[i], e.buf.ctFFTProdGLWE.Value[i])
 	}
 }
 
@@ -255,20 +255,20 @@ func (e *Evaluator[T]) ExternalProdSubGLWETo(ctGLWEOut GLWECiphertext[T], ctFFTG
 	pDcmp := e.Decomposer.PolyBuffer(ctFFTGGSW.GadgetParams)
 
 	e.Decomposer.DecomposePolyTo(pDcmp, ctGLWE.Value[0], ctFFTGGSW.GadgetParams)
-	e.PolyMulFFTGLWETo(e.buf.fctProdGLWE, ctFFTGGSW.Value[0].Value[0], pDcmp[0])
+	e.PolyMulFFTGLWETo(e.buf.ctFFTProdGLWE, ctFFTGGSW.Value[0].Value[0], pDcmp[0])
 	for j := 1; j < ctFFTGGSW.GadgetParams.level; j++ {
-		e.PolyMulAddFFTGLWETo(e.buf.fctProdGLWE, ctFFTGGSW.Value[0].Value[j], pDcmp[j])
+		e.PolyMulAddFFTGLWETo(e.buf.ctFFTProdGLWE, ctFFTGGSW.Value[0].Value[j], pDcmp[j])
 	}
 
 	for i := 1; i < e.Params.glweRank+1; i++ {
 		e.Decomposer.DecomposePolyTo(pDcmp, ctGLWE.Value[i], ctFFTGGSW.GadgetParams)
 		for j := 0; j < ctFFTGGSW.GadgetParams.level; j++ {
-			e.PolyMulAddFFTGLWETo(e.buf.fctProdGLWE, ctFFTGGSW.Value[i].Value[j], pDcmp[j])
+			e.PolyMulAddFFTGLWETo(e.buf.ctFFTProdGLWE, ctFFTGGSW.Value[i].Value[j], pDcmp[j])
 		}
 	}
 
 	for i := 0; i < e.Params.glweRank+1; i++ {
-		e.PolyEvaluator.InvFFTSubToUnsafe(ctGLWEOut.Value[i], e.buf.fctProdGLWE.Value[i])
+		e.PolyEvaluator.InvFFTSubToUnsafe(ctGLWEOut.Value[i], e.buf.ctFFTProdGLWE.Value[i])
 	}
 }
 

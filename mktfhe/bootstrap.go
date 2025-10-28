@@ -91,9 +91,9 @@ func (e *Evaluator[T]) BlindRotateTo(ctOut GLWECiphertext[T], ct LWECiphertext[T
 			copy(e.buf.ctRotateIn[i].Value[1:], ct.Value[1+i*e.Params.subParams.LWEDimension():1+(i+1)*e.Params.subParams.LWEDimension()])
 			for j := 0; j < e.Params.accumulatorParams.Level(); j++ {
 				e.SubEvaluators[i].BlindRotateTo(e.buf.ctAccs[i], e.buf.ctRotateIn[i], e.gadgetLUTs[j])
-				e.SubEvaluators[i].FFTGLWECiphertextTo(e.buf.fctAccs[i].Value[j], e.buf.ctAccs[i])
+				e.SubEvaluators[i].FFTGLWECiphertextTo(e.buf.ctFFTAccs[i].Value[j], e.buf.ctAccs[i])
 			}
-			e.ExternalProdGLWETo(i, e.buf.fctAccs[i], ctOut, ctOut)
+			e.ExternalProdGLWETo(i, e.buf.ctFFTAccs[i], ctOut, ctOut)
 		}
 	}
 }
@@ -120,7 +120,7 @@ func (e *Evaluator[T]) BlindRotateParallelTo(ctOut GLWECiphertext[T], ct LWECiph
 				copy(e.buf.ctRotateIn[i].Value[1:], ct.Value[1+i*e.Params.subParams.LWEDimension():1+(i+1)*e.Params.subParams.LWEDimension()])
 				for j := 0; j < e.Params.accumulatorParams.Level(); j++ {
 					e.SubEvaluators[i].BlindRotateTo(e.buf.ctAccs[i], e.buf.ctRotateIn[i], e.gadgetLUTs[j])
-					e.SubEvaluators[i].FFTGLWECiphertextTo(e.buf.fctAccs[i].Value[j], e.buf.ctAccs[i])
+					e.SubEvaluators[i].FFTGLWECiphertextTo(e.buf.ctFFTAccs[i].Value[j], e.buf.ctAccs[i])
 				}
 				wg.Done()
 			}(i)
@@ -130,7 +130,7 @@ func (e *Evaluator[T]) BlindRotateParallelTo(ctOut GLWECiphertext[T], ct LWECiph
 
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			e.ExternalProdGLWETo(i, e.buf.fctAccs[i], ctOut, ctOut)
+			e.ExternalProdGLWETo(i, e.buf.ctFFTAccs[i], ctOut, ctOut)
 		}
 	}
 }

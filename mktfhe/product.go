@@ -23,16 +23,16 @@ func (e *Evaluator[T]) HybridProdGLWETo(idx int, ctFFTUniEnc FFTUniEncryption[T]
 		e.PolyEvaluator.FFTTo(fpDcmp[i], pDcmp[i])
 	}
 
-	eIdx.PolyEvaluator.MulFFTPolyTo(e.buf.fctProd.Value[0], ctFFTUniEnc.Value[0].Value[0].Value[0], fpDcmp[0])
+	eIdx.PolyEvaluator.MulFFTPolyTo(e.buf.ctFFTProd.Value[0], ctFFTUniEnc.Value[0].Value[0].Value[0], fpDcmp[0])
 	for j := 1; j < ctFFTUniEnc.GadgetParams.Level(); j++ {
-		eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.fctProd.Value[0], ctFFTUniEnc.Value[0].Value[j].Value[0], fpDcmp[j])
+		eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.ctFFTProd.Value[0], ctFFTUniEnc.Value[0].Value[j].Value[0], fpDcmp[j])
 	}
 
-	eIdx.PolyEvaluator.MulFFTPolyTo(e.buf.sfctProd, e.EvalKey[idx].CRSPublicKey.Value[0].Value[1], fpDcmp[0])
+	eIdx.PolyEvaluator.MulFFTPolyTo(e.buf.ctFFTProdSub, e.EvalKey[idx].CRSPublicKey.Value[0].Value[1], fpDcmp[0])
 	for j := 1; j < ctFFTUniEnc.GadgetParams.Level(); j++ {
-		eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.sfctProd, e.EvalKey[idx].CRSPublicKey.Value[j].Value[1], fpDcmp[j])
+		eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.ctFFTProdSub, e.EvalKey[idx].CRSPublicKey.Value[j].Value[1], fpDcmp[j])
 	}
-	eIdx.PolyEvaluator.NegFFTPolyTo(e.buf.sfctProd, e.buf.sfctProd)
+	eIdx.PolyEvaluator.NegFFTPolyTo(e.buf.ctFFTProdSub, e.buf.ctFFTProdSub)
 
 	for i, ok := range e.PartyBitMap {
 		if ok {
@@ -41,29 +41,29 @@ func (e *Evaluator[T]) HybridProdGLWETo(idx int, ctFFTUniEnc FFTUniEncryption[T]
 				e.PolyEvaluator.FFTTo(fpDcmp[i], pDcmp[i])
 			}
 
-			eIdx.PolyEvaluator.MulFFTPolyTo(e.buf.fctProd.Value[i+1], ctFFTUniEnc.Value[0].Value[0].Value[0], fpDcmp[0])
+			eIdx.PolyEvaluator.MulFFTPolyTo(e.buf.ctFFTProd.Value[i+1], ctFFTUniEnc.Value[0].Value[0].Value[0], fpDcmp[0])
 			for j := 1; j < ctFFTUniEnc.GadgetParams.Level(); j++ {
-				eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.fctProd.Value[i+1], ctFFTUniEnc.Value[0].Value[j].Value[0], fpDcmp[j])
+				eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.ctFFTProd.Value[i+1], ctFFTUniEnc.Value[0].Value[j].Value[0], fpDcmp[j])
 			}
 
 			for j := 0; j < ctFFTUniEnc.GadgetParams.Level(); j++ {
-				eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.sfctProd, e.EvalKey[i].CRSPublicKey.Value[j].Value[0], fpDcmp[j])
+				eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.ctFFTProdSub, e.EvalKey[i].CRSPublicKey.Value[j].Value[0], fpDcmp[j])
 			}
 		}
 	}
 
-	eIdx.PolyEvaluator.InvFFTToUnsafe(e.buf.sctProd, e.buf.sfctProd)
-	e.Decomposer.DecomposePolyTo(pDcmp, e.buf.sctProd, ctFFTUniEnc.GadgetParams)
+	eIdx.PolyEvaluator.InvFFTToUnsafe(e.buf.ctProdSub, e.buf.ctFFTProdSub)
+	e.Decomposer.DecomposePolyTo(pDcmp, e.buf.ctProdSub, ctFFTUniEnc.GadgetParams)
 	for j := 0; j < ctFFTUniEnc.GadgetParams.Level(); j++ {
 		e.PolyEvaluator.FFTTo(fpDcmp[j], pDcmp[j])
-		eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.fctProd.Value[0], ctFFTUniEnc.Value[1].Value[j].Value[0], fpDcmp[j])
-		eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.fctProd.Value[1+idx], ctFFTUniEnc.Value[1].Value[j].Value[1], fpDcmp[j])
+		eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.ctFFTProd.Value[0], ctFFTUniEnc.Value[1].Value[j].Value[0], fpDcmp[j])
+		eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.ctFFTProd.Value[1+idx], ctFFTUniEnc.Value[1].Value[j].Value[1], fpDcmp[j])
 	}
 
-	eIdx.PolyEvaluator.InvFFTToUnsafe(ctGLWEOut.Value[0], e.buf.fctProd.Value[0])
+	eIdx.PolyEvaluator.InvFFTToUnsafe(ctGLWEOut.Value[0], e.buf.ctFFTProd.Value[0])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.PolyEvaluator.InvFFTToUnsafe(ctGLWEOut.Value[i+1], e.buf.fctProd.Value[i+1])
+			eIdx.PolyEvaluator.InvFFTToUnsafe(ctGLWEOut.Value[i+1], e.buf.ctFFTProd.Value[i+1])
 		} else {
 			ctGLWEOut.Value[i+1].Clear()
 		}
@@ -82,16 +82,16 @@ func (e *Evaluator[T]) HybridProdAddGLWETo(idx int, ctFFTUniEnc FFTUniEncryption
 		e.PolyEvaluator.FFTTo(fpDcmp[i], pDcmp[i])
 	}
 
-	eIdx.PolyEvaluator.MulFFTPolyTo(e.buf.fctProd.Value[0], ctFFTUniEnc.Value[0].Value[0].Value[0], fpDcmp[0])
+	eIdx.PolyEvaluator.MulFFTPolyTo(e.buf.ctFFTProd.Value[0], ctFFTUniEnc.Value[0].Value[0].Value[0], fpDcmp[0])
 	for j := 1; j < ctFFTUniEnc.GadgetParams.Level(); j++ {
-		eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.fctProd.Value[0], ctFFTUniEnc.Value[0].Value[j].Value[0], fpDcmp[j])
+		eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.ctFFTProd.Value[0], ctFFTUniEnc.Value[0].Value[j].Value[0], fpDcmp[j])
 	}
 
-	eIdx.PolyEvaluator.MulFFTPolyTo(e.buf.sfctProd, e.EvalKey[idx].CRSPublicKey.Value[0].Value[1], fpDcmp[0])
+	eIdx.PolyEvaluator.MulFFTPolyTo(e.buf.ctFFTProdSub, e.EvalKey[idx].CRSPublicKey.Value[0].Value[1], fpDcmp[0])
 	for j := 1; j < ctFFTUniEnc.GadgetParams.Level(); j++ {
-		eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.sfctProd, e.EvalKey[idx].CRSPublicKey.Value[j].Value[1], fpDcmp[j])
+		eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.ctFFTProdSub, e.EvalKey[idx].CRSPublicKey.Value[j].Value[1], fpDcmp[j])
 	}
-	eIdx.PolyEvaluator.NegFFTPolyTo(e.buf.sfctProd, e.buf.sfctProd)
+	eIdx.PolyEvaluator.NegFFTPolyTo(e.buf.ctFFTProdSub, e.buf.ctFFTProdSub)
 
 	for i, ok := range e.PartyBitMap {
 		if ok {
@@ -100,29 +100,29 @@ func (e *Evaluator[T]) HybridProdAddGLWETo(idx int, ctFFTUniEnc FFTUniEncryption
 				e.PolyEvaluator.FFTTo(fpDcmp[i], pDcmp[i])
 			}
 
-			eIdx.PolyEvaluator.MulFFTPolyTo(e.buf.fctProd.Value[i+1], ctFFTUniEnc.Value[0].Value[0].Value[0], fpDcmp[0])
+			eIdx.PolyEvaluator.MulFFTPolyTo(e.buf.ctFFTProd.Value[i+1], ctFFTUniEnc.Value[0].Value[0].Value[0], fpDcmp[0])
 			for j := 1; j < ctFFTUniEnc.GadgetParams.Level(); j++ {
-				eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.fctProd.Value[i+1], ctFFTUniEnc.Value[0].Value[j].Value[0], fpDcmp[j])
+				eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.ctFFTProd.Value[i+1], ctFFTUniEnc.Value[0].Value[j].Value[0], fpDcmp[j])
 			}
 
 			for j := 0; j < ctFFTUniEnc.GadgetParams.Level(); j++ {
-				eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.sfctProd, e.EvalKey[i].CRSPublicKey.Value[j].Value[0], fpDcmp[j])
+				eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.ctFFTProdSub, e.EvalKey[i].CRSPublicKey.Value[j].Value[0], fpDcmp[j])
 			}
 		}
 	}
 
-	eIdx.PolyEvaluator.InvFFTToUnsafe(e.buf.sctProd, e.buf.sfctProd)
-	e.Decomposer.DecomposePolyTo(pDcmp, e.buf.sctProd, ctFFTUniEnc.GadgetParams)
+	eIdx.PolyEvaluator.InvFFTToUnsafe(e.buf.ctProdSub, e.buf.ctFFTProdSub)
+	e.Decomposer.DecomposePolyTo(pDcmp, e.buf.ctProdSub, ctFFTUniEnc.GadgetParams)
 	for j := 0; j < ctFFTUniEnc.GadgetParams.Level(); j++ {
 		e.PolyEvaluator.FFTTo(fpDcmp[j], pDcmp[j])
-		eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.fctProd.Value[0], ctFFTUniEnc.Value[1].Value[j].Value[0], fpDcmp[j])
-		eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.fctProd.Value[1+idx], ctFFTUniEnc.Value[1].Value[j].Value[1], fpDcmp[j])
+		eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.ctFFTProd.Value[0], ctFFTUniEnc.Value[1].Value[j].Value[0], fpDcmp[j])
+		eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.ctFFTProd.Value[1+idx], ctFFTUniEnc.Value[1].Value[j].Value[1], fpDcmp[j])
 	}
 
-	eIdx.PolyEvaluator.InvFFTAddToUnsafe(ctGLWEOut.Value[0], e.buf.fctProd.Value[0])
+	eIdx.PolyEvaluator.InvFFTAddToUnsafe(ctGLWEOut.Value[0], e.buf.ctFFTProd.Value[0])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.PolyEvaluator.InvFFTAddToUnsafe(ctGLWEOut.Value[i+1], e.buf.fctProd.Value[i+1])
+			eIdx.PolyEvaluator.InvFFTAddToUnsafe(ctGLWEOut.Value[i+1], e.buf.ctFFTProd.Value[i+1])
 		}
 	}
 }
@@ -139,16 +139,16 @@ func (e *Evaluator[T]) HybridProdSubGLWETo(idx int, ctFFTUniEnc FFTUniEncryption
 		e.PolyEvaluator.FFTTo(fpDcmp[i], pDcmp[i])
 	}
 
-	eIdx.PolyEvaluator.MulFFTPolyTo(e.buf.fctProd.Value[0], ctFFTUniEnc.Value[0].Value[0].Value[0], fpDcmp[0])
+	eIdx.PolyEvaluator.MulFFTPolyTo(e.buf.ctFFTProd.Value[0], ctFFTUniEnc.Value[0].Value[0].Value[0], fpDcmp[0])
 	for j := 1; j < ctFFTUniEnc.GadgetParams.Level(); j++ {
-		eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.fctProd.Value[0], ctFFTUniEnc.Value[0].Value[j].Value[0], fpDcmp[j])
+		eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.ctFFTProd.Value[0], ctFFTUniEnc.Value[0].Value[j].Value[0], fpDcmp[j])
 	}
 
-	eIdx.PolyEvaluator.MulFFTPolyTo(e.buf.sfctProd, e.EvalKey[idx].CRSPublicKey.Value[0].Value[1], fpDcmp[0])
+	eIdx.PolyEvaluator.MulFFTPolyTo(e.buf.ctFFTProdSub, e.EvalKey[idx].CRSPublicKey.Value[0].Value[1], fpDcmp[0])
 	for j := 1; j < ctFFTUniEnc.GadgetParams.Level(); j++ {
-		eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.sfctProd, e.EvalKey[idx].CRSPublicKey.Value[j].Value[1], fpDcmp[j])
+		eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.ctFFTProdSub, e.EvalKey[idx].CRSPublicKey.Value[j].Value[1], fpDcmp[j])
 	}
-	eIdx.PolyEvaluator.NegFFTPolyTo(e.buf.sfctProd, e.buf.sfctProd)
+	eIdx.PolyEvaluator.NegFFTPolyTo(e.buf.ctFFTProdSub, e.buf.ctFFTProdSub)
 
 	for i, ok := range e.PartyBitMap {
 		if ok {
@@ -157,29 +157,29 @@ func (e *Evaluator[T]) HybridProdSubGLWETo(idx int, ctFFTUniEnc FFTUniEncryption
 				e.PolyEvaluator.FFTTo(fpDcmp[i], pDcmp[i])
 			}
 
-			eIdx.PolyEvaluator.MulFFTPolyTo(e.buf.fctProd.Value[i+1], ctFFTUniEnc.Value[0].Value[0].Value[0], fpDcmp[0])
+			eIdx.PolyEvaluator.MulFFTPolyTo(e.buf.ctFFTProd.Value[i+1], ctFFTUniEnc.Value[0].Value[0].Value[0], fpDcmp[0])
 			for j := 1; j < ctFFTUniEnc.GadgetParams.Level(); j++ {
-				eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.fctProd.Value[i+1], ctFFTUniEnc.Value[0].Value[j].Value[0], fpDcmp[j])
+				eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.ctFFTProd.Value[i+1], ctFFTUniEnc.Value[0].Value[j].Value[0], fpDcmp[j])
 			}
 
 			for j := 0; j < ctFFTUniEnc.GadgetParams.Level(); j++ {
-				eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.sfctProd, e.EvalKey[i].CRSPublicKey.Value[j].Value[0], fpDcmp[j])
+				eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.ctFFTProdSub, e.EvalKey[i].CRSPublicKey.Value[j].Value[0], fpDcmp[j])
 			}
 		}
 	}
 
-	eIdx.PolyEvaluator.InvFFTToUnsafe(e.buf.sctProd, e.buf.sfctProd)
-	e.Decomposer.DecomposePolyTo(pDcmp, e.buf.sctProd, ctFFTUniEnc.GadgetParams)
+	eIdx.PolyEvaluator.InvFFTToUnsafe(e.buf.ctProdSub, e.buf.ctFFTProdSub)
+	e.Decomposer.DecomposePolyTo(pDcmp, e.buf.ctProdSub, ctFFTUniEnc.GadgetParams)
 	for j := 0; j < ctFFTUniEnc.GadgetParams.Level(); j++ {
 		e.PolyEvaluator.FFTTo(fpDcmp[j], pDcmp[j])
-		eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.fctProd.Value[0], ctFFTUniEnc.Value[1].Value[j].Value[0], fpDcmp[j])
-		eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.fctProd.Value[1+idx], ctFFTUniEnc.Value[1].Value[j].Value[1], fpDcmp[j])
+		eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.ctFFTProd.Value[0], ctFFTUniEnc.Value[1].Value[j].Value[0], fpDcmp[j])
+		eIdx.PolyEvaluator.MulAddFFTPolyTo(e.buf.ctFFTProd.Value[1+idx], ctFFTUniEnc.Value[1].Value[j].Value[1], fpDcmp[j])
 	}
 
-	eIdx.PolyEvaluator.InvFFTSubToUnsafe(ctGLWEOut.Value[0], e.buf.fctProd.Value[0])
+	eIdx.PolyEvaluator.InvFFTSubToUnsafe(ctGLWEOut.Value[0], e.buf.ctFFTProd.Value[0])
 	for i, ok := range e.PartyBitMap {
 		if ok {
-			eIdx.PolyEvaluator.InvFFTSubToUnsafe(ctGLWEOut.Value[i+1], e.buf.fctProd.Value[i+1])
+			eIdx.PolyEvaluator.InvFFTSubToUnsafe(ctGLWEOut.Value[i+1], e.buf.ctFFTProd.Value[i+1])
 		}
 	}
 }

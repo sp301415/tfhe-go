@@ -22,12 +22,12 @@ type ManyLUTEvaluator[T tfhe.TorusInt] struct {
 
 // manyLUTEvaluatorBuffer is a buffer for ManyLUTEvaluator.
 type manyLUTEvaluatorBuffer[T tfhe.TorusInt] struct {
-	// fctAcc is the fourier transformed accumulator in Blind Rotation.
-	fctAcc tfhe.FFTGLWECiphertext[T]
-	// fctBlockAcc is the auxiliary accumulator in BlindRotateBlock.
-	fctBlockAcc tfhe.FFTGLWECiphertext[T]
-	// fctAccDcmp is the decomposed ctAcc in Blind Rotation.
-	fctAccDcmp [][]poly.FFTPoly
+	// ctFFTAcc is the fourier transformed accumulator in Blind Rotation.
+	ctFFTAcc tfhe.FFTGLWECiphertext[T]
+	// ctFFTBlockAcc is the auxiliary accumulator in BlindRotateBlock.
+	ctFFTBlockAcc tfhe.FFTGLWECiphertext[T]
+	// ctFFTAccDcmp is the decomposed ctAcc in Blind Rotation.
+	ctFFTAccDcmp [][]poly.FFTPoly
 	// fMono is the fourier transformed monomial in Blind Rotation.
 	fMono poly.FFTPoly
 
@@ -55,19 +55,19 @@ func NewManyLUTEvaluator[T tfhe.TorusInt](params ManyLUTParameters[T], evk tfhe.
 
 // newManyLUTEvaluatorBuffer creates a new manyLUTEvaluatorBuffer.
 func newManyLUTEvaluatorBuffer[T tfhe.TorusInt](params ManyLUTParameters[T]) manyLUTEvaluatorBuffer[T] {
-	fctAccDcmp := make([][]poly.FFTPoly, params.baseParams.GLWERank()+1)
+	ctFFTAccDcmp := make([][]poly.FFTPoly, params.baseParams.GLWERank()+1)
 	for i := 0; i < params.baseParams.GLWERank()+1; i++ {
-		fctAccDcmp[i] = make([]poly.FFTPoly, params.baseParams.BlindRotateParams().Level())
+		ctFFTAccDcmp[i] = make([]poly.FFTPoly, params.baseParams.BlindRotateParams().Level())
 		for j := 0; j < params.baseParams.BlindRotateParams().Level(); j++ {
-			fctAccDcmp[i][j] = poly.NewFFTPoly(params.baseParams.PolyRank())
+			ctFFTAccDcmp[i][j] = poly.NewFFTPoly(params.baseParams.PolyRank())
 		}
 	}
 
 	return manyLUTEvaluatorBuffer[T]{
-		fctAcc:      tfhe.NewFFTGLWECiphertext(params.baseParams),
-		fctBlockAcc: tfhe.NewFFTGLWECiphertext(params.baseParams),
-		fctAccDcmp:  fctAccDcmp,
-		fMono:       poly.NewFFTPoly(params.baseParams.PolyRank()),
+		ctFFTAcc:      tfhe.NewFFTGLWECiphertext(params.baseParams),
+		ctFFTBlockAcc: tfhe.NewFFTGLWECiphertext(params.baseParams),
+		ctFFTAccDcmp:  ctFFTAccDcmp,
+		fMono:         poly.NewFFTPoly(params.baseParams.PolyRank()),
 
 		ctRotate:    tfhe.NewGLWECiphertext(params.baseParams),
 		ctExtract:   tfhe.NewLWECiphertextCustom[T](params.baseParams.GLWEDimension()),

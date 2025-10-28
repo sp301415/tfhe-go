@@ -35,8 +35,8 @@ type circuitBootstrapBuffer[T tfhe.TorusInt] struct {
 	// lut is an empty lut.
 	lut tfhe.LookUpTable[T]
 
-	// fctDcmp are buffer for decomposed ciphertexts during scheme switching.
-	fctDcmp [][]poly.FFTPoly
+	// ctFFTDcmp are buffer for decomposed ciphertexts during scheme switching.
+	ctFFTDcmp [][]poly.FFTPoly
 
 	// ctKeySwitch is a key-switched LWE ciphertext.
 	ctKeySwitch tfhe.LWECiphertext[T]
@@ -76,11 +76,11 @@ func newCircuitBootstrapBuffer[T tfhe.TorusInt](params CircuitBootstrapParameter
 		fs[i] = func(x int) T { return 0 }
 	}
 
-	fctDcmp := make([][]poly.FFTPoly, params.Params().GLWERank()+1)
+	ctFFTDcmp := make([][]poly.FFTPoly, params.Params().GLWERank()+1)
 	for i := 0; i < params.Params().GLWERank()+1; i++ {
-		fctDcmp[i] = make([]poly.FFTPoly, params.schemeSwitchParameters.Level())
+		ctFFTDcmp[i] = make([]poly.FFTPoly, params.schemeSwitchParameters.Level())
 		for j := 0; j < params.schemeSwitchParameters.Level(); j++ {
-			fctDcmp[i][j] = poly.NewFFTPoly(params.Params().PolyRank())
+			ctFFTDcmp[i][j] = poly.NewFFTPoly(params.Params().PolyRank())
 		}
 	}
 
@@ -88,7 +88,7 @@ func newCircuitBootstrapBuffer[T tfhe.TorusInt](params CircuitBootstrapParameter
 		fs:  fs,
 		lut: tfhe.NewLUT(params.Params()),
 
-		fctDcmp: fctDcmp,
+		ctFFTDcmp: ctFFTDcmp,
 
 		ctKeySwitch:  tfhe.NewLWECiphertextCustom[T](params.Params().LWEDimension()),
 		ctPack:       tfhe.NewGLWECiphertext(params.Params()),
@@ -160,12 +160,12 @@ func (e *CircuitBootstrapper[T]) CircuitBootstrapTo(ctOut tfhe.FFTGGSWCiphertext
 			for k := 0; k < e.Params.Params().GLWERank()+1; k++ {
 				e.Decomposer.DecomposePolyTo(pDcmp, e.buf.ctGGSWOut.Value[0].Value[j].Value[k], e.Params.schemeSwitchParameters)
 				for l := 0; l < e.Params.schemeSwitchParameters.Level(); l++ {
-					e.PolyEvaluator.FFTTo(e.buf.fctDcmp[k][l], pDcmp[l])
+					e.PolyEvaluator.FFTTo(e.buf.ctFFTDcmp[k][l], pDcmp[l])
 				}
 			}
 
 			for k := 0; k < e.Params.Params().GLWERank(); k++ {
-				e.ExternalProdFFTGLWETo(e.buf.ctFFTGLWEOut, e.EvalKey.SchemeSwitchKey[k], e.buf.fctDcmp)
+				e.ExternalProdFFTGLWETo(e.buf.ctFFTGLWEOut, e.EvalKey.SchemeSwitchKey[k], e.buf.ctFFTDcmp)
 				for l := 0; l < e.Params.Params().GLWERank()+1; l++ {
 					e.PolyEvaluator.InvFFTToUnsafe(e.buf.ctGGSWOut.Value[k+1].Value[j].Value[l], e.buf.ctFFTGLWEOut.Value[l])
 				}

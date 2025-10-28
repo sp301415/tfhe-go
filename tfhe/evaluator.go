@@ -41,24 +41,24 @@ type evaluatorBuffer[T TorusInt] struct {
 
 	// ctProdLWE is the LWE ciphertext buffer for ExternalProdLWE and KeySwitchLWE.
 	ctProdLWE LWECiphertext[T]
-	// fctProdGLWE is the fourier transformed ctGLWEOut in ExternalProdGLWE and KeySwitchGLWE.
-	fctProdGLWE FFTGLWECiphertext[T]
+	// ctFFTProdGLWE is the fourier transformed ctGLWEOut in ExternalProdGLWE and KeySwitchGLWE.
+	ctFFTProdGLWE FFTGLWECiphertext[T]
 	// ctCMux is ct1 - ct0 in CMux.
 	ctCMux GLWECiphertext[T]
 
 	// ctAcc is the accumulator in BlindRotateExtended.
 	// This has length LUTExtendFactor.
 	ctAcc []GLWECiphertext[T]
-	// fctAcc is the fourier transformed accumulator in Blind Rotation.
+	// ctFFTAcc is the fourier transformed accumulator in Blind Rotation.
 	// In case of BlindRotateBlock and BlindRotateOriginal, only the first element is used.
 	// This has length LUTExtendFactor.
-	fctAcc []FFTGLWECiphertext[T]
-	// fctBlockAcc is the auxiliary accumulator in BlindRotateBlock and BlindRotateExtended.
-	fctBlockAcc []FFTGLWECiphertext[T]
-	// fctAccDcmp is the decomposed ctAcc in Blind Rotation.
+	ctFFTAcc []FFTGLWECiphertext[T]
+	// ctFFTBlockAcc is the auxiliary accumulator in BlindRotateBlock and BlindRotateExtended.
+	ctFFTBlockAcc []FFTGLWECiphertext[T]
+	// ctAccFFTDcmp is the decomposed ctAcc in Blind Rotation.
 	// In case of BlindRotateBlock and BlindRotateOriginal, only the first element is used.
 	// This has length LUTExtendFactor.
-	fctAccDcmp [][][]poly.FFTPoly
+	ctAccFFTDcmp [][][]poly.FFTPoly
 	// fMono is the fourier transformed monomial in Blind Rotation.
 	fMono poly.FFTPoly
 
@@ -104,20 +104,20 @@ func NewEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *Evalu
 func newEvaluatorBuffer[T TorusInt](params Parameters[T]) evaluatorBuffer[T] {
 	ctAcc := make([]GLWECiphertext[T], params.lutExtendFactor)
 	ctFFTAcc := make([]FFTGLWECiphertext[T], params.lutExtendFactor)
-	ctBlockFourierAcc := make([]FFTGLWECiphertext[T], params.lutExtendFactor)
+	ctFFTBlockAcc := make([]FFTGLWECiphertext[T], params.lutExtendFactor)
 	for i := 0; i < params.lutExtendFactor; i++ {
 		ctAcc[i] = NewGLWECiphertext(params)
 		ctFFTAcc[i] = NewFFTGLWECiphertext(params)
-		ctBlockFourierAcc[i] = NewFFTGLWECiphertext(params)
+		ctFFTBlockAcc[i] = NewFFTGLWECiphertext(params)
 	}
 
-	fctAccDcmp := make([][][]poly.FFTPoly, params.lutExtendFactor)
+	ctFFTAccDcmp := make([][][]poly.FFTPoly, params.lutExtendFactor)
 	for i := 0; i < params.lutExtendFactor; i++ {
-		fctAccDcmp[i] = make([][]poly.FFTPoly, params.glweRank+1)
+		ctFFTAccDcmp[i] = make([][]poly.FFTPoly, params.glweRank+1)
 		for j := 0; j < params.glweRank+1; j++ {
-			fctAccDcmp[i][j] = make([]poly.FFTPoly, params.blindRotateParams.level)
+			ctFFTAccDcmp[i][j] = make([]poly.FFTPoly, params.blindRotateParams.level)
 			for k := 0; k < params.blindRotateParams.level; k++ {
-				fctAccDcmp[i][j][k] = poly.NewFFTPoly(params.polyRank)
+				ctFFTAccDcmp[i][j][k] = poly.NewFFTPoly(params.polyRank)
 			}
 		}
 	}
@@ -125,15 +125,15 @@ func newEvaluatorBuffer[T TorusInt](params Parameters[T]) evaluatorBuffer[T] {
 	return evaluatorBuffer[T]{
 		fpMul: poly.NewFFTPoly(params.polyRank),
 
-		ctProdLWE:   NewLWECiphertext(params),
-		fctProdGLWE: NewFFTGLWECiphertext(params),
-		ctCMux:      NewGLWECiphertext(params),
+		ctProdLWE:     NewLWECiphertext(params),
+		ctFFTProdGLWE: NewFFTGLWECiphertext(params),
+		ctCMux:        NewGLWECiphertext(params),
 
-		ctAcc:       ctAcc,
-		fctAcc:      ctFFTAcc,
-		fctBlockAcc: ctBlockFourierAcc,
-		fctAccDcmp:  fctAccDcmp,
-		fMono:       poly.NewFFTPoly(params.polyRank),
+		ctAcc:         ctAcc,
+		ctFFTAcc:      ctFFTAcc,
+		ctFFTBlockAcc: ctFFTBlockAcc,
+		ctAccFFTDcmp:  ctFFTAccDcmp,
+		fMono:         poly.NewFFTPoly(params.polyRank),
 
 		ctRotate:    NewGLWECiphertext(params),
 		ctExtract:   NewLWECiphertextCustom[T](params.glweDimension),
