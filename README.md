@@ -80,7 +80,7 @@ enc := tfhe.NewEncryptor(params)
 
 ct := enc.EncryptLWE(3)
 
-eval := tfhe.NewEvaluator(params, enc.GenEvaluationKeyParallel())
+eval := tfhe.NewEvaluator(params, enc.GenEvalKeyParallel())
 
 ctOut := eval.BootstrapFunc(ct, func(x int) int { return 2*x + 1 })
 fmt.Println(enc.DecryptLWE(ctOut))
@@ -98,7 +98,7 @@ bits := 16
 ct0 := enc.EncryptLWEBits(3, bits)
 ct1 := enc.EncryptLWEBits(3, bits)
 
-eval := tfhe.NewBinaryEvaluator(params, enc.GenEvaluationKeyParallel())
+eval := tfhe.NewBinaryEvaluator(params, enc.GenEvalKeyParallel())
 
 ctXNOR := tfhe.NewLWECiphertext(params)
 ctOut := eval.XNOR(ct0[0], ct1[0])
@@ -140,8 +140,8 @@ ct1 := enc1.EncryptLWEBool(false)
 
 // Set up Evaluator.
 eval := mktfhe.NewBinaryEvaluator(params, map[int]mktfhe.EvaluationKey[uint64]{
-  0: enc0.GenEvaluationKeyParallel(),
-  1: enc1.GenEvaluationKeyParallel(),
+  0: enc0.GenEvalKeyParallel(),
+  1: enc1.GenEvalKeyParallel(),
 })
 
 // Execute AND operation in parallel.

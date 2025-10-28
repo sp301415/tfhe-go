@@ -10,7 +10,7 @@ import (
 var (
 	fhewParams = xtfhe.ParamsFHEWBinary.Compile()
 	fhewEnc    = xtfhe.NewFHEWEncryptor(fhewParams)
-	fhewEval   = xtfhe.NewFHEWEvaluator(fhewParams, fhewEnc.GenEvaluationKeyParallel())
+	fhewEval   = xtfhe.NewFHEWEvaluator(fhewParams, fhewEnc.GenEvalKeyParallel())
 )
 
 func TestFHEW(t *testing.T) {

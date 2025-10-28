@@ -46,8 +46,8 @@ func (kg *BFVKeyGenerator[T]) SafeCopy() *BFVKeyGenerator[T] {
 	}
 }
 
-// GenEvaluationKey generates an evaluation key for BFV type operations.
-func (kg *BFVKeyGenerator[T]) GenEvaluationKey(idx []int, kskParams tfhe.GadgetParameters[T]) BFVEvaluationKey[T] {
+// GenEvalKey generates an evaluation key for BFV type operations.
+func (kg *BFVKeyGenerator[T]) GenEvalKey(idx []int, kskParams tfhe.GadgetParameters[T]) BFVEvaluationKey[T] {
 	return BFVEvaluationKey[T]{
 		RelinKey:   kg.GenRelinKey(kskParams),
 		GaloisKeys: kg.GenGaloisKeys(idx, kskParams),

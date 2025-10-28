@@ -4,22 +4,22 @@ import (
 	"github.com/sp301415/tfhe-go/tfhe"
 )
 
-// GenEvaluationKey samples a new evaluation key for bootstrapping.
+// GenEvalKey samples a new evaluation key for bootstrapping.
 //
 // This can take a long time.
-// Use [*Encryptor.GenEvaluationKeyParallel] for better key generation performance.
-func (e *Encryptor[T]) GenEvaluationKey() EvaluationKey[T] {
+// Use [*Encryptor.GenEvalKeyParallel] for better key generation performance.
+func (e *Encryptor[T]) GenEvalKey() EvaluationKey[T] {
 	return EvaluationKey[T]{
-		EvaluationKey: e.SubEncryptor.GenEvaluationKey(),
+		EvaluationKey: e.SubEncryptor.GenEvalKey(),
 		CRSPublicKey:  e.GenCRSPublicKey(),
 		RelinKey:      e.GenRelinKey(),
 	}
 }
 
-// GenEvaluationKeyParallel samples a new evaluation key for bootstrapping in parallel.
-func (e *Encryptor[T]) GenEvaluationKeyParallel() EvaluationKey[T] {
+// GenEvalKeyParallel samples a new evaluation key for bootstrapping in parallel.
+func (e *Encryptor[T]) GenEvalKeyParallel() EvaluationKey[T] {
 	return EvaluationKey[T]{
-		EvaluationKey: e.SubEncryptor.GenEvaluationKeyParallel(),
+		EvaluationKey: e.SubEncryptor.GenEvalKeyParallel(),
 		CRSPublicKey:  e.GenCRSPublicKey(),
 		RelinKey:      e.GenRelinKey(),
 	}

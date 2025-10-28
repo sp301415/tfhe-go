@@ -13,7 +13,7 @@ var (
 	cbParams = xtfhe.ParamsCircuitBootstrapMedium.Compile()
 	cbEnc    = tfhe.NewEncryptor(cbParams.Params())
 	cbKeyGen = xtfhe.NewCircuitBootstrapKeyGenerator(cbParams, cbEnc.SecretKey)
-	cbEval   = xtfhe.NewCircuitBootstrapper(cbParams, cbEnc.GenEvaluationKeyParallel(), cbKeyGen.GenCircuitBootstrapKey())
+	cbEval   = xtfhe.NewCircuitBootstrapper(cbParams, cbEnc.GenEvalKeyParallel(), cbKeyGen.GenCircuitBootstrapKey())
 )
 
 func TestCircuitBootstrap(t *testing.T) {

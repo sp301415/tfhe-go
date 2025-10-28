@@ -21,11 +21,11 @@ type FHEWEvaluationKey[T tfhe.TorusInt] struct {
 	GaloisKey []tfhe.GLWEKeySwitchKey[T]
 }
 
-// GenEvaluationKey samples a new evaluation key for bootstrapping.
+// GenEvalKey samples a new evaluation key for bootstrapping.
 //
 // This can take a long time.
-// Use [*FHEWEncryptor.GenEvaluationKeyParallel] for better key generation performance.
-func (e *FHEWEncryptor[T]) GenEvaluationKey() FHEWEvaluationKey[T] {
+// Use [*FHEWEncryptor.GenEvalKeyParallel] for better key generation performance.
+func (e *FHEWEncryptor[T]) GenEvalKey() FHEWEvaluationKey[T] {
 	return FHEWEvaluationKey[T]{
 		BlindRotateKey: e.GenBlindRotateKey(),
 		KeySwitchKey:   e.GenDefaultKeySwitchKey(),
@@ -33,8 +33,8 @@ func (e *FHEWEncryptor[T]) GenEvaluationKey() FHEWEvaluationKey[T] {
 	}
 }
 
-// GenEvaluationKeyParallel samples a new evaluation key for bootstrapping in parallel.
-func (e *FHEWEncryptor[T]) GenEvaluationKeyParallel() FHEWEvaluationKey[T] {
+// GenEvalKeyParallel samples a new evaluation key for bootstrapping in parallel.
+func (e *FHEWEncryptor[T]) GenEvalKeyParallel() FHEWEvaluationKey[T] {
 	return FHEWEvaluationKey[T]{
 		BlindRotateKey: e.GenBlindRotateKeyParallel(),
 		KeySwitchKey:   e.GenDefaultKeySwitchKeyParallel(),

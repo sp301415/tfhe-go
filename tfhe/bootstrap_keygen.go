@@ -8,19 +8,19 @@ import (
 	"github.com/sp301415/tfhe-go/math/vec"
 )
 
-// GenEvaluationKey samples a new evaluation key for bootstrapping.
+// GenEvalKey samples a new evaluation key for bootstrapping.
 //
 // This can take a long time.
-// Use [*Encryptor.GenEvaluationKeyParallel] for better key generation performance.
-func (e *Encryptor[T]) GenEvaluationKey() EvaluationKey[T] {
+// Use [*Encryptor.GenEvalKeyParallel] for better key generation performance.
+func (e *Encryptor[T]) GenEvalKey() EvaluationKey[T] {
 	return EvaluationKey[T]{
 		BlindRotateKey: e.GenBlindRotateKey(),
 		KeySwitchKey:   e.GenDefaultKeySwitchKey(),
 	}
 }
 
-// GenEvaluationKeyParallel samples a new evaluation key for bootstrapping in parallel.
-func (e *Encryptor[T]) GenEvaluationKeyParallel() EvaluationKey[T] {
+// GenEvalKeyParallel samples a new evaluation key for bootstrapping in parallel.
+func (e *Encryptor[T]) GenEvalKeyParallel() EvaluationKey[T] {
 	return EvaluationKey[T]{
 		BlindRotateKey: e.GenBlindRotateKeyParallel(),
 		KeySwitchKey:   e.GenDefaultKeySwitchKeyParallel(),

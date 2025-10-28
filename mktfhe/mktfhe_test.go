@@ -17,8 +17,8 @@ var (
 		mktfhe.NewEncryptor(params, 1, nil),
 	}
 	eval = mktfhe.NewEvaluator(params, map[int]mktfhe.EvaluationKey[uint64]{
-		0: enc[0].GenEvaluationKeyParallel(),
-		1: enc[1].GenEvaluationKeyParallel(),
+		0: enc[0].GenEvalKeyParallel(),
+		1: enc[1].GenEvalKeyParallel(),
 	})
 	dec = mktfhe.NewDecryptor(params, map[int]tfhe.SecretKey[uint64]{
 		0: enc[0].SecretKey,

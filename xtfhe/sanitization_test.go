@@ -11,7 +11,7 @@ import (
 var (
 	sanitizationParams = xtfhe.ParamsSanitizeBinary.Compile()
 	sanitizationEnc    = tfhe.NewEncryptor(sanitizationParams.BaseParams())
-	sanitizationEval   = xtfhe.NewSanitizer(sanitizationParams, sanitizationEnc.GenPublicKey(), sanitizationEnc.GenEvaluationKeyParallel())
+	sanitizationEval   = xtfhe.NewSanitizer(sanitizationParams, sanitizationEnc.GenPublicKey(), sanitizationEnc.GenEvalKeyParallel())
 )
 
 func TestSanitization(t *testing.T) {

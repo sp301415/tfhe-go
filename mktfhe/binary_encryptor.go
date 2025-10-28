@@ -75,17 +75,17 @@ func (e *BinaryEncryptor[T]) EncryptLWEBitsTo(ctOut []LWECiphertext[T], message 
 	}
 }
 
-// GenEvaluationKey samples a new evaluation key for bootstrapping.
+// GenEvalKey samples a new evaluation key for bootstrapping.
 //
 // This can take a long time.
-// Use [*Encryptor.GenEvaluationKeyParallel] for better key generation performance.
-func (e *BinaryEncryptor[T]) GenEvaluationKey() EvaluationKey[T] {
-	return e.Encryptor.GenEvaluationKey()
+// Use [*Encryptor.GenEvalKeyParallel] for better key generation performance.
+func (e *BinaryEncryptor[T]) GenEvalKey() EvaluationKey[T] {
+	return e.Encryptor.GenEvalKey()
 }
 
-// GenEvaluationKeyParallel samples a new evaluation key for bootstrapping in parallel.
-func (e *BinaryEncryptor[T]) GenEvaluationKeyParallel() EvaluationKey[T] {
-	return e.Encryptor.GenEvaluationKeyParallel()
+// GenEvalKeyParallel samples a new evaluation key for bootstrapping in parallel.
+func (e *BinaryEncryptor[T]) GenEvalKeyParallel() EvaluationKey[T] {
+	return e.Encryptor.GenEvalKeyParallel()
 }
 
 // GenPublicKey samples a new public key.

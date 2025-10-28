@@ -12,7 +12,7 @@ import (
 var (
 	manyLUTParams = xtfhe.ParamsUint2LUT4.Compile()
 	manyLUTEnc    = tfhe.NewEncryptor(manyLUTParams.BaseParams())
-	manyLUTEval   = xtfhe.NewManyLUTEvaluator(manyLUTParams, manyLUTEnc.GenEvaluationKeyParallel())
+	manyLUTEval   = xtfhe.NewManyLUTEvaluator(manyLUTParams, manyLUTEnc.GenEvalKeyParallel())
 )
 
 func TestManyLUT(t *testing.T) {

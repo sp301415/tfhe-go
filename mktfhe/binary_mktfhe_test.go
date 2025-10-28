@@ -17,8 +17,8 @@ var (
 		mktfhe.NewBinaryEncryptor(paramsBinary, 1, nil),
 	}
 	evalBinary = mktfhe.NewBinaryEvaluator(paramsBinary, map[int]mktfhe.EvaluationKey[uint64]{
-		0: encBinary[0].GenEvaluationKeyParallel(),
-		1: encBinary[1].GenEvaluationKeyParallel(),
+		0: encBinary[0].GenEvalKeyParallel(),
+		1: encBinary[1].GenEvalKeyParallel(),
 	})
 	decBinary = mktfhe.NewBinaryDecryptor(paramsBinary, map[int]tfhe.SecretKey[uint64]{
 		0: encBinary[0].Encryptor.SecretKey,
@@ -196,8 +196,8 @@ func ExampleBinaryEvaluator() {
 
 	// Set up Evaluator.
 	eval := mktfhe.NewBinaryEvaluator(params, map[int]mktfhe.EvaluationKey[uint64]{
-		0: enc0.GenEvaluationKeyParallel(),
-		1: enc1.GenEvaluationKeyParallel(),
+		0: enc0.GenEvalKeyParallel(),
+		1: enc1.GenEvalKeyParallel(),
 	})
 
 	// Execute AND operation in parallel.

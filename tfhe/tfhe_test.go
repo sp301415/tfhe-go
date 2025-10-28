@@ -16,7 +16,7 @@ var (
 	params = tfhe.ParamsUint3.Compile()
 	enc    = tfhe.NewEncryptor(params)
 	pkEnc  = tfhe.NewPublicEncryptor(params, enc.GenPublicKey())
-	eval   = tfhe.NewEvaluator(params, enc.GenEvaluationKeyParallel())
+	eval   = tfhe.NewEvaluator(params, enc.GenEvalKeyParallel())
 
 	paramsList = []tfhe.ParametersLiteral[uint64]{
 		tfhe.ParamsUint2,
@@ -427,7 +427,7 @@ func BenchmarkEvaluationKeyGen(b *testing.B) {
 
 		b.Run(fmt.Sprintf("Uint%v", num.Log2(params.MessageModulus())), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				enc.GenEvaluationKeyParallel()
+				enc.GenEvalKeyParallel()
 			}
 		})
 	}
@@ -437,7 +437,7 @@ func BenchmarkProgrammableBootstrap(b *testing.B) {
 	for _, params := range paramsList {
 		params := params.Compile()
 		enc := tfhe.NewEncryptor(params)
-		eval := tfhe.NewEvaluator(params, enc.GenEvaluationKeyParallel())
+		eval := tfhe.NewEvaluator(params, enc.GenEvalKeyParallel())
 
 		ct := enc.EncryptLWE(0)
 		ctOut := ct.Copy()
@@ -497,7 +497,7 @@ func ExampleEvaluator_BootstrapFunc() {
 
 	ct := enc.EncryptLWE(3)
 
-	eval := tfhe.NewEvaluator(params, enc.GenEvaluationKeyParallel())
+	eval := tfhe.NewEvaluator(params, enc.GenEvalKeyParallel())
 
 	ctOut := eval.BootstrapFunc(ct, func(x int) int { return 2*x + 1 })
 	fmt.Println(enc.DecryptLWE(ctOut))

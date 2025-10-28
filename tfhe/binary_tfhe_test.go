@@ -12,7 +12,7 @@ import (
 var (
 	paramsBinary = tfhe.ParamsBinary.Compile()
 	encBinary    = tfhe.NewBinaryEncryptor(paramsBinary)
-	evalBinary   = tfhe.NewBinaryEvaluator(paramsBinary, encBinary.GenEvaluationKeyParallel())
+	evalBinary   = tfhe.NewBinaryEvaluator(paramsBinary, encBinary.GenEvalKeyParallel())
 )
 
 func TestBinaryParams(t *testing.T) {
@@ -149,7 +149,7 @@ func ExampleBinaryEvaluator() {
 	ct0 := enc.EncryptLWEBits(3, bits)
 	ct1 := enc.EncryptLWEBits(3, bits)
 
-	eval := tfhe.NewBinaryEvaluator(params, enc.GenEvaluationKeyParallel())
+	eval := tfhe.NewBinaryEvaluator(params, enc.GenEvalKeyParallel())
 
 	ctXNOR := tfhe.NewLWECiphertext(params)
 	ctOut := eval.XNOR(ct0[0], ct1[0])
