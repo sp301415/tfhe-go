@@ -104,6 +104,7 @@ func (e *CircuitBootstrapper[T]) SafeCopy() *CircuitBootstrapper[T] {
 	return &CircuitBootstrapper[T]{
 		ManyLUTEvaluator: e.ManyLUTEvaluator.SafeCopy(),
 		BFVEvaluator:     e.BFVEvaluator.SafeCopy(),
+		Decomposer:       e.Decomposer.SafeCopy(),
 
 		Params:  e.Params,
 		EvalKey: e.EvalKey,
