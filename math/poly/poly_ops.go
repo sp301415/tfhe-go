@@ -71,21 +71,21 @@ func (e *Evaluator[T]) FFTPolyMulPoly(p Poly[T], fp FFTPoly) Poly[T] {
 
 // FFTPolyMulPolyTo computes pOut = fp * p.
 func (e *Evaluator[T]) FFTPolyMulPolyTo(pOut, p Poly[T], fp FFTPoly) {
-	e.FFTTo(e.buf.fp, p)
+	e.FwdFFTPolyTo(e.buf.fp, p)
 	e.MulFFTPolyTo(e.buf.fp, e.buf.fp, fp)
 	e.InvFFTToUnsafe(pOut, e.buf.fp)
 }
 
 // FFTPolyMulAddPolyTo computes pOut += fp * p.
 func (e *Evaluator[T]) FFTPolyMulAddPolyTo(pOut, p Poly[T], fp FFTPoly) {
-	e.FFTTo(e.buf.fp, p)
+	e.FwdFFTPolyTo(e.buf.fp, p)
 	e.MulFFTPolyTo(e.buf.fp, e.buf.fp, fp)
 	e.InvFFTAddToUnsafe(pOut, e.buf.fp)
 }
 
 // FFTPolyMulSubPolyTo computes pOut -= fp * p.
 func (e *Evaluator[T]) FFTPolyMulSubPolyTo(pOut, p Poly[T], fp FFTPoly) {
-	e.FFTTo(e.buf.fp, p)
+	e.FwdFFTPolyTo(e.buf.fp, p)
 	e.MulFFTPolyTo(e.buf.fp, e.buf.fp, fp)
 	e.InvFFTSubToUnsafe(pOut, e.buf.fp)
 }

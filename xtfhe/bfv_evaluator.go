@@ -89,8 +89,8 @@ func (e *BFVEvaluator[T]) Tensor(ct0, ct1 tfhe.GLWECiphertext[T]) tfhe.GLWECiphe
 // TensorTo computes the tensor product of two ciphertexts and assigns the result to ctOut.
 // ctOut should have GLWERank = params.GLWERank + (params.GLWERank + 3) / 2.
 func (e *BFVEvaluator[T]) TensorTo(ctOut, ct0, ct1 tfhe.GLWECiphertext[T]) {
-	e.Evaluator.FFTGLWECiphertextTo(e.buf.ctFFTMul[0], ct0)
-	e.Evaluator.FFTGLWECiphertextTo(e.buf.ctFFTMul[1], ct1)
+	e.Evaluator.FwdFFTGLWECiphertextTo(e.buf.ctFFTMul[0], ct0)
+	e.Evaluator.FwdFFTGLWECiphertextTo(e.buf.ctFFTMul[1], ct1)
 
 	tensorIdx := 0
 	for i := 0; i < e.Params.GLWERank()+1; i++ {

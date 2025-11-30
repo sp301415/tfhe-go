@@ -26,7 +26,7 @@ func (e *Encryptor[T]) EncryptFFTGLWEPlaintext(pt GLWEPlaintext[T]) FFTGLWECiphe
 // EncryptFFTGLWEPlaintextTo encrypts GLWE plaintext to FFTGLWE ciphertext and writes it to ctOut.
 func (e *Encryptor[T]) EncryptFFTGLWEPlaintextTo(ctOut FFTGLWECiphertext[T], pt GLWEPlaintext[T]) {
 	e.EncryptGLWEPlaintextTo(e.buf.ctGLWE, pt)
-	e.FFTGLWECiphertextTo(ctOut, e.buf.ctGLWE)
+	e.FwdFFTGLWECiphertextTo(ctOut, e.buf.ctGLWE)
 }
 
 // DecryptFFTGLWE decrypts and decodes FFTGLWE ciphertext to integer message.
@@ -82,7 +82,7 @@ func (e *Encryptor[T]) EncryptFFTGLevPolyTo(ctOut FFTGLevCiphertext[T], p poly.P
 	for i := 0; i < ctOut.GadgetParams.level; i++ {
 		e.PolyEvaluator.ScalarMulPolyTo(e.buf.ctGLWE.Value[0], p, ctOut.GadgetParams.BaseQ(i))
 		e.EncryptGLWEBody(e.buf.ctGLWE)
-		e.FFTGLWECiphertextTo(ctOut.Value[i], e.buf.ctGLWE)
+		e.FwdFFTGLWECiphertextTo(ctOut.Value[i], e.buf.ctGLWE)
 	}
 }
 
@@ -151,7 +151,7 @@ func (e *Encryptor[T]) EncryptFFTGGSWPolyTo(ctOut FFTGGSWCiphertext[T], p poly.P
 		for j := 0; j < ctOut.GadgetParams.level; j++ {
 			e.PolyEvaluator.ScalarMulPolyTo(e.buf.ctGLWE.Value[0], e.buf.ptGGSW, ctOut.GadgetParams.BaseQ(j))
 			e.EncryptGLWEBody(e.buf.ctGLWE)
-			e.FFTGLWECiphertextTo(ctOut.Value[i+1].Value[j], e.buf.ctGLWE)
+			e.FwdFFTGLWECiphertextTo(ctOut.Value[i+1].Value[j], e.buf.ctGLWE)
 		}
 	}
 }

@@ -153,7 +153,7 @@ func (d *Decomposer[T]) FourierDecomposePolyTo(dcmpOut []poly.FFTPoly, p poly.Po
 	pDcmp := d.PolyBuffer(gadgetParams)
 	decomposePolyTo(pDcmp, p, gadgetParams)
 	for i := 0; i < gadgetParams.level; i++ {
-		d.PolyEvaluator.FFTTo(dcmpOut[i], pDcmp[i])
+		d.PolyEvaluator.FwdFFTPolyTo(dcmpOut[i], pDcmp[i])
 	}
 }
 

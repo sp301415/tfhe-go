@@ -35,7 +35,7 @@ func (e *Encryptor[T]) FFTUniEncryptPoly(p poly.Poly[T], gadgetParams tfhe.Gadge
 // FFTUniEncryptPolyTo encrypts polynomial to FFTUniEncryption and writes it to ctOut.
 func (e *Encryptor[T]) FFTUniEncryptPolyTo(ctOut FFTUniEncryption[T], p poly.Poly[T]) {
 	e.SubEncryptor.BinarySampler.SamplePolyTo(e.buf.auxKey.Value[0])
-	e.SubEncryptor.FFTGLWESecretKeyTo(e.buf.auxFourierKey, e.buf.auxKey)
+	e.SubEncryptor.FwdFFTGLWESecretKeyTo(e.buf.auxFourierKey, e.buf.auxKey)
 
 	for i := 0; i < ctOut.GadgetParams.Level(); i++ {
 		e.buf.ctSubGLWE.Value[1].CopyFrom(e.CRS[i])
@@ -44,13 +44,13 @@ func (e *Encryptor[T]) FFTUniEncryptPolyTo(ctOut FFTUniEncryption[T], p poly.Pol
 		e.SubEncryptor.PolyEvaluator.ShortFFTPolyMulAddPolyTo(e.buf.ctSubGLWE.Value[0], e.buf.ctSubGLWE.Value[1], e.buf.auxFourierKey.Value[0])
 		e.SubEncryptor.GaussianSampler.SamplePolyAddTo(e.buf.ctSubGLWE.Value[0], e.Params.GLWEStdDevQ())
 
-		e.SubEncryptor.FFTGLWECiphertextTo(ctOut.Value[0].Value[i], e.buf.ctSubGLWE)
+		e.SubEncryptor.FwdFFTGLWECiphertextTo(ctOut.Value[0].Value[i], e.buf.ctSubGLWE)
 	}
 
 	for i := 0; i < ctOut.GadgetParams.Level(); i++ {
 		e.SubEncryptor.PolyEvaluator.ScalarMulPolyTo(e.buf.ctSubGLWE.Value[0], e.buf.auxKey.Value[0], ctOut.GadgetParams.BaseQ(i))
 		e.SubEncryptor.EncryptGLWEBody(e.buf.ctSubGLWE)
-		e.SubEncryptor.FFTGLWECiphertextTo(ctOut.Value[1].Value[i], e.buf.ctSubGLWE)
+		e.SubEncryptor.FwdFFTGLWECiphertextTo(ctOut.Value[1].Value[i], e.buf.ctSubGLWE)
 	}
 }
 
@@ -81,7 +81,7 @@ func (e *Encryptor[T]) FFTUniDecryptPoly(ct FFTUniEncryption[T]) poly.Poly[T] {
 // FFTUniDecryptPolyTo decrypts FFTUniEncryption to polynomial and writes it to pOut.
 func (e *Encryptor[T]) FFTUniDecryptPolyTo(pOut poly.Poly[T], ct FFTUniEncryption[T]) {
 	e.SubEncryptor.DecryptFFTGLevPolyTo(e.buf.auxKey.Value[0], ct.Value[1])
-	e.SubEncryptor.FFTGLWESecretKeyTo(e.buf.auxFourierKey, e.buf.auxKey)
+	e.SubEncryptor.FwdFFTGLWESecretKeyTo(e.buf.auxFourierKey, e.buf.auxKey)
 
 	e.SubEncryptor.InvFFTGLWECiphertextTo(e.buf.ctSubGLWE, ct.Value[0].Value[0])
 	pOut.CopyFrom(e.buf.ctSubGLWE.Value[0])

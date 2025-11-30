@@ -40,7 +40,7 @@ func (e *PublicEncryptor[T]) EncryptLWEBody(ct LWECiphertext[T]) {
 	for i := 0; i < e.Params.glweRank; i++ {
 		vec.ReverseInPlace(e.buf.auxKey.Value[i].Coeffs)
 	}
-	e.FFTGLWESecretKeyTo(e.buf.auxFourierKey, e.buf.auxKey)
+	e.FwdFFTGLWESecretKeyTo(e.buf.auxFourierKey, e.buf.auxKey)
 
 	ctGLWE := make([]poly.Poly[T], e.Params.glweRank)
 	for i := 0; i < e.Params.glweRank; i++ {

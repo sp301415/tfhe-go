@@ -117,19 +117,19 @@ func (e *Evaluator[T]) PolyMulFFTPoly(fp FFTPoly, p Poly[T]) FFTPoly {
 
 // PolyMulFFTPolyTo computes fpOut = p * fp.
 func (e *Evaluator[T]) PolyMulFFTPolyTo(fpOut, fp FFTPoly, p Poly[T]) {
-	e.FFTTo(e.buf.fp, p)
+	e.FwdFFTPolyTo(e.buf.fp, p)
 	mulCmplxTo(fpOut.Coeffs, fp.Coeffs, e.buf.fp.Coeffs)
 }
 
 // PolyMulAddFFTPolyTo computes fpOut += p * fp.
 func (e *Evaluator[T]) PolyMulAddFFTPolyTo(fpOut, fp FFTPoly, p Poly[T]) {
-	e.FFTTo(e.buf.fp, p)
+	e.FwdFFTPolyTo(e.buf.fp, p)
 	mulAddCmplxTo(fpOut.Coeffs, fp.Coeffs, e.buf.fp.Coeffs)
 }
 
 // PolyMulSubFFTPolyTo computes fpOut -= p * fp.
 func (e *Evaluator[T]) PolyMulSubFFTPolyTo(fpOut, fp FFTPoly, p Poly[T]) {
-	e.FFTTo(e.buf.fp, p)
+	e.FwdFFTPolyTo(e.buf.fp, p)
 	mulSubCmplxTo(fpOut.Coeffs, fp.Coeffs, e.buf.fp.Coeffs)
 }
 

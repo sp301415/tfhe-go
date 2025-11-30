@@ -229,7 +229,7 @@ func (e *Encryptor[T]) EncryptFFTGLWEPlaintext(pt tfhe.GLWEPlaintext[T]) FFTGLWE
 // EncryptFFTGLWEPlaintextTo encrypts GLWE plaintext to FFTGLWE ciphertext and writes it to ctOut.
 func (e *Encryptor[T]) EncryptFFTGLWEPlaintextTo(ctOut FFTGLWECiphertext[T], pt tfhe.GLWEPlaintext[T]) {
 	e.EncryptGLWEPlaintextTo(e.buf.ctGLWE, pt)
-	e.ToFFTGLWECiphertextTo(ctOut, e.buf.ctGLWE)
+	e.FwdFFTGLWECiphertextTo(ctOut, e.buf.ctGLWE)
 }
 
 // GenPublicKey samples a new PublicKey.

@@ -111,7 +111,7 @@ func (e *Evaluator[T]) PolyMulFFTGLWE(ct FFTGLWECiphertext[T], p poly.Poly[T]) F
 
 // PolyMulFFTGLWETo computes ctOut = p * ct.
 func (e *Evaluator[T]) PolyMulFFTGLWETo(ctOut, ct FFTGLWECiphertext[T], p poly.Poly[T]) {
-	e.PolyEvaluator.FFTTo(e.buf.fpMul, p)
+	e.PolyEvaluator.FwdFFTPolyTo(e.buf.fpMul, p)
 	for i := 0; i < e.Params.glweRank+1; i++ {
 		e.PolyEvaluator.MulFFTPolyTo(ctOut.Value[i], ct.Value[i], e.buf.fpMul)
 	}
@@ -119,7 +119,7 @@ func (e *Evaluator[T]) PolyMulFFTGLWETo(ctOut, ct FFTGLWECiphertext[T], p poly.P
 
 // PolyMulAddFFTGLWETo computes ctOut += p * ct.
 func (e *Evaluator[T]) PolyMulAddFFTGLWETo(ctOut, ct FFTGLWECiphertext[T], p poly.Poly[T]) {
-	e.PolyEvaluator.FFTTo(e.buf.fpMul, p)
+	e.PolyEvaluator.FwdFFTPolyTo(e.buf.fpMul, p)
 	for i := 0; i < e.Params.glweRank+1; i++ {
 		e.PolyEvaluator.MulAddFFTPolyTo(ctOut.Value[i], ct.Value[i], e.buf.fpMul)
 	}
@@ -127,7 +127,7 @@ func (e *Evaluator[T]) PolyMulAddFFTGLWETo(ctOut, ct FFTGLWECiphertext[T], p pol
 
 // PolyMulSubFFTGLWETo computes ctOut -= p * ct.
 func (e *Evaluator[T]) PolyMulSubFFTGLWETo(ctOut, ct FFTGLWECiphertext[T], p poly.Poly[T]) {
-	e.PolyEvaluator.FFTTo(e.buf.fpMul, p)
+	e.PolyEvaluator.FwdFFTPolyTo(e.buf.fpMul, p)
 	for i := 0; i < e.Params.glweRank+1; i++ {
 		e.PolyEvaluator.MulSubFFTPolyTo(ctOut.Value[i], ct.Value[i], e.buf.fpMul)
 	}

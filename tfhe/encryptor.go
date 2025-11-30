@@ -146,7 +146,7 @@ func (e *Encryptor[T]) GenSecretKey() SecretKey[T] {
 		e.BinarySampler.SampleVecTo(sk.LWELargeKey.Value[e.Params.lweDimension:])
 	}
 
-	e.FFTGLWESecretKeyTo(sk.FFTGLWEKey, sk.GLWEKey)
+	e.FwdFFTGLWESecretKeyTo(sk.FFTGLWEKey, sk.GLWEKey)
 
 	return sk
 }
@@ -170,7 +170,7 @@ func (e *Encryptor[T]) GenPublicKey() PublicKey[T] {
 	for i := 0; i < e.Params.glweRank; i++ {
 		vec.ReverseTo(skRev.Value[i].Coeffs, e.SecretKey.GLWEKey.Value[i].Coeffs)
 	}
-	e.FFTGLWESecretKeyTo(fskRev, skRev)
+	e.FwdFFTGLWESecretKeyTo(fskRev, skRev)
 
 	for i := 0; i < e.Params.glweRank; i++ {
 		e.GaussianSampler.SamplePolyTo(pk.LWEKey.Value[i].Value[0], e.Params.GLWEStdDevQ())

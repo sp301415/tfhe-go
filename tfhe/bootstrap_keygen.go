@@ -45,7 +45,7 @@ func (e *Encryptor[T]) GenBlindRotateKey() BlindRotateKey[T] {
 			for k := 0; k < e.Params.blindRotateParams.level; k++ {
 				e.PolyEvaluator.ScalarMulPolyTo(e.buf.ctGLWE.Value[0], e.buf.ptGGSW, e.Params.blindRotateParams.BaseQ(k))
 				e.EncryptGLWEBody(e.buf.ctGLWE)
-				e.FFTGLWECiphertextTo(brk.Value[i].Value[j].Value[k], e.buf.ctGLWE)
+				e.FwdFFTGLWECiphertextTo(brk.Value[i].Value[j].Value[k], e.buf.ctGLWE)
 			}
 		}
 	}
@@ -92,7 +92,7 @@ func (e *Encryptor[T]) GenBlindRotateKeyParallel() BlindRotateKey[T] {
 				for k := 0; k < eIdx.Params.blindRotateParams.level; k++ {
 					eIdx.PolyEvaluator.ScalarMulPolyTo(eIdx.buf.ctGLWE.Value[0], eIdx.buf.ptGGSW, eIdx.Params.blindRotateParams.BaseQ(k))
 					eIdx.EncryptGLWEBody(eIdx.buf.ctGLWE)
-					eIdx.FFTGLWECiphertextTo(brk.Value[i].Value[j].Value[k], eIdx.buf.ctGLWE)
+					eIdx.FwdFFTGLWECiphertextTo(brk.Value[i].Value[j].Value[k], eIdx.buf.ctGLWE)
 				}
 			}
 			wg.Done()

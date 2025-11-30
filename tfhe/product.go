@@ -57,7 +57,7 @@ func (e *Evaluator[T]) GadgetProdGLWETo(ctGLWEOut GLWECiphertext[T], ctFFTGLev F
 
 	e.Decomposer.DecomposePolyTo(pDcmp, p, ctFFTGLev.GadgetParams)
 	for i := 0; i < ctFFTGLev.GadgetParams.level; i++ {
-		e.PolyEvaluator.FFTTo(fpDcmp[i], pDcmp[i])
+		e.PolyEvaluator.FwdFFTPolyTo(fpDcmp[i], pDcmp[i])
 	}
 
 	e.FFTPolyMulFFTGLWETo(e.buf.ctFFTProdGLWE, ctFFTGLev.Value[0], fpDcmp[0])
@@ -77,7 +77,7 @@ func (e *Evaluator[T]) GadgetProdAddGLWETo(ctGLWEOut GLWECiphertext[T], ctFFTGLe
 
 	e.Decomposer.DecomposePolyTo(pDcmp, p, ctFFTGLev.GadgetParams)
 	for i := 0; i < ctFFTGLev.GadgetParams.level; i++ {
-		e.PolyEvaluator.FFTTo(fpDcmp[i], pDcmp[i])
+		e.PolyEvaluator.FwdFFTPolyTo(fpDcmp[i], pDcmp[i])
 	}
 
 	e.FFTPolyMulFFTGLWETo(e.buf.ctFFTProdGLWE, ctFFTGLev.Value[0], fpDcmp[0])
@@ -97,7 +97,7 @@ func (e *Evaluator[T]) GadgetProdSubGLWETo(ctGLWEOut GLWECiphertext[T], ctFFTGLe
 
 	e.Decomposer.DecomposePolyTo(pDcmp, p, ctFFTGLev.GadgetParams)
 	for i := 0; i < ctFFTGLev.GadgetParams.level; i++ {
-		e.PolyEvaluator.FFTTo(fpDcmp[i], pDcmp[i])
+		e.PolyEvaluator.FwdFFTPolyTo(fpDcmp[i], pDcmp[i])
 	}
 
 	e.FFTPolyMulFFTGLWETo(e.buf.ctFFTProdGLWE, ctFFTGLev.Value[0], fpDcmp[0])

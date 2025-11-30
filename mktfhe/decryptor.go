@@ -185,6 +185,6 @@ func (d *Decryptor[T]) DecryptFFTGLWEPhase(ct FFTGLWECiphertext[T]) tfhe.GLWEPla
 
 // DecryptFFTGLWEPhaseTo decrypts FFTGLWE ciphertext to GLWE plaintext and writes it to ptOut.
 func (d *Decryptor[T]) DecryptFFTGLWEPhaseTo(ptOut tfhe.GLWEPlaintext[T], ct FFTGLWECiphertext[T]) {
-	d.ToGLWECiphertextTo(d.buf.ctGLWE, ct)
+	d.InvGLWECiphertextTo(d.buf.ctGLWE, ct)
 	d.DecryptGLWEPhaseTo(ptOut, d.buf.ctGLWE)
 }

@@ -32,7 +32,7 @@ func (e *PublicEncryptor[T]) EncryptGLWEBody(ct GLWECiphertext[T]) {
 	for i := 0; i < e.Params.glweRank; i++ {
 		e.BinarySampler.SamplePolyTo(e.buf.auxKey.Value[i])
 	}
-	e.FFTGLWESecretKeyTo(e.buf.auxFourierKey, e.buf.auxKey)
+	e.FwdFFTGLWESecretKeyTo(e.buf.auxFourierKey, e.buf.auxKey)
 
 	e.PolyEvaluator.ShortFFTPolyMulAddPolyTo(ct.Value[0], e.PublicKey.GLWEKey.Value[0].Value[0], e.buf.auxFourierKey.Value[0])
 	for j := 1; j < e.Params.glweRank+1; j++ {

@@ -71,7 +71,7 @@ func (e *FHEWEncryptor[T]) GenSecretKey() tfhe.SecretKey[T] {
 	sk := tfhe.NewSecretKey(e.Params.baseParams)
 
 	e.GaussianSampler.SampleVecTo(sk.LWELargeKey.Value, e.Params.SecretKeyStdDevQ())
-	e.FFTGLWESecretKeyTo(sk.FFTGLWEKey, sk.GLWEKey)
+	e.FwdFFTGLWESecretKeyTo(sk.FFTGLWEKey, sk.GLWEKey)
 
 	return sk
 }

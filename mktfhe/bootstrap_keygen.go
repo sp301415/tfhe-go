@@ -49,7 +49,7 @@ func (e *Encryptor[T]) GenCRSPublicKey() tfhe.FFTGLevCiphertext[T] {
 		e.SubEncryptor.GaussianSampler.SamplePolyTo(e.buf.ctSubGLWE.Value[0], e.Params.GLWEStdDevQ())
 		e.SubEncryptor.PolyEvaluator.ShortFFTPolyMulSubPolyTo(e.buf.ctSubGLWE.Value[0], e.buf.ctSubGLWE.Value[1], e.SecretKey.FFTGLWEKey.Value[0])
 
-		e.SubEncryptor.FFTGLWECiphertextTo(pk.Value[i], e.buf.ctSubGLWE)
+		e.SubEncryptor.FwdFFTGLWECiphertextTo(pk.Value[i], e.buf.ctSubGLWE)
 	}
 	return pk
 }

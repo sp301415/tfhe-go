@@ -1,41 +1,41 @@
 package poly
 
-// FFT returns FFT(p).
-func (e *Evaluator[T]) FFT(p Poly[T]) FFTPoly {
+// FwdFFTPoly returns FwdFFTPoly(p).
+func (e *Evaluator[T]) FwdFFTPoly(p Poly[T]) FFTPoly {
 	fpOut := NewFFTPoly(e.rank)
-	e.FFTTo(fpOut, p)
+	e.FwdFFTPolyTo(fpOut, p)
 	return fpOut
 }
 
-// FFTTo computes fpOut = FFT(p).
-func (e *Evaluator[T]) FFTTo(fpOut FFTPoly, p Poly[T]) {
+// FwdFFTPolyTo computes fpOut = FFT(p).
+func (e *Evaluator[T]) FwdFFTPolyTo(fpOut FFTPoly, p Poly[T]) {
 	foldPolyTo(fpOut.Coeffs, p.Coeffs)
 	fftInPlace(fpOut.Coeffs, e.tw)
 }
 
-// FFTAddTo computes fpOut += FFT(p).
-func (e *Evaluator[T]) FFTAddTo(fpOut FFTPoly, p Poly[T]) {
+// FwdFFTAddTo computes fpOut += FFT(p).
+func (e *Evaluator[T]) FwdFFTAddTo(fpOut FFTPoly, p Poly[T]) {
 	foldPolyTo(e.buf.fp.Coeffs, p.Coeffs)
 	fftInPlace(e.buf.fp.Coeffs, e.tw)
 	addCmplxTo(fpOut.Coeffs, e.buf.fp.Coeffs, fpOut.Coeffs)
 }
 
-// FFTSubTo computes fpOut -= FFT(p).
-func (e *Evaluator[T]) FFTSubTo(fpOut FFTPoly, p Poly[T]) {
+// FwdFFTSubTo computes fpOut -= FFT(p).
+func (e *Evaluator[T]) FwdFFTSubTo(fpOut FFTPoly, p Poly[T]) {
 	foldPolyTo(e.buf.fp.Coeffs, p.Coeffs)
 	fftInPlace(e.buf.fp.Coeffs, e.tw)
 	subCmplxTo(fpOut.Coeffs, e.buf.fp.Coeffs, fpOut.Coeffs)
 }
 
-// MonomialFFT returns FFT(X^d).
-func (e *Evaluator[T]) MonomialFFT(d int) FFTPoly {
+// MonomialFwdFFT returns FFT(X^d).
+func (e *Evaluator[T]) MonomialFwdFFT(d int) FFTPoly {
 	fpOut := NewFFTPoly(e.rank)
-	e.MonomialFFTTo(fpOut, d)
+	e.MonomialFwdFFTTo(fpOut, d)
 	return fpOut
 }
 
-// MonomialFFTTo computes fpOut = FFT(X^d).
-func (e *Evaluator[T]) MonomialFFTTo(fpOut FFTPoly, d int) {
+// MonomialFwdFFTTo computes fpOut = FFT(X^d).
+func (e *Evaluator[T]) MonomialFwdFFTTo(fpOut FFTPoly, d int) {
 	d &= 2*e.rank - 1
 	for j, jj := 0, 0; j < e.rank; j, jj = j+8, jj+4 {
 		c0 := e.twMono[(e.twMonoIdx[jj+0]*d)&(2*e.rank-1)]
@@ -56,19 +56,19 @@ func (e *Evaluator[T]) MonomialFFTTo(fpOut FFTPoly, d int) {
 	}
 }
 
-// MonomialSubOneFFT returns FFT(X^d-1).
+// MonomialSubOneFwdFFT returns FFT(X^d-1).
 //
 // d should be positive.
-func (e *Evaluator[T]) MonomialSubOneFFT(d int) FFTPoly {
+func (e *Evaluator[T]) MonomialSubOneFwdFFT(d int) FFTPoly {
 	fpOut := NewFFTPoly(e.rank)
-	e.MonomialSubOneFFTTo(fpOut, d)
+	e.MonomialSubOneFwdFFTTo(fpOut, d)
 	return fpOut
 }
 
-// MonomialSubOneFFTTo computes fpOut = FFT(X^d-1).
+// MonomialSubOneFwdFFTTo computes fpOut = FFT(X^d-1).
 //
 // d should be positive.
-func (e *Evaluator[T]) MonomialSubOneFFTTo(fpOut FFTPoly, d int) {
+func (e *Evaluator[T]) MonomialSubOneFwdFFTTo(fpOut FFTPoly, d int) {
 	d &= 2*e.rank - 1
 	for j, jj := 0, 0; j < e.rank; j, jj = j+8, jj+4 {
 		c0 := e.twMono[(e.twMonoIdx[jj+0]*d)&(2*e.rank-1)]

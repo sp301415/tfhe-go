@@ -85,7 +85,7 @@ func (e *Evaluator[T]) blindRotateExtendedTo(ctOut GLWECiphertext[T], ct LWECiph
 	for j := 0; j < e.Params.lutExtendFactor; j++ {
 		e.Decomposer.DecomposePolyTo(pDcmp, e.buf.ctAcc[j].Value[0], e.Params.blindRotateParams)
 		for l := 0; l < e.Params.blindRotateParams.level; l++ {
-			e.PolyEvaluator.FFTTo(e.buf.ctAccFFTDcmp[j][0][l], pDcmp[l])
+			e.PolyEvaluator.FwdFFTPolyTo(e.buf.ctAccFFTDcmp[j][0][l], pDcmp[l])
 		}
 	}
 
@@ -97,17 +97,17 @@ func (e *Evaluator[T]) blindRotateExtendedTo(ctOut GLWECiphertext[T], ct LWECiph
 	}
 
 	if a2NIdx == 0 {
-		e.PolyEvaluator.MonomialSubOneFFTTo(e.buf.fMono, a2NMono)
+		e.PolyEvaluator.MonomialSubOneFwdFFTTo(e.buf.fMono, a2NMono)
 		for k := 0; k < e.Params.lutExtendFactor; k++ {
 			e.FFTPolyMulFFTGLWETo(e.buf.ctFFTAcc[k], e.buf.ctFFTBlockAcc[k], e.buf.fMono)
 		}
 	} else {
-		e.PolyEvaluator.MonomialFFTTo(e.buf.fMono, a2NMono+1)
+		e.PolyEvaluator.MonomialFwdFFTTo(e.buf.fMono, a2NMono+1)
 		for k, kk := 0, e.Params.lutExtendFactor-a2NIdx; k < a2NIdx; k, kk = k+1, kk+1 {
 			e.FFTPolyMulFFTGLWETo(e.buf.ctFFTAcc[k], e.buf.ctFFTBlockAcc[kk], e.buf.fMono)
 			e.SubFFTGLWETo(e.buf.ctFFTAcc[k], e.buf.ctFFTAcc[k], e.buf.ctFFTBlockAcc[k])
 		}
-		e.PolyEvaluator.MonomialFFTTo(e.buf.fMono, a2NMono)
+		e.PolyEvaluator.MonomialFwdFFTTo(e.buf.fMono, a2NMono)
 		for k, kk := a2NIdx, 0; k < e.Params.lutExtendFactor; k, kk = k+1, kk+1 {
 			e.FFTPolyMulFFTGLWETo(e.buf.ctFFTAcc[k], e.buf.ctFFTBlockAcc[kk], e.buf.fMono)
 			e.SubFFTGLWETo(e.buf.ctFFTAcc[k], e.buf.ctFFTAcc[k], e.buf.ctFFTBlockAcc[k])
@@ -123,17 +123,17 @@ func (e *Evaluator[T]) blindRotateExtendedTo(ctOut GLWECiphertext[T], ct LWECiph
 		}
 
 		if a2NIdx == 0 {
-			e.PolyEvaluator.MonomialSubOneFFTTo(e.buf.fMono, a2NMono)
+			e.PolyEvaluator.MonomialSubOneFwdFFTTo(e.buf.fMono, a2NMono)
 			for k := 0; k < e.Params.lutExtendFactor; k++ {
 				e.FFTPolyMulAddFFTGLWETo(e.buf.ctFFTAcc[k], e.buf.ctFFTBlockAcc[k], e.buf.fMono)
 			}
 		} else {
-			e.PolyEvaluator.MonomialFFTTo(e.buf.fMono, a2NMono+1)
+			e.PolyEvaluator.MonomialFwdFFTTo(e.buf.fMono, a2NMono+1)
 			for k, kk := 0, e.Params.lutExtendFactor-a2NIdx; k < a2NIdx; k, kk = k+1, kk+1 {
 				e.FFTPolyMulAddFFTGLWETo(e.buf.ctFFTAcc[k], e.buf.ctFFTBlockAcc[kk], e.buf.fMono)
 				e.SubFFTGLWETo(e.buf.ctFFTAcc[k], e.buf.ctFFTAcc[k], e.buf.ctFFTBlockAcc[k])
 			}
-			e.PolyEvaluator.MonomialFFTTo(e.buf.fMono, a2NMono)
+			e.PolyEvaluator.MonomialFwdFFTTo(e.buf.fMono, a2NMono)
 			for k, kk := a2NIdx, 0; k < e.Params.lutExtendFactor; k, kk = k+1, kk+1 {
 				e.FFTPolyMulAddFFTGLWETo(e.buf.ctFFTAcc[k], e.buf.ctFFTBlockAcc[kk], e.buf.fMono)
 				e.SubFFTGLWETo(e.buf.ctFFTAcc[k], e.buf.ctFFTAcc[k], e.buf.ctFFTBlockAcc[k])
@@ -152,7 +152,7 @@ func (e *Evaluator[T]) blindRotateExtendedTo(ctOut GLWECiphertext[T], ct LWECiph
 			for k := 0; k < e.Params.glweRank+1; k++ {
 				e.Decomposer.DecomposePolyTo(pDcmp, e.buf.ctAcc[j].Value[k], e.Params.blindRotateParams)
 				for l := 0; l < e.Params.blindRotateParams.level; l++ {
-					e.PolyEvaluator.FFTTo(e.buf.ctAccFFTDcmp[j][k][l], pDcmp[l])
+					e.PolyEvaluator.FwdFFTPolyTo(e.buf.ctAccFFTDcmp[j][k][l], pDcmp[l])
 				}
 			}
 		}
@@ -165,17 +165,17 @@ func (e *Evaluator[T]) blindRotateExtendedTo(ctOut GLWECiphertext[T], ct LWECiph
 		}
 
 		if a2NIdx == 0 {
-			e.PolyEvaluator.MonomialSubOneFFTTo(e.buf.fMono, a2NMono)
+			e.PolyEvaluator.MonomialSubOneFwdFFTTo(e.buf.fMono, a2NMono)
 			for k := 0; k < e.Params.lutExtendFactor; k++ {
 				e.FFTPolyMulFFTGLWETo(e.buf.ctFFTAcc[k], e.buf.ctFFTBlockAcc[k], e.buf.fMono)
 			}
 		} else {
-			e.PolyEvaluator.MonomialFFTTo(e.buf.fMono, a2NMono+1)
+			e.PolyEvaluator.MonomialFwdFFTTo(e.buf.fMono, a2NMono+1)
 			for k, kk := 0, e.Params.lutExtendFactor-a2NIdx; k < a2NIdx; k, kk = k+1, kk+1 {
 				e.FFTPolyMulFFTGLWETo(e.buf.ctFFTAcc[k], e.buf.ctFFTBlockAcc[kk], e.buf.fMono)
 				e.SubFFTGLWETo(e.buf.ctFFTAcc[k], e.buf.ctFFTAcc[k], e.buf.ctFFTBlockAcc[k])
 			}
-			e.PolyEvaluator.MonomialFFTTo(e.buf.fMono, a2NMono)
+			e.PolyEvaluator.MonomialFwdFFTTo(e.buf.fMono, a2NMono)
 			for k, kk := a2NIdx, 0; k < e.Params.lutExtendFactor; k, kk = k+1, kk+1 {
 				e.FFTPolyMulFFTGLWETo(e.buf.ctFFTAcc[k], e.buf.ctFFTBlockAcc[kk], e.buf.fMono)
 				e.SubFFTGLWETo(e.buf.ctFFTAcc[k], e.buf.ctFFTAcc[k], e.buf.ctFFTBlockAcc[k])
@@ -191,17 +191,17 @@ func (e *Evaluator[T]) blindRotateExtendedTo(ctOut GLWECiphertext[T], ct LWECiph
 			}
 
 			if a2NIdx == 0 {
-				e.PolyEvaluator.MonomialSubOneFFTTo(e.buf.fMono, a2NMono)
+				e.PolyEvaluator.MonomialSubOneFwdFFTTo(e.buf.fMono, a2NMono)
 				for k := 0; k < e.Params.lutExtendFactor; k++ {
 					e.FFTPolyMulAddFFTGLWETo(e.buf.ctFFTAcc[k], e.buf.ctFFTBlockAcc[k], e.buf.fMono)
 				}
 			} else {
-				e.PolyEvaluator.MonomialFFTTo(e.buf.fMono, a2NMono+1)
+				e.PolyEvaluator.MonomialFwdFFTTo(e.buf.fMono, a2NMono+1)
 				for k, kk := 0, e.Params.lutExtendFactor-a2NIdx; k < a2NIdx; k, kk = k+1, kk+1 {
 					e.FFTPolyMulAddFFTGLWETo(e.buf.ctFFTAcc[k], e.buf.ctFFTBlockAcc[kk], e.buf.fMono)
 					e.SubFFTGLWETo(e.buf.ctFFTAcc[k], e.buf.ctFFTAcc[k], e.buf.ctFFTBlockAcc[k])
 				}
-				e.PolyEvaluator.MonomialFFTTo(e.buf.fMono, a2NMono)
+				e.PolyEvaluator.MonomialFwdFFTTo(e.buf.fMono, a2NMono)
 				for k, kk := a2NIdx, 0; k < e.Params.lutExtendFactor; k, kk = k+1, kk+1 {
 					e.FFTPolyMulAddFFTGLWETo(e.buf.ctFFTAcc[k], e.buf.ctFFTBlockAcc[kk], e.buf.fMono)
 					e.SubFFTGLWETo(e.buf.ctFFTAcc[k], e.buf.ctFFTAcc[k], e.buf.ctFFTBlockAcc[k])
@@ -220,7 +220,7 @@ func (e *Evaluator[T]) blindRotateExtendedTo(ctOut GLWECiphertext[T], ct LWECiph
 		for k := 0; k < e.Params.glweRank+1; k++ {
 			e.Decomposer.DecomposePolyTo(pDcmp, e.buf.ctAcc[j].Value[k], e.Params.blindRotateParams)
 			for l := 0; l < e.Params.blindRotateParams.level; l++ {
-				e.PolyEvaluator.FFTTo(e.buf.ctAccFFTDcmp[j][k][l], pDcmp[l])
+				e.PolyEvaluator.FwdFFTPolyTo(e.buf.ctAccFFTDcmp[j][k][l], pDcmp[l])
 			}
 		}
 	}
@@ -230,13 +230,13 @@ func (e *Evaluator[T]) blindRotateExtendedTo(ctOut GLWECiphertext[T], ct LWECiph
 
 	if a2NIdx == 0 {
 		e.ExternalProdFFTGLWETo(e.buf.ctFFTBlockAcc[0], e.EvalKey.BlindRotateKey.Value[e.Params.lweDimension-e.Params.blockSize], e.buf.ctAccFFTDcmp[0])
-		e.PolyEvaluator.MonomialSubOneFFTTo(e.buf.fMono, a2NMono)
+		e.PolyEvaluator.MonomialSubOneFwdFFTTo(e.buf.fMono, a2NMono)
 		e.FFTPolyMulFFTGLWETo(e.buf.ctFFTAcc[0], e.buf.ctFFTBlockAcc[0], e.buf.fMono)
 	} else {
 		kk := e.Params.lutExtendFactor - a2NIdx
 		e.ExternalProdFFTGLWETo(e.buf.ctFFTBlockAcc[0], e.EvalKey.BlindRotateKey.Value[e.Params.lweDimension-e.Params.blockSize], e.buf.ctAccFFTDcmp[0])
 		e.ExternalProdFFTGLWETo(e.buf.ctFFTBlockAcc[kk], e.EvalKey.BlindRotateKey.Value[e.Params.lweDimension-e.Params.blockSize], e.buf.ctAccFFTDcmp[kk])
-		e.PolyEvaluator.MonomialFFTTo(e.buf.fMono, a2NMono+1)
+		e.PolyEvaluator.MonomialFwdFFTTo(e.buf.fMono, a2NMono+1)
 		e.FFTPolyMulFFTGLWETo(e.buf.ctFFTAcc[0], e.buf.ctFFTBlockAcc[kk], e.buf.fMono)
 		e.SubFFTGLWETo(e.buf.ctFFTAcc[0], e.buf.ctFFTAcc[0], e.buf.ctFFTBlockAcc[0])
 	}
@@ -247,13 +247,13 @@ func (e *Evaluator[T]) blindRotateExtendedTo(ctOut GLWECiphertext[T], ct LWECiph
 
 		if a2NIdx == 0 {
 			e.ExternalProdFFTGLWETo(e.buf.ctFFTBlockAcc[0], e.EvalKey.BlindRotateKey.Value[j], e.buf.ctAccFFTDcmp[0])
-			e.PolyEvaluator.MonomialSubOneFFTTo(e.buf.fMono, a2NMono)
+			e.PolyEvaluator.MonomialSubOneFwdFFTTo(e.buf.fMono, a2NMono)
 			e.FFTPolyMulAddFFTGLWETo(e.buf.ctFFTAcc[0], e.buf.ctFFTBlockAcc[0], e.buf.fMono)
 		} else {
 			kk := e.Params.lutExtendFactor - a2NIdx
 			e.ExternalProdFFTGLWETo(e.buf.ctFFTBlockAcc[0], e.EvalKey.BlindRotateKey.Value[j], e.buf.ctAccFFTDcmp[0])
 			e.ExternalProdFFTGLWETo(e.buf.ctFFTBlockAcc[kk], e.EvalKey.BlindRotateKey.Value[j], e.buf.ctAccFFTDcmp[kk])
-			e.PolyEvaluator.MonomialFFTTo(e.buf.fMono, a2NMono+1)
+			e.PolyEvaluator.MonomialFwdFFTTo(e.buf.fMono, a2NMono+1)
 			e.FFTPolyMulAddFFTGLWETo(e.buf.ctFFTAcc[0], e.buf.ctFFTBlockAcc[kk], e.buf.fMono)
 			e.SubFFTGLWETo(e.buf.ctFFTAcc[0], e.buf.ctFFTAcc[0], e.buf.ctFFTBlockAcc[0])
 		}
@@ -277,15 +277,15 @@ func (e *Evaluator[T]) blindRotateBlockTo(ctOut GLWECiphertext[T], ct LWECiphert
 
 	e.Decomposer.DecomposePolyTo(pDcmp, ctOut.Value[0], e.Params.blindRotateParams)
 	for k := 0; k < e.Params.blindRotateParams.level; k++ {
-		e.PolyEvaluator.FFTTo(e.buf.ctAccFFTDcmp[0][0][k], pDcmp[k])
+		e.PolyEvaluator.FwdFFTPolyTo(e.buf.ctAccFFTDcmp[0][0][k], pDcmp[k])
 	}
 
 	e.GadgetProdFFTGLWETo(e.buf.ctFFTBlockAcc[0], e.EvalKey.BlindRotateKey.Value[0].Value[0], e.buf.ctAccFFTDcmp[0][0])
-	e.PolyEvaluator.MonomialSubOneFFTTo(e.buf.fMono, -e.ModSwitch(ct.Value[1]))
+	e.PolyEvaluator.MonomialSubOneFwdFFTTo(e.buf.fMono, -e.ModSwitch(ct.Value[1]))
 	e.FFTPolyMulFFTGLWETo(e.buf.ctFFTAcc[0], e.buf.ctFFTBlockAcc[0], e.buf.fMono)
 	for j := 1; j < e.Params.blockSize; j++ {
 		e.GadgetProdFFTGLWETo(e.buf.ctFFTBlockAcc[0], e.EvalKey.BlindRotateKey.Value[j].Value[0], e.buf.ctAccFFTDcmp[0][0])
-		e.PolyEvaluator.MonomialSubOneFFTTo(e.buf.fMono, -e.ModSwitch(ct.Value[j+1]))
+		e.PolyEvaluator.MonomialSubOneFwdFFTTo(e.buf.fMono, -e.ModSwitch(ct.Value[j+1]))
 		e.FFTPolyMulAddFFTGLWETo(e.buf.ctFFTAcc[0], e.buf.ctFFTBlockAcc[0], e.buf.fMono)
 	}
 
@@ -297,16 +297,16 @@ func (e *Evaluator[T]) blindRotateBlockTo(ctOut GLWECiphertext[T], ct LWECiphert
 		for j := 0; j < e.Params.glweRank+1; j++ {
 			e.Decomposer.DecomposePolyTo(pDcmp, ctOut.Value[j], e.Params.blindRotateParams)
 			for k := 0; k < e.Params.blindRotateParams.level; k++ {
-				e.PolyEvaluator.FFTTo(e.buf.ctAccFFTDcmp[0][j][k], pDcmp[k])
+				e.PolyEvaluator.FwdFFTPolyTo(e.buf.ctAccFFTDcmp[0][j][k], pDcmp[k])
 			}
 		}
 
 		e.ExternalProdFFTGLWETo(e.buf.ctFFTBlockAcc[0], e.EvalKey.BlindRotateKey.Value[i*e.Params.blockSize], e.buf.ctAccFFTDcmp[0])
-		e.PolyEvaluator.MonomialSubOneFFTTo(e.buf.fMono, -e.ModSwitch(ct.Value[i*e.Params.blockSize+1]))
+		e.PolyEvaluator.MonomialSubOneFwdFFTTo(e.buf.fMono, -e.ModSwitch(ct.Value[i*e.Params.blockSize+1]))
 		e.FFTPolyMulFFTGLWETo(e.buf.ctFFTAcc[0], e.buf.ctFFTBlockAcc[0], e.buf.fMono)
 		for j := i*e.Params.blockSize + 1; j < (i+1)*e.Params.blockSize; j++ {
 			e.ExternalProdFFTGLWETo(e.buf.ctFFTBlockAcc[0], e.EvalKey.BlindRotateKey.Value[j], e.buf.ctAccFFTDcmp[0])
-			e.PolyEvaluator.MonomialSubOneFFTTo(e.buf.fMono, -e.ModSwitch(ct.Value[j+1]))
+			e.PolyEvaluator.MonomialSubOneFwdFFTTo(e.buf.fMono, -e.ModSwitch(ct.Value[j+1]))
 			e.FFTPolyMulAddFFTGLWETo(e.buf.ctFFTAcc[0], e.buf.ctFFTBlockAcc[0], e.buf.fMono)
 		}
 
@@ -328,11 +328,11 @@ func (e *Evaluator[T]) blindRotateOriginalTo(ctOut GLWECiphertext[T], ct LWECiph
 
 	e.Decomposer.DecomposePolyTo(pDcmp, ctOut.Value[0], e.Params.blindRotateParams)
 	for k := 0; k < e.Params.blindRotateParams.level; k++ {
-		e.PolyEvaluator.FFTTo(e.buf.ctAccFFTDcmp[0][0][k], pDcmp[k])
+		e.PolyEvaluator.FwdFFTPolyTo(e.buf.ctAccFFTDcmp[0][0][k], pDcmp[k])
 	}
 
 	e.GadgetProdFFTGLWETo(e.buf.ctFFTBlockAcc[0], e.EvalKey.BlindRotateKey.Value[0].Value[0], e.buf.ctAccFFTDcmp[0][0])
-	e.PolyEvaluator.MonomialSubOneFFTTo(e.buf.fMono, -e.ModSwitch(ct.Value[1]))
+	e.PolyEvaluator.MonomialSubOneFwdFFTTo(e.buf.fMono, -e.ModSwitch(ct.Value[1]))
 	e.FFTPolyMulFFTGLWETo(e.buf.ctFFTAcc[0], e.buf.ctFFTBlockAcc[0], e.buf.fMono)
 	for j := 0; j < e.Params.glweRank+1; j++ {
 		e.PolyEvaluator.InvFFTAddToUnsafe(ctOut.Value[j], e.buf.ctFFTAcc[0].Value[j])
@@ -342,12 +342,12 @@ func (e *Evaluator[T]) blindRotateOriginalTo(ctOut GLWECiphertext[T], ct LWECiph
 		for j := 0; j < e.Params.glweRank+1; j++ {
 			e.Decomposer.DecomposePolyTo(pDcmp, ctOut.Value[j], e.Params.blindRotateParams)
 			for k := 0; k < e.Params.blindRotateParams.level; k++ {
-				e.PolyEvaluator.FFTTo(e.buf.ctAccFFTDcmp[0][j][k], pDcmp[k])
+				e.PolyEvaluator.FwdFFTPolyTo(e.buf.ctAccFFTDcmp[0][j][k], pDcmp[k])
 			}
 		}
 
 		e.ExternalProdFFTGLWETo(e.buf.ctFFTBlockAcc[0], e.EvalKey.BlindRotateKey.Value[i], e.buf.ctAccFFTDcmp[0])
-		e.PolyEvaluator.MonomialSubOneFFTTo(e.buf.fMono, -e.ModSwitch(ct.Value[i+1]))
+		e.PolyEvaluator.MonomialSubOneFwdFFTTo(e.buf.fMono, -e.ModSwitch(ct.Value[i+1]))
 		e.FFTPolyMulFFTGLWETo(e.buf.ctFFTAcc[0], e.buf.ctFFTBlockAcc[0], e.buf.fMono)
 
 		for j := 0; j < e.Params.glweRank+1; j++ {

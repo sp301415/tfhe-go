@@ -14,8 +14,8 @@ func (e *Evaluator[T]) MulPolyTo(pOut, p0, p1 Poly[T]) {
 	splitBits, splitCount := splitParameters[T](e.rank)
 
 	if splitCount == 1 {
-		fp0 := e.FFT(p0)
-		fp1 := e.FFT(p1)
+		fp0 := e.FwdFFTPoly(p0)
+		fp1 := e.FwdFFTPoly(p1)
 		e.MulFFTPolyTo(fp0, fp0, fp1)
 		e.InvFFTToUnsafe(pOut, fp0)
 		return
@@ -37,12 +37,12 @@ func (e *Evaluator[T]) MulPolyTo(pOut, p0, p1 Poly[T]) {
 			for j := 0; j < e.rank; j++ {
 				e.buf.pSplit.Coeffs[j] = (p0.Coeffs[j] / splitLow) % splitChunk
 			}
-			e.FFTTo(fp0Split[i], e.buf.pSplit)
+			e.FwdFFTPolyTo(fp0Split[i], e.buf.pSplit)
 
 			for j := 0; j < e.rank; j++ {
 				e.buf.pSplit.Coeffs[j] = (p1.Coeffs[j] / splitLow) % splitChunk
 			}
-			e.FFTTo(fp1Split[i], e.buf.pSplit)
+			e.FwdFFTPolyTo(fp1Split[i], e.buf.pSplit)
 		}
 	} else {
 		var splitMask T = 1<<splitBits - 1
@@ -51,12 +51,12 @@ func (e *Evaluator[T]) MulPolyTo(pOut, p0, p1 Poly[T]) {
 			for j := 0; j < e.rank; j++ {
 				e.buf.pSplit.Coeffs[j] = (p0.Coeffs[j] >> splitLowBits) & splitMask
 			}
-			e.FFTTo(fp0Split[i], e.buf.pSplit)
+			e.FwdFFTPolyTo(fp0Split[i], e.buf.pSplit)
 
 			for j := 0; j < e.rank; j++ {
 				e.buf.pSplit.Coeffs[j] = (p1.Coeffs[j] >> splitLowBits) & splitMask
 			}
-			e.FFTTo(fp1Split[i], e.buf.pSplit)
+			e.FwdFFTPolyTo(fp1Split[i], e.buf.pSplit)
 		}
 	}
 
@@ -81,8 +81,8 @@ func (e *Evaluator[T]) MulAddPolyTo(pOut, p0, p1 Poly[T]) {
 	splitBits, splitCount := splitParameters[T](e.rank)
 
 	if splitCount == 1 {
-		fp0 := e.FFT(p0)
-		fp1 := e.FFT(p1)
+		fp0 := e.FwdFFTPoly(p0)
+		fp1 := e.FwdFFTPoly(p1)
 		e.MulFFTPolyTo(fp0, fp0, fp1)
 		e.InvFFTAddToUnsafe(pOut, fp0)
 		return
@@ -104,12 +104,12 @@ func (e *Evaluator[T]) MulAddPolyTo(pOut, p0, p1 Poly[T]) {
 			for j := 0; j < e.rank; j++ {
 				e.buf.pSplit.Coeffs[j] = (p0.Coeffs[j] / splitLow) % splitChunk
 			}
-			e.FFTTo(fp0Split[i], e.buf.pSplit)
+			e.FwdFFTPolyTo(fp0Split[i], e.buf.pSplit)
 
 			for j := 0; j < e.rank; j++ {
 				e.buf.pSplit.Coeffs[j] = (p1.Coeffs[j] / splitLow) % splitChunk
 			}
-			e.FFTTo(fp1Split[i], e.buf.pSplit)
+			e.FwdFFTPolyTo(fp1Split[i], e.buf.pSplit)
 		}
 	} else {
 		var splitMask T = 1<<splitBits - 1
@@ -118,12 +118,12 @@ func (e *Evaluator[T]) MulAddPolyTo(pOut, p0, p1 Poly[T]) {
 			for j := 0; j < e.rank; j++ {
 				e.buf.pSplit.Coeffs[j] = (p0.Coeffs[j] >> splitLowBits) & splitMask
 			}
-			e.FFTTo(fp0Split[i], e.buf.pSplit)
+			e.FwdFFTPolyTo(fp0Split[i], e.buf.pSplit)
 
 			for j := 0; j < e.rank; j++ {
 				e.buf.pSplit.Coeffs[j] = (p1.Coeffs[j] >> splitLowBits) & splitMask
 			}
-			e.FFTTo(fp1Split[i], e.buf.pSplit)
+			e.FwdFFTPolyTo(fp1Split[i], e.buf.pSplit)
 		}
 	}
 
@@ -148,8 +148,8 @@ func (e *Evaluator[T]) MulSubPolyTo(pOut, p0, p1 Poly[T]) {
 	splitBits, splitCount := splitParameters[T](e.rank)
 
 	if splitCount == 1 {
-		fp0 := e.FFT(p0)
-		fp1 := e.FFT(p1)
+		fp0 := e.FwdFFTPoly(p0)
+		fp1 := e.FwdFFTPoly(p1)
 		e.MulFFTPolyTo(fp0, fp0, fp1)
 		e.InvFFTAddToUnsafe(pOut, fp0)
 		return
@@ -171,12 +171,12 @@ func (e *Evaluator[T]) MulSubPolyTo(pOut, p0, p1 Poly[T]) {
 			for j := 0; j < e.rank; j++ {
 				e.buf.pSplit.Coeffs[j] = (p0.Coeffs[j] / splitLow) % splitChunk
 			}
-			e.FFTTo(fp0Split[i], e.buf.pSplit)
+			e.FwdFFTPolyTo(fp0Split[i], e.buf.pSplit)
 
 			for j := 0; j < e.rank; j++ {
 				e.buf.pSplit.Coeffs[j] = (p1.Coeffs[j] / splitLow) % splitChunk
 			}
-			e.FFTTo(fp1Split[i], e.buf.pSplit)
+			e.FwdFFTPolyTo(fp1Split[i], e.buf.pSplit)
 		}
 	} else {
 		var splitMask T = 1<<splitBits - 1
@@ -185,12 +185,12 @@ func (e *Evaluator[T]) MulSubPolyTo(pOut, p0, p1 Poly[T]) {
 			for j := 0; j < e.rank; j++ {
 				e.buf.pSplit.Coeffs[j] = (p0.Coeffs[j] >> splitLowBits) & splitMask
 			}
-			e.FFTTo(fp0Split[i], e.buf.pSplit)
+			e.FwdFFTPolyTo(fp0Split[i], e.buf.pSplit)
 
 			for j := 0; j < e.rank; j++ {
 				e.buf.pSplit.Coeffs[j] = (p1.Coeffs[j] >> splitLowBits) & splitMask
 			}
-			e.FFTTo(fp1Split[i], e.buf.pSplit)
+			e.FwdFFTPolyTo(fp1Split[i], e.buf.pSplit)
 		}
 	}
 
@@ -226,7 +226,7 @@ func (e *Evaluator[T]) ShortFFTPolyMulPolyTo(pOut, p Poly[T], fpShort FFTPoly) {
 	splitBits, splitCount := splitParamsShort[T](e.rank)
 
 	if splitCount == 1 {
-		e.FFTTo(e.buf.fpSplit[0], p)
+		e.FwdFFTPolyTo(e.buf.fpSplit[0], p)
 		e.MulFFTPolyTo(e.buf.fpSplit[0], e.buf.fpSplit[0], fpShort)
 		e.InvFFTToUnsafe(pOut, e.buf.fpSplit[0])
 		return
@@ -239,7 +239,7 @@ func (e *Evaluator[T]) ShortFFTPolyMulPolyTo(pOut, p Poly[T], fpShort FFTPoly) {
 			for j := 0; j < e.rank; j++ {
 				e.buf.pSplit.Coeffs[j] = (p.Coeffs[j] / splitLow) % splitChunk
 			}
-			e.FFTTo(e.buf.fpSplit[i], e.buf.pSplit)
+			e.FwdFFTPolyTo(e.buf.fpSplit[i], e.buf.pSplit)
 			e.MulFFTPolyTo(e.buf.fpSplit[i], e.buf.fpSplit[i], fpShort)
 		}
 	} else {
@@ -249,7 +249,7 @@ func (e *Evaluator[T]) ShortFFTPolyMulPolyTo(pOut, p Poly[T], fpShort FFTPoly) {
 			for j := 0; j < e.rank; j++ {
 				e.buf.pSplit.Coeffs[j] = (p.Coeffs[j] >> splitLowBits) & splitMask
 			}
-			e.FFTTo(e.buf.fpSplit[i], e.buf.pSplit)
+			e.FwdFFTPolyTo(e.buf.fpSplit[i], e.buf.pSplit)
 			e.MulFFTPolyTo(e.buf.fpSplit[i], e.buf.fpSplit[i], fpShort)
 		}
 	}
@@ -271,7 +271,7 @@ func (e *Evaluator[T]) ShortFFTPolyMulAddPolyTo(pOut, p Poly[T], fpShort FFTPoly
 	splitBits, splitCount := splitParamsShort[T](e.rank)
 
 	if splitCount == 1 {
-		e.FFTTo(e.buf.fpSplit[0], p)
+		e.FwdFFTPolyTo(e.buf.fpSplit[0], p)
 		e.MulFFTPolyTo(e.buf.fpSplit[0], e.buf.fpSplit[0], fpShort)
 		e.InvFFTAddToUnsafe(pOut, e.buf.fpSplit[0])
 		return
@@ -284,7 +284,7 @@ func (e *Evaluator[T]) ShortFFTPolyMulAddPolyTo(pOut, p Poly[T], fpShort FFTPoly
 			for j := 0; j < e.rank; j++ {
 				e.buf.pSplit.Coeffs[j] = (p.Coeffs[j] / splitLow) % splitChunk
 			}
-			e.FFTTo(e.buf.fpSplit[i], e.buf.pSplit)
+			e.FwdFFTPolyTo(e.buf.fpSplit[i], e.buf.pSplit)
 			e.MulFFTPolyTo(e.buf.fpSplit[i], e.buf.fpSplit[i], fpShort)
 		}
 	} else {
@@ -294,7 +294,7 @@ func (e *Evaluator[T]) ShortFFTPolyMulAddPolyTo(pOut, p Poly[T], fpShort FFTPoly
 			for j := 0; j < e.rank; j++ {
 				e.buf.pSplit.Coeffs[j] = (p.Coeffs[j] >> splitLowBits) & splitMask
 			}
-			e.FFTTo(e.buf.fpSplit[i], e.buf.pSplit)
+			e.FwdFFTPolyTo(e.buf.fpSplit[i], e.buf.pSplit)
 			e.MulFFTPolyTo(e.buf.fpSplit[i], e.buf.fpSplit[i], fpShort)
 		}
 	}
@@ -316,7 +316,7 @@ func (e *Evaluator[T]) ShortFFTPolyMulSubPolyTo(pOut, p Poly[T], fpShort FFTPoly
 	splitBits, splitCount := splitParamsShort[T](e.rank)
 
 	if splitCount == 1 {
-		e.FFTTo(e.buf.fpSplit[0], p)
+		e.FwdFFTPolyTo(e.buf.fpSplit[0], p)
 		e.MulFFTPolyTo(e.buf.fpSplit[0], e.buf.fpSplit[0], fpShort)
 		e.InvFFTSubToUnsafe(pOut, e.buf.fpSplit[0])
 		return
@@ -329,7 +329,7 @@ func (e *Evaluator[T]) ShortFFTPolyMulSubPolyTo(pOut, p Poly[T], fpShort FFTPoly
 			for j := 0; j < e.rank; j++ {
 				e.buf.pSplit.Coeffs[j] = (p.Coeffs[j] / splitLow) % splitChunk
 			}
-			e.FFTTo(e.buf.fpSplit[i], e.buf.pSplit)
+			e.FwdFFTPolyTo(e.buf.fpSplit[i], e.buf.pSplit)
 			e.MulFFTPolyTo(e.buf.fpSplit[i], e.buf.fpSplit[i], fpShort)
 		}
 	} else {
@@ -339,7 +339,7 @@ func (e *Evaluator[T]) ShortFFTPolyMulSubPolyTo(pOut, p Poly[T], fpShort FFTPoly
 			for j := 0; j < e.rank; j++ {
 				e.buf.pSplit.Coeffs[j] = (p.Coeffs[j] >> splitLowBits) & splitMask
 			}
-			e.FFTTo(e.buf.fpSplit[i], e.buf.pSplit)
+			e.FwdFFTPolyTo(e.buf.fpSplit[i], e.buf.pSplit)
 			e.MulFFTPolyTo(e.buf.fpSplit[i], e.buf.fpSplit[i], fpShort)
 		}
 	}

@@ -189,15 +189,15 @@ func (e *ManyLUTEvaluator[T]) blindRotateBlockTo(ctOut tfhe.GLWECiphertext[T], c
 
 	e.Decomposer.DecomposePolyTo(pDcmp, ctOut.Value[0], e.Params.baseParams.BlindRotateParams())
 	for k := 0; k < e.Params.baseParams.BlindRotateParams().Level(); k++ {
-		e.PolyEvaluator.FFTTo(e.buf.ctFFTAccDcmp[0][k], pDcmp[k])
+		e.PolyEvaluator.FwdFFTPolyTo(e.buf.ctFFTAccDcmp[0][k], pDcmp[k])
 	}
 
 	e.GadgetProdFFTGLWETo(e.buf.ctFFTBlockAcc, e.EvalKey.BlindRotateKey.Value[0].Value[0], e.buf.ctFFTAccDcmp[0])
-	e.PolyEvaluator.MonomialSubOneFFTTo(e.buf.fMono, -e.ModSwitch(ct.Value[1]))
+	e.PolyEvaluator.MonomialSubOneFwdFFTTo(e.buf.fMono, -e.ModSwitch(ct.Value[1]))
 	e.FFTPolyMulFFTGLWETo(e.buf.ctFFTAcc, e.buf.ctFFTBlockAcc, e.buf.fMono)
 	for j := 1; j < e.Params.baseParams.BlockSize(); j++ {
 		e.GadgetProdFFTGLWETo(e.buf.ctFFTBlockAcc, e.EvalKey.BlindRotateKey.Value[j].Value[0], e.buf.ctFFTAccDcmp[0])
-		e.PolyEvaluator.MonomialSubOneFFTTo(e.buf.fMono, -e.ModSwitch(ct.Value[j+1]))
+		e.PolyEvaluator.MonomialSubOneFwdFFTTo(e.buf.fMono, -e.ModSwitch(ct.Value[j+1]))
 		e.FFTPolyMulAddFFTGLWETo(e.buf.ctFFTAcc, e.buf.ctFFTBlockAcc, e.buf.fMono)
 	}
 
@@ -209,16 +209,16 @@ func (e *ManyLUTEvaluator[T]) blindRotateBlockTo(ctOut tfhe.GLWECiphertext[T], c
 		for j := 0; j < e.Params.baseParams.GLWERank()+1; j++ {
 			e.Decomposer.DecomposePolyTo(pDcmp, ctOut.Value[j], e.Params.baseParams.BlindRotateParams())
 			for k := 0; k < e.Params.baseParams.BlindRotateParams().Level(); k++ {
-				e.PolyEvaluator.FFTTo(e.buf.ctFFTAccDcmp[j][k], pDcmp[k])
+				e.PolyEvaluator.FwdFFTPolyTo(e.buf.ctFFTAccDcmp[j][k], pDcmp[k])
 			}
 		}
 
 		e.ExternalProdFFTGLWETo(e.buf.ctFFTBlockAcc, e.EvalKey.BlindRotateKey.Value[i*e.Params.baseParams.BlockSize()], e.buf.ctFFTAccDcmp)
-		e.PolyEvaluator.MonomialSubOneFFTTo(e.buf.fMono, -e.ModSwitch(ct.Value[i*e.Params.baseParams.BlockSize()+1]))
+		e.PolyEvaluator.MonomialSubOneFwdFFTTo(e.buf.fMono, -e.ModSwitch(ct.Value[i*e.Params.baseParams.BlockSize()+1]))
 		e.FFTPolyMulFFTGLWETo(e.buf.ctFFTAcc, e.buf.ctFFTBlockAcc, e.buf.fMono)
 		for j := i*e.Params.baseParams.BlockSize() + 1; j < (i+1)*e.Params.baseParams.BlockSize(); j++ {
 			e.ExternalProdFFTGLWETo(e.buf.ctFFTBlockAcc, e.EvalKey.BlindRotateKey.Value[j], e.buf.ctFFTAccDcmp)
-			e.PolyEvaluator.MonomialSubOneFFTTo(e.buf.fMono, -e.ModSwitch(ct.Value[j+1]))
+			e.PolyEvaluator.MonomialSubOneFwdFFTTo(e.buf.fMono, -e.ModSwitch(ct.Value[j+1]))
 			e.FFTPolyMulAddFFTGLWETo(e.buf.ctFFTAcc, e.buf.ctFFTBlockAcc, e.buf.fMono)
 		}
 
@@ -240,11 +240,11 @@ func (e *ManyLUTEvaluator[T]) blindRotateOriginalTo(ctOut tfhe.GLWECiphertext[T]
 
 	e.Decomposer.DecomposePolyTo(pDcmp, ctOut.Value[0], e.Params.baseParams.BlindRotateParams())
 	for k := 0; k < e.Params.baseParams.BlindRotateParams().Level(); k++ {
-		e.PolyEvaluator.FFTTo(e.buf.ctFFTAccDcmp[0][k], pDcmp[k])
+		e.PolyEvaluator.FwdFFTPolyTo(e.buf.ctFFTAccDcmp[0][k], pDcmp[k])
 	}
 
 	e.GadgetProdFFTGLWETo(e.buf.ctFFTBlockAcc, e.EvalKey.BlindRotateKey.Value[0].Value[0], e.buf.ctFFTAccDcmp[0])
-	e.PolyEvaluator.MonomialSubOneFFTTo(e.buf.fMono, -e.ModSwitch(ct.Value[1]))
+	e.PolyEvaluator.MonomialSubOneFwdFFTTo(e.buf.fMono, -e.ModSwitch(ct.Value[1]))
 	e.FFTPolyMulFFTGLWETo(e.buf.ctFFTAcc, e.buf.ctFFTBlockAcc, e.buf.fMono)
 	for j := 0; j < e.Params.baseParams.GLWERank()+1; j++ {
 		e.PolyEvaluator.InvFFTAddToUnsafe(ctOut.Value[j], e.buf.ctFFTAcc.Value[j])
@@ -254,12 +254,12 @@ func (e *ManyLUTEvaluator[T]) blindRotateOriginalTo(ctOut tfhe.GLWECiphertext[T]
 		for j := 0; j < e.Params.baseParams.GLWERank()+1; j++ {
 			e.Decomposer.DecomposePolyTo(pDcmp, ctOut.Value[j], e.Params.baseParams.BlindRotateParams())
 			for k := 0; k < e.Params.baseParams.BlindRotateParams().Level(); k++ {
-				e.PolyEvaluator.FFTTo(e.buf.ctFFTAccDcmp[j][k], pDcmp[k])
+				e.PolyEvaluator.FwdFFTPolyTo(e.buf.ctFFTAccDcmp[j][k], pDcmp[k])
 			}
 		}
 
 		e.ExternalProdFFTGLWETo(e.buf.ctFFTBlockAcc, e.EvalKey.BlindRotateKey.Value[i], e.buf.ctFFTAccDcmp)
-		e.PolyEvaluator.MonomialSubOneFFTTo(e.buf.fMono, -e.ModSwitch(ct.Value[i+1]))
+		e.PolyEvaluator.MonomialSubOneFwdFFTTo(e.buf.fMono, -e.ModSwitch(ct.Value[i+1]))
 		e.FFTPolyMulFFTGLWETo(e.buf.ctFFTAcc, e.buf.ctFFTBlockAcc, e.buf.fMono)
 
 		for j := 0; j < e.Params.baseParams.GLWERank()+1; j++ {

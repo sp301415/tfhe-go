@@ -35,7 +35,7 @@ func (e *Encryptor[T]) UniEncryptPoly(p poly.Poly[T], gadgetParams tfhe.GadgetPa
 // UniEncryptPolyTo encrypts polynomial to UniEncryption and writes it to ctOut.
 func (e *Encryptor[T]) UniEncryptPolyTo(ctOut UniEncryption[T], p poly.Poly[T]) {
 	e.SubEncryptor.BinarySampler.SamplePolyTo(e.buf.auxKey.Value[0])
-	e.SubEncryptor.FFTGLWESecretKeyTo(e.buf.auxFourierKey, e.buf.auxKey)
+	e.SubEncryptor.FwdFFTGLWESecretKeyTo(e.buf.auxFourierKey, e.buf.auxKey)
 
 	for i := 0; i < ctOut.GadgetParams.Level(); i++ {
 		ctOut.Value[0].Value[i].Value[1].CopyFrom(e.CRS[i])
@@ -78,7 +78,7 @@ func (e *Encryptor[T]) UniDecryptPoly(ct UniEncryption[T]) poly.Poly[T] {
 // UniDecryptPolyTo decrypts UniEncryption to GLWE plaintext and writes it to ptOut.
 func (e *Encryptor[T]) UniDecryptPolyTo(pOut poly.Poly[T], ct UniEncryption[T]) {
 	e.SubEncryptor.DecryptGLevPolyTo(e.buf.auxKey.Value[0], ct.Value[1])
-	e.SubEncryptor.FFTGLWESecretKeyTo(e.buf.auxFourierKey, e.buf.auxKey)
+	e.SubEncryptor.FwdFFTGLWESecretKeyTo(e.buf.auxFourierKey, e.buf.auxKey)
 
 	pOut.CopyFrom(ct.Value[0].Value[0].Value[0])
 	e.SubEncryptor.PolyEvaluator.ShortFFTPolyMulSubPolyTo(pOut, ct.Value[0].Value[0].Value[1], e.buf.auxFourierKey.Value[0])

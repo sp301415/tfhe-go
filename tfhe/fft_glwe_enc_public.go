@@ -20,5 +20,5 @@ func (e *PublicEncryptor[T]) EncryptFFTGLWEPlaintext(pt GLWEPlaintext[T]) FFTGLW
 // EncryptFFTGLWEPlaintextTo encrypts GLWE plaintext to FFTGLWE ciphertext and writes it to ctOut.
 func (e *PublicEncryptor[T]) EncryptFFTGLWEPlaintextTo(ctOut FFTGLWECiphertext[T], pt GLWEPlaintext[T]) {
 	e.EncryptGLWEPlaintextTo(e.buf.ctGLWE, pt)
-	e.FFTGLWECiphertextTo(ctOut, e.buf.ctGLWE)
+	e.FwdFFTGLWECiphertextTo(ctOut, e.buf.ctGLWE)
 }
