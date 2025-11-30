@@ -12,7 +12,7 @@ import (
 
 // foldPolyTo converts and folds p to fpOut.
 func foldPolyTo[T num.Integer](fpOut []float64, p []T) {
-	if cpu.X86.HasAVX {
+	if cpu.X86.HasAVX && cpu.X86.HasAVX2 {
 		var z T
 		switch any(z).(type) {
 		case uint32:

@@ -24,7 +24,7 @@ type Encryptor[T TorusInt] struct {
 	UniformSampler *csprng.UniformSampler[T]
 	// BinarySampler is used for sampling LWE and GLWE key.
 	BinarySampler *csprng.BinarySampler[T]
-	// GaussainSampler is used for sampling noise in LWE and GLWE encryption.
+	// GaussianSampler is used for sampling noise in LWE and GLWE encryption.
 	GaussianSampler *csprng.GaussianSampler[T]
 
 	// PolyEvaluator is a PolyEvaluator for this Encryptor.

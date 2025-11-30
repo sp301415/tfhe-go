@@ -71,7 +71,7 @@ func (p FHEWParameters[T]) BaseParams() tfhe.Parameters[T] {
 
 // SecretKeyStdDev returns the standard deviation of the secret key.
 //
-// This is a normlized standard deviation.
+// This is a normalized standard deviation.
 // For actual sampling, use [FHEWParameters.SecretKeyStdDevQ].
 func (p FHEWParameters[T]) SecretKeyStdDev() float64 {
 	return p.secretKeyStdDev

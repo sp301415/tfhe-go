@@ -192,7 +192,7 @@ func (p Parameters[T]) LogPolyRank() int {
 // Returns LWEStdDev if BootstrapOrder is OrderBlindRotateKeySwitch,
 // and GLWEStdDev otherwise.
 //
-// This is a normlized standard deviation.
+// This is a normalized standard deviation.
 // For actual sampling, use [Parameters.DefaultLWEStdDevQ].
 func (p Parameters[T]) DefaultLWEStdDev() float64 {
 	return p.subParams.DefaultLWEStdDev()
@@ -205,7 +205,7 @@ func (p Parameters[T]) DefaultLWEStdDevQ() float64 {
 
 // LWEStdDev is the standard deviation used for gaussian error sampling in LWE encryption.
 //
-// This is a normlized standard deviation.
+// This is a normalized standard deviation.
 // For actual sampling, use [Parameters.LWEStdDevQ].
 func (p Parameters[T]) LWEStdDev() float64 {
 	return p.subParams.LWEStdDev()
@@ -218,7 +218,7 @@ func (p Parameters[T]) LWEStdDevQ() float64 {
 
 // GLWEStdDev is the standard deviation used for gaussian error sampling in GLWE encryption.
 //
-// This is a normlized standard deviation.
+// This is a normalized standard deviation.
 // For actual sampling, use [Parameters.GLWEStdDevQ].
 func (p Parameters[T]) GLWEStdDev() float64 {
 	return p.subParams.GLWEStdDev()
