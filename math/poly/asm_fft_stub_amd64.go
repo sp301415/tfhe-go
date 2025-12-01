@@ -5,7 +5,7 @@
 package poly
 
 //go:noescape
-func fftInPlaceAVX2(coeffs []float64, tw []complex128)
+func fwdFFTInPlaceAVX2(coeffs []float64, tw []complex128)
 
 //go:noescape
-func ifftInPlaceAVX2(coeffs []float64, twInv []complex128, scale float64)
+func invFFTInPlaceAVX2(coeffs []float64, twInv []complex128, scale float64)

@@ -10,9 +10,9 @@ func butterfly(uR, uI, vR, vI, wR, wI float64) (float64, float64, float64, float
 	return uR + vwR, uI + vwI, uR - vwR, uI - vwI
 }
 
-// fftInPlace is a top-level function for FFT.
+// fwdFFTInPlace is a top-level function for FFT.
 // All internal FFT implementations calls this function for performance.
-func fftInPlace(coeffs []float64, tw []complex128) {
+func fwdFFTInPlace(coeffs []float64, tw []complex128) {
 	N := len(coeffs)
 	wIdx := 0
 
@@ -86,9 +86,9 @@ func invButterfly(uR, uI, vR, vI, wR, wI float64) (float64, float64, float64, fl
 	return uR, uI, vwR, vwI
 }
 
-// ifftInPlace is a top-level function for inverse FFT.
+// invFFTInPlace is a top-level function for inverse FFT.
 // All internal inverse FFT implementations calls this function for performance.
-func ifftInPlace(coeffs []float64, twInv []complex128) {
+func invFFTInPlace(coeffs []float64, twInv []complex128) {
 	N := len(coeffs)
 	wIdx := 0
 

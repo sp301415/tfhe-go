@@ -9,7 +9,7 @@ import (
 	"github.com/sp301415/tfhe-go/math/vec"
 )
 
-func fftInPlaceRef(coeffs, tw []complex128) {
+func fwdFFTInPlaceRef(coeffs, tw []complex128) {
 	N := len(coeffs)
 
 	t := N
@@ -78,11 +78,11 @@ func TestFFTAssembly(t *testing.T) {
 
 	t.Run("FwdFFT", func(t *testing.T) {
 		vec.CmplxToFloat4To(coeffsAVX2, coeffs)
-		fftInPlace(coeffsAVX2, tw)
+		fwdFFTInPlace(coeffsAVX2, tw)
 		vec.Float4ToCmplxTo(coeffsAVX2Out, coeffsAVX2)
 
 		vec.MulTo(coeffs, coeffs, twist)
-		fftInPlaceRef(coeffs, twRef)
+		fwdFFTInPlaceRef(coeffs, twRef)
 
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(coeffs[i]-coeffsAVX2Out[i]) > eps {
@@ -93,7 +93,7 @@ func TestFFTAssembly(t *testing.T) {
 
 	t.Run("InvFFT", func(t *testing.T) {
 		vec.CmplxToFloat4To(coeffsAVX2, coeffs)
-		ifftInPlace(coeffsAVX2, twInv)
+		invFFTInPlace(coeffsAVX2, twInv)
 		vec.Float4ToCmplxTo(coeffsAVX2Out, coeffsAVX2)
 
 		invFFTInPlaceRef(coeffs, twInvRef)

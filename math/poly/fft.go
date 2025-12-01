@@ -10,20 +10,20 @@ func (e *Evaluator[T]) FwdFFTPoly(p Poly[T]) FFTPoly {
 // FwdFFTPolyTo computes fpOut = FFT(p).
 func (e *Evaluator[T]) FwdFFTPolyTo(fpOut FFTPoly, p Poly[T]) {
 	foldPolyTo(fpOut.Coeffs, p.Coeffs)
-	fftInPlace(fpOut.Coeffs, e.tw)
+	fwdFFTInPlace(fpOut.Coeffs, e.tw)
 }
 
 // FwdFFTAddTo computes fpOut += FFT(p).
 func (e *Evaluator[T]) FwdFFTAddTo(fpOut FFTPoly, p Poly[T]) {
 	foldPolyTo(e.buf.fp.Coeffs, p.Coeffs)
-	fftInPlace(e.buf.fp.Coeffs, e.tw)
+	fwdFFTInPlace(e.buf.fp.Coeffs, e.tw)
 	addCmplxTo(fpOut.Coeffs, e.buf.fp.Coeffs, fpOut.Coeffs)
 }
 
 // FwdFFTSubTo computes fpOut -= FFT(p).
 func (e *Evaluator[T]) FwdFFTSubTo(fpOut FFTPoly, p Poly[T]) {
 	foldPolyTo(e.buf.fp.Coeffs, p.Coeffs)
-	fftInPlace(e.buf.fp.Coeffs, e.tw)
+	fwdFFTInPlace(e.buf.fp.Coeffs, e.tw)
 	subCmplxTo(fpOut.Coeffs, e.buf.fp.Coeffs, fpOut.Coeffs)
 }
 
@@ -99,7 +99,7 @@ func (e *Evaluator[T]) InvFFT(fp FFTPoly) Poly[T] {
 // InvFFTTo computes pOut = InvFFT(fp).
 func (e *Evaluator[T]) InvFFTTo(pOut Poly[T], fp FFTPoly) {
 	e.buf.fpInv.CopyFrom(fp)
-	ifftInPlace(e.buf.fpInv.Coeffs, e.twInv)
+	invFFTInPlace(e.buf.fpInv.Coeffs, e.twInv)
 	floatModQInPlace(e.buf.fpInv.Coeffs, e.q)
 	unfoldPolyTo(pOut.Coeffs, e.buf.fpInv.Coeffs)
 }
@@ -107,7 +107,7 @@ func (e *Evaluator[T]) InvFFTTo(pOut Poly[T], fp FFTPoly) {
 // InvFFTAddTo computes pOut += InvFFT(fp).
 func (e *Evaluator[T]) InvFFTAddTo(pOut Poly[T], fp FFTPoly) {
 	e.buf.fpInv.CopyFrom(fp)
-	ifftInPlace(e.buf.fpInv.Coeffs, e.twInv)
+	invFFTInPlace(e.buf.fpInv.Coeffs, e.twInv)
 	floatModQInPlace(e.buf.fpInv.Coeffs, e.q)
 	unfoldPolyAddTo(pOut.Coeffs, e.buf.fpInv.Coeffs)
 }
@@ -115,7 +115,7 @@ func (e *Evaluator[T]) InvFFTAddTo(pOut Poly[T], fp FFTPoly) {
 // InvFFTSubTo computes pOut -= InvFFT(fp).
 func (e *Evaluator[T]) InvFFTSubTo(pOut Poly[T], fp FFTPoly) {
 	e.buf.fpInv.CopyFrom(fp)
-	ifftInPlace(e.buf.fpInv.Coeffs, e.twInv)
+	invFFTInPlace(e.buf.fpInv.Coeffs, e.twInv)
 	floatModQInPlace(e.buf.fpInv.Coeffs, e.q)
 	unfoldPolySubTo(pOut.Coeffs, e.buf.fpInv.Coeffs)
 }
@@ -125,7 +125,7 @@ func (e *Evaluator[T]) InvFFTSubTo(pOut Poly[T], fp FFTPoly) {
 // This method is slightly faster than [*Evaluator.InvFFTTo], but it modifies fp directly.
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
 func (e *Evaluator[T]) InvFFTToUnsafe(pOut Poly[T], fp FFTPoly) {
-	ifftInPlace(fp.Coeffs, e.twInv)
+	invFFTInPlace(fp.Coeffs, e.twInv)
 	floatModQInPlace(fp.Coeffs, e.q)
 	unfoldPolyTo(pOut.Coeffs, fp.Coeffs)
 }
@@ -135,7 +135,7 @@ func (e *Evaluator[T]) InvFFTToUnsafe(pOut Poly[T], fp FFTPoly) {
 // This method is slightly faster than [*Evaluator.InvFFTAddTo], but it modifies fp directly.
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
 func (e *Evaluator[T]) InvFFTAddToUnsafe(pOut Poly[T], fp FFTPoly) {
-	ifftInPlace(fp.Coeffs, e.twInv)
+	invFFTInPlace(fp.Coeffs, e.twInv)
 	floatModQInPlace(fp.Coeffs, e.q)
 	unfoldPolyAddTo(pOut.Coeffs, fp.Coeffs)
 }
@@ -145,7 +145,7 @@ func (e *Evaluator[T]) InvFFTAddToUnsafe(pOut Poly[T], fp FFTPoly) {
 // This method is slightly faster than [*Evaluator.InvFFTSubTo], but it modifies fp directly.
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
 func (e *Evaluator[T]) InvFFTSubToUnsafe(pOut Poly[T], fp FFTPoly) {
-	ifftInPlace(fp.Coeffs, e.twInv)
+	invFFTInPlace(fp.Coeffs, e.twInv)
 	floatModQInPlace(fp.Coeffs, e.q)
 	unfoldPolySubTo(pOut.Coeffs, fp.Coeffs)
 }

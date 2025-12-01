@@ -48,8 +48,8 @@ func main() {
 	}
 
 	if *fft {
-		fftInPlaceAVX2()
-		ifftInPlaceAVX2()
+		fwdFFTInPlaceAVX2()
+		invFFTInPlaceAVX2()
 	}
 
 	if *vecCmplx {
