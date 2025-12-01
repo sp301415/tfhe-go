@@ -224,7 +224,7 @@ func UnfoldPolyToUint32AVX2(opType OpType) {
 	RET()
 }
 
-func convertFloat64ToInt64(cvtConst [5]reg.VecVirtual, c, cOut reg.VecVirtual) {
+func ConvertFloat64ToInt64(cvtConst [5]reg.VecVirtual, c, cOut reg.VecVirtual) {
 	mantMask, bitMantMask, expMask, expShift, zero := cvtConst[0], cvtConst[1], cvtConst[2], cvtConst[3], cvtConst[4]
 
 	cMant := YMM()
@@ -292,8 +292,8 @@ func UnfoldPolyToUint64AVX2(opType OpType) {
 	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8, Disp: 32}, c1)
 
 	c0Cvt, c1Cvt := YMM(), YMM()
-	convertFloat64ToInt64(cvtConst, c0, c0Cvt)
-	convertFloat64ToInt64(cvtConst, c1, c1Cvt)
+	ConvertFloat64ToInt64(cvtConst, c0, c0Cvt)
+	ConvertFloat64ToInt64(cvtConst, c1, c1Cvt)
 
 	c0Out, c1Out := YMM(), YMM()
 	switch opType {
@@ -310,122 +310,6 @@ func UnfoldPolyToUint64AVX2(opType OpType) {
 		VPSUBQ(c0Cvt, c0Out, c0Out)
 		VPSUBQ(c1Cvt, c1Out, c1Out)
 	}
-
-	VMOVDQU(c0Out, Mem{Base: pOut, Index: ii0, Scale: 8})
-	VMOVDQU(c1Out, Mem{Base: pOut, Index: ii1, Scale: 8})
-
-	ADDQ(Imm(8), i)
-	ADDQ(Imm(4), ii0)
-	ADDQ(Imm(4), ii1)
-
-	Label("loop_end")
-	CMPQ(i, N)
-	JL(LabelRef("loop_body"))
-
-	RET()
-}
-
-func unfoldPolyAddToUint64AVX2() {
-	TEXT("unfoldPolyAddToUint64AVX2", NOSPLIT, "func(pOut []uint64, fp []float64)")
-	Pragma("noescape")
-
-	pOut := Load(Param("pOut").Base(), GP64())
-	fp := Load(Param("fp").Base(), GP64())
-	N := Load(Param("fp").Len(), GP64())
-
-	NMul2 := GP64()
-	MOVQ(N, NMul2)
-	SHRQ(U8(1), NMul2)
-
-	mantMask, bitMantMask, expMask, expShift := YMM(), YMM(), YMM(), YMM()
-	VBROADCASTSD(NewDataAddr(NewStaticSymbol("MANT_MASK"), 0), mantMask)
-	VBROADCASTSD(NewDataAddr(NewStaticSymbol("BIT_MANT_MASK"), 0), bitMantMask)
-	VBROADCASTSD(NewDataAddr(NewStaticSymbol("EXP_MASK"), 0), expMask)
-	VBROADCASTSD(NewDataAddr(NewStaticSymbol("EXP_SHIFT"), 0), expShift)
-
-	zero := YMM()
-	VPXOR(zero, zero, zero)
-
-	cvtConst := [5]reg.VecVirtual{mantMask, bitMantMask, expMask, expShift, zero}
-
-	i, ii0, ii1 := GP64(), GP64(), GP64()
-	XORQ(i, i)
-	XORQ(ii0, ii0)
-	MOVQ(NMul2, ii1)
-	JMP(LabelRef("loop_end"))
-	Label("loop_body")
-
-	c0, c1 := YMM(), YMM()
-	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8}, c0)
-	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8, Disp: 32}, c1)
-	c0Out, c1Out := YMM(), YMM()
-	VMOVDQU(Mem{Base: pOut, Index: ii0, Scale: 8}, c0Out)
-	VMOVDQU(Mem{Base: pOut, Index: ii1, Scale: 8}, c1Out)
-
-	c0Cvt, c1Cvt := YMM(), YMM()
-	convertFloat64ToInt64(cvtConst, c0, c0Cvt)
-	convertFloat64ToInt64(cvtConst, c1, c1Cvt)
-
-	VPADDQ(c0Cvt, c0Out, c0Out)
-	VPADDQ(c1Cvt, c1Out, c1Out)
-
-	VMOVDQU(c0Out, Mem{Base: pOut, Index: ii0, Scale: 8})
-	VMOVDQU(c1Out, Mem{Base: pOut, Index: ii1, Scale: 8})
-
-	ADDQ(Imm(8), i)
-	ADDQ(Imm(4), ii0)
-	ADDQ(Imm(4), ii1)
-
-	Label("loop_end")
-	CMPQ(i, N)
-	JL(LabelRef("loop_body"))
-
-	RET()
-}
-
-func unfoldPolySubToUint64AVX2() {
-	TEXT("unfoldPolySubToUint64AVX2", NOSPLIT, "func(pOut []uint64, fp []float64)")
-	Pragma("noescape")
-
-	pOut := Load(Param("pOut").Base(), GP64())
-	fp := Load(Param("fp").Base(), GP64())
-	N := Load(Param("fp").Len(), GP64())
-
-	NMul2 := GP64()
-	MOVQ(N, NMul2)
-	SHRQ(U8(1), NMul2)
-
-	mantMask, bitMantMask, expMask, expShift := YMM(), YMM(), YMM(), YMM()
-	VBROADCASTSD(NewDataAddr(NewStaticSymbol("MANT_MASK"), 0), mantMask)
-	VBROADCASTSD(NewDataAddr(NewStaticSymbol("BIT_MANT_MASK"), 0), bitMantMask)
-	VBROADCASTSD(NewDataAddr(NewStaticSymbol("EXP_MASK"), 0), expMask)
-	VBROADCASTSD(NewDataAddr(NewStaticSymbol("EXP_SHIFT"), 0), expShift)
-
-	zero := YMM()
-	VPXOR(zero, zero, zero)
-
-	cvtConst := [5]reg.VecVirtual{mantMask, bitMantMask, expMask, expShift, zero}
-
-	i, ii0, ii1 := GP64(), GP64(), GP64()
-	XORQ(i, i)
-	XORQ(ii0, ii0)
-	MOVQ(NMul2, ii1)
-	JMP(LabelRef("loop_end"))
-	Label("loop_body")
-
-	c0, c1 := YMM(), YMM()
-	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8}, c0)
-	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8, Disp: 32}, c1)
-	c0Out, c1Out := YMM(), YMM()
-	VMOVDQU(Mem{Base: pOut, Index: ii0, Scale: 8}, c0Out)
-	VMOVDQU(Mem{Base: pOut, Index: ii1, Scale: 8}, c1Out)
-
-	c0Cvt, c1Cvt := YMM(), YMM()
-	convertFloat64ToInt64(cvtConst, c0, c0Cvt)
-	convertFloat64ToInt64(cvtConst, c1, c1Cvt)
-
-	VPSUBQ(c0Cvt, c0Out, c0Out)
-	VPSUBQ(c1Cvt, c1Out, c1Out)
 
 	VMOVDQU(c0Out, Mem{Base: pOut, Index: ii0, Scale: 8})
 	VMOVDQU(c1Out, Mem{Base: pOut, Index: ii1, Scale: 8})

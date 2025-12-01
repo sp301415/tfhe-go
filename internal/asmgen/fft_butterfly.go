@@ -5,7 +5,7 @@ import (
 	"github.com/mmcloughlin/avo/reg"
 )
 
-func butterflyAVX2(uR, uI, vR, vI, wR, wI reg.VecVirtual) {
+func FwdButterflyAVX2(uR, uI, vR, vI, wR, wI reg.VecVirtual) {
 	vwR := YMM()
 	VMULPD(wR, vR, vwR)
 	VFNMADD231PD(wI, vI, vwR)
@@ -20,7 +20,7 @@ func butterflyAVX2(uR, uI, vR, vI, wR, wI reg.VecVirtual) {
 	VADDPD(vwI, uI, uI)
 }
 
-func butterflyAVX2XMM(uR, uI, vR, vI, wR, wI reg.VecVirtual) {
+func FwdButterflyAVX2XMM(uR, uI, vR, vI, wR, wI reg.VecVirtual) {
 	vwR := XMM()
 	VMULPD(wR, vR, vwR)
 	VFNMADD231PD(wI, vI, vwR)
@@ -35,7 +35,7 @@ func butterflyAVX2XMM(uR, uI, vR, vI, wR, wI reg.VecVirtual) {
 	VADDPD(vwI, uI, uI)
 }
 
-func invButterflyAVX2(uR, uI, vR, vI, wR, wI reg.VecVirtual) {
+func InvButterflyAVX2(uR, uI, vR, vI, wR, wI reg.VecVirtual) {
 	vuR, vuI := YMM(), YMM()
 
 	VSUBPD(vR, uR, vuR)
@@ -51,7 +51,7 @@ func invButterflyAVX2(uR, uI, vR, vI, wR, wI reg.VecVirtual) {
 	VFMADD231PD(wR, vuI, vI)
 }
 
-func invButterflyAVX2XMM(uR, uI, vR, vI, wR, wI reg.VecVirtual) {
+func InvButterflyAVX2XMM(uR, uI, vR, vI, wR, wI reg.VecVirtual) {
 	vuR, vuI := XMM(), XMM()
 
 	VSUBPD(vR, uR, vuR)

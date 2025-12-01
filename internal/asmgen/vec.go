@@ -321,11 +321,11 @@ func MulToUint32AVX2(opType OpType) {
 	RET()
 }
 
-func precomputeMul64LoAVX2(x, xSwap reg.VecVirtual) {
+func PrecomputeMul64LoAVX2(x, xSwap reg.VecVirtual) {
 	VPSHUFD(Imm(0b10_11_00_01), x, xSwap)
 }
 
-func mul64LoAVX2(x0, x1, x1Swap, maskHi, xOut reg.VecVirtual) {
+func Mul64LoAVX2(x0, x1, x1Swap, maskHi, xOut reg.VecVirtual) {
 	xLoLo := YMM()
 	VPMULUDQ(x1, x0, xLoLo)
 
@@ -364,7 +364,7 @@ func ScalarMulToUint64AVX2(opType OpType) {
 	c64 := Load(Param("c"), GP64())
 	c, cSwap := YMM(), YMM()
 	VPBROADCASTQ(NewParamAddr("c", 48), c)
-	precomputeMul64LoAVX2(c, cSwap)
+	PrecomputeMul64LoAVX2(c, cSwap)
 
 	i := GP64()
 	XORQ(i, i)
@@ -375,7 +375,7 @@ func ScalarMulToUint64AVX2(opType OpType) {
 	VMOVDQU(Mem{Base: v, Index: i, Scale: 8}, x)
 
 	xMul := YMM()
-	mul64LoAVX2(x, c, cSwap, maskHi, xMul)
+	Mul64LoAVX2(x, c, cSwap, maskHi, xMul)
 
 	xOut := YMM()
 	switch opType {
@@ -462,8 +462,8 @@ func MulToUint64AVX2(opType OpType) {
 	VMOVDQU(Mem{Base: v1, Index: i, Scale: 8}, x1)
 
 	x0Swap, xMul := YMM(), YMM()
-	precomputeMul64LoAVX2(x0, x0Swap)
-	mul64LoAVX2(x1, x0, x0Swap, maskHi, xMul)
+	PrecomputeMul64LoAVX2(x0, x0Swap)
+	Mul64LoAVX2(x1, x0, x0Swap, maskHi, xMul)
 
 	xOut := YMM()
 	switch opType {

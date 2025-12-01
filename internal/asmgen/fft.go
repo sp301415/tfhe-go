@@ -38,7 +38,7 @@ func FwdFFTInPlaceAVX2() {
 	VMOVUPD(Mem{Base: coeffs, Index: jt, Scale: 8}, vReal)
 	VMOVUPD(Mem{Base: coeffs, Index: jt, Scale: 8, Disp: 32}, vImag)
 
-	butterflyAVX2(uReal, uImag, vReal, vImag, wReal, wImag)
+	FwdButterflyAVX2(uReal, uImag, vReal, vImag, wReal, wImag)
 
 	VMOVUPD(uReal, Mem{Base: coeffs, Index: j, Scale: 8})
 	VMOVUPD(uImag, Mem{Base: coeffs, Index: j, Scale: 8, Disp: 32})
@@ -91,7 +91,7 @@ func FwdFFTInPlaceAVX2() {
 	VMOVUPD(Mem{Base: coeffs, Index: jt, Scale: 8}, vReal)
 	VMOVUPD(Mem{Base: coeffs, Index: jt, Scale: 8, Disp: 32}, vImag)
 
-	butterflyAVX2(uReal, uImag, vReal, vImag, wReal, wImag)
+	FwdButterflyAVX2(uReal, uImag, vReal, vImag, wReal, wImag)
 
 	VMOVUPD(uReal, Mem{Base: coeffs, Index: j, Scale: 8})
 	VMOVUPD(uImag, Mem{Base: coeffs, Index: j, Scale: 8, Disp: 32})
@@ -135,7 +135,7 @@ func FwdFFTInPlaceAVX2() {
 	VMOVUPD(Mem{Base: coeffs, Index: j, Scale: 8, Disp: 32}, uImag128)
 	VMOVUPD(Mem{Base: coeffs, Index: j, Scale: 8, Disp: 48}, vImag128)
 
-	butterflyAVX2XMM(uReal128, uImag128, vReal128, vImag128, wReal128, wImag128)
+	FwdButterflyAVX2XMM(uReal128, uImag128, vReal128, vImag128, wReal128, wImag128)
 
 	VMOVUPD(uReal128, Mem{Base: coeffs, Index: j, Scale: 8})
 	VMOVUPD(vReal128, Mem{Base: coeffs, Index: j, Scale: 8, Disp: 16})
@@ -294,7 +294,7 @@ func InvFFTInPlaceAVX2() {
 	VMOVUPD(Mem{Base: coeffs, Index: j, Scale: 8, Disp: 32}, uImag128)
 	VMOVUPD(Mem{Base: coeffs, Index: j, Scale: 8, Disp: 48}, vImag128)
 
-	invButterflyAVX2XMM(uReal128, uImag128, vReal128, vImag128, wReal128, wImag128)
+	InvButterflyAVX2XMM(uReal128, uImag128, vReal128, vImag128, wReal128, wImag128)
 
 	VMOVUPD(uReal128, Mem{Base: coeffs, Index: j, Scale: 8})
 	VMOVUPD(vReal128, Mem{Base: coeffs, Index: j, Scale: 8, Disp: 16})
@@ -344,7 +344,7 @@ func InvFFTInPlaceAVX2() {
 	VMOVUPD(Mem{Base: coeffs, Index: jt, Scale: 8}, vReal)
 	VMOVUPD(Mem{Base: coeffs, Index: jt, Scale: 8, Disp: 32}, vImag)
 
-	invButterflyAVX2(uReal, uImag, vReal, vImag, wReal, wImag)
+	InvButterflyAVX2(uReal, uImag, vReal, vImag, wReal, wImag)
 
 	VMOVUPD(uReal, Mem{Base: coeffs, Index: j, Scale: 8})
 	VMOVUPD(uImag, Mem{Base: coeffs, Index: j, Scale: 8, Disp: 32})
@@ -393,7 +393,7 @@ func InvFFTInPlaceAVX2() {
 	VMOVUPD(Mem{Base: coeffs, Index: jt, Scale: 8}, vReal)
 	VMOVUPD(Mem{Base: coeffs, Index: jt, Scale: 8, Disp: 32}, vImag)
 
-	invButterflyAVX2(uReal, uImag, vReal, vImag, wReal, wImag)
+	InvButterflyAVX2(uReal, uImag, vReal, vImag, wReal, wImag)
 
 	VMULPD(scale, uReal, uReal)
 	VMULPD(scale, uImag, uImag)

@@ -8,7 +8,7 @@ import (
 	"golang.org/x/sys/cpu"
 )
 
-func butterfly(uR, uI, vR, vI, wR, wI float64) (float64, float64, float64, float64) {
+func fwdButterfly(uR, uI, vR, vI, wR, wI float64) (float64, float64, float64, float64) {
 	vwR := vR*wR - vI*wI
 	vwI := vR*wI + vI*wR
 	return uR + vwR, uI + vwI, uR - vwR, uI - vwI
@@ -32,10 +32,10 @@ func fwdFFTInPlace(coeffs []float64, tw []complex128) {
 		u := (*[8]float64)(unsafe.Pointer(&coeffs[j]))
 		v := (*[8]float64)(unsafe.Pointer(&coeffs[j+N/2]))
 
-		u[0], u[4], v[0], v[4] = butterfly(u[0], u[4], v[0], v[4], wReal, wImag)
-		u[1], u[5], v[1], v[5] = butterfly(u[1], u[5], v[1], v[5], wReal, wImag)
-		u[2], u[6], v[2], v[6] = butterfly(u[2], u[6], v[2], v[6], wReal, wImag)
-		u[3], u[7], v[3], v[7] = butterfly(u[3], u[7], v[3], v[7], wReal, wImag)
+		u[0], u[4], v[0], v[4] = fwdButterfly(u[0], u[4], v[0], v[4], wReal, wImag)
+		u[1], u[5], v[1], v[5] = fwdButterfly(u[1], u[5], v[1], v[5], wReal, wImag)
+		u[2], u[6], v[2], v[6] = fwdButterfly(u[2], u[6], v[2], v[6], wReal, wImag)
+		u[3], u[7], v[3], v[7] = fwdButterfly(u[3], u[7], v[3], v[7], wReal, wImag)
 	}
 
 	t := N / 2
@@ -53,10 +53,10 @@ func fwdFFTInPlace(coeffs []float64, tw []complex128) {
 				u := (*[8]float64)(unsafe.Pointer(&coeffs[j]))
 				v := (*[8]float64)(unsafe.Pointer(&coeffs[j+t]))
 
-				u[0], u[4], v[0], v[4] = butterfly(u[0], u[4], v[0], v[4], wReal, wImag)
-				u[1], u[5], v[1], v[5] = butterfly(u[1], u[5], v[1], v[5], wReal, wImag)
-				u[2], u[6], v[2], v[6] = butterfly(u[2], u[6], v[2], v[6], wReal, wImag)
-				u[3], u[7], v[3], v[7] = butterfly(u[3], u[7], v[3], v[7], wReal, wImag)
+				u[0], u[4], v[0], v[4] = fwdButterfly(u[0], u[4], v[0], v[4], wReal, wImag)
+				u[1], u[5], v[1], v[5] = fwdButterfly(u[1], u[5], v[1], v[5], wReal, wImag)
+				u[2], u[6], v[2], v[6] = fwdButterfly(u[2], u[6], v[2], v[6], wReal, wImag)
+				u[3], u[7], v[3], v[7] = fwdButterfly(u[3], u[7], v[3], v[7], wReal, wImag)
 			}
 		}
 	}
@@ -69,8 +69,8 @@ func fwdFFTInPlace(coeffs []float64, tw []complex128) {
 		uvReal := (*[4]float64)(unsafe.Pointer(&coeffs[j]))
 		uvImag := (*[4]float64)(unsafe.Pointer(&coeffs[j+4]))
 
-		uvReal[0], uvImag[0], uvReal[2], uvImag[2] = butterfly(uvReal[0], uvImag[0], uvReal[2], uvImag[2], wReal, wImag)
-		uvReal[1], uvImag[1], uvReal[3], uvImag[3] = butterfly(uvReal[1], uvImag[1], uvReal[3], uvImag[3], wReal, wImag)
+		uvReal[0], uvImag[0], uvReal[2], uvImag[2] = fwdButterfly(uvReal[0], uvImag[0], uvReal[2], uvImag[2], wReal, wImag)
+		uvReal[1], uvImag[1], uvReal[3], uvImag[3] = fwdButterfly(uvReal[1], uvImag[1], uvReal[3], uvImag[3], wReal, wImag)
 	}
 
 	for j := 0; j < N; j += 8 {
@@ -83,8 +83,8 @@ func fwdFFTInPlace(coeffs []float64, tw []complex128) {
 		uvReal := (*[4]float64)(unsafe.Pointer(&coeffs[j]))
 		uvImag := (*[4]float64)(unsafe.Pointer(&coeffs[j+4]))
 
-		uvReal[0], uvImag[0], uvReal[1], uvImag[1] = butterfly(uvReal[0], uvImag[0], uvReal[1], uvImag[1], wReal0, wImag0)
-		uvReal[2], uvImag[2], uvReal[3], uvImag[3] = butterfly(uvReal[2], uvImag[2], uvReal[3], uvImag[3], wReal1, wImag1)
+		uvReal[0], uvImag[0], uvReal[1], uvImag[1] = fwdButterfly(uvReal[0], uvImag[0], uvReal[1], uvImag[1], wReal0, wImag0)
+		uvReal[2], uvImag[2], uvReal[3], uvImag[3] = fwdButterfly(uvReal[2], uvImag[2], uvReal[3], uvImag[3], wReal1, wImag1)
 	}
 }
 
