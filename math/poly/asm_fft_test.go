@@ -76,7 +76,7 @@ func TestFFTAssembly(t *testing.T) {
 
 	tw, twInv := genTwiddleFactors(N)
 
-	t.Run("FFT", func(t *testing.T) {
+	t.Run("FwdFFT", func(t *testing.T) {
 		vec.CmplxToFloat4To(coeffsAVX2, coeffs)
 		fftInPlace(coeffsAVX2, tw)
 		vec.Float4ToCmplxTo(coeffsAVX2Out, coeffsAVX2)

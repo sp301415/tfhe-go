@@ -115,14 +115,14 @@ func BenchmarkFFT(b *testing.B) {
 				p.Coeffs[i] = r.Uint64()
 			}
 
-			b.Run("FFT", func(b *testing.B) {
+			b.Run("FwdFFT", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
 					pev.FwdFFTPolyTo(fp, p)
 				}
 			})
 
 			x := N / 3
-			b.Run("MonomialFFT", func(b *testing.B) {
+			b.Run("MonomialFwdFFT", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
 					pev.MonomialFwdFFTTo(fp, x)
 				}
