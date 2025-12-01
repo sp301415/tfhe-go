@@ -86,7 +86,7 @@ func TestFFTAssembly(t *testing.T) {
 
 		for i := 0; i < N; i++ {
 			if cmplx.Abs(coeffs[i]-coeffsAVX2Out[i]) > eps {
-				t.Fatalf("FFT: %v != %v", coeffs[i], coeffsAVX2Out[i])
+				t.Fatalf("FwdFFT: %v != %v", coeffs[i], coeffsAVX2Out[i])
 			}
 		}
 	})
