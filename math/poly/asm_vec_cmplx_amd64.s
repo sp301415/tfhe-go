@@ -93,18 +93,18 @@ loop_end:
 // func floatMulAddCmplxToAVX2(vOut []float64, v []float64, c float64)
 // Requires: AVX, FMA3
 TEXT ·floatMulAddCmplxToAVX2(SB), NOSPLIT, $0-56
-	MOVQ         v_base+24(FP), AX
-	MOVQ         vOut_base+0(FP), CX
+	MOVQ         vOut_base+0(FP), AX
+	MOVQ         v_base+24(FP), CX
 	MOVQ         vOut_len+8(FP), DX
 	VBROADCASTSD c+48(FP), Y0
 	XORQ         BX, BX
 	JMP          loop_end
 
 loop_body:
-	VMOVUPD     (AX)(BX*8), Y1
-	VMOVUPD     (CX)(BX*8), Y2
+	VMOVUPD     (CX)(BX*8), Y1
+	VMOVUPD     (AX)(BX*8), Y2
 	VFMADD231PD Y0, Y1, Y2
-	VMOVUPD     Y2, (CX)(BX*8)
+	VMOVUPD     Y2, (AX)(BX*8)
 	ADDQ        $0x04, BX
 
 loop_end:

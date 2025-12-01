@@ -17,16 +17,16 @@ func floatModQInPlaceAVX2(coeffs []float64, q float64, qInv float64)
 func unfoldPolyToUint32AVX2(pOut []uint32, fp []float64)
 
 //go:noescape
-func unfoldPolyToUint64AVX2(pOut []uint64, fp []float64)
-
-//go:noescape
 func unfoldPolyAddToUint32AVX2(pOut []uint32, fp []float64)
 
 //go:noescape
-func unfoldPolyAddToUint64AVX2(pOut []uint64, fp []float64)
+func unfoldPolySubToUint32AVX2(pOut []uint32, fp []float64)
 
 //go:noescape
-func unfoldPolySubToUint32AVX2(pOut []uint32, fp []float64)
+func unfoldPolyToUint64AVX2(pOut []uint64, fp []float64)
+
+//go:noescape
+func unfoldPolyAddToUint64AVX2(pOut []uint64, fp []float64)
 
 //go:noescape
 func unfoldPolySubToUint64AVX2(pOut []uint64, fp []float64)

@@ -8,7 +8,7 @@ import (
 	"github.com/mmcloughlin/avo/reg"
 )
 
-func foldConstants() {
+func FoldConstants() {
 	ConstData("EXP2_52", F64(math.Exp2(52)))
 	ConstData("EXP2_84_63", F64(math.Exp2(84)+math.Exp2(63)))
 	ConstData("EXP2_84_63_52", F64(math.Exp2(84)+math.Exp2(63)+math.Exp2(52)))
@@ -19,7 +19,7 @@ func foldConstants() {
 	ConstData("EXP_SHIFT", U64(1023+52+11))
 }
 
-func foldPolyToUint32AVX2() {
+func FoldPolyToUint32AVX2() {
 	TEXT("foldPolyToUint32AVX2", NOSPLIT, "func(fpOut []float64, p []uint32)")
 	Pragma("noescape")
 
@@ -27,14 +27,14 @@ func foldPolyToUint32AVX2() {
 	p := Load(Param("p").Base(), GP64())
 	N := Load(Param("fpOut").Len(), GP64())
 
-	NMul2 := GP64()
-	MOVQ(N, NMul2)
-	SHRQ(U8(1), NMul2)
+	M := GP64()
+	MOVQ(N, M)
+	SHRQ(U8(1), M)
 
 	i, ii0, ii1 := GP64(), GP64(), GP64()
 	XORQ(i, i)
 	XORQ(ii0, ii0)
-	MOVQ(NMul2, ii1)
+	MOVQ(M, ii1)
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
@@ -82,9 +82,9 @@ func foldPolyToUint64AVX2() {
 	p := Load(Param("p").Base(), GP64())
 	N := Load(Param("fpOut").Len(), GP64())
 
-	NMul2 := GP64()
-	MOVQ(N, NMul2)
-	SHRQ(U8(1), NMul2)
+	M := GP64()
+	MOVQ(N, M)
+	SHRQ(U8(1), M)
 
 	exp2_52, exp2_84_63, exp2_84_63_52 := YMM(), YMM(), YMM()
 	VBROADCASTSD(NewDataAddr(NewStaticSymbol("EXP2_52"), 0), exp2_52)
@@ -95,7 +95,7 @@ func foldPolyToUint64AVX2() {
 	i, ii0, ii1 := GP64(), GP64(), GP64()
 	XORQ(i, i)
 	XORQ(ii0, ii0)
-	MOVQ(NMul2, ii1)
+	MOVQ(M, ii1)
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
@@ -121,16 +121,16 @@ func foldPolyToUint64AVX2() {
 	RET()
 }
 
-func floatModQInPlaceAVX2() {
+func FloatModQInPlaceAVX2() {
 	TEXT("floatModQInPlaceAVX2", NOSPLIT, "func(coeffs []float64, q, qInv float64)")
 	Pragma("noescape")
 
 	coeffs := Load(Param("coeffs").Base(), GP64())
 	N := Load(Param("coeffs").Len(), GP64())
 
-	Q, QInv := YMM(), YMM()
-	VBROADCASTSD(NewParamAddr("q", 24), Q)
-	VBROADCASTSD(NewParamAddr("qInv", 32), QInv)
+	q, qInv := YMM(), YMM()
+	VBROADCASTSD(NewParamAddr("q", 24), q)
+	VBROADCASTSD(NewParamAddr("qInv", 32), qInv)
 
 	i := GP64()
 	XORQ(i, i)
@@ -141,12 +141,12 @@ func floatModQInPlaceAVX2() {
 	VMOVUPD(Mem{Base: coeffs, Index: i, Scale: 8}, c)
 
 	cQuo, cQuoRound := YMM(), YMM()
-	VMULPD(QInv, c, cQuo)
+	VMULPD(qInv, c, cQuo)
 	VROUNDPD(Imm(0), cQuo, cQuoRound)
 
 	cRem, cOut := YMM(), YMM()
 	VSUBPD(cQuoRound, cQuo, cRem)
-	VMULPD(Q, cRem, cOut)
+	VMULPD(q, cRem, cOut)
 	VROUNDPD(Imm(0), cOut, cOut)
 
 	VMOVUPD(cOut, Mem{Base: coeffs, Index: i, Scale: 8})
@@ -160,128 +160,55 @@ func floatModQInPlaceAVX2() {
 	RET()
 }
 
-func unfoldPolyToUint32AVX2() {
-	TEXT("unfoldPolyToUint32AVX2", NOSPLIT, "func(pOut []uint32, fp []float64)")
+func UnfoldPolyToUint32AVX2(opType OpType) {
+	switch opType {
+	case OpPure:
+		TEXT("unfoldPolyToUint32AVX2", NOSPLIT, "func(pOut []uint32, fp []float64)")
+	case OpAdd:
+		TEXT("unfoldPolyAddToUint32AVX2", NOSPLIT, "func(pOut []uint32, fp []float64)")
+	case OpSub:
+		TEXT("unfoldPolySubToUint32AVX2", NOSPLIT, "func(pOut []uint32, fp []float64)")
+	}
 	Pragma("noescape")
 
 	pOut := Load(Param("pOut").Base(), GP64())
 	fp := Load(Param("fp").Base(), GP64())
 	N := Load(Param("fp").Len(), GP64())
 
-	NMul2 := GP64()
-	MOVQ(N, NMul2)
-	SHRQ(U8(1), NMul2)
+	M := GP64()
+	MOVQ(N, M)
+	SHRQ(U8(1), M)
 
 	i, ii0, ii1 := GP64(), GP64(), GP64()
 	XORQ(i, i)
 	XORQ(ii0, ii0)
-	MOVQ(NMul2, ii1)
+	MOVQ(M, ii1)
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
 	c0, c1 := YMM(), YMM()
 	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8}, c0)
 	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8, Disp: 32}, c1)
-
-	c0Out, c1Out := XMM(), XMM()
-	VCVTPD2DQY(c0, c0Out)
-	VCVTPD2DQY(c1, c1Out)
-
-	VMOVDQU(c0Out, Mem{Base: pOut, Index: ii0, Scale: 4})
-	VMOVDQU(c1Out, Mem{Base: pOut, Index: ii1, Scale: 4})
-
-	ADDQ(Imm(8), i)
-	ADDQ(Imm(4), ii0)
-	ADDQ(Imm(4), ii1)
-
-	Label("loop_end")
-	CMPQ(i, N)
-	JL(LabelRef("loop_body"))
-
-	RET()
-}
-
-func unfoldPolyAddToUint32AVX2() {
-	TEXT("unfoldPolyAddToUint32AVX2", NOSPLIT, "func(pOut []uint32, fp []float64)")
-	Pragma("noescape")
-
-	pOut := Load(Param("pOut").Base(), GP64())
-	fp := Load(Param("fp").Base(), GP64())
-	N := Load(Param("fp").Len(), GP64())
-
-	NMul2 := GP64()
-	MOVQ(N, NMul2)
-	SHRQ(U8(1), NMul2)
-
-	i, ii0, ii1 := GP64(), GP64(), GP64()
-	XORQ(i, i)
-	XORQ(ii0, ii0)
-	MOVQ(NMul2, ii1)
-	JMP(LabelRef("loop_end"))
-	Label("loop_body")
-
-	c0, c1 := YMM(), YMM()
-	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8}, c0)
-	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8, Disp: 32}, c1)
-
-	c0Out, c1Out := XMM(), XMM()
-	VMOVUPD(Mem{Base: pOut, Index: ii0, Scale: 4}, c0Out)
-	VMOVUPD(Mem{Base: pOut, Index: ii1, Scale: 4}, c1Out)
 
 	c0Cvt, c1Cvt := XMM(), XMM()
 	VCVTPD2DQY(c0, c0Cvt)
 	VCVTPD2DQY(c1, c1Cvt)
 
-	VPADDD(c0Cvt, c0Out, c0Out)
-	VPADDD(c1Cvt, c1Out, c1Out)
-
-	VMOVDQU(c0Out, Mem{Base: pOut, Index: ii0, Scale: 4})
-	VMOVDQU(c1Out, Mem{Base: pOut, Index: ii1, Scale: 4})
-
-	ADDQ(Imm(8), i)
-	ADDQ(Imm(4), ii0)
-	ADDQ(Imm(4), ii1)
-
-	Label("loop_end")
-	CMPQ(i, N)
-	JL(LabelRef("loop_body"))
-
-	RET()
-}
-
-func unfoldPolySubToUint32AVX2() {
-	TEXT("unfoldPolySubToUint32AVX2", NOSPLIT, "func(pOut []uint32, fp []float64)")
-	Pragma("noescape")
-
-	pOut := Load(Param("pOut").Base(), GP64())
-	fp := Load(Param("fp").Base(), GP64())
-	N := Load(Param("fp").Len(), GP64())
-
-	NMul2 := GP64()
-	MOVQ(N, NMul2)
-	SHRQ(U8(1), NMul2)
-
-	i, ii0, ii1 := GP64(), GP64(), GP64()
-	XORQ(i, i)
-	XORQ(ii0, ii0)
-	MOVQ(NMul2, ii1)
-	JMP(LabelRef("loop_end"))
-	Label("loop_body")
-
-	c0, c1 := YMM(), YMM()
-	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8}, c0)
-	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8, Disp: 32}, c1)
-
 	c0Out, c1Out := XMM(), XMM()
-	VMOVUPD(Mem{Base: pOut, Index: ii0, Scale: 4}, c0Out)
-	VMOVUPD(Mem{Base: pOut, Index: ii1, Scale: 4}, c1Out)
-
-	c0Cvt, c1Cvt := XMM(), XMM()
-	VCVTPD2DQY(c0, c0Cvt)
-	VCVTPD2DQY(c1, c1Cvt)
-
-	VPSUBD(c0Cvt, c0Out, c0Out)
-	VPSUBD(c1Cvt, c1Out, c1Out)
+	switch opType {
+	case OpPure:
+		c0Out, c1Out = c0Cvt, c1Cvt
+	case OpAdd:
+		VMOVDQU(Mem{Base: pOut, Index: ii0, Scale: 4}, c0Out)
+		VMOVDQU(Mem{Base: pOut, Index: ii1, Scale: 4}, c1Out)
+		VPADDD(c0Cvt, c0Out, c0Out)
+		VPADDD(c1Cvt, c1Out, c1Out)
+	case OpSub:
+		VMOVDQU(Mem{Base: pOut, Index: ii0, Scale: 4}, c0Out)
+		VMOVDQU(Mem{Base: pOut, Index: ii1, Scale: 4}, c1Out)
+		VPSUBD(c0Cvt, c0Out, c0Out)
+		VPSUBD(c1Cvt, c1Out, c1Out)
+	}
 
 	VMOVDQU(c0Out, Mem{Base: pOut, Index: ii0, Scale: 4})
 	VMOVDQU(c1Out, Mem{Base: pOut, Index: ii1, Scale: 4})
@@ -323,17 +250,24 @@ func convertFloat64ToInt64(cvtConst [5]reg.VecVirtual, c, cOut reg.VecVirtual) {
 	VPBLENDVB(cSign, cMantNeg, cMantPos, cOut)
 }
 
-func unfoldPolyToUint64AVX2() {
-	TEXT("unfoldPolyToUint64AVX2", NOSPLIT, "func(pOut []uint64, fp []float64)")
+func UnfoldPolyToUint64AVX2(opType OpType) {
+	switch opType {
+	case OpPure:
+		TEXT("unfoldPolyToUint64AVX2", NOSPLIT, "func(pOut []uint64, fp []float64)")
+	case OpAdd:
+		TEXT("unfoldPolyAddToUint64AVX2", NOSPLIT, "func(pOut []uint64, fp []float64)")
+	case OpSub:
+		TEXT("unfoldPolySubToUint64AVX2", NOSPLIT, "func(pOut []uint64, fp []float64)")
+	}
 	Pragma("noescape")
 
 	pOut := Load(Param("pOut").Base(), GP64())
 	fp := Load(Param("fp").Base(), GP64())
 	N := Load(Param("fp").Len(), GP64())
 
-	NMul2 := GP64()
-	MOVQ(N, NMul2)
-	SHRQ(U8(1), NMul2)
+	M := GP64()
+	MOVQ(N, M)
+	SHRQ(U8(1), M)
 
 	mantMask, bitMantMask, expMask, expShift := YMM(), YMM(), YMM(), YMM()
 	VBROADCASTSD(NewDataAddr(NewStaticSymbol("MANT_MASK"), 0), mantMask)
@@ -349,7 +283,7 @@ func unfoldPolyToUint64AVX2() {
 	i, ii0, ii1 := GP64(), GP64(), GP64()
 	XORQ(i, i)
 	XORQ(ii0, ii0)
-	MOVQ(NMul2, ii1)
+	MOVQ(M, ii1)
 	JMP(LabelRef("loop_end"))
 	Label("loop_body")
 
@@ -357,9 +291,25 @@ func unfoldPolyToUint64AVX2() {
 	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8}, c0)
 	VMOVUPD(Mem{Base: fp, Index: i, Scale: 8, Disp: 32}, c1)
 
+	c0Cvt, c1Cvt := YMM(), YMM()
+	convertFloat64ToInt64(cvtConst, c0, c0Cvt)
+	convertFloat64ToInt64(cvtConst, c1, c1Cvt)
+
 	c0Out, c1Out := YMM(), YMM()
-	convertFloat64ToInt64(cvtConst, c0, c0Out)
-	convertFloat64ToInt64(cvtConst, c1, c1Out)
+	switch opType {
+	case OpPure:
+		c0Out, c1Out = c0Cvt, c1Cvt
+	case OpAdd:
+		VMOVDQU(Mem{Base: pOut, Index: ii0, Scale: 8}, c0Out)
+		VMOVDQU(Mem{Base: pOut, Index: ii1, Scale: 8}, c1Out)
+		VPADDQ(c0Cvt, c0Out, c0Out)
+		VPADDQ(c1Cvt, c1Out, c1Out)
+	case OpSub:
+		VMOVDQU(Mem{Base: pOut, Index: ii0, Scale: 8}, c0Out)
+		VMOVDQU(Mem{Base: pOut, Index: ii1, Scale: 8}, c1Out)
+		VPSUBQ(c0Cvt, c0Out, c0Out)
+		VPSUBQ(c1Cvt, c1Out, c1Out)
+	}
 
 	VMOVDQU(c0Out, Mem{Base: pOut, Index: ii0, Scale: 8})
 	VMOVDQU(c1Out, Mem{Base: pOut, Index: ii1, Scale: 8})

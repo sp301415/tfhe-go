@@ -12,6 +12,14 @@ import (
 	"github.com/mmcloughlin/avo/buildtags"
 )
 
+type OpType int
+
+const (
+	OpPure OpType = iota
+	OpAdd
+	OpSub
+)
+
 var (
 	fold     = flag.Bool("fold", false, "asm_fold_amd64.s")
 	fft      = flag.Bool("fft", false, "asm_fft_amd64.s")
@@ -29,80 +37,78 @@ func main() {
 	Constraint(buildtags.Not("purego"))
 
 	if *fold {
-		foldConstants()
+		FoldConstants()
 
-		foldPolyToUint32AVX2()
+		FoldPolyToUint32AVX2()
 		foldPolyToUint64AVX2()
 
-		floatModQInPlaceAVX2()
+		FloatModQInPlaceAVX2()
 
-		unfoldPolyToUint32AVX2()
-		unfoldPolyToUint64AVX2()
+		UnfoldPolyToUint32AVX2(OpPure)
+		UnfoldPolyToUint32AVX2(OpAdd)
+		UnfoldPolyToUint32AVX2(OpSub)
 
-		unfoldPolyAddToUint32AVX2()
-		unfoldPolyAddToUint64AVX2()
-
-		unfoldPolySubToUint32AVX2()
-		unfoldPolySubToUint64AVX2()
+		UnfoldPolyToUint64AVX2(OpPure)
+		UnfoldPolyToUint64AVX2(OpAdd)
+		UnfoldPolyToUint64AVX2(OpSub)
 
 	}
 
 	if *fft {
-		fwdFFTInPlaceAVX2()
-		invFFTInPlaceAVX2()
+		FwdFFTInPlaceAVX2()
+		InvFFTInPlaceAVX2()
 	}
 
 	if *vecCmplx {
-		addCmplxToAVX2()
-		subCmplxToAVX2()
-		negCmplxToAVX2()
+		AddSubCmplxToAVX2(OpAdd)
+		AddSubCmplxToAVX2(OpSub)
 
-		floatMulCmplxToAVX2()
-		floatMulAddCmplxToAVX2()
-		floatMulSubCmplxToAVX2()
+		NegCmplxToAVX2()
 
-		cmplxMulCmplxToAVX2()
-		cmplxMulAddCmplxToAVX2()
-		cmplxMulSubCmplxToAVX2()
+		FloatMulCmplxToAVX2(OpPure)
+		FloatMulCmplxToAVX2(OpAdd)
+		FloatMulCmplxToAVX2(OpSub)
 
-		mulCmplxToAVX2()
-		mulAddCmplxToAVX2()
-		mulSubCmplxToAVX2()
+		CmplxMulCmplxToAVX2(OpPure)
+		CmplxMulCmplxToAVX2(OpAdd)
+		CmplxMulCmplxToAVX2(OpSub)
+
+		MulCmplxToAVX2(OpPure)
+		MulCmplxToAVX2(OpAdd)
+		MulCmplxToAVX2(OpSub)
 	}
 
 	if *vec {
-		vecConstants()
+		VecConstants()
 
-		addToUint32AVX2()
-		addToUint64AVX2()
+		AddSubToUint32AVX2(OpAdd)
+		AddSubToUint32AVX2(OpSub)
 
-		subToUint32AVX2()
-		subToUint64AVX2()
+		AddToUint64AVX2(OpAdd)
+		AddToUint64AVX2(OpSub)
 
-		scalarMulToUint32AVX2()
-		scalarMulToUint64AVX2()
+		ScalarMulToUint32AVX2(OpPure)
+		ScalarMulToUint32AVX2(OpAdd)
+		ScalarMulToUint32AVX2(OpSub)
 
-		scalarMulAddToUint32AVX2()
-		scalarMulAddToUint64AVX2()
+		ScalarMulToUint64AVX2(OpPure)
+		ScalarMulToUint64AVX2(OpAdd)
+		ScalarMulToUint64AVX2(OpSub)
 
-		scalarMulSubToUint32AVX2()
-		scalarMulSubToUint64AVX2()
+		MulToUint32AVX2(OpPure)
+		MulToUint32AVX2(OpAdd)
+		MulToUint32AVX2(OpSub)
 
-		mulToUint32AVX2()
-		mulToUint64AVX2()
-
-		mulAddToUint32AVX2()
-		mulAddToUint64AVX2()
-
-		mulSubToUint32AVX2()
-		mulSubToUint64AVX2()
+		MulToUint64AVX2(OpPure)
+		MulToUint64AVX2(OpAdd)
+		MulToUint64AVX2(OpSub)
 	}
 
 	if *decompose {
-		decomposeConstants()
+		DecomposeConstants()
 
-		decomposePolyToUint32AVX2()
-		decomposePolyToUint64AVX2()
+		DecomposePolyToUint32AVX2()
+		DecomposePolyToUint64AVX2()
 	}
 
 	Generate()

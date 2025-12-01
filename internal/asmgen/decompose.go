@@ -5,11 +5,11 @@ import (
 	. "github.com/mmcloughlin/avo/operand"
 )
 
-func decomposeConstants() {
+func DecomposeConstants() {
 	ConstData("ONE", U64(1))
 }
 
-func decomposePolyToUint32AVX2() {
+func DecomposePolyToUint32AVX2() {
 	TEXT("decomposePolyToUint32AVX2", NOSPLIT, "func(dcmpOut [][]uint32, p []uint32, base uint32, logBase uint32, logLastBaseQ uint32)")
 	Pragma("noescape")
 
@@ -26,13 +26,13 @@ func decomposePolyToUint32AVX2() {
 	VPBROADCASTD(NewParamAddr("logBase", 52), logBase)
 	VPBROADCASTD(NewParamAddr("logLastBaseQ", 56), logLastBaseQ)
 
-	one := YMM()
-	VPBROADCASTD(NewDataAddr(NewStaticSymbol("ONE"), 0), one)
+	allOne := YMM()
+	VPBROADCASTD(NewDataAddr(NewStaticSymbol("ONE"), 0), allOne)
 
 	baseMask, baseHalf, logBaseSubOne := YMM(), YMM(), YMM()
-	VPSUBD(one, base, baseMask)
+	VPSUBD(allOne, base, baseMask)
 	VPSRLD(Imm(1), base, baseHalf)
-	VPSUBD(one, logBase, logBaseSubOne)
+	VPSUBD(allOne, logBase, logBaseSubOne)
 
 	i := GP64()
 	XORQ(i, i)
@@ -46,7 +46,7 @@ func decomposePolyToUint32AVX2() {
 	VPSRLVD(logLastBaseQ, c, cDiv)
 	VPSLLD(Imm(1), c, cCarry)
 	VPSRLVD(logLastBaseQ, cCarry, cCarry)
-	VANDPD(one, cCarry, cCarry)
+	VANDPD(allOne, cCarry, cCarry)
 	VPADDD(cCarry, cDiv, c)
 
 	j := GP64()
@@ -105,7 +105,7 @@ func decomposePolyToUint32AVX2() {
 	RET()
 }
 
-func decomposePolyToUint64AVX2() {
+func DecomposePolyToUint64AVX2() {
 	TEXT("decomposePolyToUint64AVX2", NOSPLIT, "func(dcmpOut [][]uint64, p []uint64, base uint64, logBase uint64, logLastBaseQ uint64)")
 	Pragma("noescape")
 

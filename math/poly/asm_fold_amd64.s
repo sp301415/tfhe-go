@@ -145,6 +145,70 @@ loop_end:
 	JL   loop_body
 	RET
 
+// func unfoldPolyAddToUint32AVX2(pOut []uint32, fp []float64)
+// Requires: AVX
+TEXT ·unfoldPolyAddToUint32AVX2(SB), NOSPLIT, $0-48
+	MOVQ pOut_base+0(FP), AX
+	MOVQ fp_base+24(FP), CX
+	MOVQ fp_len+32(FP), DX
+	MOVQ DX, BX
+	SHRQ $0x01, BX
+	XORQ SI, SI
+	XORQ DI, DI
+	JMP  loop_end
+
+loop_body:
+	VMOVUPD    (CX)(SI*8), Y0
+	VMOVUPD    32(CX)(SI*8), Y1
+	VCVTPD2DQY Y0, X0
+	VCVTPD2DQY Y1, X1
+	VMOVDQU    (AX)(DI*4), X2
+	VMOVDQU    (AX)(BX*4), X3
+	VPADDD     X0, X2, X2
+	VPADDD     X1, X3, X3
+	VMOVDQU    X2, (AX)(DI*4)
+	VMOVDQU    X3, (AX)(BX*4)
+	ADDQ       $0x08, SI
+	ADDQ       $0x04, DI
+	ADDQ       $0x04, BX
+
+loop_end:
+	CMPQ SI, DX
+	JL   loop_body
+	RET
+
+// func unfoldPolySubToUint32AVX2(pOut []uint32, fp []float64)
+// Requires: AVX
+TEXT ·unfoldPolySubToUint32AVX2(SB), NOSPLIT, $0-48
+	MOVQ pOut_base+0(FP), AX
+	MOVQ fp_base+24(FP), CX
+	MOVQ fp_len+32(FP), DX
+	MOVQ DX, BX
+	SHRQ $0x01, BX
+	XORQ SI, SI
+	XORQ DI, DI
+	JMP  loop_end
+
+loop_body:
+	VMOVUPD    (CX)(SI*8), Y0
+	VMOVUPD    32(CX)(SI*8), Y1
+	VCVTPD2DQY Y0, X0
+	VCVTPD2DQY Y1, X1
+	VMOVDQU    (AX)(DI*4), X2
+	VMOVDQU    (AX)(BX*4), X3
+	VPSUBD     X0, X2, X2
+	VPSUBD     X1, X3, X3
+	VMOVDQU    X2, (AX)(DI*4)
+	VMOVDQU    X3, (AX)(BX*4)
+	ADDQ       $0x08, SI
+	ADDQ       $0x04, DI
+	ADDQ       $0x04, BX
+
+loop_end:
+	CMPQ SI, DX
+	JL   loop_body
+	RET
+
 // func unfoldPolyToUint64AVX2(pOut []uint64, fp []float64)
 // Requires: AVX, AVX2
 TEXT ·unfoldPolyToUint64AVX2(SB), NOSPLIT, $0-48
@@ -198,38 +262,6 @@ loop_end:
 	JL   loop_body
 	RET
 
-// func unfoldPolyAddToUint32AVX2(pOut []uint32, fp []float64)
-// Requires: AVX
-TEXT ·unfoldPolyAddToUint32AVX2(SB), NOSPLIT, $0-48
-	MOVQ pOut_base+0(FP), AX
-	MOVQ fp_base+24(FP), CX
-	MOVQ fp_len+32(FP), DX
-	MOVQ DX, BX
-	SHRQ $0x01, BX
-	XORQ SI, SI
-	XORQ DI, DI
-	JMP  loop_end
-
-loop_body:
-	VMOVUPD    (CX)(SI*8), Y0
-	VMOVUPD    32(CX)(SI*8), Y1
-	VMOVUPD    (AX)(DI*4), X2
-	VMOVUPD    (AX)(BX*4), X3
-	VCVTPD2DQY Y0, X0
-	VCVTPD2DQY Y1, X1
-	VPADDD     X0, X2, X2
-	VPADDD     X1, X3, X3
-	VMOVDQU    X2, (AX)(DI*4)
-	VMOVDQU    X3, (AX)(BX*4)
-	ADDQ       $0x08, SI
-	ADDQ       $0x04, DI
-	ADDQ       $0x04, BX
-
-loop_end:
-	CMPQ SI, DX
-	JL   loop_body
-	RET
-
 // func unfoldPolyAddToUint64AVX2(pOut []uint64, fp []float64)
 // Requires: AVX, AVX2
 TEXT ·unfoldPolyAddToUint64AVX2(SB), NOSPLIT, $0-48
@@ -250,30 +282,30 @@ TEXT ·unfoldPolyAddToUint64AVX2(SB), NOSPLIT, $0-48
 loop_body:
 	VMOVUPD   (CX)(SI*8), Y5
 	VMOVUPD   32(CX)(SI*8), Y6
-	VMOVDQU   (AX)(DI*8), Y7
-	VMOVDQU   (AX)(BX*8), Y8
-	VANDPD    Y0, Y5, Y9
-	VORPD     Y1, Y9, Y9
-	VPSRLQ    $0x34, Y5, Y10
-	VANDPD    Y2, Y10, Y10
+	VANDPD    Y0, Y5, Y7
+	VORPD     Y1, Y7, Y7
+	VPSRLQ    $0x34, Y5, Y8
+	VANDPD    Y2, Y8, Y8
 	VPSRLQ    $0x3f, Y5, Y5
 	VPSUBQ    Y5, Y4, Y5
-	VPSLLQ    $0x0b, Y9, Y9
-	VPSUBQ    Y10, Y3, Y10
-	VPSRLVQ   Y10, Y9, Y9
-	VPSUBQ    Y9, Y4, Y10
-	VPBLENDVB Y5, Y10, Y9, Y5
-	VANDPD    Y0, Y6, Y9
-	VORPD     Y1, Y9, Y9
-	VPSRLQ    $0x34, Y6, Y10
-	VANDPD    Y2, Y10, Y10
+	VPSLLQ    $0x0b, Y7, Y7
+	VPSUBQ    Y8, Y3, Y8
+	VPSRLVQ   Y8, Y7, Y7
+	VPSUBQ    Y7, Y4, Y8
+	VPBLENDVB Y5, Y8, Y7, Y5
+	VANDPD    Y0, Y6, Y7
+	VORPD     Y1, Y7, Y7
+	VPSRLQ    $0x34, Y6, Y8
+	VANDPD    Y2, Y8, Y8
 	VPSRLQ    $0x3f, Y6, Y6
 	VPSUBQ    Y6, Y4, Y6
-	VPSLLQ    $0x0b, Y9, Y9
-	VPSUBQ    Y10, Y3, Y10
-	VPSRLVQ   Y10, Y9, Y9
-	VPSUBQ    Y9, Y4, Y10
-	VPBLENDVB Y6, Y10, Y9, Y6
+	VPSLLQ    $0x0b, Y7, Y7
+	VPSUBQ    Y8, Y3, Y8
+	VPSRLVQ   Y8, Y7, Y7
+	VPSUBQ    Y7, Y4, Y8
+	VPBLENDVB Y6, Y8, Y7, Y6
+	VMOVDQU   (AX)(DI*8), Y7
+	VMOVDQU   (AX)(BX*8), Y8
 	VPADDQ    Y5, Y7, Y7
 	VPADDQ    Y6, Y8, Y8
 	VMOVDQU   Y7, (AX)(DI*8)
@@ -281,38 +313,6 @@ loop_body:
 	ADDQ      $0x08, SI
 	ADDQ      $0x04, DI
 	ADDQ      $0x04, BX
-
-loop_end:
-	CMPQ SI, DX
-	JL   loop_body
-	RET
-
-// func unfoldPolySubToUint32AVX2(pOut []uint32, fp []float64)
-// Requires: AVX
-TEXT ·unfoldPolySubToUint32AVX2(SB), NOSPLIT, $0-48
-	MOVQ pOut_base+0(FP), AX
-	MOVQ fp_base+24(FP), CX
-	MOVQ fp_len+32(FP), DX
-	MOVQ DX, BX
-	SHRQ $0x01, BX
-	XORQ SI, SI
-	XORQ DI, DI
-	JMP  loop_end
-
-loop_body:
-	VMOVUPD    (CX)(SI*8), Y0
-	VMOVUPD    32(CX)(SI*8), Y1
-	VMOVUPD    (AX)(DI*4), X2
-	VMOVUPD    (AX)(BX*4), X3
-	VCVTPD2DQY Y0, X0
-	VCVTPD2DQY Y1, X1
-	VPSUBD     X0, X2, X2
-	VPSUBD     X1, X3, X3
-	VMOVDQU    X2, (AX)(DI*4)
-	VMOVDQU    X3, (AX)(BX*4)
-	ADDQ       $0x08, SI
-	ADDQ       $0x04, DI
-	ADDQ       $0x04, BX
 
 loop_end:
 	CMPQ SI, DX
@@ -339,30 +339,30 @@ TEXT ·unfoldPolySubToUint64AVX2(SB), NOSPLIT, $0-48
 loop_body:
 	VMOVUPD   (CX)(SI*8), Y5
 	VMOVUPD   32(CX)(SI*8), Y6
-	VMOVDQU   (AX)(DI*8), Y7
-	VMOVDQU   (AX)(BX*8), Y8
-	VANDPD    Y0, Y5, Y9
-	VORPD     Y1, Y9, Y9
-	VPSRLQ    $0x34, Y5, Y10
-	VANDPD    Y2, Y10, Y10
+	VANDPD    Y0, Y5, Y7
+	VORPD     Y1, Y7, Y7
+	VPSRLQ    $0x34, Y5, Y8
+	VANDPD    Y2, Y8, Y8
 	VPSRLQ    $0x3f, Y5, Y5
 	VPSUBQ    Y5, Y4, Y5
-	VPSLLQ    $0x0b, Y9, Y9
-	VPSUBQ    Y10, Y3, Y10
-	VPSRLVQ   Y10, Y9, Y9
-	VPSUBQ    Y9, Y4, Y10
-	VPBLENDVB Y5, Y10, Y9, Y5
-	VANDPD    Y0, Y6, Y9
-	VORPD     Y1, Y9, Y9
-	VPSRLQ    $0x34, Y6, Y10
-	VANDPD    Y2, Y10, Y10
+	VPSLLQ    $0x0b, Y7, Y7
+	VPSUBQ    Y8, Y3, Y8
+	VPSRLVQ   Y8, Y7, Y7
+	VPSUBQ    Y7, Y4, Y8
+	VPBLENDVB Y5, Y8, Y7, Y5
+	VANDPD    Y0, Y6, Y7
+	VORPD     Y1, Y7, Y7
+	VPSRLQ    $0x34, Y6, Y8
+	VANDPD    Y2, Y8, Y8
 	VPSRLQ    $0x3f, Y6, Y6
 	VPSUBQ    Y6, Y4, Y6
-	VPSLLQ    $0x0b, Y9, Y9
-	VPSUBQ    Y10, Y3, Y10
-	VPSRLVQ   Y10, Y9, Y9
-	VPSUBQ    Y9, Y4, Y10
-	VPBLENDVB Y6, Y10, Y9, Y6
+	VPSLLQ    $0x0b, Y7, Y7
+	VPSUBQ    Y8, Y3, Y8
+	VPSRLVQ   Y8, Y7, Y7
+	VPSUBQ    Y7, Y4, Y8
+	VPBLENDVB Y6, Y8, Y7, Y6
+	VMOVDQU   (AX)(DI*8), Y7
+	VMOVDQU   (AX)(BX*8), Y8
 	VPSUBQ    Y5, Y7, Y7
 	VPSUBQ    Y6, Y8, Y8
 	VMOVDQU   Y7, (AX)(DI*8)

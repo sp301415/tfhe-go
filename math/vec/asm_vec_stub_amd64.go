@@ -8,10 +8,10 @@ package vec
 func addToUint32AVX2(vOut []uint32, v0 []uint32, v1 []uint32)
 
 //go:noescape
-func addToUint64AVX2(vOut []uint64, v0 []uint64, v1 []uint64)
+func subToUint32AVX2(vOut []uint32, v0 []uint32, v1 []uint32)
 
 //go:noescape
-func subToUint32AVX2(vOut []uint32, v0 []uint32, v1 []uint32)
+func addToUint64AVX2(vOut []uint64, v0 []uint64, v1 []uint64)
 
 //go:noescape
 func subToUint64AVX2(vOut []uint64, v0 []uint64, v1 []uint64)
@@ -20,16 +20,16 @@ func subToUint64AVX2(vOut []uint64, v0 []uint64, v1 []uint64)
 func scalarMulToUint32AVX2(vOut []uint32, v []uint32, c uint32)
 
 //go:noescape
-func scalarMulToUint64AVX2(vOut []uint64, v []uint64, c uint64)
-
-//go:noescape
 func scalarMulAddToUint32AVX2(vOut []uint32, v []uint32, c uint32)
 
 //go:noescape
-func scalarMulAddToUint64AVX2(vOut []uint64, v []uint64, c uint64)
+func scalarMulSubToUint32AVX2(vOut []uint32, v []uint32, c uint32)
 
 //go:noescape
-func scalarMulSubToUint32AVX2(vOut []uint32, v []uint32, c uint32)
+func scalarMulToUint64AVX2(vOut []uint64, v []uint64, c uint64)
+
+//go:noescape
+func scalarMulAddToUint64AVX2(vOut []uint64, v []uint64, c uint64)
 
 //go:noescape
 func scalarMulSubToUint64AVX2(vOut []uint64, v []uint64, c uint64)
@@ -38,16 +38,16 @@ func scalarMulSubToUint64AVX2(vOut []uint64, v []uint64, c uint64)
 func mulToUint32AVX2(vOut []uint32, v0 []uint32, v1 []uint32)
 
 //go:noescape
-func mulToUint64AVX2(vOut []uint64, v0 []uint64, v1 []uint64)
-
-//go:noescape
 func mulAddToUint32AVX2(vOut []uint32, v0 []uint32, v1 []uint32)
 
 //go:noescape
-func mulAddToUint64AVX2(vOut []uint64, v0 []uint64, v1 []uint64)
+func mulSubToUint32AVX2(vOut []uint32, v0 []uint32, v1 []uint32)
 
 //go:noescape
-func mulSubToUint32AVX2(vOut []uint32, v0 []uint32, v1 []uint32)
+func mulToUint64AVX2(vOut []uint64, v0 []uint64, v1 []uint64)
+
+//go:noescape
+func mulAddToUint64AVX2(vOut []uint64, v0 []uint64, v1 []uint64)
 
 //go:noescape
 func mulSubToUint64AVX2(vOut []uint64, v0 []uint64, v1 []uint64)

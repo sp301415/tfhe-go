@@ -5,7 +5,7 @@ import (
 	. "github.com/mmcloughlin/avo/operand"
 )
 
-func fwdFFTInPlaceAVX2() {
+func FwdFFTInPlaceAVX2() {
 	TEXT("fwdFFTInPlaceAVX2", NOSPLIT, "func(coeffs []float64, tw []complex128)")
 	Pragma("noescape")
 
@@ -208,7 +208,7 @@ func fwdFFTInPlaceAVX2() {
 	RET()
 }
 
-func invFFTInPlaceAVX2() {
+func InvFFTInPlaceAVX2() {
 	TEXT("invFFTInPlaceAVX2", NOSPLIT, "func(coeffs []float64, twInv []complex128, scale float64)")
 	Pragma("noescape")
 
