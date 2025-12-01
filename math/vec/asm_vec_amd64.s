@@ -223,7 +223,7 @@ leftover_loop_body:
 	IMULL SI, BX
 	MOVL  (AX)(DI*4), R8
 	ADDL  BX, R8
-	MOVL  BX, (AX)(DI*4)
+	MOVL  R8, (AX)(DI*4)
 	ADDQ  $0x01, DI
 
 leftover_loop_end:
@@ -263,7 +263,7 @@ leftover_loop_body:
 	IMULL SI, BX
 	MOVL  (AX)(DI*4), R8
 	SUBL  BX, R8
-	MOVL  BX, (AX)(DI*4)
+	MOVL  R8, (AX)(DI*4)
 	ADDQ  $0x01, DI
 
 leftover_loop_end:
@@ -351,7 +351,7 @@ loop_end:
 leftover_loop_body:
 	MOVQ  (CX)(DI*8), BX
 	IMULQ SI, BX
-	MOVQ  (AX)(DI*4), R8
+	MOVQ  (AX)(DI*8), R8
 	ADDQ  BX, R8
 	MOVQ  R8, (AX)(DI*8)
 	ADDQ  $0x01, DI
@@ -398,7 +398,7 @@ loop_end:
 leftover_loop_body:
 	MOVQ  (CX)(DI*8), BX
 	IMULQ SI, BX
-	MOVQ  (AX)(DI*4), R8
+	MOVQ  (AX)(DI*8), R8
 	SUBQ  BX, R8
 	MOVQ  R8, (AX)(DI*8)
 	ADDQ  $0x01, DI

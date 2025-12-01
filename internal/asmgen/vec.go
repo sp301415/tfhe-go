@@ -171,8 +171,8 @@ func ScalarMulToUint32AVX2(opType OpType) {
 	SHLQ(Imm(3), M)
 
 	c32 := Load(Param("c"), GP32())
-	cv := YMM()
-	VPBROADCASTD(NewParamAddr("c", 48), cv)
+	c := YMM()
+	VPBROADCASTD(NewParamAddr("c", 48), c)
 
 	i := GP64()
 	XORQ(i, i)
@@ -183,7 +183,7 @@ func ScalarMulToUint32AVX2(opType OpType) {
 	VMOVDQU(Mem{Base: v, Index: i, Scale: 4}, x)
 
 	xMul := YMM()
-	VPMULLD(cv, x, xMul)
+	VPMULLD(c, x, xMul)
 
 	xOut := YMM()
 	switch opType {
@@ -225,7 +225,7 @@ func ScalarMulToUint32AVX2(opType OpType) {
 		SUBL(y, yOut)
 	}
 
-	MOVL(y, Mem{Base: vOut, Index: i, Scale: 4})
+	MOVL(yOut, Mem{Base: vOut, Index: i, Scale: 4})
 
 	ADDQ(Imm(1), i)
 
@@ -410,10 +410,10 @@ func ScalarMulToUint64AVX2(opType OpType) {
 	case OpPure:
 		yOut = y
 	case OpAdd:
-		MOVQ(Mem{Base: vOut, Index: i, Scale: 4}, yOut)
+		MOVQ(Mem{Base: vOut, Index: i, Scale: 8}, yOut)
 		ADDQ(y, yOut)
 	case OpSub:
-		MOVQ(Mem{Base: vOut, Index: i, Scale: 4}, yOut)
+		MOVQ(Mem{Base: vOut, Index: i, Scale: 8}, yOut)
 		SUBQ(y, yOut)
 	}
 
