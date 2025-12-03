@@ -36,11 +36,11 @@ func (p FHEWParametersLiteral[T]) Compile() FHEWParameters[T] {
 	case baseParams.PolyRank() != baseParams.LUTSize():
 		panic("Compile: PolyRank does not equal LUTSize")
 	case p.SecretKeyStdDev <= 0:
-		panic("Compile: SecretKeyStdDev smaller than or equal to 0")
+		panic("Compile: SecretKeyStdDev smaller than or equal to zero")
 	case math.Log2(p.SecretKeyStdDev)+logQ+logTailCut > poly.ShortLogBound:
 		panic("Compile: SecretKeyStdDev too large")
-	case p.WindowSize < 0:
-		panic("Compile: WindowSize smaller than 0")
+	case p.WindowSize <= 0:
+		panic("Compile: WindowSize smaller than or equal to zero")
 	}
 
 	return FHEWParameters[T]{
