@@ -14,14 +14,16 @@ func fwdButterfly(uR, uI, vR, vI, wR, wI float64) (float64, float64, float64, fl
 // All internal FFT implementations calls this function for performance.
 func fwdFFTInPlace(coeffs []float64, tw []complex128) {
 	N := len(coeffs)
+	wPtr := unsafe.Pointer(&tw[0])
 	wIdx := 0
+	coeffsPtr := unsafe.Pointer(&coeffs[0])
 
-	wReal := real(tw[wIdx])
-	wImag := imag(tw[wIdx])
+	wReal := real(*(*complex128)(unsafe.Pointer(uintptr(wPtr) + uintptr(wIdx)*unsafe.Sizeof(complex128(0)))))
+	wImag := imag(*(*complex128)(unsafe.Pointer(uintptr(wPtr) + uintptr(wIdx)*unsafe.Sizeof(complex128(0)))))
 	wIdx++
 	for j := 0; j < N/2; j += 8 {
-		u := (*[8]float64)(unsafe.Pointer(&coeffs[j]))
-		v := (*[8]float64)(unsafe.Pointer(&coeffs[j+N/2]))
+		u := (*[8]float64)(unsafe.Pointer(uintptr(coeffsPtr) + uintptr(j)*unsafe.Sizeof(float64(0))))
+		v := (*[8]float64)(unsafe.Pointer(uintptr(coeffsPtr) + uintptr(j+N/2)*unsafe.Sizeof(float64(0))))
 
 		u[0], u[4], v[0], v[4] = fwdButterfly(u[0], u[4], v[0], v[4], wReal, wImag)
 		u[1], u[5], v[1], v[5] = fwdButterfly(u[1], u[5], v[1], v[5], wReal, wImag)
@@ -36,13 +38,13 @@ func fwdFFTInPlace(coeffs []float64, tw []complex128) {
 			j1 := 2 * i * t
 			j2 := j1 + t
 
-			wReal := real(tw[wIdx])
-			wImag := imag(tw[wIdx])
+			wReal := real(*(*complex128)(unsafe.Pointer(uintptr(wPtr) + uintptr(wIdx)*unsafe.Sizeof(complex128(0)))))
+			wImag := imag(*(*complex128)(unsafe.Pointer(uintptr(wPtr) + uintptr(wIdx)*unsafe.Sizeof(complex128(0)))))
 			wIdx++
 
 			for j := j1; j < j2; j += 8 {
-				u := (*[8]float64)(unsafe.Pointer(&coeffs[j]))
-				v := (*[8]float64)(unsafe.Pointer(&coeffs[j+t]))
+				u := (*[8]float64)(unsafe.Pointer(uintptr(coeffsPtr) + uintptr(j)*unsafe.Sizeof(float64(0))))
+				v := (*[8]float64)(unsafe.Pointer(uintptr(coeffsPtr) + uintptr(j+t)*unsafe.Sizeof(float64(0))))
 
 				u[0], u[4], v[0], v[4] = fwdButterfly(u[0], u[4], v[0], v[4], wReal, wImag)
 				u[1], u[5], v[1], v[5] = fwdButterfly(u[1], u[5], v[1], v[5], wReal, wImag)
@@ -53,26 +55,26 @@ func fwdFFTInPlace(coeffs []float64, tw []complex128) {
 	}
 
 	for j := 0; j < N; j += 8 {
-		wReal := real(tw[wIdx])
-		wImag := imag(tw[wIdx])
+		wReal := real(*(*complex128)(unsafe.Pointer(uintptr(wPtr) + uintptr(wIdx)*unsafe.Sizeof(complex128(0)))))
+		wImag := imag(*(*complex128)(unsafe.Pointer(uintptr(wPtr) + uintptr(wIdx)*unsafe.Sizeof(complex128(0)))))
 		wIdx++
 
-		uvReal := (*[4]float64)(unsafe.Pointer(&coeffs[j]))
-		uvImag := (*[4]float64)(unsafe.Pointer(&coeffs[j+4]))
+		uvReal := (*[4]float64)(unsafe.Pointer(uintptr(coeffsPtr) + uintptr(j)*unsafe.Sizeof(float64(0))))
+		uvImag := (*[4]float64)(unsafe.Pointer(uintptr(coeffsPtr) + uintptr(j+4)*unsafe.Sizeof(float64(0))))
 
 		uvReal[0], uvImag[0], uvReal[2], uvImag[2] = fwdButterfly(uvReal[0], uvImag[0], uvReal[2], uvImag[2], wReal, wImag)
 		uvReal[1], uvImag[1], uvReal[3], uvImag[3] = fwdButterfly(uvReal[1], uvImag[1], uvReal[3], uvImag[3], wReal, wImag)
 	}
 
 	for j := 0; j < N; j += 8 {
-		wReal0 := real(tw[wIdx])
-		wImag0 := imag(tw[wIdx])
-		wReal1 := real(tw[wIdx+1])
-		wImag1 := imag(tw[wIdx+1])
+		wReal0 := real(*(*complex128)(unsafe.Pointer(uintptr(wPtr) + uintptr(wIdx)*unsafe.Sizeof(complex128(0)))))
+		wImag0 := imag(*(*complex128)(unsafe.Pointer(uintptr(wPtr) + uintptr(wIdx)*unsafe.Sizeof(complex128(0)))))
+		wReal1 := real(*(*complex128)(unsafe.Pointer(uintptr(wPtr) + uintptr(wIdx+1)*unsafe.Sizeof(complex128(0)))))
+		wImag1 := imag(*(*complex128)(unsafe.Pointer(uintptr(wPtr) + uintptr(wIdx+1)*unsafe.Sizeof(complex128(0)))))
 		wIdx += 2
 
-		uvReal := (*[4]float64)(unsafe.Pointer(&coeffs[j]))
-		uvImag := (*[4]float64)(unsafe.Pointer(&coeffs[j+4]))
+		uvReal := (*[4]float64)(unsafe.Pointer(uintptr(coeffsPtr) + uintptr(j)*unsafe.Sizeof(float64(0))))
+		uvImag := (*[4]float64)(unsafe.Pointer(uintptr(coeffsPtr) + uintptr(j+4)*unsafe.Sizeof(float64(0))))
 
 		uvReal[0], uvImag[0], uvReal[1], uvImag[1] = fwdButterfly(uvReal[0], uvImag[0], uvReal[1], uvImag[1], wReal0, wImag0)
 		uvReal[2], uvImag[2], uvReal[3], uvImag[3] = fwdButterfly(uvReal[2], uvImag[2], uvReal[3], uvImag[3], wReal1, wImag1)
@@ -90,29 +92,31 @@ func invButterfly(uR, uI, vR, vI, wR, wI float64) (float64, float64, float64, fl
 // All internal inverse FFT implementations calls this function for performance.
 func invFFTInPlace(coeffs []float64, twInv []complex128) {
 	N := len(coeffs)
+	wPtr := unsafe.Pointer(&twInv[0])
 	wIdx := 0
+	coeffsPtr := unsafe.Pointer(&coeffs[0])
 
 	for j := 0; j < N; j += 8 {
-		wReal0 := real(twInv[wIdx])
-		wImag0 := imag(twInv[wIdx])
-		wReal1 := real(twInv[wIdx+1])
-		wImag1 := imag(twInv[wIdx+1])
+		wReal0 := real(*(*complex128)(unsafe.Pointer(uintptr(wPtr) + uintptr(wIdx)*unsafe.Sizeof(complex128(0)))))
+		wImag0 := imag(*(*complex128)(unsafe.Pointer(uintptr(wPtr) + uintptr(wIdx)*unsafe.Sizeof(complex128(0)))))
+		wReal1 := real(*(*complex128)(unsafe.Pointer(uintptr(wPtr) + uintptr(wIdx+1)*unsafe.Sizeof(complex128(0)))))
+		wImag1 := imag(*(*complex128)(unsafe.Pointer(uintptr(wPtr) + uintptr(wIdx+1)*unsafe.Sizeof(complex128(0)))))
 		wIdx += 2
 
-		uvReal := (*[4]float64)(unsafe.Pointer(&coeffs[j]))
-		uvImag := (*[4]float64)(unsafe.Pointer(&coeffs[j+4]))
+		uvReal := (*[4]float64)(unsafe.Pointer(uintptr(coeffsPtr) + uintptr(j)*unsafe.Sizeof(float64(0))))
+		uvImag := (*[4]float64)(unsafe.Pointer(uintptr(coeffsPtr) + uintptr(j+4)*unsafe.Sizeof(float64(0))))
 
 		uvReal[0], uvImag[0], uvReal[1], uvImag[1] = invButterfly(uvReal[0], uvImag[0], uvReal[1], uvImag[1], wReal0, wImag0)
 		uvReal[2], uvImag[2], uvReal[3], uvImag[3] = invButterfly(uvReal[2], uvImag[2], uvReal[3], uvImag[3], wReal1, wImag1)
 	}
 
 	for j := 0; j < N; j += 8 {
-		wReal := real(twInv[wIdx])
-		wImag := imag(twInv[wIdx])
+		wReal := real(*(*complex128)(unsafe.Pointer(uintptr(wPtr) + uintptr(wIdx)*unsafe.Sizeof(complex128(0)))))
+		wImag := imag(*(*complex128)(unsafe.Pointer(uintptr(wPtr) + uintptr(wIdx)*unsafe.Sizeof(complex128(0)))))
 		wIdx++
 
-		uvReal := (*[4]float64)(unsafe.Pointer(&coeffs[j]))
-		uvImag := (*[4]float64)(unsafe.Pointer(&coeffs[j+4]))
+		uvReal := (*[4]float64)(unsafe.Pointer(uintptr(coeffsPtr) + uintptr(j)*unsafe.Sizeof(float64(0))))
+		uvImag := (*[4]float64)(unsafe.Pointer(uintptr(coeffsPtr) + uintptr(j+4)*unsafe.Sizeof(float64(0))))
 
 		uvReal[0], uvImag[0], uvReal[2], uvImag[2] = invButterfly(uvReal[0], uvImag[0], uvReal[2], uvImag[2], wReal, wImag)
 		uvReal[1], uvImag[1], uvReal[3], uvImag[3] = invButterfly(uvReal[1], uvImag[1], uvReal[3], uvImag[3], wReal, wImag)
@@ -124,13 +128,13 @@ func invFFTInPlace(coeffs []float64, twInv []complex128) {
 			j1 := 2 * i * t
 			j2 := j1 + t
 
-			wReal := real(twInv[wIdx])
-			wImag := imag(twInv[wIdx])
+			wReal := real(*(*complex128)(unsafe.Pointer(uintptr(wPtr) + uintptr(wIdx)*unsafe.Sizeof(complex128(0)))))
+			wImag := imag(*(*complex128)(unsafe.Pointer(uintptr(wPtr) + uintptr(wIdx)*unsafe.Sizeof(complex128(0)))))
 			wIdx++
 
 			for j := j1; j < j2; j += 8 {
-				u := (*[8]float64)(unsafe.Pointer(&coeffs[j]))
-				v := (*[8]float64)(unsafe.Pointer(&coeffs[j+t]))
+				u := (*[8]float64)(unsafe.Pointer(uintptr(coeffsPtr) + uintptr(j)*unsafe.Sizeof(float64(0))))
+				v := (*[8]float64)(unsafe.Pointer(uintptr(coeffsPtr) + uintptr(j+t)*unsafe.Sizeof(float64(0))))
 
 				u[0], u[4], v[0], v[4] = invButterfly(u[0], u[4], v[0], v[4], wReal, wImag)
 				u[1], u[5], v[1], v[5] = invButterfly(u[1], u[5], v[1], v[5], wReal, wImag)
@@ -142,11 +146,11 @@ func invFFTInPlace(coeffs []float64, twInv []complex128) {
 	}
 
 	scale := float64(N / 2)
-	wReal := real(twInv[wIdx])
-	wImag := imag(twInv[wIdx])
+	wReal := real(*(*complex128)(unsafe.Pointer(uintptr(wPtr) + uintptr(wIdx)*unsafe.Sizeof(complex128(0)))))
+	wImag := imag(*(*complex128)(unsafe.Pointer(uintptr(wPtr) + uintptr(wIdx)*unsafe.Sizeof(complex128(0)))))
 	for j := 0; j < N/2; j += 8 {
-		u := (*[8]float64)(unsafe.Pointer(&coeffs[j]))
-		v := (*[8]float64)(unsafe.Pointer(&coeffs[j+N/2]))
+		u := (*[8]float64)(unsafe.Pointer(uintptr(coeffsPtr) + uintptr(j)*unsafe.Sizeof(float64(0))))
+		v := (*[8]float64)(unsafe.Pointer(uintptr(coeffsPtr) + uintptr(j+N/2)*unsafe.Sizeof(float64(0))))
 
 		u[0], u[4], v[0], v[4] = invButterfly(u[0], u[4], v[0], v[4], wReal, wImag)
 		u[1], u[5], v[1], v[5] = invButterfly(u[1], u[5], v[1], v[5], wReal, wImag)

@@ -15,10 +15,14 @@ func addCmplxTo(vOut, v0, v1 []float64) {
 		return
 	}
 
+	ptrOut := unsafe.Pointer(&vOut[0])
+	ptr0 := unsafe.Pointer(&v0[0])
+	ptr1 := unsafe.Pointer(&v1[0])
+
 	for i := 0; i < len(vOut); i += 8 {
-		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
-		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
-		w1 := (*[8]float64)(unsafe.Pointer(&v1[i]))
+		wOut := (*[8]float64)(unsafe.Pointer(uintptr(ptrOut) + uintptr(i)*unsafe.Sizeof(float64(0))))
+		w0 := (*[8]float64)(unsafe.Pointer(uintptr(ptr0) + uintptr(i)*unsafe.Sizeof(float64(0))))
+		w1 := (*[8]float64)(unsafe.Pointer(uintptr(ptr1) + uintptr(i)*unsafe.Sizeof(float64(0))))
 
 		wOut[0] = w0[0] + w1[0]
 		wOut[1] = w0[1] + w1[1]
@@ -39,10 +43,14 @@ func subCmplxTo(vOut, v0, v1 []float64) {
 		return
 	}
 
+	ptrOut := unsafe.Pointer(&vOut[0])
+	ptr0 := unsafe.Pointer(&v0[0])
+	ptr1 := unsafe.Pointer(&v1[0])
+
 	for i := 0; i < len(vOut); i += 8 {
-		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
-		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
-		w1 := (*[8]float64)(unsafe.Pointer(&v1[i]))
+		wOut := (*[8]float64)(unsafe.Pointer(uintptr(ptrOut) + uintptr(i)*unsafe.Sizeof(float64(0))))
+		w0 := (*[8]float64)(unsafe.Pointer(uintptr(ptr0) + uintptr(i)*unsafe.Sizeof(float64(0))))
+		w1 := (*[8]float64)(unsafe.Pointer(uintptr(ptr1) + uintptr(i)*unsafe.Sizeof(float64(0))))
 
 		wOut[0] = w0[0] - w1[0]
 		wOut[1] = w0[1] - w1[1]
@@ -63,19 +71,22 @@ func negCmplxTo(vOut, v []float64) {
 		return
 	}
 
+	ptrOut := unsafe.Pointer(&vOut[0])
+	ptr := unsafe.Pointer(&v[0])
+
 	for i := 0; i < len(vOut); i += 8 {
-		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
-		w0 := (*[8]float64)(unsafe.Pointer(&v[i]))
+		wOut := (*[8]float64)(unsafe.Pointer(uintptr(ptrOut) + uintptr(i)*unsafe.Sizeof(float64(0))))
+		w := (*[8]float64)(unsafe.Pointer(uintptr(ptr) + uintptr(i)*unsafe.Sizeof(float64(0))))
 
-		wOut[0] = -w0[0]
-		wOut[1] = -w0[1]
-		wOut[2] = -w0[2]
-		wOut[3] = -w0[3]
+		wOut[0] = -w[0]
+		wOut[1] = -w[1]
+		wOut[2] = -w[2]
+		wOut[3] = -w[3]
 
-		wOut[4] = -w0[4]
-		wOut[5] = -w0[5]
-		wOut[6] = -w0[6]
-		wOut[7] = -w0[7]
+		wOut[4] = -w[4]
+		wOut[5] = -w[5]
+		wOut[6] = -w[6]
+		wOut[7] = -w[7]
 	}
 }
 
@@ -86,19 +97,22 @@ func floatMulCmplxTo(vOut, v []float64, c float64) {
 		return
 	}
 
+	ptrOut := unsafe.Pointer(&vOut[0])
+	ptr := unsafe.Pointer(&v[0])
+
 	for i := 0; i < len(vOut); i += 8 {
-		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
-		w0 := (*[8]float64)(unsafe.Pointer(&v[i]))
+		wOut := (*[8]float64)(unsafe.Pointer(uintptr(ptrOut) + uintptr(i)*unsafe.Sizeof(float64(0))))
+		w := (*[8]float64)(unsafe.Pointer(uintptr(ptr) + uintptr(i)*unsafe.Sizeof(float64(0))))
 
-		wOut[0] = c * w0[0]
-		wOut[1] = c * w0[1]
-		wOut[2] = c * w0[2]
-		wOut[3] = c * w0[3]
+		wOut[0] = c * w[0]
+		wOut[1] = c * w[1]
+		wOut[2] = c * w[2]
+		wOut[3] = c * w[3]
 
-		wOut[4] = c * w0[4]
-		wOut[5] = c * w0[5]
-		wOut[6] = c * w0[6]
-		wOut[7] = c * w0[7]
+		wOut[4] = c * w[4]
+		wOut[5] = c * w[5]
+		wOut[6] = c * w[6]
+		wOut[7] = c * w[7]
 	}
 }
 
@@ -109,19 +123,22 @@ func floatMulAddCmplxTo(vOut, v []float64, c float64) {
 		return
 	}
 
+	ptrOut := unsafe.Pointer(&vOut[0])
+	ptr := unsafe.Pointer(&v[0])
+
 	for i := 0; i < len(vOut); i += 8 {
-		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
-		w0 := (*[8]float64)(unsafe.Pointer(&v[i]))
+		wOut := (*[8]float64)(unsafe.Pointer(uintptr(ptrOut) + uintptr(i)*unsafe.Sizeof(float64(0))))
+		w := (*[8]float64)(unsafe.Pointer(uintptr(ptr) + uintptr(i)*unsafe.Sizeof(float64(0))))
 
-		wOut[0] += c * w0[0]
-		wOut[1] += c * w0[1]
-		wOut[2] += c * w0[2]
-		wOut[3] += c * w0[3]
+		wOut[0] += c * w[0]
+		wOut[1] += c * w[1]
+		wOut[2] += c * w[2]
+		wOut[3] += c * w[3]
 
-		wOut[4] += c * w0[4]
-		wOut[5] += c * w0[5]
-		wOut[6] += c * w0[6]
-		wOut[7] += c * w0[7]
+		wOut[4] += c * w[4]
+		wOut[5] += c * w[5]
+		wOut[6] += c * w[6]
+		wOut[7] += c * w[7]
 	}
 }
 
@@ -132,19 +149,22 @@ func floatMulSubCmplxTo(vOut, v []float64, c float64) {
 		return
 	}
 
+	ptrOut := unsafe.Pointer(&vOut[0])
+	ptr := unsafe.Pointer(&v[0])
+
 	for i := 0; i < len(vOut); i += 8 {
-		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
-		w0 := (*[8]float64)(unsafe.Pointer(&v[i]))
+		wOut := (*[8]float64)(unsafe.Pointer(uintptr(ptrOut) + uintptr(i)*unsafe.Sizeof(float64(0))))
+		w := (*[8]float64)(unsafe.Pointer(uintptr(ptr) + uintptr(i)*unsafe.Sizeof(float64(0))))
 
-		wOut[0] -= c * w0[0]
-		wOut[1] -= c * w0[1]
-		wOut[2] -= c * w0[2]
-		wOut[3] -= c * w0[3]
+		wOut[0] -= c * w[0]
+		wOut[1] -= c * w[1]
+		wOut[2] -= c * w[2]
+		wOut[3] -= c * w[3]
 
-		wOut[4] -= c * w0[4]
-		wOut[5] -= c * w0[5]
-		wOut[6] -= c * w0[6]
-		wOut[7] -= c * w0[7]
+		wOut[4] -= c * w[4]
+		wOut[5] -= c * w[5]
+		wOut[6] -= c * w[6]
+		wOut[7] -= c * w[7]
 	}
 }
 
@@ -156,19 +176,23 @@ func cmplxMulCmplxTo(vOut, v []float64, c complex128) {
 	}
 
 	cR, cI := real(c), imag(c)
+
+	ptrOut := unsafe.Pointer(&vOut[0])
+	ptr := unsafe.Pointer(&v[0])
+
 	for i := 0; i < len(vOut); i += 8 {
-		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
-		w0 := (*[8]float64)(unsafe.Pointer(&v[i]))
+		wOut := (*[8]float64)(unsafe.Pointer(uintptr(ptrOut) + uintptr(i)*unsafe.Sizeof(float64(0))))
+		w := (*[8]float64)(unsafe.Pointer(uintptr(ptr) + uintptr(i)*unsafe.Sizeof(float64(0))))
 
-		wOut[0] = w0[0]*cR - w0[4]*cI
-		wOut[1] = w0[1]*cR - w0[5]*cI
-		wOut[2] = w0[2]*cR - w0[6]*cI
-		wOut[3] = w0[3]*cR - w0[7]*cI
+		wOut[0] = w[0]*cR - w[4]*cI
+		wOut[1] = w[1]*cR - w[5]*cI
+		wOut[2] = w[2]*cR - w[6]*cI
+		wOut[3] = w[3]*cR - w[7]*cI
 
-		wOut[4] = w0[0]*cI + w0[4]*cR
-		wOut[5] = w0[1]*cI + w0[5]*cR
-		wOut[6] = w0[2]*cI + w0[6]*cR
-		wOut[7] = w0[3]*cI + w0[7]*cR
+		wOut[4] = w[0]*cI + w[4]*cR
+		wOut[5] = w[1]*cI + w[5]*cR
+		wOut[6] = w[2]*cI + w[6]*cR
+		wOut[7] = w[3]*cI + w[7]*cR
 	}
 }
 
@@ -180,19 +204,23 @@ func cmplxMulAddCmplxTo(vOut, v []float64, c complex128) {
 	}
 
 	cR, cI := real(c), imag(c)
+
+	ptrOut := unsafe.Pointer(&vOut[0])
+	ptr := unsafe.Pointer(&v[0])
+
 	for i := 0; i < len(vOut); i += 8 {
-		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
-		w0 := (*[8]float64)(unsafe.Pointer(&v[i]))
+		wOut := (*[8]float64)(unsafe.Pointer(uintptr(ptrOut) + uintptr(i)*unsafe.Sizeof(float64(0))))
+		w := (*[8]float64)(unsafe.Pointer(uintptr(ptr) + uintptr(i)*unsafe.Sizeof(float64(0))))
 
-		wOut[0] += w0[0]*cR - w0[4]*cI
-		wOut[1] += w0[1]*cR - w0[5]*cI
-		wOut[2] += w0[2]*cR - w0[6]*cI
-		wOut[3] += w0[3]*cR - w0[7]*cI
+		wOut[0] += w[0]*cR - w[4]*cI
+		wOut[1] += w[1]*cR - w[5]*cI
+		wOut[2] += w[2]*cR - w[6]*cI
+		wOut[3] += w[3]*cR - w[7]*cI
 
-		wOut[4] += w0[0]*cI + w0[4]*cR
-		wOut[5] += w0[1]*cI + w0[5]*cR
-		wOut[6] += w0[2]*cI + w0[6]*cR
-		wOut[7] += w0[3]*cI + w0[7]*cR
+		wOut[4] += w[0]*cI + w[4]*cR
+		wOut[5] += w[1]*cI + w[5]*cR
+		wOut[6] += w[2]*cI + w[6]*cR
+		wOut[7] += w[3]*cI + w[7]*cR
 	}
 }
 
@@ -204,19 +232,23 @@ func cmplxMulSubCmplxTo(vOut, v []float64, c complex128) {
 	}
 
 	cR, cI := real(c), imag(c)
+
+	ptrOut := unsafe.Pointer(&vOut[0])
+	ptr := unsafe.Pointer(&v[0])
+
 	for i := 0; i < len(vOut); i += 8 {
-		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
-		w0 := (*[8]float64)(unsafe.Pointer(&v[i]))
+		wOut := (*[8]float64)(unsafe.Pointer(uintptr(ptrOut) + uintptr(i)*unsafe.Sizeof(float64(0))))
+		w := (*[8]float64)(unsafe.Pointer(uintptr(ptr) + uintptr(i)*unsafe.Sizeof(float64(0))))
 
-		wOut[0] -= w0[0]*cR - w0[4]*cI
-		wOut[1] -= w0[1]*cR - w0[5]*cI
-		wOut[2] -= w0[2]*cR - w0[6]*cI
-		wOut[3] -= w0[3]*cR - w0[7]*cI
+		wOut[0] -= w[0]*cR - w[4]*cI
+		wOut[1] -= w[1]*cR - w[5]*cI
+		wOut[2] -= w[2]*cR - w[6]*cI
+		wOut[3] -= w[3]*cR - w[7]*cI
 
-		wOut[4] -= w0[0]*cI + w0[4]*cR
-		wOut[5] -= w0[1]*cI + w0[5]*cR
-		wOut[6] -= w0[2]*cI + w0[6]*cR
-		wOut[7] -= w0[3]*cI + w0[7]*cR
+		wOut[4] -= w[0]*cI + w[4]*cR
+		wOut[5] -= w[1]*cI + w[5]*cR
+		wOut[6] -= w[2]*cI + w[6]*cR
+		wOut[7] -= w[3]*cI + w[7]*cR
 	}
 }
 
@@ -227,11 +259,15 @@ func mulCmplxTo(vOut, v0, v1 []float64) {
 		return
 	}
 
+	ptrOut := unsafe.Pointer(&vOut[0])
+	ptr0 := unsafe.Pointer(&v0[0])
+	ptr1 := unsafe.Pointer(&v1[0])
+
 	var vOutR, vOutI float64
 	for i := 0; i < len(vOut); i += 8 {
-		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
-		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
-		w1 := (*[8]float64)(unsafe.Pointer(&v1[i]))
+		wOut := (*[8]float64)(unsafe.Pointer(uintptr(ptrOut) + uintptr(i)*unsafe.Sizeof(float64(0))))
+		w0 := (*[8]float64)(unsafe.Pointer(uintptr(ptr0) + uintptr(i)*unsafe.Sizeof(float64(0))))
+		w1 := (*[8]float64)(unsafe.Pointer(uintptr(ptr1) + uintptr(i)*unsafe.Sizeof(float64(0))))
 
 		vOutR = w0[0]*w1[0] - w0[4]*w1[4]
 		vOutI = w0[0]*w1[4] + w0[4]*w1[0]
@@ -258,11 +294,15 @@ func mulAddCmplxTo(vOut, v0, v1 []float64) {
 		return
 	}
 
+	ptrOut := unsafe.Pointer(&vOut[0])
+	ptr0 := unsafe.Pointer(&v0[0])
+	ptr1 := unsafe.Pointer(&v1[0])
+
 	var vOutR, vOutI float64
 	for i := 0; i < len(vOut); i += 8 {
-		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
-		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
-		w1 := (*[8]float64)(unsafe.Pointer(&v1[i]))
+		wOut := (*[8]float64)(unsafe.Pointer(uintptr(ptrOut) + uintptr(i)*unsafe.Sizeof(float64(0))))
+		w0 := (*[8]float64)(unsafe.Pointer(uintptr(ptr0) + uintptr(i)*unsafe.Sizeof(float64(0))))
+		w1 := (*[8]float64)(unsafe.Pointer(uintptr(ptr1) + uintptr(i)*unsafe.Sizeof(float64(0))))
 
 		vOutR = wOut[0] + (w0[0]*w1[0] - w0[4]*w1[4])
 		vOutI = wOut[4] + (w0[0]*w1[4] + w0[4]*w1[0])
@@ -289,11 +329,15 @@ func mulSubCmplxTo(vOut, v0, v1 []float64) {
 		return
 	}
 
+	ptrOut := unsafe.Pointer(&vOut[0])
+	ptr0 := unsafe.Pointer(&v0[0])
+	ptr1 := unsafe.Pointer(&v1[0])
+
 	var vOutR, vOutI float64
 	for i := 0; i < len(vOut); i += 8 {
-		wOut := (*[8]float64)(unsafe.Pointer(&vOut[i]))
-		w0 := (*[8]float64)(unsafe.Pointer(&v0[i]))
-		w1 := (*[8]float64)(unsafe.Pointer(&v1[i]))
+		wOut := (*[8]float64)(unsafe.Pointer(uintptr(ptrOut) + uintptr(i)*unsafe.Sizeof(float64(0))))
+		w0 := (*[8]float64)(unsafe.Pointer(uintptr(ptr0) + uintptr(i)*unsafe.Sizeof(float64(0))))
+		w1 := (*[8]float64)(unsafe.Pointer(uintptr(ptr1) + uintptr(i)*unsafe.Sizeof(float64(0))))
 
 		vOutR = wOut[0] - (w0[0]*w1[0] - w0[4]*w1[4])
 		vOutI = wOut[4] - (w0[0]*w1[4] + w0[4]*w1[0])
