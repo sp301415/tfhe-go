@@ -91,7 +91,7 @@ func NewEvaluator[T num.Integer](N int) *Evaluator[T] {
 		panic("NewEvaluator: rank smaller than MinRank")
 	}
 
-	Q := math.Exp2(float64(num.SizeT[T]()))
+	q := math.Exp2(float64(num.SizeT[T]()))
 
 	tw, twInv := genTwiddleFactors(N / 2)
 
@@ -110,7 +110,7 @@ func NewEvaluator[T num.Integer](N int) *Evaluator[T] {
 
 	return &Evaluator[T]{
 		rank: N,
-		q:    Q,
+		q:    q,
 
 		tw:        tw,
 		twInv:     twInv,
