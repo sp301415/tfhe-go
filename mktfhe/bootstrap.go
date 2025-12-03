@@ -30,8 +30,8 @@ func (e *Evaluator[T]) BootstrapLUT(ct LWECiphertext[T], lut tfhe.LookUpTable[T]
 func (e *Evaluator[T]) BootstrapLUTTo(ctOut, ct LWECiphertext[T], lut tfhe.LookUpTable[T]) {
 	switch e.Params.BootstrapOrder() {
 	case tfhe.OrderKeySwitchBlindRotate:
-		e.DefaultKeySwitchTo(e.buf.ctKeySwitc, ct)
-		e.BlindRotateTo(e.buf.ctRotate, e.buf.ctKeySwitc, lut)
+		e.DefaultKeySwitchTo(e.buf.ctKeySwitch, ct)
+		e.BlindRotateTo(e.buf.ctRotate, e.buf.ctKeySwitch, lut)
 		e.buf.ctRotate.AsLWECiphertextTo(ctOut, 0)
 	case tfhe.OrderBlindRotateKeySwitch:
 		e.BlindRotateTo(e.buf.ctRotate, ct, lut)
@@ -63,8 +63,8 @@ func (e *Evaluator[T]) BootstrapLUTParallel(ct LWECiphertext[T], lut tfhe.LookUp
 func (e *Evaluator[T]) BootstrapLUTParallelTo(ctOut, ct LWECiphertext[T], lut tfhe.LookUpTable[T]) {
 	switch e.Params.BootstrapOrder() {
 	case tfhe.OrderKeySwitchBlindRotate:
-		e.DefaultKeySwitchTo(e.buf.ctKeySwitc, ct)
-		e.BlindRotateParallelTo(e.buf.ctRotate, e.buf.ctKeySwitc, lut)
+		e.DefaultKeySwitchTo(e.buf.ctKeySwitch, ct)
+		e.BlindRotateParallelTo(e.buf.ctRotate, e.buf.ctKeySwitch, lut)
 		e.buf.ctRotate.AsLWECiphertextTo(ctOut, 0)
 	case tfhe.OrderBlindRotateKeySwitch:
 		e.BlindRotateParallelTo(e.buf.ctRotate, ct, lut)

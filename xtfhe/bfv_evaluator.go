@@ -12,7 +12,7 @@ import (
 // Use [*BFVEvaluator.SafeCopy] to get a safe copy.
 type BFVEvaluator[T tfhe.TorusInt] struct {
 	// Evaluator is a base evaluator for this BFVEvaluator.
-	// Note that it does not hold evaluaation keys, so bootstrapping is not supported.
+	// Note that it does not hold evaluation keys, so bootstrapping is not supported.
 	Evaluator *tfhe.Evaluator[T]
 	// PolyEvaluator is a PolyEvaluator for this BFVEvaluator.
 	PolyEvaluator *poly.Evaluator[T]

@@ -10,7 +10,7 @@ import (
 type Evaluator[T tfhe.TorusInt] struct {
 	// Encoder is an embedded Encoder for this Evaluator.
 	*tfhe.Encoder[T]
-	// GLWETansformer is an embedded GLWETransformer for this Evaluator.
+	// GLWETransformer is an embedded GLWETransformer for this Evaluator.
 	*GLWETransformer[T]
 
 	// subEvaluator is a single-key Evaluator for this Evaluator.
@@ -71,8 +71,8 @@ type evaluatorBuffer[T tfhe.TorusInt] struct {
 	ctRotate GLWECiphertext[T]
 	// ctExtract is the extracted LWE ciphertext after Blind Rotation.
 	ctExtract LWECiphertext[T]
-	// ctKeySwitc is the LWEDimension sized ciphertext from keyswitching for bootstrapping.
-	ctKeySwitc LWECiphertext[T]
+	// ctKeySwitch is the LWEDimension sized ciphertext from keyswitching for bootstrapping.
+	ctKeySwitch LWECiphertext[T]
 
 	// lut is an empty lut, used for BlindRotateFunc.
 	lut tfhe.LookUpTable[T]
@@ -157,9 +157,9 @@ func newEvaluatorBuffer[T tfhe.TorusInt](params Parameters[T]) evaluatorBuffer[T
 		ctAccs:     ctAccs,
 		ctFFTAccs:  ctFFTAccs,
 
-		ctRotate:   NewGLWECiphertext(params),
-		ctExtract:  NewLWECiphertextCustom[T](params.GLWEDimension()),
-		ctKeySwitc: NewLWECiphertextCustom[T](params.LWEDimension()),
+		ctRotate:    NewGLWECiphertext(params),
+		ctExtract:   NewLWECiphertextCustom[T](params.GLWEDimension()),
+		ctKeySwitch: NewLWECiphertextCustom[T](params.LWEDimension()),
 
 		lut: tfhe.NewLUT(params.subParams),
 	}

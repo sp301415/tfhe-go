@@ -10,9 +10,9 @@ import (
 type Encryptor[T tfhe.TorusInt] struct {
 	// Encoder is an embedded Encoder for this Encryptor.
 	*tfhe.Encoder[T]
-	// GLWETansformer is an embedded GLWETransformer for this Encryptor.
+	// GLWETransformer is an embedded GLWETransformer for this Encryptor.
 	*GLWETransformer[T]
-	// SubEncryptor is a single-key SubEncryptor for this SubEncryptor.
+	// SubEncryptor is a single-key Encryptor for this Encryptor.
 	SubEncryptor *tfhe.Encryptor[T]
 
 	// Params is the parameters for this Encryptor.

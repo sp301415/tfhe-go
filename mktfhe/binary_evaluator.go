@@ -11,7 +11,7 @@ type BinaryEvaluator[T tfhe.TorusInt] struct {
 	*tfhe.BinaryEncoder[T]
 	// Params is the parameters for this BinaryEvaluator.
 	Params Parameters[T]
-	// Evaluator is a generic Evalutor for this BinaryEvaluator.
+	// Evaluator is a generic Evaluator for this BinaryEvaluator.
 	Evaluator *Evaluator[T]
 	// signLUT is a LUT for sign function.
 	signLUT tfhe.LookUpTable[T]

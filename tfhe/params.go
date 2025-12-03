@@ -47,7 +47,7 @@ func (p GadgetParametersLiteral[T]) Compile() GadgetParameters[T] {
 	case p.Level <= 0:
 		panic("Compile: Level smaller than or equal to zero")
 	case num.SizeT[T]() < num.Log2(p.Base)*p.Level:
-		panic("Compile: Base * Level larger than Q")
+		panic("Compile: Base^Level larger than Q")
 	}
 
 	return GadgetParameters[T]{
