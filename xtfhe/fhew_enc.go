@@ -10,7 +10,7 @@ type FHEWEncryptor[T tfhe.TorusInt] struct {
 	// Encryptor is an embedded [tfhe.Encryptor] for this FHEWEncryptor.
 	*tfhe.Encryptor[T]
 
-	// Params is the parameters for this FHEWEncryptor.
+	// Params is parameters for this FHEWEncryptor.
 	Params FHEWParameters[T]
 
 	buf fhewEncryptorBuffer[T]
@@ -18,9 +18,9 @@ type FHEWEncryptor[T tfhe.TorusInt] struct {
 
 // fhewEncryptorBuffer is a buffer for FHEWEncryptor.
 type fhewEncryptorBuffer[T tfhe.TorusInt] struct {
-	// skPermute is the permuted secret key.
+	// skPermute is a permuted secret key.
 	skPermute tfhe.GLWESecretKey[T]
-	// ctGLWE is the standard GLWE Ciphertext for Fourier encryption / decryptions.
+	// ctGLWE is a standard GLWE Ciphertext for Fourier encryption / decryptions.
 	ctGLWE tfhe.GLWECiphertext[T]
 	// ptGGSW is GLWEKey * Pt in GGSW encryption.
 	ptGGSW poly.Poly[T]

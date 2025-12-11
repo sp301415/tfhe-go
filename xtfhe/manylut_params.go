@@ -25,9 +25,9 @@ func (p ManyLUTParametersLiteral[T]) Compile() ManyLUTParameters[T] {
 
 	switch {
 	case baseParams.PolyRank() != baseParams.LUTSize():
-		panic("Compile: PolyRank does not equal LUTSize")
+		panic("PolyRank does not equal LUTSize")
 	case !num.IsPowerOfTwo(p.LUTCount):
-		panic("Compile: lutCount not power of two")
+		panic("lutCount not power of two")
 	}
 
 	return ManyLUTParameters[T]{

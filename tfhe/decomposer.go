@@ -19,11 +19,11 @@ type Decomposer[T TorusInt] struct {
 
 // decomposerBuffer is a buffer for Decomposer.
 type decomposerBuffer[T TorusInt] struct {
-	// cDcmp is the cDcmp scalar.
+	// cDcmp is a cDcmp scalar.
 	cDcmp []T
-	// pDcmp is the decomposed polynomial.
+	// pDcmp is a decomposed polynomial.
 	pDcmp []poly.Poly[T]
-	// fpDcmp is the decomposed polynomial in Fourier domain.
+	// fpDcmp is a decomposed polynomial in Fourier domain.
 	fpDcmp []poly.FFTPoly
 }
 

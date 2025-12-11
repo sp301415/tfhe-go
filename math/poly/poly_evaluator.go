@@ -64,14 +64,14 @@ type Evaluator[T num.Integer] struct {
 
 // evaluatorBuffer is a buffer for Evaluator.
 type evaluatorBuffer[T num.Integer] struct {
-	// pOut is the intermediate output polynomial for InPlace operations.
+	// pOut is an intermediate output polynomial for InPlace operations.
 	pOut Poly[T]
-	// fpOut is the intermediate output fourier polynomial for InPlace operations.
+	// fpOut is an intermediate output fourier polynomial for InPlace operations.
 	fpOut FFTPoly
 
-	// fp is the FFT value of p.
+	// fp is an FFT value of p.
 	fp FFTPoly
-	// fpInv is the InvFFT value of fp.
+	// fpInv is an InvFFT value of fp.
 	fpInv FFTPoly
 
 	// pSplit is the split value of p0 in [*Evaluator.ShortFFTPolyMul].
@@ -86,9 +86,9 @@ type evaluatorBuffer[T num.Integer] struct {
 func NewEvaluator[T num.Integer](N int) *Evaluator[T] {
 	switch {
 	case !num.IsPowerOfTwo(N):
-		panic("NewEvaluator: rank not power of two")
+		panic("rank not power of two")
 	case N < MinRank:
-		panic("NewEvaluator: rank smaller than MinRank")
+		panic("rank smaller than MinRank")
 	}
 
 	q := math.Exp2(float64(num.SizeT[T]()))

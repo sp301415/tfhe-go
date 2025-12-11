@@ -15,7 +15,7 @@ type Sanitizer[T tfhe.TorusInt] struct {
 	// Evaluator is an embedded Evaluator for this Sanitizer.
 	*tfhe.Evaluator[T]
 
-	// Params is the parameters for this Sanitizer.
+	// Params is parameters for this Sanitizer.
 	Params SanitizationParameters[T]
 
 	// PublicKey is the public key for this Sanitizer.
@@ -41,11 +41,11 @@ type sanitizerBuffer[T tfhe.TorusInt] struct {
 	// ctRandLWE is a buffer for LWE ciphertext.
 	ctRandLWE tfhe.LWECiphertext[T]
 
-	// ctReRand is the rerandomized LWE ciphertext for bootstrapping.
+	// ctReRand is a rerandomized LWE ciphertext for bootstrapping.
 	ctReRand tfhe.LWECiphertext[T]
-	// ctRotate is the blind rotated GLWE ciphertext for bootstrapping.
+	// ctRotate is a blind rotated GLWE ciphertext for bootstrapping.
 	ctRotate tfhe.GLWECiphertext[T]
-	// ctKeySwitch is the LWEDimension sized ciphertext from keyswitching for bootstrapping.
+	// ctKeySwitch is a LWEDimension sized ciphertext from keyswitching for bootstrapping.
 	ctKeySwitch tfhe.LWECiphertext[T]
 
 	// lut is an empty lut, used for BlindRotateFunc.

@@ -13,7 +13,7 @@ import (
 //
 // Encoder is safe for concurrent use.
 type Encoder[T TorusInt] struct {
-	// Params is the parameters for this Encoder.
+	// Params is parameters for this Encoder.
 	Params Parameters[T]
 }
 

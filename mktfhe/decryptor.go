@@ -23,7 +23,7 @@ type Decryptor[T tfhe.TorusInt] struct {
 	// If a secret key of a given index does not exist, it is nil.
 	SubDecryptors []*tfhe.Encryptor[T]
 
-	// Params is the parameters for the decryptor.
+	// Params is parameters for the decryptor.
 	Params Parameters[T]
 	// PartyBitMap is a bitmap for parties.
 	// If a party of a given index exists, it is true.
@@ -39,14 +39,14 @@ type Decryptor[T tfhe.TorusInt] struct {
 
 // decryptorBuffer is a buffer for decryption.
 type decryptorBuffer[T tfhe.TorusInt] struct {
-	// ptGLWE is the GLWE plaintext.
+	// ptGLWE is a GLWE plaintext.
 	ptGLWE tfhe.GLWEPlaintext[T]
-	// ctGLWE is the GLWE ciphertext.
+	// ctGLWE is a GLWE ciphertext.
 	ctGLWE GLWECiphertext[T]
 
-	// ctSubLWE is the LWE ciphertext.
+	// ctSubLWE is a single-key LWE ciphertext.
 	ctSubLWE tfhe.LWECiphertext[T]
-	// ctSubGLWE is the GLWE ciphertext.
+	// ctSubGLWE is a single-key GLWE ciphertext.
 	ctSubGLWE tfhe.GLWECiphertext[T]
 }
 

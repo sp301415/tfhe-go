@@ -14,7 +14,7 @@ type ManyLUTEvaluator[T tfhe.TorusInt] struct {
 	// Evaluator is an embedded Evaluator for this ManyLUTEvaluator.
 	*tfhe.Evaluator[T]
 
-	// Params is the parameters for this ManyLUTEvaluator.
+	// Params is parameters for this ManyLUTEvaluator.
 	Params ManyLUTParameters[T]
 
 	buf manyLUTEvaluatorBuffer[T]
@@ -22,16 +22,16 @@ type ManyLUTEvaluator[T tfhe.TorusInt] struct {
 
 // manyLUTEvaluatorBuffer is a buffer for ManyLUTEvaluator.
 type manyLUTEvaluatorBuffer[T tfhe.TorusInt] struct {
-	// ctFFTAcc is the fourier transformed accumulator in Blind Rotation.
+	// ctFFTAcc is a fourier transformed accumulator in Blind Rotation.
 	ctFFTAcc tfhe.FFTGLWECiphertext[T]
-	// ctFFTBlockAcc is the auxiliary accumulator in BlindRotateBlock.
+	// ctFFTBlockAcc is an auxiliary accumulator in BlindRotateBlock.
 	ctFFTBlockAcc tfhe.FFTGLWECiphertext[T]
-	// ctFFTAccDcmp is the decomposed ctAcc in Blind Rotation.
+	// ctFFTAccDcmp is a decomposed ctAcc in Blind Rotation.
 	ctFFTAccDcmp [][]poly.FFTPoly
-	// fMono is the fourier transformed monomial in Blind Rotation.
+	// fMono is a fourier transformed monomial in Blind Rotation.
 	fMono poly.FFTPoly
 
-	// ctRotate is the blind rotated GLWE ciphertext for bootstrapping.
+	// ctRotate is a blind rotated GLWE ciphertext for bootstrapping.
 	ctRotate tfhe.GLWECiphertext[T]
 	// ctExtract is the extracted LWE ciphertext after Blind Rotation.
 	ctExtract tfhe.LWECiphertext[T]

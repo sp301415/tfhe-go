@@ -13,7 +13,7 @@ type FHEWEvaluator[T tfhe.TorusInt] struct {
 	// Evaluator is an embedded [tfhe.Evaluator] for this FHEWEvaluator.
 	*tfhe.Evaluator[T]
 
-	// Params is the parameters for this Evaluator.
+	// Params is parameters for this Evaluator.
 	Params FHEWParameters[T]
 
 	// EvalKey is the evaluation key for this Evaluator.
@@ -27,16 +27,16 @@ type FHEWEvaluator[T tfhe.TorusInt] struct {
 
 // fhewEvaluatorBuffer is a buffer for FHEWEvaluator.
 type fhewEvaluatorBuffer[T tfhe.TorusInt] struct {
-	// ctFFTAcc is the fourier transformed accumulator in Blind Rotation.
+	// ctFFTAcc is a fourier transformed accumulator in Blind Rotation.
 	ctFFTAcc tfhe.FFTGLWECiphertext[T]
-	// ctFFTAccDcmp is the decomposed ctAcc in Blind Rotation.
+	// ctFFTAccDcmp is a decomposed ctAcc in Blind Rotation.
 	ctFFTAccDcmp [][]poly.FFTPoly
 
-	// ctPermute is the permuted accumulator for bootstrapping.
+	// ctPermute is a permuted accumulator for bootstrapping.
 	ctPermute tfhe.GLWECiphertext[T]
-	// ctRotate is the blind rotated GLWE ciphertext for bootstrapping.
+	// ctRotate is a blind rotated GLWE ciphertext for bootstrapping.
 	ctRotate tfhe.GLWECiphertext[T]
-	// ctExtract is the extracted LWE ciphertext after Blind Rotation.
+	// ctExtract is an extracted LWE ciphertext after Blind Rotation.
 	ctExtract tfhe.LWECiphertext[T]
 	// ctKeySwitch is the LWEDimension sized ciphertext from keyswitching for bootstrapping.
 	ctKeySwitch tfhe.LWECiphertext[T]

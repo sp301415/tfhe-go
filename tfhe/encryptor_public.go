@@ -19,7 +19,7 @@ type PublicEncryptor[T TorusInt] struct {
 	// GLWETransformer is an embedded GLWETransformer for this PublicEncryptor.
 	*GLWETransformer[T]
 
-	// Params is the parameters for this PublicEncryptor.
+	// Params is a parameters for this PublicEncryptor.
 	Params Parameters[T]
 
 	// UniformSampler is used for sampling the mask of encryptions.
@@ -32,7 +32,7 @@ type PublicEncryptor[T TorusInt] struct {
 	// PolyEvaluator is a PolyEvaluator for this PublicEncryptor.
 	PolyEvaluator *poly.Evaluator[T]
 
-	// PublicKey is the public key for this PublicEncryptor.
+	// PublicKey is a public key for this PublicEncryptor.
 	PublicKey PublicKey[T]
 
 	buf publicEncryptorBuffer[T]
@@ -40,15 +40,15 @@ type PublicEncryptor[T TorusInt] struct {
 
 // publicEncryptorBuffer is a buffer for PublicEncryptor.
 type publicEncryptorBuffer[T TorusInt] struct {
-	// ptGLWE is the GLWE plaintext for GLWE encryption / decryptions.
+	// ptGLWE is a GLWE plaintext for GLWE encryption / decryptions.
 	ptGLWE GLWEPlaintext[T]
-	// ctGLWE is the standard GLWE Ciphertext for Fourier encryption / decryptions.
+	// ctGLWE is a standard GLWE Ciphertext for Fourier encryption / decryptions.
 	ctGLWE GLWECiphertext[T]
 
-	// auxKey is the auxiliary key for encryption.
+	// auxKey is an auxiliary key for encryption.
 	// This must be sampled fresh for each encryption.
 	auxKey GLWESecretKey[T]
-	// auxFourierKey is the fourier transform of auxKey.
+	// auxFourierKey is a fourier transform of auxKey.
 	auxFourierKey FFTGLWESecretKey[T]
 }
 
@@ -57,7 +57,7 @@ type publicEncryptorBuffer[T TorusInt] struct {
 // Panics when the parameters do not support public key encryption.
 func NewPublicEncryptor[T TorusInt](params Parameters[T], pk PublicKey[T]) *PublicEncryptor[T] {
 	if !params.IsPublicKeyEncryptable() {
-		panic("NewPublicEncryptor: Parameters do not support public key encryption")
+		panic("Parameters do not support public key encryption")
 	}
 
 	return &PublicEncryptor[T]{

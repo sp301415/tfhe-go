@@ -17,7 +17,7 @@ type BFVEvaluator[T tfhe.TorusInt] struct {
 	// PolyEvaluator is a PolyEvaluator for this BFVEvaluator.
 	PolyEvaluator *poly.Evaluator[T]
 
-	// Params is the parameters for this BFVEvaluator.
+	// Params is parameters for this BFVEvaluator.
 	Params tfhe.Parameters[T]
 
 	// EvalKey is the keyswitching keys for this BFVEvaluator.
@@ -28,15 +28,15 @@ type BFVEvaluator[T tfhe.TorusInt] struct {
 
 // bfvEvaluatorBuffer is a buffer for BFV type evaluation.
 type bfvEvaluatorBuffer[T tfhe.TorusInt] struct {
-	// ctFFT is the fourier transformed ciphertext for BFV multiplication.
+	// ctFFT is a fourier transformed ciphertext for BFV multiplication.
 	ctFFTMul [2]tfhe.FFTGLWECiphertext[T]
-	// ctTensor is the tensored ciphertext for BFV multiplication.
+	// ctTensor is a tensored ciphertext for BFV multiplication.
 	ctTensor tfhe.GLWECiphertext[T]
-	// ctFFTTensor is the fourier transformed ctTensor.
+	// ctFFTTensor is a fourier transformed ctTensor.
 	ctFFTTensor tfhe.FFTGLWECiphertext[T]
-	// ctPermute is the permuted ciphertext for BFV automorphism.
+	// ctPermute is a permuted ciphertext for BFV automorphism.
 	ctPermute tfhe.GLWECiphertext[T]
-	// ctPack is the permuted ciphertext for LWEToGLWECiphertext.
+	// ctPack is a permuted ciphertext for LWEToGLWECiphertext.
 	ctPack tfhe.GLWECiphertext[T]
 }
 

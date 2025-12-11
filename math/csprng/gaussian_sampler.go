@@ -85,7 +85,7 @@ func (s *GaussianSampler[T]) normFloat() float64 {
 // Panics when stdDev < 0.
 func (s *GaussianSampler[T]) Sample(stdDev float64) T {
 	if stdDev < 0 {
-		panic("Sample: standard deviation not positive")
+		panic("standard deviation not positive")
 	}
 
 	return T(int64(math.Round(s.normFloat() * stdDev)))
@@ -97,7 +97,7 @@ func (s *GaussianSampler[T]) Sample(stdDev float64) T {
 // Panics when stdDev < 0.
 func (s *GaussianSampler[T]) SampleVecTo(vOut []T, stdDev float64) {
 	if stdDev < 0 {
-		panic("SampleVecTo: standard deviation not positive")
+		panic("standard deviation not positive")
 	}
 
 	for i := range vOut {
@@ -119,7 +119,7 @@ func (s *GaussianSampler[T]) SamplePolyTo(pOut poly.Poly[T], stdDev float64) {
 // Panics when stdDev < 0.
 func (s *GaussianSampler[T]) SamplePolyAddTo(pOut poly.Poly[T], stdDev float64) {
 	if stdDev < 0 {
-		panic("SamplePolyAddTo: standard deviation not positive")
+		panic("standard deviation not positive")
 	}
 
 	for i := range pOut.Coeffs {
@@ -133,7 +133,7 @@ func (s *GaussianSampler[T]) SamplePolyAddTo(pOut poly.Poly[T], stdDev float64) 
 // Panics when stdDev < 0.
 func (s *GaussianSampler[T]) SamplePolySubTo(pOut poly.Poly[T], stdDev float64) {
 	if stdDev < 0 {
-		panic("SamplePolySubTo: standard deviation not positive")
+		panic("standard deviation not positive")
 	}
 
 	for i := range pOut.Coeffs {

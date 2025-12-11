@@ -19,7 +19,7 @@ type CircuitBootstrapper[T tfhe.TorusInt] struct {
 	// Decomposer is a Decomposer for this CircuitBootstrapper.
 	Decomposer *tfhe.Decomposer[T]
 
-	// Params is the parameters for this CircuitBootstrapper.
+	// Params is parameters for this CircuitBootstrapper.
 	Params CircuitBootstrapParameters[T]
 
 	// EvalKey is a circuit bootstrapping key for this CircuitBootstrapper.
@@ -35,12 +35,12 @@ type circuitBootstrapBuffer[T tfhe.TorusInt] struct {
 	// lut is an empty lut.
 	lut tfhe.LookUpTable[T]
 
-	// ctFFTDcmp are buffer for decomposed ciphertexts during scheme switching.
+	// ctFFTDcmp is a buffer for decomposed ciphertexts during scheme switching.
 	ctFFTDcmp [][]poly.FFTPoly
 
 	// ctKeySwitch is a key-switched LWE ciphertext.
 	ctKeySwitch tfhe.LWECiphertext[T]
-	// ctPack is the permuted ciphertext for trace.
+	// ctPack is a permuted ciphertext for trace.
 	ctPack tfhe.GLWECiphertext[T]
 	// ctRotate is a temporary GLWE ciphertext after Blind Rotation.
 	ctRotate tfhe.GLWECiphertext[T]

@@ -49,7 +49,7 @@ type LWEPublicKey[T TorusInt] struct {
 // Panics when the parameters do not support public key encryption.
 func NewLWEPublicKey[T TorusInt](params Parameters[T]) LWEPublicKey[T] {
 	if !params.IsPublicKeyEncryptable() {
-		panic("NewLWEPublicKey: Parameters do not support public key encryption")
+		panic("Parameters do not support public key encryption")
 	}
 
 	pk := make([]GLWECiphertext[T], params.glweRank)

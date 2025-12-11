@@ -32,15 +32,15 @@ func (p FHEWParametersLiteral[T]) Compile() FHEWParameters[T] {
 	logTailCut := math.Log2(GaussianTailCut)
 	switch {
 	case baseParams.BlockSize() != 1:
-		panic("Compile: BlockSize not 1")
+		panic("BlockSize not 1")
 	case baseParams.PolyRank() != baseParams.LUTSize():
-		panic("Compile: PolyRank does not equal LUTSize")
+		panic("PolyRank does not equal LUTSize")
 	case p.SecretKeyStdDev <= 0:
-		panic("Compile: SecretKeyStdDev smaller than or equal to zero")
+		panic("SecretKeyStdDev smaller than or equal to zero")
 	case math.Log2(p.SecretKeyStdDev)+logQ+logTailCut > poly.ShortLogBound:
-		panic("Compile: SecretKeyStdDev too large")
+		panic("SecretKeyStdDev too large")
 	case p.WindowSize <= 0:
-		panic("Compile: WindowSize smaller than or equal to zero")
+		panic("WindowSize smaller than or equal to zero")
 	}
 
 	return FHEWParameters[T]{

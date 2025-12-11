@@ -41,13 +41,13 @@ func (p GadgetParametersLiteral[T]) WithLevel(level int) GadgetParametersLiteral
 func (p GadgetParametersLiteral[T]) Compile() GadgetParameters[T] {
 	switch {
 	case p.Base < 2:
-		panic("Compile: Base smaller than two")
+		panic("Base smaller than two")
 	case !num.IsPowerOfTwo(p.Base):
-		panic("Compile: Base not power of two")
+		panic("Base not power of two")
 	case p.Level <= 0:
-		panic("Compile: Level smaller than or equal to zero")
+		panic("Level smaller than or equal to zero")
 	case num.SizeT[T]() < num.Log2(p.Base)*p.Level:
-		panic("Compile: Base^Level larger than Q")
+		panic("Base^Level larger than Q")
 	}
 
 	return GadgetParameters[T]{
@@ -385,27 +385,27 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 
 	switch {
 	case p.LWEDimension <= 0:
-		panic("Compile: LWEDimension smaller than zero")
+		panic("LWEDimension smaller than zero")
 	case p.LWEDimension > p.GLWERank*p.PolyRank:
-		panic("Compile: LWEDimension larger than GLWEDimension")
+		panic("LWEDimension larger than GLWEDimension")
 	case p.GLWERank <= 0:
-		panic("Compile: GLWERank smaller than zero")
+		panic("GLWERank smaller than zero")
 	case p.LUTSize < p.PolyRank:
-		panic("Compile: LUTSize smaller than PolyRank")
+		panic("LUTSize smaller than PolyRank")
 	case p.LWEStdDev <= 0:
-		panic("Compile: LWEStdDev smaller than zero")
+		panic("LWEStdDev smaller than zero")
 	case p.GLWEStdDev <= 0:
-		panic("Compile: GLWEStdDev smaller than zero")
+		panic("GLWEStdDev smaller than zero")
 	case p.BlockSize <= 0:
-		panic("Compile: BlockSize smaller than zero")
+		panic("BlockSize smaller than zero")
 	case p.LWEDimension%p.BlockSize != 0:
-		panic("Compile: LWEDimension not multiple of BlockSize")
+		panic("LWEDimension not multiple of BlockSize")
 	case p.LUTSize%p.PolyRank != 0:
-		panic("Compile: LUTSize not multiple of PolyRank")
+		panic("LUTSize not multiple of PolyRank")
 	case !num.IsPowerOfTwo(p.PolyRank):
-		panic("Compile: PolyRank not power of two")
+		panic("PolyRank not power of two")
 	case !(p.BootstrapOrder == OrderKeySwitchBlindRotate || p.BootstrapOrder == OrderBlindRotateKeySwitch):
-		panic("Compile: BootstrapOrder not valid")
+		panic("BootstrapOrder not valid")
 	}
 
 	return Parameters[T]{

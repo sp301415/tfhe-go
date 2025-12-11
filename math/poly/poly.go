@@ -19,9 +19,9 @@ type Poly[T num.Integer] struct {
 func NewPoly[T num.Integer](N int) Poly[T] {
 	switch {
 	case !num.IsPowerOfTwo(N):
-		panic("NewPoly: rank not power of two")
+		panic("rank not power of two")
 	case N < MinRank:
-		panic("NewPoly: rank smaller than MinRank")
+		panic("rank smaller than MinRank")
 	}
 
 	return Poly[T]{Coeffs: make([]T, N)}
@@ -84,9 +84,9 @@ type FFTPoly struct {
 func NewFFTPoly(N int) FFTPoly {
 	switch {
 	case !num.IsPowerOfTwo(N):
-		panic("NewFFTPoly: rank not power of two")
+		panic("rank not power of two")
 	case N < MinRank:
-		panic("NewFFTPoly: rank smaller than MinRank")
+		panic("rank smaller than MinRank")
 	}
 
 	return FFTPoly{Coeffs: make([]float64, N)}

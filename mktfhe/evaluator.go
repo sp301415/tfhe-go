@@ -25,7 +25,7 @@ type Evaluator[T tfhe.TorusInt] struct {
 	// PolyEvaluator is a PolyEvaluator for this Evaluator.
 	PolyEvaluator *poly.Evaluator[T]
 
-	// Params is the parameters for this Evaluator.
+	// Params is parameters for this Evaluator.
 	Params Parameters[T]
 
 	// PartyBitMap is a bitmap for parties.
@@ -45,17 +45,17 @@ type Evaluator[T tfhe.TorusInt] struct {
 
 // evaluatorBuffer is a buffer for evaluation.
 type evaluatorBuffer[T tfhe.TorusInt] struct {
-	// ctProd is the intermediate value in Hybrid Product.
+	// ctProd is an intermediate value in Hybrid Product.
 	ctProd GLWECiphertext[T]
-	// ctFFTProd is the fourier transformed ctHybrid in Hybrid Product.
+	// ctFFTProd is a fourier transformed ctHybrid in Hybrid Product.
 	ctFFTProd FFTGLWECiphertext[T]
 
-	// ctProdSub is the intermediate single-key ciphertext in Hybrid Product.
+	// ctProdSub is an intermediate single-key ciphertext in Hybrid Product.
 	ctProdSub poly.Poly[T]
-	// ctFFTProdSub is the fourier transformed sctProd in Hybrid Product.
+	// ctFFTProdSub is a fourier transformed sctProd in Hybrid Product.
 	ctFFTProdSub poly.FFTPoly
 
-	// ctRelin is the intermediate value in Generalized External Product.
+	// ctRelin is an intermediate value in Generalized External Product.
 	ctRelin GLWECiphertext[T]
 	// ctRelinT is a transposed version of ctRelin.
 	ctRelinT []tfhe.GLWECiphertext[T]

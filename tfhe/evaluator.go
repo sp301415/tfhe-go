@@ -17,7 +17,7 @@ type Evaluator[T TorusInt] struct {
 	// GLWETransformer is an embedded GLWETransformer for this Evaluator.
 	*GLWETransformer[T]
 
-	// Params is the parameters for this Evaluator.
+	// Params is parameters for this Evaluator.
 	Params Parameters[T]
 
 	// Decomposer is an Decomposer for this Evaluator.
@@ -36,37 +36,37 @@ type Evaluator[T TorusInt] struct {
 
 // evaluatorBuffer is a buffer for Evaluator.
 type evaluatorBuffer[T TorusInt] struct {
-	// fpMul is the fourier transformed polynomial for multiplications.
+	// fpMul is a fourier transformed polynomial for multiplications.
 	fpMul poly.FFTPoly
 
-	// ctProdLWE is the LWE ciphertext buffer for ExternalProdLWE and KeySwitchLWE.
+	// ctProdLWE is a LWE ciphertext buffer for ExternalProdLWE and KeySwitchLWE.
 	ctProdLWE LWECiphertext[T]
-	// ctFFTProdGLWE is the fourier transformed ctGLWEOut in ExternalProdGLWE and KeySwitchGLWE.
+	// ctFFTProdGLWE is a fourier transformed ctGLWEOut in ExternalProdGLWE and KeySwitchGLWE.
 	ctFFTProdGLWE FFTGLWECiphertext[T]
 	// ctCMux is ct1 - ct0 in CMux.
 	ctCMux GLWECiphertext[T]
 
-	// ctAcc is the accumulator in BlindRotateExtended.
+	// ctAcc is an accumulator in BlindRotateExtended.
 	// This has length LUTExtendFactor.
 	ctAcc []GLWECiphertext[T]
-	// ctFFTAcc is the fourier transformed accumulator in Blind Rotation.
+	// ctFFTAcc is a fourier transformed accumulator in Blind Rotation.
 	// In case of BlindRotateBlock and BlindRotateOriginal, only the first element is used.
 	// This has length LUTExtendFactor.
 	ctFFTAcc []FFTGLWECiphertext[T]
-	// ctFFTBlockAcc is the auxiliary accumulator in BlindRotateBlock and BlindRotateExtended.
+	// ctFFTBlockAcc is an auxiliary accumulator in BlindRotateBlock and BlindRotateExtended.
 	ctFFTBlockAcc []FFTGLWECiphertext[T]
-	// ctAccFFTDcmp is the decomposed ctAcc in Blind Rotation.
+	// ctAccFFTDcmp is a decomposed ctAcc in Blind Rotation.
 	// In case of BlindRotateBlock and BlindRotateOriginal, only the first element is used.
 	// This has length LUTExtendFactor.
 	ctAccFFTDcmp [][][]poly.FFTPoly
-	// fMono is the fourier transformed monomial in Blind Rotation.
+	// fMono is a fourier transformed monomial in Blind Rotation.
 	fMono poly.FFTPoly
 
-	// ctRotate is the blind rotated GLWE ciphertext for bootstrapping.
+	// ctRotate is a blind rotated GLWE ciphertext for bootstrapping.
 	ctRotate GLWECiphertext[T]
-	// ctExtract is the extracted LWE ciphertext after Blind Rotation.
+	// ctExtract is an extracted LWE ciphertext after Blind Rotation.
 	ctExtract LWECiphertext[T]
-	// ctKeySwitch is the LWEDimension sized ciphertext from keyswitching for bootstrapping.
+	// ctKeySwitch is a LWEDimension sized ciphertext from keyswitching for bootstrapping.
 	ctKeySwitch LWECiphertext[T]
 
 	// lut is an empty lut, used for BlindRotateFunc.

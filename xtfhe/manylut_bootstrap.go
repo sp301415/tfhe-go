@@ -81,7 +81,7 @@ func (e *ManyLUTEvaluator[T]) GenLUTCustomFull(f []func(int) T, messageModulus T
 // Panics if len(f) > LUTCount.
 func (e *ManyLUTEvaluator[T]) GenLUTCustomFullTo(lutOut tfhe.LookUpTable[T], f []func(int) T, messageModulus T) {
 	if len(f) > e.Params.lutCount {
-		panic("GenLUTCustomFullTo: Number of functions exceeds LUTCount")
+		panic("Number of functions exceeds LUTCount")
 	}
 
 	y := make([]T, e.Params.lutCount)

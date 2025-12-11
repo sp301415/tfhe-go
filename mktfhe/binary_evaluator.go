@@ -9,7 +9,7 @@ import (
 type BinaryEvaluator[T tfhe.TorusInt] struct {
 	// BinaryEncoder is an embedded encoder for this BinaryEvaluator.
 	*tfhe.BinaryEncoder[T]
-	// Params is the parameters for this BinaryEvaluator.
+	// Params is parameters for this BinaryEvaluator.
 	Params Parameters[T]
 	// Evaluator is a generic Evaluator for this BinaryEvaluator.
 	Evaluator *Evaluator[T]

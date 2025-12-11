@@ -35,19 +35,19 @@ func (p SanitizationParametersLiteral[T]) Compile() SanitizationParameters[T] {
 
 	switch {
 	case baseParameters.GLWERank() != 1:
-		panic("Compile: GLWERank not 1")
+		panic("GLWERank not 1")
 	case baseParameters.PolyRank() != baseParameters.LUTSize():
-		panic("Compile: PolyRank does not equal LUTSize")
+		panic("PolyRank does not equal LUTSize")
 	case baseParameters.BootstrapOrder() != tfhe.OrderKeySwitchBlindRotate:
-		panic("Compile: BootstrapOrder not OrderKeySwitchBlindRotate")
+		panic("BootstrapOrder not OrderKeySwitchBlindRotate")
 	case p.RandSigma <= 0:
-		panic("Compile: RandSigma smaller than zero")
+		panic("RandSigma smaller than zero")
 	case p.RandTau <= 0:
-		panic("Compile: RandTau smaller than zero")
+		panic("RandTau smaller than zero")
 	case p.LinEvalSigma <= 0:
-		panic("Compile: LinEvalSigma smaller than zero")
+		panic("LinEvalSigma smaller than zero")
 	case p.LinEvalTau <= 0:
-		panic("Compile: LinEvalTau smaller than zero")
+		panic("LinEvalTau smaller than zero")
 	}
 
 	return SanitizationParameters[T]{

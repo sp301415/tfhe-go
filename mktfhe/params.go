@@ -119,11 +119,11 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 
 	switch {
 	case p.PartyCount <= 0:
-		panic("Compile: PartyCount smaller than zero")
+		panic("PartyCount smaller than zero")
 	case subParams.GLWERank() != 1:
-		panic("Compile: Multi-Key TFHE only supports GLWE dimension 1")
+		panic("Multi-Key TFHE only supports GLWE dimension 1")
 	case subParams.LUTSize() != subParams.PolyRank():
-		panic("Compile: Multi-Key TFHE only supports LUTSize equal to PolyRank")
+		panic("Multi-Key TFHE only supports LUTSize equal to PolyRank")
 	}
 
 	return Parameters[T]{

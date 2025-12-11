@@ -250,7 +250,7 @@ func (e *Evaluator[T]) PermutePoly(p Poly[T], d int) Poly[T] {
 // This is because the permutation is not bijective when d is even.
 func (e *Evaluator[T]) PermutePolyTo(pOut, p Poly[T], d int) {
 	if d&1 == 0 {
-		panic("PermuteTo: d not odd")
+		panic("d not odd")
 	}
 
 	for i := 0; i < e.rank; i++ {
@@ -280,7 +280,7 @@ func (e *Evaluator[T]) PermutePolyInPlace(p Poly[T], d int) {
 // This is because the permutation is not bijective when d is even.
 func (e *Evaluator[T]) PermuteAddPolyTo(pOut, p Poly[T], d int) {
 	if d&1 == 0 {
-		panic("PermuteAddTo: d not odd")
+		panic("d not odd")
 	}
 
 	for i := 0; i < e.rank; i++ {
@@ -301,7 +301,7 @@ func (e *Evaluator[T]) PermuteAddPolyTo(pOut, p Poly[T], d int) {
 // This is because the permutation is not bijective when d is even.
 func (e *Evaluator[T]) PermuteSubPolyTo(pOut, p Poly[T], d int) {
 	if d&1 == 0 {
-		panic("PermuteSubTo: d not odd")
+		panic("d not odd")
 	}
 
 	for i := 0; i < e.rank; i++ {

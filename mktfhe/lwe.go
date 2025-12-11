@@ -36,7 +36,7 @@ func (ct *LWECiphertext[T]) CopyFrom(ctIn LWECiphertext[T]) {
 // Panics if the dimension of the ciphertext is not a multiple of the dimension of the single-key ciphertext.
 func (ct *LWECiphertext[T]) CopyFromSubKey(ctIn tfhe.LWECiphertext[T], idx int) {
 	if (len(ct.Value)-1)%(len(ctIn.Value)-1) != 0 {
-		panic("CopyFromSubKey: LWE Dimension mismatch")
+		panic("LWE Dimension mismatch")
 	}
 
 	ct.Clear()

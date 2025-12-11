@@ -15,7 +15,7 @@ type Encryptor[T tfhe.TorusInt] struct {
 	// SubEncryptor is a single-key Encryptor for this Encryptor.
 	SubEncryptor *tfhe.Encryptor[T]
 
-	// Params is the parameters for this Encryptor.
+	// Params is parameters for this Encryptor.
 	Params Parameters[T]
 	// Index is the index of the party.
 	Index int
@@ -32,17 +32,17 @@ type Encryptor[T tfhe.TorusInt] struct {
 
 // encryptorBuffer is a buffer for encryption.
 type encryptorBuffer[T tfhe.TorusInt] struct {
-	// ptGLWE is the GLWE plaintext.
+	// ptGLWE is a GLWE plaintext.
 	ptGLWE tfhe.GLWEPlaintext[T]
-	// ctGLWE is the GLWE ciphertext.
+	// ctGLWE is a GLWE ciphertext.
 	ctGLWE GLWECiphertext[T]
 
-	// auxKey is the auxiliary key for uniencryption.
+	// auxKey is an auxiliary key for uniencryption.
 	auxKey tfhe.GLWESecretKey[T]
-	// auxFourierKey is the fourier transform of auxKey.
+	// auxFourierKey is a fourier transform of auxKey.
 	auxFourierKey tfhe.FFTGLWESecretKey[T]
 
-	// ctSubLWE is the single-key LWE ciphertext.
+	// ctSubLWE is a single-key LWE ciphertext.
 	ctSubLWE tfhe.LWECiphertext[T]
 	// ctSubGLWE is the single-key GLWE ciphertext.
 	ctSubGLWE tfhe.GLWECiphertext[T]
@@ -51,7 +51,7 @@ type encryptorBuffer[T tfhe.TorusInt] struct {
 // NewEncryptor creates a new Encryptor.
 func NewEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte) *Encryptor[T] {
 	if idx > params.partyCount {
-		panic("NewEncryptor: index larger than PartyCount")
+		panic("index larger than PartyCount")
 	}
 
 	s := csprng.NewUniformSamplerWithSeed[T](crsSeed)
@@ -84,7 +84,7 @@ func NewEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte
 // Panics if the index is larger than PartyCount.
 func NewEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte, sk tfhe.SecretKey[T]) *Encryptor[T] {
 	if idx > params.partyCount {
-		panic("NewEncryptorWithKey: index larger than PartyCount")
+		panic("index larger than PartyCount")
 	}
 
 	s := csprng.NewUniformSamplerWithSeed[T](crsSeed)

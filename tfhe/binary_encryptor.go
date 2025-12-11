@@ -8,7 +8,7 @@ package tfhe
 type BinaryEncryptor[T TorusInt] struct {
 	// BinaryEncoder is an embedded encoder for this BinaryEncryptor.
 	*BinaryEncoder[T]
-	// Params is the parameters for this BinaryEncryptor.
+	// Params is parameters for this BinaryEncryptor.
 	Params Parameters[T]
 	// Encryptor is a generic Encryptor for this BinaryEncryptor.
 	Encryptor *Encryptor[T]

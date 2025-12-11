@@ -6,7 +6,7 @@ import "github.com/sp301415/tfhe-go/tfhe"
 type BinaryDecryptor[T tfhe.TorusInt] struct {
 	// BinaryEncoder is an embedded encoder for this BinaryDecryptor.
 	*tfhe.BinaryEncoder[T]
-	// Params is the parameters for this BinaryDecryptor.
+	// Params is parameters for this BinaryDecryptor.
 	Params Parameters[T]
 	// Decryptor is a generic Decryptor for this BinaryDecryptor.
 	Decryptor *Decryptor[T]

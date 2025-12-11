@@ -54,7 +54,7 @@ func (s *BinarySampler[T]) SamplePolyTo(pOut poly.Poly[T]) {
 // SampleBlockVecTo samples block binary values to vOut.
 func (s *BinarySampler[T]) SampleBlockVecTo(vOut []T, blockSize int) {
 	if len(vOut)%blockSize != 0 {
-		panic("SampleBlockVecTo: length not multiple of blocksize")
+		panic("length not multiple of blocksize")
 	}
 
 	for i := 0; i < len(vOut); i += blockSize {

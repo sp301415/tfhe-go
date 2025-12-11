@@ -6,7 +6,7 @@ import "github.com/sp301415/tfhe-go/tfhe"
 type BinaryPublicEncryptor[T tfhe.TorusInt] struct {
 	// BinaryEncoder is an embedded encoder for this BinaryPublicEncryptor.
 	*tfhe.BinaryEncoder[T]
-	// Params is the parameters for this BinaryPublicEncryptor.
+	// Params is parameters for this BinaryPublicEncryptor.
 	Params Parameters[T]
 	// Encryptor is a generic PublicEncryptor for this BinaryPublicEncryptor.
 	Encryptor *PublicEncryptor[T]

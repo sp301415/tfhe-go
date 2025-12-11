@@ -17,7 +17,7 @@ type CircuitBootstrapKeyGenerator[T tfhe.TorusInt] struct {
 	// BFVKeyGenerator is a BFVKeyGenerator for this CircuitBootstrapKeyGenerator.
 	*BFVKeyGenerator[T]
 
-	// Params is the parameters for this CircuitBootstrapKeyGenerator.
+	// Params is parameters for this CircuitBootstrapKeyGenerator.
 	Params CircuitBootstrapParameters[T]
 }
 

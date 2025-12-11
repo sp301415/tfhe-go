@@ -52,7 +52,7 @@ func (ct *GLWECiphertext[T]) CopyFrom(ctIn GLWECiphertext[T]) {
 // Panics if GLWERank of ctIn is not 1.
 func (ct *GLWECiphertext[T]) CopyFromSubKey(ctIn tfhe.GLWECiphertext[T], idx int) {
 	if len(ctIn.Value) != 2 {
-		panic("CopyFromSubKey: GLWERank of ctIn must be 1")
+		panic("GLWERank of ctIn must be 1")
 	}
 
 	ct.Clear()

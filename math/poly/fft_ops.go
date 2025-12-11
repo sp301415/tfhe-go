@@ -152,7 +152,7 @@ func (e *Evaluator[T]) PermuteFFTPoly(fp FFTPoly, d int) FFTPoly {
 // This is because the permutation is not bijective when d is even.
 func (e *Evaluator[T]) PermuteFFTPolyTo(fpOut, fp FFTPoly, d int) {
 	if d&1 == 0 {
-		panic("PermuteFFTPolyTo: d not odd")
+		panic("d not odd")
 	}
 
 	revShiftBits := 64 - (num.Log2(e.rank) - 1)
@@ -197,7 +197,7 @@ func (e *Evaluator[T]) PermuteFFTPolyTo(fpOut, fp FFTPoly, d int) {
 // This is because the permutation is not bijective when d is even.
 func (e *Evaluator[T]) PermuteFFTPolyInPlace(fp FFTPoly, d int) {
 	if d&1 == 0 {
-		panic("PermuteFFTPolyInPlace: d not odd")
+		panic("d not odd")
 	}
 
 	e.PermuteFFTPolyTo(e.buf.fpOut, fp, d)
@@ -212,7 +212,7 @@ func (e *Evaluator[T]) PermuteFFTPolyInPlace(fp FFTPoly, d int) {
 // This is because the permutation is not bijective when d is even.
 func (e *Evaluator[T]) PermuteAddFFTPolyTo(fpOut, fp FFTPoly, d int) {
 	if d&1 == 0 {
-		panic("PermuteAddFFTPolyTo: d not odd")
+		panic("d not odd")
 	}
 
 	d = d & (2*e.rank - 1)
@@ -258,7 +258,7 @@ func (e *Evaluator[T]) PermuteAddFFTPolyTo(fpOut, fp FFTPoly, d int) {
 // This is because the permutation is not bijective when d is even.
 func (e *Evaluator[T]) PermuteSubFFTPolyTo(fpOut, fp FFTPoly, d int) {
 	if d&1 == 0 {
-		panic("PermuteSubFFTPolyTo: d not odd")
+		panic("d not odd")
 	}
 
 	d = d & (2*e.rank - 1)

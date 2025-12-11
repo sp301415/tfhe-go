@@ -6,7 +6,7 @@ package tfhe
 //
 // BinaryEncoder is safe for concurrent use.
 type BinaryEncoder[T TorusInt] struct {
-	// Params is the parameters for this Encoder.
+	// Params is parameters for this Encoder.
 	Params Parameters[T]
 	// Encoder is a generic Encoder for this BinaryEncoder.
 	Encoder *Encoder[T]

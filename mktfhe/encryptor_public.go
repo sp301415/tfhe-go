@@ -13,7 +13,7 @@ type PublicEncryptor[T tfhe.TorusInt] struct {
 	// SubEncryptor is a single-key PublicEncryptor for this PublicEncryptor.
 	SubEncryptor *tfhe.PublicEncryptor[T]
 
-	// Params is the parameters for this PublicEncryptor.
+	// Params is parameters for this PublicEncryptor.
 	Params Parameters[T]
 	// Index is the index of the party.
 	Index int
@@ -27,21 +27,21 @@ type PublicEncryptor[T tfhe.TorusInt] struct {
 
 // publicEncryptorBuffer is a buffer for public encryption.
 type publicEncryptorBuffer[T tfhe.TorusInt] struct {
-	// ptGLWE is the GLWE plaintext.
+	// ptGLWE is a GLWE plaintext.
 	ptGLWE tfhe.GLWEPlaintext[T]
-	// ctGLWE is the GLWE ciphertext.
+	// ctGLWE is a GLWE ciphertext.
 	ctGLWE GLWECiphertext[T]
 
-	// ctSubLWE is the single-key LWE ciphertext.
+	// ctSubLWE is a single-key LWE ciphertext.
 	ctSubLWE tfhe.LWECiphertext[T]
-	// ctSubGLWE is the single-key GLWE ciphertext.
+	// ctSubGLWE is a single-key GLWE ciphertext.
 	ctSubGLWE tfhe.GLWECiphertext[T]
 }
 
 // NewPublicEncryptor creates a new PublicEncryptor.
 func NewPublicEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, publicKey tfhe.PublicKey[T]) *PublicEncryptor[T] {
 	if idx > params.partyCount {
-		panic("NewPublicEncryptor: index larger than PartyCount")
+		panic("index larger than PartyCount")
 	}
 
 	return &PublicEncryptor[T]{

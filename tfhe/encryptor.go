@@ -17,7 +17,7 @@ type Encryptor[T TorusInt] struct {
 	// GLWETransformer is an embedded GLWETransformer for this Encryptor.
 	*GLWETransformer[T]
 
-	// Params is the parameters for this Encryptor.
+	// Params is parameters for this Encryptor.
 	Params Parameters[T]
 
 	// UniformSampler is used for sampling the mask of encryptions.
@@ -42,9 +42,9 @@ type Encryptor[T TorusInt] struct {
 
 // encryptorBuffer is a buffer for Encryptor.
 type encryptorBuffer[T TorusInt] struct {
-	// ptGLWE is the GLWE plaintext for GLWE encryption / decryptions.
+	// ptGLWE is a GLWE plaintext for GLWE encryption / decryptions.
 	ptGLWE GLWEPlaintext[T]
-	// ctGLWE is the standard GLWE Ciphertext for Fourier encryption / decryptions.
+	// ctGLWE is a standard GLWE Ciphertext for Fourier encryption / decryptions.
 	ctGLWE GLWECiphertext[T]
 	// ptGGSW is GLWEKey * Pt in GGSW encryption.
 	ptGGSW poly.Poly[T]
