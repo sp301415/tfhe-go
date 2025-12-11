@@ -129,3 +129,31 @@ func (p FFTPoly) Approx(p0 FFTPoly, eps float64) bool {
 	}
 	return true
 }
+
+// checkConsistentPoly checks if [Poly] is consistent with [Evaluator],
+// and panics if not.
+func checkConsistentPoly[T num.Integer](N int, ps ...Poly[T]) {
+	if len(ps) == 0 {
+		return
+	}
+
+	for i := range ps {
+		if len(ps[i].Coeffs) != N {
+			panic("inconsistent inputs")
+		}
+	}
+}
+
+// checkConsistentFFTPoly checks if [FFTPoly] is consistent with [Evaluator],
+// and panics if not.
+func checkConsistentFFTPoly(N int, ps ...FFTPoly) {
+	if len(ps) == 0 {
+		return
+	}
+
+	for i := range ps {
+		if len(ps[i].Coeffs) != N {
+			panic("inconsistent inputs")
+		}
+	}
+}

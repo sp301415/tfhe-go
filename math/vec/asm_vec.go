@@ -10,6 +10,8 @@ import (
 
 // AddTo computes vOut = v0 + v1.
 func AddTo[T num.Number](vOut, v0, v1 []T) {
+	checkConsistent(len(vOut), len(v0), len(v1))
+
 	M := (len(vOut) >> 3) << 3
 	ptrOut := unsafe.Pointer(&vOut[0])
 	ptr0 := unsafe.Pointer(&v0[0])
@@ -38,6 +40,8 @@ func AddTo[T num.Number](vOut, v0, v1 []T) {
 
 // SubTo computes vOut = v0 - v1.
 func SubTo[T num.Number](vOut, v0, v1 []T) {
+	checkConsistent(len(vOut), len(v0), len(v1))
+
 	M := (len(vOut) >> 3) << 3
 	ptrOut := unsafe.Pointer(&vOut[0])
 	ptr0 := unsafe.Pointer(&v0[0])
@@ -66,6 +70,8 @@ func SubTo[T num.Number](vOut, v0, v1 []T) {
 
 // ScalarMulTo computes vOut = c * v.
 func ScalarMulTo[T num.Number](vOut, v []T, c T) {
+	checkConsistent(len(vOut), len(v))
+
 	M := (len(vOut) >> 3) << 3
 	ptrOut := unsafe.Pointer(&vOut[0])
 	ptr := unsafe.Pointer(&v[0])
@@ -92,6 +98,8 @@ func ScalarMulTo[T num.Number](vOut, v []T, c T) {
 
 // ScalarMulAddTo computes vOut += c * v.
 func ScalarMulAddTo[T num.Number](vOut, v []T, c T) {
+	checkConsistent(len(vOut), len(v))
+
 	M := (len(vOut) >> 3) << 3
 	ptrOut := unsafe.Pointer(&vOut[0])
 	ptr := unsafe.Pointer(&v[0])
@@ -118,6 +126,8 @@ func ScalarMulAddTo[T num.Number](vOut, v []T, c T) {
 
 // ScalarMulSubTo computes vOut -= c * v0.
 func ScalarMulSubTo[T num.Number](vOut, v []T, c T) {
+	checkConsistent(len(vOut), len(v))
+
 	M := (len(vOut) >> 3) << 3
 	ptrOut := unsafe.Pointer(&vOut[0])
 	ptr := unsafe.Pointer(&v[0])
@@ -144,6 +154,8 @@ func ScalarMulSubTo[T num.Number](vOut, v []T, c T) {
 
 // MulTo computes vOut = v0 * v1, where * is an elementwise multiplication.
 func MulTo[T num.Number](vOut, v0, v1 []T) {
+	checkConsistent(len(vOut), len(v0), len(v1))
+
 	M := (len(vOut) >> 3) << 3
 	ptrOut := unsafe.Pointer(&vOut[0])
 	ptr0 := unsafe.Pointer(&v0[0])
@@ -172,6 +184,8 @@ func MulTo[T num.Number](vOut, v0, v1 []T) {
 
 // MulAddTo computes vOut += v0 * v1, where * is an elementwise multiplication.
 func MulAddTo[T num.Number](vOut, v0, v1 []T) {
+	checkConsistent(len(vOut), len(v0), len(v1))
+
 	M := (len(vOut) >> 3) << 3
 	ptrOut := unsafe.Pointer(&vOut[0])
 	ptr0 := unsafe.Pointer(&v0[0])
@@ -200,6 +214,8 @@ func MulAddTo[T num.Number](vOut, v0, v1 []T) {
 
 // MulSubTo computes vOut -= v0 * v1, where * is an elementwise multiplication.
 func MulSubTo[T num.Number](vOut, v0, v1 []T) {
+	checkConsistent(len(vOut), len(v0), len(v1))
+
 	M := (len(vOut) >> 3) << 3
 	ptrOut := unsafe.Pointer(&vOut[0])
 	ptr0 := unsafe.Pointer(&v0[0])

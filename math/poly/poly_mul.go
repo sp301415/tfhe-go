@@ -11,6 +11,8 @@ func (e *Evaluator[T]) MulPoly(p0, p1 Poly[T]) Poly[T] {
 
 // MulPolyTo computes pOut = p0 * p1.
 func (e *Evaluator[T]) MulPolyTo(pOut, p0, p1 Poly[T]) {
+	checkConsistentPoly(e.rank, pOut, p0, p1)
+
 	splitBits, splitCount := splitParameters[T](e.rank)
 
 	if splitCount == 1 {
@@ -78,6 +80,8 @@ func (e *Evaluator[T]) MulPolyTo(pOut, p0, p1 Poly[T]) {
 
 // MulAddPolyTo computes pOut += p0 * p1.
 func (e *Evaluator[T]) MulAddPolyTo(pOut, p0, p1 Poly[T]) {
+	checkConsistentPoly(e.rank, pOut, p0, p1)
+
 	splitBits, splitCount := splitParameters[T](e.rank)
 
 	if splitCount == 1 {
@@ -145,6 +149,8 @@ func (e *Evaluator[T]) MulAddPolyTo(pOut, p0, p1 Poly[T]) {
 
 // MulSubPolyTo computes pOut -= p0 * p1.
 func (e *Evaluator[T]) MulSubPolyTo(pOut, p0, p1 Poly[T]) {
+	checkConsistentPoly(e.rank, pOut, p0, p1)
+
 	splitBits, splitCount := splitParameters[T](e.rank)
 
 	if splitCount == 1 {
@@ -223,6 +229,9 @@ func (e *Evaluator[T]) ShortFFTPolyMulPoly(p Poly[T], fpShort FFTPoly) Poly[T] {
 // (i.e., all coefficients are bounded by [ShortLogBound] bits.)
 // This is faster than [*Evaluator.MulPolyTo], and the result is exact unlike [*Evaluator.FFTPolyMulPolyTo].
 func (e *Evaluator[T]) ShortFFTPolyMulPolyTo(pOut, p Poly[T], fpShort FFTPoly) {
+	checkConsistentPoly(e.rank, pOut, p)
+	checkConsistentFFTPoly(e.rank, fpShort)
+
 	splitBits, splitCount := splitParamsShort[T](e.rank)
 
 	if splitCount == 1 {
@@ -268,6 +277,9 @@ func (e *Evaluator[T]) ShortFFTPolyMulPolyTo(pOut, p Poly[T], fpShort FFTPoly) {
 // (i.e., all coefficients are bounded by [ShortLogBound] bits.)
 // This is faster than [*Evaluator.MulAddPolyTo], and the result is exact unlike [*Evaluator.FFTPolyMulAddPolyTo].
 func (e *Evaluator[T]) ShortFFTPolyMulAddPolyTo(pOut, p Poly[T], fpShort FFTPoly) {
+	checkConsistentPoly(e.rank, pOut, p)
+	checkConsistentFFTPoly(e.rank, fpShort)
+
 	splitBits, splitCount := splitParamsShort[T](e.rank)
 
 	if splitCount == 1 {
@@ -313,6 +325,9 @@ func (e *Evaluator[T]) ShortFFTPolyMulAddPolyTo(pOut, p Poly[T], fpShort FFTPoly
 // (i.e., all coefficients are bounded by [ShortLogBound] bits.)
 // This is faster than [*Evaluator.MulSubPolyTo], and the result is exact unlike [*Evaluator.FFTPolyMulSubPolyTo].
 func (e *Evaluator[T]) ShortFFTPolyMulSubPolyTo(pOut, p Poly[T], fpShort FFTPoly) {
+	checkConsistentPoly(e.rank, pOut, p)
+	checkConsistentFFTPoly(e.rank, fpShort)
+
 	splitBits, splitCount := splitParamsShort[T](e.rank)
 
 	if splitCount == 1 {

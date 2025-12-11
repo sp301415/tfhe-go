@@ -6,14 +6,25 @@
 //
 // Note that in most cases, v0, v1, and vOut can overlap.
 // However, for operations that cannot, InPlace methods are implemented separately.
-//
-// For performance reasons, most functions in this package don't implement bound checks.
-// If length mismatch happens, it may panic or produce wrong results.
 package vec
 
 import (
 	"github.com/sp301415/tfhe-go/math/num"
 )
+
+// checkConsistent checks if all vectors have the same length,
+// and panics if not.
+func checkConsistent(xs ...int) {
+	if len(xs) == 0 {
+		return
+	}
+
+	for i := 1; i < len(xs); i++ {
+		if xs[i] != xs[0] {
+			panic("inconsistent inputs")
+		}
+	}
+}
 
 // Equals returns if two vectors are equal.
 func Equals[T comparable](v0, v1 []T) bool {
@@ -45,6 +56,8 @@ func Cast[TOut, TIn num.Real](v []TIn) []TOut {
 
 // CastTo casts v of type []TIn to vOut of type []TOut.
 func CastTo[TOut, TIn num.Real](vOut []TOut, v []TIn) {
+	checkConsistent(len(vOut), len(v))
+
 	for i := range vOut {
 		vOut[i] = TOut(v[i])
 	}
@@ -65,6 +78,8 @@ func Rotate[T any](v []T, l int) []T {
 // v and vOut should not overlap. For rotating a slice inplace,
 // use [vec.RotateInPlace].
 func RotateTo[T any](vOut, v []T, l int) {
+	checkConsistent(len(vOut), len(v))
+
 	if l < 0 {
 		l = len(v) - ((-l) % len(v))
 	} else {
@@ -101,6 +116,8 @@ func Reverse[T any](v []T) []T {
 // v and vOut should not overlap. For reversing a slice inplace,
 // use [vec.ReverseInPlace].
 func ReverseTo[T any](vOut, v []T) {
+	checkConsistent(len(vOut), len(v))
+
 	for i := range vOut {
 		vOut[len(vOut)-i-1] = v[i]
 	}
@@ -139,6 +156,8 @@ func Copy[T any](v []T) []T {
 
 // Dot returns the dot product of two vectors.
 func Dot[T num.Number](v0, v1 []T) T {
+	checkConsistent(len(v0), len(v1))
+
 	var res T
 	for i := range v0 {
 		res += v0[i] * v1[i]
@@ -169,6 +188,8 @@ func Neg[T num.Number](v []T) []T {
 
 // NegTo computes vOut = -v.
 func NegTo[T num.Number](vOut, v []T) {
+	checkConsistent(len(vOut), len(v))
+
 	for i := range vOut {
 		vOut[i] = -v[i]
 	}
@@ -220,6 +241,13 @@ func CmplxToFloat4(v []complex128) []float64 {
 // The length of the input vector should be multiple of 4,
 // and the length of vOut should be 2 times of the length of v.
 func CmplxToFloat4To(vOut []float64, v []complex128) {
+	switch {
+	case len(v)%4 != 0:
+		panic("input length must be multiple of 4")
+	case len(vOut) != 2*len(v):
+		panic("output length must be twice of input length")
+	}
+
 	for i, j := 0, 0; i < len(v); i, j = i+4, j+8 {
 		vOut[j+0] = real(v[i+0])
 		vOut[j+1] = real(v[i+1])
@@ -265,6 +293,13 @@ func Float4ToCmplx(v []float64) []complex128 {
 // The length of the input vector should be multiple of 8,
 // and the length of vOut should be half of the length of v.
 func Float4ToCmplxTo(vOut []complex128, v []float64) {
+	switch {
+	case len(v)%8 != 0:
+		panic("input length must be multiple of 8")
+	case len(vOut)*2 != len(v):
+		panic("output length must be half of input length")
+	}
+
 	for i, j := 0, 0; i < len(v); i, j = i+8, j+4 {
 		vOut[j+0] = complex(v[i+0], v[i+4])
 		vOut[j+1] = complex(v[i+1], v[i+5])

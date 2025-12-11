@@ -33,9 +33,6 @@ const (
 // Note that in most cases, p0, p1, and fpOut can overlap.
 // However, for operations that cannot, InPlace methods are implemented separately.
 //
-// For performance reasons, most methods in this package don't implement bound checks.
-// If length mismatch happens, it may panic or produce wrong results.
-//
 // Evaluator is not safe for concurrent use.
 // Use [*Evaluator.SafeCopy] to get a safe copy.
 type Evaluator[T num.Integer] struct {
