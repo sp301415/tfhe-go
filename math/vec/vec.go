@@ -12,9 +12,9 @@ import (
 	"github.com/sp301415/tfhe-go/math/num"
 )
 
-// checkConsistent checks if all vectors have the same length,
+// checkLength checks if all vectors have the same length,
 // and panics if not.
-func checkConsistent(xs ...int) {
+func checkLength(xs ...int) {
 	if len(xs) == 0 {
 		return
 	}
@@ -56,7 +56,7 @@ func Cast[TOut, TIn num.Real](v []TIn) []TOut {
 
 // CastTo casts v of type []TIn to vOut of type []TOut.
 func CastTo[TOut, TIn num.Real](vOut []TOut, v []TIn) {
-	checkConsistent(len(vOut), len(v))
+	checkLength(len(vOut), len(v))
 
 	for i := range vOut {
 		vOut[i] = TOut(v[i])
@@ -78,7 +78,7 @@ func Rotate[T any](v []T, l int) []T {
 // v and vOut should not overlap. For rotating a slice inplace,
 // use [vec.RotateInPlace].
 func RotateTo[T any](vOut, v []T, l int) {
-	checkConsistent(len(vOut), len(v))
+	checkLength(len(vOut), len(v))
 
 	if l < 0 {
 		l = len(v) - ((-l) % len(v))
@@ -116,7 +116,7 @@ func Reverse[T any](v []T) []T {
 // v and vOut should not overlap. For reversing a slice inplace,
 // use [vec.ReverseInPlace].
 func ReverseTo[T any](vOut, v []T) {
-	checkConsistent(len(vOut), len(v))
+	checkLength(len(vOut), len(v))
 
 	for i := range vOut {
 		vOut[len(vOut)-i-1] = v[i]
@@ -156,7 +156,7 @@ func Copy[T any](v []T) []T {
 
 // Dot returns the dot product of two vectors.
 func Dot[T num.Number](v0, v1 []T) T {
-	checkConsistent(len(v0), len(v1))
+	checkLength(len(v0), len(v1))
 
 	var res T
 	for i := range v0 {
@@ -188,7 +188,7 @@ func Neg[T num.Number](v []T) []T {
 
 // NegTo computes vOut = -v.
 func NegTo[T num.Number](vOut, v []T) {
-	checkConsistent(len(vOut), len(v))
+	checkLength(len(vOut), len(v))
 
 	for i := range vOut {
 		vOut[i] = -v[i]
