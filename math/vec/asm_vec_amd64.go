@@ -11,7 +11,7 @@ import (
 
 // AddTo computes vOut = v0 + v1.
 func AddTo[T num.Number](vOut, v0, v1 []T) {
-	checkConsistent(len(vOut), len(v0), len(v1))
+	checkLength(len(vOut), len(v0), len(v1))
 
 	if cpu.X86.HasAVX && cpu.X86.HasAVX2 {
 		var z T
@@ -62,7 +62,7 @@ func AddTo[T num.Number](vOut, v0, v1 []T) {
 
 // SubTo computes vOut = v0 - v1.
 func SubTo[T num.Number](vOut, v0, v1 []T) {
-	checkConsistent(len(vOut), len(v0), len(v1))
+	checkLength(len(vOut), len(v0), len(v1))
 
 	if cpu.X86.HasAVX && cpu.X86.HasAVX2 {
 		var z T
@@ -113,7 +113,7 @@ func SubTo[T num.Number](vOut, v0, v1 []T) {
 
 // ScalarMulTo computes vOut = c * v.
 func ScalarMulTo[T num.Number](vOut, v []T, c T) {
-	checkConsistent(len(vOut), len(v))
+	checkLength(len(vOut), len(v))
 
 	if cpu.X86.HasAVX && cpu.X86.HasAVX2 {
 		var z T
@@ -162,7 +162,7 @@ func ScalarMulTo[T num.Number](vOut, v []T, c T) {
 
 // ScalarMulAddTo computes vOut += c * v.
 func ScalarMulAddTo[T num.Number](vOut, v []T, c T) {
-	checkConsistent(len(vOut), len(v))
+	checkLength(len(vOut), len(v))
 
 	if cpu.X86.HasAVX && cpu.X86.HasAVX2 {
 		var z T
@@ -211,7 +211,7 @@ func ScalarMulAddTo[T num.Number](vOut, v []T, c T) {
 
 // ScalarMulSubTo computes vOut -= c * v0.
 func ScalarMulSubTo[T num.Number](vOut, v []T, c T) {
-	checkConsistent(len(vOut), len(v))
+	checkLength(len(vOut), len(v))
 
 	if cpu.X86.HasAVX && cpu.X86.HasAVX2 {
 		var z T
@@ -260,7 +260,7 @@ func ScalarMulSubTo[T num.Number](vOut, v []T, c T) {
 
 // MulTo computes vOut = v0 * v1, where * is an elementwise multiplication.
 func MulTo[T num.Number](vOut, v0, v1 []T) {
-	checkConsistent(len(vOut), len(v0), len(v1))
+	checkLength(len(vOut), len(v0), len(v1))
 
 	if cpu.X86.HasAVX && cpu.X86.HasAVX2 {
 		var z T
@@ -311,7 +311,7 @@ func MulTo[T num.Number](vOut, v0, v1 []T) {
 
 // MulAddTo computes vOut += v0 * v1, where * is an elementwise multiplication.
 func MulAddTo[T num.Number](vOut, v0, v1 []T) {
-	checkConsistent(len(vOut), len(v0), len(v1))
+	checkLength(len(vOut), len(v0), len(v1))
 
 	if cpu.X86.HasAVX && cpu.X86.HasAVX2 {
 		var z T
@@ -362,7 +362,7 @@ func MulAddTo[T num.Number](vOut, v0, v1 []T) {
 
 // MulSubTo computes vOut -= v0 * v1, where * is an elementwise multiplication.
 func MulSubTo[T num.Number](vOut, v0, v1 []T) {
-	checkConsistent(len(vOut), len(v0), len(v1))
+	checkLength(len(vOut), len(v0), len(v1))
 
 	if cpu.X86.HasAVX && cpu.X86.HasAVX2 {
 		var z T
