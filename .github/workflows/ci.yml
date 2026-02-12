@@ -1,53 +1,53 @@
 name: CI Tests
 on:
-  push:
+    push:
 
 jobs:
-  tests:
-    name: Run Go ${{ matrix.go }} Tests
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        go: [ '1.18', '1.25' ]
+    tests:
+        name: Run Go ${{ matrix.go }} Tests
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                go: ["1.18", "1.26"]
 
-    steps:
-      - uses: actions/checkout@v4
+        steps:
+            - uses: actions/checkout@v4
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ matrix.go }}
+            - name: Setup Go
+              uses: actions/setup-go@v5
+              with:
+                  go-version: ${{ matrix.go }}
 
-      - name: Test math/csprng
-        run: |
-          go test ./math/csprng -timeout=0 -count=1
+            - name: Test math/csprng
+              run: |
+                  go test ./math/csprng -timeout=0 -count=1
 
-      - name: Test math/poly
-        run: |
-          go test ./math/poly -timeout=0 -count=1
-          go test ./math/poly -timeout=0 -count=1 -tags=purego
-          GODEBUG=cpu.all=off go test ./math/poly -count=1
+            - name: Test math/poly
+              run: |
+                  go test ./math/poly -timeout=0 -count=1
+                  go test ./math/poly -timeout=0 -count=1 -tags=purego
+                  GODEBUG=cpu.all=off go test ./math/poly -count=1
 
-      - name: Test math/vec
-        run: |
-          go test ./math/vec -timeout=0 -count=1
-          go test ./math/vec -timeout=0 -count=1 -tags=purego
-          GODEBUG=cpu.all=off go test ./math/vec -count=1
+            - name: Test math/vec
+              run: |
+                  go test ./math/vec -timeout=0 -count=1
+                  go test ./math/vec -timeout=0 -count=1 -tags=purego
+                  GODEBUG=cpu.all=off go test ./math/vec -count=1
 
-      - name: Test tfhe
-        run: |
-          go test ./tfhe -timeout=0 -count=1
-          go test ./tfhe -timeout=0 -count=1 -tags=purego
-          GODEBUG=cpu.all=off go test ./tfhe -count=1
+            - name: Test tfhe
+              run: |
+                  go test ./tfhe -timeout=0 -count=1
+                  go test ./tfhe -timeout=0 -count=1 -tags=purego
+                  GODEBUG=cpu.all=off go test ./tfhe -count=1
 
-      - name: Test mktfhe
-        run: |
-          go test ./mktfhe -timeout=0 -count=1
-          go test ./mktfhe -timeout=0 -count=1 -tags=purego
-          GODEBUG=cpu.all=off go test ./mktfhe -count=1
+            - name: Test mktfhe
+              run: |
+                  go test ./mktfhe -timeout=0 -count=1
+                  go test ./mktfhe -timeout=0 -count=1 -tags=purego
+                  GODEBUG=cpu.all=off go test ./mktfhe -count=1
 
-      - name: Test xtfhe
-        run: |
-          go test ./xtfhe -timeout=0 -count=1
-          go test ./xtfhe -timeout=0 -count=1 -tags=purego
-          GODEBUG=cpu.all=off go test ./xtfhe -count=1
+            - name: Test xtfhe
+              run: |
+                  go test ./xtfhe -timeout=0 -count=1
+                  go test ./xtfhe -timeout=0 -count=1 -tags=purego
+                  GODEBUG=cpu.all=off go test ./xtfhe -count=1
