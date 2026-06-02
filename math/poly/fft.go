@@ -1,14 +1,14 @@
 package poly
 
-// FwdFFTPoly returns FwdFFTPoly(p).
-func (e *Evaluator[T]) FwdFFTPoly(p Poly[T]) FFTPoly {
+// FwdFFT returns FwdFFT(p).
+func (e *Evaluator[T]) FwdFFT(p Poly[T]) FFTPoly {
 	fpOut := NewFFTPoly(e.rank)
-	e.FwdFFTPolyTo(fpOut, p)
+	e.FwdFFTTo(fpOut, p)
 	return fpOut
 }
 
-// FwdFFTPolyTo computes fpOut = FFT(p).
-func (e *Evaluator[T]) FwdFFTPolyTo(fpOut FFTPoly, p Poly[T]) {
+// FwdFFTTo computes fpOut = FFT(p).
+func (e *Evaluator[T]) FwdFFTTo(fpOut FFTPoly, p Poly[T]) {
 	checkConsistentFFTPoly(e.rank, fpOut)
 	checkConsistentPoly(e.rank, p)
 

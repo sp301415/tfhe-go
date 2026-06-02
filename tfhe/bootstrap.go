@@ -85,7 +85,7 @@ func (e *Evaluator[T]) blindRotateExtendedTo(ctOut GLWECiphertext[T], ct LWECiph
 	for j := 0; j < e.Params.lutExtendFactor; j++ {
 		e.Decomposer.DecomposePolyTo(pDcmp, e.buf.ctAcc[j].Value[0], e.Params.blindRotateParams)
 		for l := 0; l < e.Params.blindRotateParams.level; l++ {
-			e.PolyEvaluator.FwdFFTPolyTo(e.buf.ctAccFFTDcmp[j][0][l], pDcmp[l])
+			e.PolyEvaluator.FwdFFTTo(e.buf.ctAccFFTDcmp[j][0][l], pDcmp[l])
 		}
 	}
 
@@ -152,7 +152,7 @@ func (e *Evaluator[T]) blindRotateExtendedTo(ctOut GLWECiphertext[T], ct LWECiph
 			for k := 0; k < e.Params.glweRank+1; k++ {
 				e.Decomposer.DecomposePolyTo(pDcmp, e.buf.ctAcc[j].Value[k], e.Params.blindRotateParams)
 				for l := 0; l < e.Params.blindRotateParams.level; l++ {
-					e.PolyEvaluator.FwdFFTPolyTo(e.buf.ctAccFFTDcmp[j][k][l], pDcmp[l])
+					e.PolyEvaluator.FwdFFTTo(e.buf.ctAccFFTDcmp[j][k][l], pDcmp[l])
 				}
 			}
 		}
@@ -220,7 +220,7 @@ func (e *Evaluator[T]) blindRotateExtendedTo(ctOut GLWECiphertext[T], ct LWECiph
 		for k := 0; k < e.Params.glweRank+1; k++ {
 			e.Decomposer.DecomposePolyTo(pDcmp, e.buf.ctAcc[j].Value[k], e.Params.blindRotateParams)
 			for l := 0; l < e.Params.blindRotateParams.level; l++ {
-				e.PolyEvaluator.FwdFFTPolyTo(e.buf.ctAccFFTDcmp[j][k][l], pDcmp[l])
+				e.PolyEvaluator.FwdFFTTo(e.buf.ctAccFFTDcmp[j][k][l], pDcmp[l])
 			}
 		}
 	}
@@ -277,7 +277,7 @@ func (e *Evaluator[T]) blindRotateBlockTo(ctOut GLWECiphertext[T], ct LWECiphert
 
 	e.Decomposer.DecomposePolyTo(pDcmp, ctOut.Value[0], e.Params.blindRotateParams)
 	for k := 0; k < e.Params.blindRotateParams.level; k++ {
-		e.PolyEvaluator.FwdFFTPolyTo(e.buf.ctAccFFTDcmp[0][0][k], pDcmp[k])
+		e.PolyEvaluator.FwdFFTTo(e.buf.ctAccFFTDcmp[0][0][k], pDcmp[k])
 	}
 
 	e.GadgetProdFFTGLWETo(e.buf.ctFFTBlockAcc[0], e.EvalKey.BlindRotateKey.Value[0].Value[0], e.buf.ctAccFFTDcmp[0][0])
@@ -297,7 +297,7 @@ func (e *Evaluator[T]) blindRotateBlockTo(ctOut GLWECiphertext[T], ct LWECiphert
 		for j := 0; j < e.Params.glweRank+1; j++ {
 			e.Decomposer.DecomposePolyTo(pDcmp, ctOut.Value[j], e.Params.blindRotateParams)
 			for k := 0; k < e.Params.blindRotateParams.level; k++ {
-				e.PolyEvaluator.FwdFFTPolyTo(e.buf.ctAccFFTDcmp[0][j][k], pDcmp[k])
+				e.PolyEvaluator.FwdFFTTo(e.buf.ctAccFFTDcmp[0][j][k], pDcmp[k])
 			}
 		}
 
@@ -328,7 +328,7 @@ func (e *Evaluator[T]) blindRotateOriginalTo(ctOut GLWECiphertext[T], ct LWECiph
 
 	e.Decomposer.DecomposePolyTo(pDcmp, ctOut.Value[0], e.Params.blindRotateParams)
 	for k := 0; k < e.Params.blindRotateParams.level; k++ {
-		e.PolyEvaluator.FwdFFTPolyTo(e.buf.ctAccFFTDcmp[0][0][k], pDcmp[k])
+		e.PolyEvaluator.FwdFFTTo(e.buf.ctAccFFTDcmp[0][0][k], pDcmp[k])
 	}
 
 	e.GadgetProdFFTGLWETo(e.buf.ctFFTBlockAcc[0], e.EvalKey.BlindRotateKey.Value[0].Value[0], e.buf.ctAccFFTDcmp[0][0])
@@ -342,7 +342,7 @@ func (e *Evaluator[T]) blindRotateOriginalTo(ctOut GLWECiphertext[T], ct LWECiph
 		for j := 0; j < e.Params.glweRank+1; j++ {
 			e.Decomposer.DecomposePolyTo(pDcmp, ctOut.Value[j], e.Params.blindRotateParams)
 			for k := 0; k < e.Params.blindRotateParams.level; k++ {
-				e.PolyEvaluator.FwdFFTPolyTo(e.buf.ctAccFFTDcmp[0][j][k], pDcmp[k])
+				e.PolyEvaluator.FwdFFTTo(e.buf.ctAccFFTDcmp[0][j][k], pDcmp[k])
 			}
 		}
 

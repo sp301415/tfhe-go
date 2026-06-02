@@ -161,7 +161,7 @@ func (e *CircuitBootstrapper[T]) CircuitBootstrapTo(ctOut tfhe.FFTGGSWCiphertext
 			for k := 0; k < e.Params.Params().GLWERank()+1; k++ {
 				e.Decomposer.DecomposePolyTo(pDcmp, e.buf.ctGGSWOut.Value[0].Value[j].Value[k], e.Params.schemeSwitchParameters)
 				for l := 0; l < e.Params.schemeSwitchParameters.Level(); l++ {
-					e.PolyEvaluator.FwdFFTPolyTo(e.buf.ctFFTDcmp[k][l], pDcmp[l])
+					e.PolyEvaluator.FwdFFTTo(e.buf.ctFFTDcmp[k][l], pDcmp[l])
 				}
 			}
 

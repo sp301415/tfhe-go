@@ -189,7 +189,7 @@ func (e *ManyLUTEvaluator[T]) blindRotateBlockTo(ctOut tfhe.GLWECiphertext[T], c
 
 	e.Decomposer.DecomposePolyTo(pDcmp, ctOut.Value[0], e.Params.baseParams.BlindRotateParams())
 	for k := 0; k < e.Params.baseParams.BlindRotateParams().Level(); k++ {
-		e.PolyEvaluator.FwdFFTPolyTo(e.buf.ctFFTAccDcmp[0][k], pDcmp[k])
+		e.PolyEvaluator.FwdFFTTo(e.buf.ctFFTAccDcmp[0][k], pDcmp[k])
 	}
 
 	e.GadgetProdFFTGLWETo(e.buf.ctFFTBlockAcc, e.EvalKey.BlindRotateKey.Value[0].Value[0], e.buf.ctFFTAccDcmp[0])
@@ -209,7 +209,7 @@ func (e *ManyLUTEvaluator[T]) blindRotateBlockTo(ctOut tfhe.GLWECiphertext[T], c
 		for j := 0; j < e.Params.baseParams.GLWERank()+1; j++ {
 			e.Decomposer.DecomposePolyTo(pDcmp, ctOut.Value[j], e.Params.baseParams.BlindRotateParams())
 			for k := 0; k < e.Params.baseParams.BlindRotateParams().Level(); k++ {
-				e.PolyEvaluator.FwdFFTPolyTo(e.buf.ctFFTAccDcmp[j][k], pDcmp[k])
+				e.PolyEvaluator.FwdFFTTo(e.buf.ctFFTAccDcmp[j][k], pDcmp[k])
 			}
 		}
 
@@ -240,7 +240,7 @@ func (e *ManyLUTEvaluator[T]) blindRotateOriginalTo(ctOut tfhe.GLWECiphertext[T]
 
 	e.Decomposer.DecomposePolyTo(pDcmp, ctOut.Value[0], e.Params.baseParams.BlindRotateParams())
 	for k := 0; k < e.Params.baseParams.BlindRotateParams().Level(); k++ {
-		e.PolyEvaluator.FwdFFTPolyTo(e.buf.ctFFTAccDcmp[0][k], pDcmp[k])
+		e.PolyEvaluator.FwdFFTTo(e.buf.ctFFTAccDcmp[0][k], pDcmp[k])
 	}
 
 	e.GadgetProdFFTGLWETo(e.buf.ctFFTBlockAcc, e.EvalKey.BlindRotateKey.Value[0].Value[0], e.buf.ctFFTAccDcmp[0])
@@ -254,7 +254,7 @@ func (e *ManyLUTEvaluator[T]) blindRotateOriginalTo(ctOut tfhe.GLWECiphertext[T]
 		for j := 0; j < e.Params.baseParams.GLWERank()+1; j++ {
 			e.Decomposer.DecomposePolyTo(pDcmp, ctOut.Value[j], e.Params.baseParams.BlindRotateParams())
 			for k := 0; k < e.Params.baseParams.BlindRotateParams().Level(); k++ {
-				e.PolyEvaluator.FwdFFTPolyTo(e.buf.ctFFTAccDcmp[j][k], pDcmp[k])
+				e.PolyEvaluator.FwdFFTTo(e.buf.ctFFTAccDcmp[j][k], pDcmp[k])
 			}
 		}
 

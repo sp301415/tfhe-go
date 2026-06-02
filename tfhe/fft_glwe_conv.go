@@ -38,7 +38,7 @@ func (e *GLWETransformer[T]) FwdFFTGLWESecretKey(sk GLWESecretKey[T]) FFTGLWESec
 // FwdFFTGLWESecretKeyTo transforms GLWE secret key to FFT GLWE secret key and writes it to skOut.
 func (e *GLWETransformer[T]) FwdFFTGLWESecretKeyTo(skOut FFTGLWESecretKey[T], sk GLWESecretKey[T]) {
 	for i := 0; i < len(skOut.Value); i++ {
-		e.PolyEvaluator.FwdFFTPolyTo(skOut.Value[i], sk.Value[i])
+		e.PolyEvaluator.FwdFFTTo(skOut.Value[i], sk.Value[i])
 	}
 }
 
@@ -66,7 +66,7 @@ func (e *GLWETransformer[T]) FwdFFTGLWECiphertext(ct GLWECiphertext[T]) FFTGLWEC
 // FwdFFTGLWECiphertextTo transforms GLWE ciphertext to FFT GLWE ciphertext and writes it to ctOut.
 func (e *GLWETransformer[T]) FwdFFTGLWECiphertextTo(ctOut FFTGLWECiphertext[T], ct GLWECiphertext[T]) {
 	for i := 0; i < len(ctOut.Value); i++ {
-		e.PolyEvaluator.FwdFFTPolyTo(ctOut.Value[i], ct.Value[i])
+		e.PolyEvaluator.FwdFFTTo(ctOut.Value[i], ct.Value[i])
 	}
 }
 

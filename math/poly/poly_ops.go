@@ -86,7 +86,7 @@ func (e *Evaluator[T]) FFTPolyMulPolyTo(pOut, p Poly[T], fp FFTPoly) {
 	checkConsistentPoly(e.rank, pOut, p)
 	checkConsistentFFTPoly(e.rank, fp)
 
-	e.FwdFFTPolyTo(e.buf.fp, p)
+	e.FwdFFTTo(e.buf.fp, p)
 	e.MulFFTPolyTo(e.buf.fp, e.buf.fp, fp)
 	e.InvFFTToUnsafe(pOut, e.buf.fp)
 }
@@ -96,7 +96,7 @@ func (e *Evaluator[T]) FFTPolyMulAddPolyTo(pOut, p Poly[T], fp FFTPoly) {
 	checkConsistentPoly(e.rank, pOut, p)
 	checkConsistentFFTPoly(e.rank, fp)
 
-	e.FwdFFTPolyTo(e.buf.fp, p)
+	e.FwdFFTTo(e.buf.fp, p)
 	e.MulFFTPolyTo(e.buf.fp, e.buf.fp, fp)
 	e.InvFFTAddToUnsafe(pOut, e.buf.fp)
 }
@@ -106,7 +106,7 @@ func (e *Evaluator[T]) FFTPolyMulSubPolyTo(pOut, p Poly[T], fp FFTPoly) {
 	checkConsistentPoly(e.rank, pOut, p)
 	checkConsistentFFTPoly(e.rank, fp)
 
-	e.FwdFFTPolyTo(e.buf.fp, p)
+	e.FwdFFTTo(e.buf.fp, p)
 	e.MulFFTPolyTo(e.buf.fp, e.buf.fp, fp)
 	e.InvFFTSubToUnsafe(pOut, e.buf.fp)
 }

@@ -35,7 +35,7 @@ func (e *GLWETransformer[T]) FwdFFTGLWESecretKey(sk tfhe.GLWESecretKey[T]) tfhe.
 // FwdFFTGLWESecretKeyTo transforms GLWE secret key to FFT GLWE secret key and writes it to skOut.
 func (e *GLWETransformer[T]) FwdFFTGLWESecretKeyTo(skOut tfhe.FFTGLWESecretKey[T], sk tfhe.GLWESecretKey[T]) {
 	for i := 0; i < len(sk.Value); i++ {
-		e.PolyEvaluator.FwdFFTPolyTo(skOut.Value[i], sk.Value[i])
+		e.PolyEvaluator.FwdFFTTo(skOut.Value[i], sk.Value[i])
 	}
 }
 
@@ -63,7 +63,7 @@ func (e *GLWETransformer[T]) FwdFFTGLWECiphertext(ct GLWECiphertext[T]) FFTGLWEC
 // FwdFFTGLWECiphertextTo transforms GLWE ciphertext to FFT GLWE ciphertext and writes it to ctOut.
 func (e *GLWETransformer[T]) FwdFFTGLWECiphertextTo(ctOut FFTGLWECiphertext[T], ct GLWECiphertext[T]) {
 	for i := 0; i < len(ct.Value); i++ {
-		e.PolyEvaluator.FwdFFTPolyTo(ctOut.Value[i], ct.Value[i])
+		e.PolyEvaluator.FwdFFTTo(ctOut.Value[i], ct.Value[i])
 	}
 }
 
@@ -91,11 +91,11 @@ func (e *GLWETransformer[T]) FwdFFTUniEncryption(ct UniEncryption[T]) FFTUniEncr
 // FwdFFTUniEncryptionTo transforms UniEncryption to FFT UniEncryption and writes it to ctOut.
 func (e *GLWETransformer[T]) FwdFFTUniEncryptionTo(ctOut FFTUniEncryption[T], ct UniEncryption[T]) {
 	for j := 0; j < ct.GadgetParams.Level(); j++ {
-		e.PolyEvaluator.FwdFFTPolyTo(ctOut.Value[0].Value[j].Value[0], ct.Value[0].Value[j].Value[0])
-		e.PolyEvaluator.FwdFFTPolyTo(ctOut.Value[0].Value[j].Value[1], ct.Value[0].Value[j].Value[1])
+		e.PolyEvaluator.FwdFFTTo(ctOut.Value[0].Value[j].Value[0], ct.Value[0].Value[j].Value[0])
+		e.PolyEvaluator.FwdFFTTo(ctOut.Value[0].Value[j].Value[1], ct.Value[0].Value[j].Value[1])
 
-		e.PolyEvaluator.FwdFFTPolyTo(ctOut.Value[1].Value[j].Value[0], ct.Value[1].Value[j].Value[0])
-		e.PolyEvaluator.FwdFFTPolyTo(ctOut.Value[1].Value[j].Value[1], ct.Value[1].Value[j].Value[1])
+		e.PolyEvaluator.FwdFFTTo(ctOut.Value[1].Value[j].Value[0], ct.Value[1].Value[j].Value[0])
+		e.PolyEvaluator.FwdFFTTo(ctOut.Value[1].Value[j].Value[1], ct.Value[1].Value[j].Value[1])
 	}
 }
 

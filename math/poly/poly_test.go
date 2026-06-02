@@ -31,7 +31,7 @@ func BenchmarkOps(b *testing.B) {
 				p1.Coeffs[i] = r.Uint64()
 			}
 
-			fp := pev.FwdFFTPoly(p0)
+			fp := pev.FwdFFT(p0)
 
 			b.Run("Add", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
@@ -117,7 +117,7 @@ func BenchmarkFFT(b *testing.B) {
 
 			b.Run("FwdFFT", func(b *testing.B) {
 				for i := 0; i < b.N; i++ {
-					pev.FwdFFTPolyTo(fp, p)
+					pev.FwdFFTTo(fp, p)
 				}
 			})
 

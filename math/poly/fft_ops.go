@@ -144,7 +144,7 @@ func (e *Evaluator[T]) PolyMulFFTPolyTo(fpOut, fp FFTPoly, p Poly[T]) {
 	checkConsistentFFTPoly(e.rank, fpOut, fp)
 	checkConsistentPoly(e.rank, p)
 
-	e.FwdFFTPolyTo(e.buf.fp, p)
+	e.FwdFFTTo(e.buf.fp, p)
 	mulCmplxTo(fpOut.Coeffs, fp.Coeffs, e.buf.fp.Coeffs)
 }
 
@@ -153,7 +153,7 @@ func (e *Evaluator[T]) PolyMulAddFFTPolyTo(fpOut, fp FFTPoly, p Poly[T]) {
 	checkConsistentFFTPoly(e.rank, fpOut, fp)
 	checkConsistentPoly(e.rank, p)
 
-	e.FwdFFTPolyTo(e.buf.fp, p)
+	e.FwdFFTTo(e.buf.fp, p)
 	mulAddCmplxTo(fpOut.Coeffs, fp.Coeffs, e.buf.fp.Coeffs)
 }
 
@@ -162,7 +162,7 @@ func (e *Evaluator[T]) PolyMulSubFFTPolyTo(fpOut, fp FFTPoly, p Poly[T]) {
 	checkConsistentFFTPoly(e.rank, fpOut, fp)
 	checkConsistentPoly(e.rank, p)
 
-	e.FwdFFTPolyTo(e.buf.fp, p)
+	e.FwdFFTTo(e.buf.fp, p)
 	mulSubCmplxTo(fpOut.Coeffs, fp.Coeffs, e.buf.fp.Coeffs)
 }
 
