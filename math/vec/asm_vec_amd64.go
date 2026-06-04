@@ -35,14 +35,16 @@ func AddTo[T num.Number](vOut, v0, v1 []T) {
 	}
 
 	M := (len(vOut) >> 3) << 3
-	ptrOut := unsafe.Pointer(&vOut[0])
-	ptr0 := unsafe.Pointer(&v0[0])
-	ptr1 := unsafe.Pointer(&v1[0])
+	L := unsafe.Sizeof(T(0))
+
+	rOut := unsafe.Pointer(&vOut[:1][0])
+	r0 := unsafe.Pointer(&v0[:1][0])
+	r1 := unsafe.Pointer(&v1[:1][0])
 
 	for i := 0; i < M; i += 8 {
-		wOut := (*[8]T)(unsafe.Add(ptrOut, uintptr(i)*unsafe.Sizeof(T(0))))
-		w0 := (*[8]T)(unsafe.Add(ptr0, uintptr(i)*unsafe.Sizeof(T(0))))
-		w1 := (*[8]T)(unsafe.Add(ptr1, uintptr(i)*unsafe.Sizeof(T(0))))
+		wOut := (*[8]T)(unsafe.Add(rOut, uintptr(i)*L))
+		w0 := (*[8]T)(unsafe.Add(r0, uintptr(i)*L))
+		w1 := (*[8]T)(unsafe.Add(r1, uintptr(i)*L))
 
 		wOut[0] = w0[0] + w1[0]
 		wOut[1] = w0[1] + w1[1]
@@ -86,14 +88,16 @@ func SubTo[T num.Number](vOut, v0, v1 []T) {
 	}
 
 	M := (len(vOut) >> 3) << 3
-	ptrOut := unsafe.Pointer(&vOut[0])
-	ptr0 := unsafe.Pointer(&v0[0])
-	ptr1 := unsafe.Pointer(&v1[0])
+	L := unsafe.Sizeof(T(0))
+
+	rOut := unsafe.Pointer(&vOut[:1][0])
+	r0 := unsafe.Pointer(&v0[:1][0])
+	r1 := unsafe.Pointer(&v1[:1][0])
 
 	for i := 0; i < M; i += 8 {
-		wOut := (*[8]T)(unsafe.Add(ptrOut, uintptr(i)*unsafe.Sizeof(T(0))))
-		w0 := (*[8]T)(unsafe.Add(ptr0, uintptr(i)*unsafe.Sizeof(T(0))))
-		w1 := (*[8]T)(unsafe.Add(ptr1, uintptr(i)*unsafe.Sizeof(T(0))))
+		wOut := (*[8]T)(unsafe.Add(rOut, uintptr(i)*L))
+		w0 := (*[8]T)(unsafe.Add(r0, uintptr(i)*L))
+		w1 := (*[8]T)(unsafe.Add(r1, uintptr(i)*L))
 
 		wOut[0] = w0[0] - w1[0]
 		wOut[1] = w0[1] - w1[1]
@@ -137,12 +141,14 @@ func ScalarMulTo[T num.Number](vOut, v []T, c T) {
 	}
 
 	M := (len(vOut) >> 3) << 3
-	ptrOut := unsafe.Pointer(&vOut[0])
-	ptr := unsafe.Pointer(&v[0])
+	L := unsafe.Sizeof(T(0))
+
+	rOut := unsafe.Pointer(&vOut[:1][0])
+	r := unsafe.Pointer(&v[:1][0])
 
 	for i := 0; i < M; i += 8 {
-		wOut := (*[8]T)(unsafe.Add(ptrOut, uintptr(i)*unsafe.Sizeof(T(0))))
-		w := (*[8]T)(unsafe.Add(ptr, uintptr(i)*unsafe.Sizeof(T(0))))
+		wOut := (*[8]T)(unsafe.Add(rOut, uintptr(i)*L))
+		w := (*[8]T)(unsafe.Add(r, uintptr(i)*L))
 
 		wOut[0] = c * w[0]
 		wOut[1] = c * w[1]
@@ -186,12 +192,14 @@ func ScalarMulAddTo[T num.Number](vOut, v []T, c T) {
 	}
 
 	M := (len(vOut) >> 3) << 3
-	ptrOut := unsafe.Pointer(&vOut[0])
-	ptr := unsafe.Pointer(&v[0])
+	L := unsafe.Sizeof(T(0))
+
+	rOut := unsafe.Pointer(&vOut[:1][0])
+	r := unsafe.Pointer(&v[:1][0])
 
 	for i := 0; i < M; i += 8 {
-		wOut := (*[8]T)(unsafe.Add(ptrOut, uintptr(i)*unsafe.Sizeof(T(0))))
-		w := (*[8]T)(unsafe.Add(ptr, uintptr(i)*unsafe.Sizeof(T(0))))
+		wOut := (*[8]T)(unsafe.Add(rOut, uintptr(i)*L))
+		w := (*[8]T)(unsafe.Add(r, uintptr(i)*L))
 
 		wOut[0] += c * w[0]
 		wOut[1] += c * w[1]
@@ -235,12 +243,14 @@ func ScalarMulSubTo[T num.Number](vOut, v []T, c T) {
 	}
 
 	M := (len(vOut) >> 3) << 3
-	ptrOut := unsafe.Pointer(&vOut[0])
-	ptr := unsafe.Pointer(&v[0])
+	L := unsafe.Sizeof(T(0))
+
+	rOut := unsafe.Pointer(&vOut[:1][0])
+	r := unsafe.Pointer(&v[:1][0])
 
 	for i := 0; i < M; i += 8 {
-		wOut := (*[8]T)(unsafe.Add(ptrOut, uintptr(i)*unsafe.Sizeof(T(0))))
-		w := (*[8]T)(unsafe.Add(ptr, uintptr(i)*unsafe.Sizeof(T(0))))
+		wOut := (*[8]T)(unsafe.Add(rOut, uintptr(i)*L))
+		w := (*[8]T)(unsafe.Add(r, uintptr(i)*L))
 
 		wOut[0] -= c * w[0]
 		wOut[1] -= c * w[1]
@@ -284,14 +294,16 @@ func MulTo[T num.Number](vOut, v0, v1 []T) {
 	}
 
 	M := (len(vOut) >> 3) << 3
-	ptrOut := unsafe.Pointer(&vOut[0])
-	ptr0 := unsafe.Pointer(&v0[0])
-	ptr1 := unsafe.Pointer(&v1[0])
+	L := unsafe.Sizeof(T(0))
+
+	rOut := unsafe.Pointer(&vOut[:1][0])
+	r0 := unsafe.Pointer(&v0[:1][0])
+	r1 := unsafe.Pointer(&v1[:1][0])
 
 	for i := 0; i < M; i += 8 {
-		wOut := (*[8]T)(unsafe.Add(ptrOut, uintptr(i)*unsafe.Sizeof(T(0))))
-		w0 := (*[8]T)(unsafe.Add(ptr0, uintptr(i)*unsafe.Sizeof(T(0))))
-		w1 := (*[8]T)(unsafe.Add(ptr1, uintptr(i)*unsafe.Sizeof(T(0))))
+		wOut := (*[8]T)(unsafe.Add(rOut, uintptr(i)*L))
+		w0 := (*[8]T)(unsafe.Add(r0, uintptr(i)*L))
+		w1 := (*[8]T)(unsafe.Add(r1, uintptr(i)*L))
 
 		wOut[0] = w0[0] * w1[0]
 		wOut[1] = w0[1] * w1[1]
@@ -335,14 +347,16 @@ func MulAddTo[T num.Number](vOut, v0, v1 []T) {
 	}
 
 	M := (len(vOut) >> 3) << 3
-	ptrOut := unsafe.Pointer(&vOut[0])
-	ptr0 := unsafe.Pointer(&v0[0])
-	ptr1 := unsafe.Pointer(&v1[0])
+	L := unsafe.Sizeof(T(0))
+
+	rOut := unsafe.Pointer(&vOut[:1][0])
+	r0 := unsafe.Pointer(&v0[:1][0])
+	r1 := unsafe.Pointer(&v1[:1][0])
 
 	for i := 0; i < M; i += 8 {
-		wOut := (*[8]T)(unsafe.Add(ptrOut, uintptr(i)*unsafe.Sizeof(T(0))))
-		w0 := (*[8]T)(unsafe.Add(ptr0, uintptr(i)*unsafe.Sizeof(T(0))))
-		w1 := (*[8]T)(unsafe.Add(ptr1, uintptr(i)*unsafe.Sizeof(T(0))))
+		wOut := (*[8]T)(unsafe.Add(rOut, uintptr(i)*L))
+		w0 := (*[8]T)(unsafe.Add(r0, uintptr(i)*L))
+		w1 := (*[8]T)(unsafe.Add(r1, uintptr(i)*L))
 
 		wOut[0] += w0[0] * w1[0]
 		wOut[1] += w0[1] * w1[1]
@@ -386,14 +400,16 @@ func MulSubTo[T num.Number](vOut, v0, v1 []T) {
 	}
 
 	M := (len(vOut) >> 3) << 3
-	ptrOut := unsafe.Pointer(&vOut[0])
-	ptr0 := unsafe.Pointer(&v0[0])
-	ptr1 := unsafe.Pointer(&v1[0])
+	L := unsafe.Sizeof(T(0))
+
+	rOut := unsafe.Pointer(&vOut[:1][0])
+	r0 := unsafe.Pointer(&v0[:1][0])
+	r1 := unsafe.Pointer(&v1[:1][0])
 
 	for i := 0; i < M; i += 8 {
-		wOut := (*[8]T)(unsafe.Add(ptrOut, uintptr(i)*unsafe.Sizeof(T(0))))
-		w0 := (*[8]T)(unsafe.Add(ptr0, uintptr(i)*unsafe.Sizeof(T(0))))
-		w1 := (*[8]T)(unsafe.Add(ptr1, uintptr(i)*unsafe.Sizeof(T(0))))
+		wOut := (*[8]T)(unsafe.Add(rOut, uintptr(i)*L))
+		w0 := (*[8]T)(unsafe.Add(r0, uintptr(i)*L))
+		w1 := (*[8]T)(unsafe.Add(r1, uintptr(i)*L))
 
 		wOut[0] -= w0[0] * w1[0]
 		wOut[1] -= w0[1] * w1[1]

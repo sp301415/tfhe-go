@@ -9,8 +9,7 @@ func (e *Evaluator[T]) FwdFFT(p Poly[T]) FFTPoly {
 
 // FwdFFTTo computes fpOut = FFT(p).
 func (e *Evaluator[T]) FwdFFTTo(fpOut FFTPoly, p Poly[T]) {
-	checkConsistentFFTPoly(e.rank, fpOut)
-	checkConsistentPoly(e.rank, p)
+	checkLength(e.rank, len(fpOut.Coeffs), len(p.Coeffs))
 
 	foldPolyTo(fpOut.Coeffs, p.Coeffs)
 	fwdFFTInPlace(fpOut.Coeffs, e.tw)
@@ -18,8 +17,7 @@ func (e *Evaluator[T]) FwdFFTTo(fpOut FFTPoly, p Poly[T]) {
 
 // FwdFFTAddTo computes fpOut += FFT(p).
 func (e *Evaluator[T]) FwdFFTAddTo(fpOut FFTPoly, p Poly[T]) {
-	checkConsistentFFTPoly(e.rank, fpOut)
-	checkConsistentPoly(e.rank, p)
+	checkLength(e.rank, len(fpOut.Coeffs), len(p.Coeffs))
 
 	foldPolyTo(e.buf.fp.Coeffs, p.Coeffs)
 	fwdFFTInPlace(e.buf.fp.Coeffs, e.tw)
@@ -28,8 +26,7 @@ func (e *Evaluator[T]) FwdFFTAddTo(fpOut FFTPoly, p Poly[T]) {
 
 // FwdFFTSubTo computes fpOut -= FFT(p).
 func (e *Evaluator[T]) FwdFFTSubTo(fpOut FFTPoly, p Poly[T]) {
-	checkConsistentFFTPoly(e.rank, fpOut)
-	checkConsistentPoly(e.rank, p)
+	checkLength(e.rank, len(fpOut.Coeffs), len(p.Coeffs))
 
 	foldPolyTo(e.buf.fp.Coeffs, p.Coeffs)
 	fwdFFTInPlace(e.buf.fp.Coeffs, e.tw)
@@ -45,7 +42,7 @@ func (e *Evaluator[T]) MonomialFwdFFT(d int) FFTPoly {
 
 // MonomialFwdFFTTo computes fpOut = FFT(X^d).
 func (e *Evaluator[T]) MonomialFwdFFTTo(fpOut FFTPoly, d int) {
-	checkConsistentFFTPoly(e.rank, fpOut)
+	checkLength(e.rank, len(fpOut.Coeffs))
 
 	d &= 2*e.rank - 1
 	for j, jj := 0, 0; j < e.rank; j, jj = j+8, jj+4 {
@@ -80,7 +77,7 @@ func (e *Evaluator[T]) MonomialSubOneFwdFFT(d int) FFTPoly {
 //
 // d should be positive.
 func (e *Evaluator[T]) MonomialSubOneFwdFFTTo(fpOut FFTPoly, d int) {
-	checkConsistentFFTPoly(e.rank, fpOut)
+	checkLength(e.rank, len(fpOut.Coeffs))
 
 	d &= 2*e.rank - 1
 	for j, jj := 0, 0; j < e.rank; j, jj = j+8, jj+4 {
@@ -111,8 +108,7 @@ func (e *Evaluator[T]) InvFFT(fp FFTPoly) Poly[T] {
 
 // InvFFTTo computes pOut = InvFFT(fp).
 func (e *Evaluator[T]) InvFFTTo(pOut Poly[T], fp FFTPoly) {
-	checkConsistentFFTPoly(e.rank, fp)
-	checkConsistentPoly(e.rank, pOut)
+	checkLength(e.rank, len(fp.Coeffs), len(pOut.Coeffs))
 
 	e.buf.fpInv.CopyFrom(fp)
 	invFFTInPlace(e.buf.fpInv.Coeffs, e.twInv)
@@ -122,8 +118,7 @@ func (e *Evaluator[T]) InvFFTTo(pOut Poly[T], fp FFTPoly) {
 
 // InvFFTAddTo computes pOut += InvFFT(fp).
 func (e *Evaluator[T]) InvFFTAddTo(pOut Poly[T], fp FFTPoly) {
-	checkConsistentFFTPoly(e.rank, fp)
-	checkConsistentPoly(e.rank, pOut)
+	checkLength(e.rank, len(fp.Coeffs), len(pOut.Coeffs))
 
 	e.buf.fpInv.CopyFrom(fp)
 	invFFTInPlace(e.buf.fpInv.Coeffs, e.twInv)
@@ -133,8 +128,7 @@ func (e *Evaluator[T]) InvFFTAddTo(pOut Poly[T], fp FFTPoly) {
 
 // InvFFTSubTo computes pOut -= InvFFT(fp).
 func (e *Evaluator[T]) InvFFTSubTo(pOut Poly[T], fp FFTPoly) {
-	checkConsistentFFTPoly(e.rank, fp)
-	checkConsistentPoly(e.rank, pOut)
+	checkLength(e.rank, len(fp.Coeffs), len(pOut.Coeffs))
 
 	e.buf.fpInv.CopyFrom(fp)
 	invFFTInPlace(e.buf.fpInv.Coeffs, e.twInv)
@@ -147,8 +141,7 @@ func (e *Evaluator[T]) InvFFTSubTo(pOut Poly[T], fp FFTPoly) {
 // This method is slightly faster than [*Evaluator.InvFFTTo], but it modifies fp directly.
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
 func (e *Evaluator[T]) InvFFTToUnsafe(pOut Poly[T], fp FFTPoly) {
-	checkConsistentFFTPoly(e.rank, fp)
-	checkConsistentPoly(e.rank, pOut)
+	checkLength(e.rank, len(fp.Coeffs), len(pOut.Coeffs))
 
 	invFFTInPlace(fp.Coeffs, e.twInv)
 	floatModQInPlace(fp.Coeffs, e.q)
@@ -160,8 +153,7 @@ func (e *Evaluator[T]) InvFFTToUnsafe(pOut Poly[T], fp FFTPoly) {
 // This method is slightly faster than [*Evaluator.InvFFTAddTo], but it modifies fp directly.
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
 func (e *Evaluator[T]) InvFFTAddToUnsafe(pOut Poly[T], fp FFTPoly) {
-	checkConsistentFFTPoly(e.rank, fp)
-	checkConsistentPoly(e.rank, pOut)
+	checkLength(e.rank, len(fp.Coeffs), len(pOut.Coeffs))
 
 	invFFTInPlace(fp.Coeffs, e.twInv)
 	floatModQInPlace(fp.Coeffs, e.q)
@@ -173,8 +165,7 @@ func (e *Evaluator[T]) InvFFTAddToUnsafe(pOut Poly[T], fp FFTPoly) {
 // This method is slightly faster than [*Evaluator.InvFFTSubTo], but it modifies fp directly.
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
 func (e *Evaluator[T]) InvFFTSubToUnsafe(pOut Poly[T], fp FFTPoly) {
-	checkConsistentFFTPoly(e.rank, fp)
-	checkConsistentPoly(e.rank, pOut)
+	checkLength(e.rank, len(fp.Coeffs), len(pOut.Coeffs))
 
 	invFFTInPlace(fp.Coeffs, e.twInv)
 	floatModQInPlace(fp.Coeffs, e.q)

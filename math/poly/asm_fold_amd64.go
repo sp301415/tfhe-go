@@ -25,16 +25,19 @@ func foldPolyTo[T num.Integer](fpOut []float64, p []T) {
 	}
 
 	N := len(fpOut)
-	ptr := unsafe.Pointer(&p[0])
-	ptrOut := unsafe.Pointer(&fpOut[0])
+	LT := unsafe.Sizeof(T(0))
+	LF := unsafe.Sizeof(float64(0))
+
+	r := unsafe.Pointer(&p[:1][0])
+	rOut := unsafe.Pointer(&fpOut[:1][0])
 
 	var z T
 	switch any(z).(type) {
 	case uint:
 		for i, ii := 0, 0; i < N; i, ii = i+8, ii+4 {
-			w0 := (*[4]T)(unsafe.Add(ptr, uintptr(ii)*unsafe.Sizeof(T(0))))
-			w1 := (*[4]T)(unsafe.Add(ptr, uintptr(ii+N/2)*unsafe.Sizeof(T(0))))
-			wOut := (*[8]float64)(unsafe.Add(ptrOut, uintptr(i)*unsafe.Sizeof(float64(0))))
+			w0 := (*[4]T)(unsafe.Add(r, uintptr(ii)*LT))
+			w1 := (*[4]T)(unsafe.Add(r, uintptr(ii+N/2)*LT))
+			wOut := (*[8]float64)(unsafe.Add(rOut, uintptr(i)*LF))
 
 			wOut[0] = float64(int(w0[0]))
 			wOut[1] = float64(int(w0[1]))
@@ -48,9 +51,9 @@ func foldPolyTo[T num.Integer](fpOut []float64, p []T) {
 		}
 	case uintptr:
 		for i, ii := 0, 0; i < N; i, ii = i+8, ii+4 {
-			w0 := (*[4]T)(unsafe.Add(ptr, uintptr(ii)*unsafe.Sizeof(T(0))))
-			w1 := (*[4]T)(unsafe.Add(ptr, uintptr(ii+N/2)*unsafe.Sizeof(T(0))))
-			wOut := (*[8]float64)(unsafe.Add(ptrOut, uintptr(i)*unsafe.Sizeof(float64(0))))
+			w0 := (*[4]T)(unsafe.Add(r, uintptr(ii)*LT))
+			w1 := (*[4]T)(unsafe.Add(r, uintptr(ii+N/2)*LT))
+			wOut := (*[8]float64)(unsafe.Add(rOut, uintptr(i)*LF))
 
 			wOut[0] = float64(int(w0[0]))
 			wOut[1] = float64(int(w0[1]))
@@ -64,9 +67,9 @@ func foldPolyTo[T num.Integer](fpOut []float64, p []T) {
 		}
 	case uint8:
 		for i, ii := 0, 0; i < N; i, ii = i+8, ii+4 {
-			w0 := (*[4]T)(unsafe.Add(ptr, uintptr(ii)*unsafe.Sizeof(T(0))))
-			w1 := (*[4]T)(unsafe.Add(ptr, uintptr(ii+N/2)*unsafe.Sizeof(T(0))))
-			wOut := (*[8]float64)(unsafe.Add(ptrOut, uintptr(i)*unsafe.Sizeof(float64(0))))
+			w0 := (*[4]T)(unsafe.Add(r, uintptr(ii)*LT))
+			w1 := (*[4]T)(unsafe.Add(r, uintptr(ii+N/2)*LT))
+			wOut := (*[8]float64)(unsafe.Add(rOut, uintptr(i)*LF))
 
 			wOut[0] = float64(int8(w0[0]))
 			wOut[1] = float64(int8(w0[1]))
@@ -80,9 +83,9 @@ func foldPolyTo[T num.Integer](fpOut []float64, p []T) {
 		}
 	case uint16:
 		for i, ii := 0, 0; i < N; i, ii = i+8, ii+4 {
-			w0 := (*[4]T)(unsafe.Add(ptr, uintptr(ii)*unsafe.Sizeof(T(0))))
-			w1 := (*[4]T)(unsafe.Add(ptr, uintptr(ii+N/2)*unsafe.Sizeof(T(0))))
-			wOut := (*[8]float64)(unsafe.Add(ptrOut, uintptr(i)*unsafe.Sizeof(float64(0))))
+			w0 := (*[4]T)(unsafe.Add(r, uintptr(ii)*LT))
+			w1 := (*[4]T)(unsafe.Add(r, uintptr(ii+N/2)*LT))
+			wOut := (*[8]float64)(unsafe.Add(rOut, uintptr(i)*LF))
 
 			wOut[0] = float64(int16(w0[0]))
 			wOut[1] = float64(int16(w0[1]))
@@ -96,9 +99,9 @@ func foldPolyTo[T num.Integer](fpOut []float64, p []T) {
 		}
 	case uint32:
 		for i, ii := 0, 0; i < N; i, ii = i+8, ii+4 {
-			w0 := (*[4]T)(unsafe.Add(ptr, uintptr(ii)*unsafe.Sizeof(T(0))))
-			w1 := (*[4]T)(unsafe.Add(ptr, uintptr(ii+N/2)*unsafe.Sizeof(T(0))))
-			wOut := (*[8]float64)(unsafe.Add(ptrOut, uintptr(i)*unsafe.Sizeof(float64(0))))
+			w0 := (*[4]T)(unsafe.Add(r, uintptr(ii)*LT))
+			w1 := (*[4]T)(unsafe.Add(r, uintptr(ii+N/2)*LT))
+			wOut := (*[8]float64)(unsafe.Add(rOut, uintptr(i)*LF))
 
 			wOut[0] = float64(int32(w0[0]))
 			wOut[1] = float64(int32(w0[1]))
@@ -112,9 +115,9 @@ func foldPolyTo[T num.Integer](fpOut []float64, p []T) {
 		}
 	case uint64:
 		for i, ii := 0, 0; i < N; i, ii = i+8, ii+4 {
-			w0 := (*[4]T)(unsafe.Add(ptr, uintptr(ii)*unsafe.Sizeof(T(0))))
-			w1 := (*[4]T)(unsafe.Add(ptr, uintptr(ii+N/2)*unsafe.Sizeof(T(0))))
-			wOut := (*[8]float64)(unsafe.Add(ptrOut, uintptr(i)*unsafe.Sizeof(float64(0))))
+			w0 := (*[4]T)(unsafe.Add(r, uintptr(ii)*LT))
+			w1 := (*[4]T)(unsafe.Add(r, uintptr(ii+N/2)*LT))
+			wOut := (*[8]float64)(unsafe.Add(rOut, uintptr(i)*LF))
 
 			wOut[0] = float64(int64(w0[0]))
 			wOut[1] = float64(int64(w0[1]))
@@ -128,9 +131,9 @@ func foldPolyTo[T num.Integer](fpOut []float64, p []T) {
 		}
 	default:
 		for i, ii := 0, 0; i < N; i, ii = i+8, ii+4 {
-			w0 := (*[4]T)(unsafe.Add(ptr, uintptr(ii)*unsafe.Sizeof(T(0))))
-			w1 := (*[4]T)(unsafe.Add(ptr, uintptr(ii+N/2)*unsafe.Sizeof(T(0))))
-			wOut := (*[8]float64)(unsafe.Add(ptrOut, uintptr(i)*unsafe.Sizeof(float64(0))))
+			w0 := (*[4]T)(unsafe.Add(r, uintptr(ii)*LT))
+			w1 := (*[4]T)(unsafe.Add(r, uintptr(ii+N/2)*LT))
+			wOut := (*[8]float64)(unsafe.Add(rOut, uintptr(i)*LF))
 
 			wOut[0] = float64(w0[0])
 			wOut[1] = float64(w0[1])
@@ -153,10 +156,12 @@ func floatModQInPlace(coeffs []float64, q float64) {
 	}
 
 	N := len(coeffs)
-	ptr := unsafe.Pointer(&coeffs[0])
+	L := unsafe.Sizeof(float64(0))
+
+	r := unsafe.Pointer(&coeffs[:1][0])
 
 	for i := 0; i < N; i += 8 {
-		c := (*[8]float64)(unsafe.Add(ptr, uintptr(i)*unsafe.Sizeof(float64(0))))
+		c := (*[8]float64)(unsafe.Add(r, uintptr(i)*L))
 
 		c[0] = math.Round(c[0] - q*math.Round(c[0]/q))
 		c[1] = math.Round(c[1] - q*math.Round(c[1]/q))
@@ -185,13 +190,16 @@ func unfoldPolyTo[T num.Integer](pOut []T, fp []float64) {
 	}
 
 	N := len(fp)
-	ptr := unsafe.Pointer(&fp[0])
-	ptrOut := unsafe.Pointer(&pOut[0])
+	LT := unsafe.Sizeof(T(0))
+	LF := unsafe.Sizeof(float64(0))
+
+	r := unsafe.Pointer(&fp[:1][0])
+	rOut := unsafe.Pointer(&pOut[:1][0])
 
 	for i, ii := 0, 0; i < N; i, ii = i+8, ii+4 {
-		w := (*[8]float64)(unsafe.Add(ptr, uintptr(i)*unsafe.Sizeof(float64(0))))
-		wOut0 := (*[4]T)(unsafe.Add(ptrOut, uintptr(ii)*unsafe.Sizeof(T(0))))
-		wOut1 := (*[4]T)(unsafe.Add(ptrOut, uintptr(ii+N/2)*unsafe.Sizeof(T(0))))
+		w := (*[8]float64)(unsafe.Add(r, uintptr(i)*LF))
+		wOut0 := (*[4]T)(unsafe.Add(rOut, uintptr(ii)*LT))
+		wOut1 := (*[4]T)(unsafe.Add(rOut, uintptr(ii+N/2)*LT))
 
 		wOut0[0] = T(int64(w[0]))
 		wOut0[1] = T(int64(w[1]))
@@ -220,13 +228,16 @@ func unfoldPolyAddTo[T num.Integer](pOut []T, fp []float64) {
 	}
 
 	N := len(fp)
-	ptr := unsafe.Pointer(&fp[0])
-	ptrOut := unsafe.Pointer(&pOut[0])
+	LT := unsafe.Sizeof(T(0))
+	LF := unsafe.Sizeof(float64(0))
+
+	r := unsafe.Pointer(&fp[:1][0])
+	rOut := unsafe.Pointer(&pOut[:1][0])
 
 	for i, ii := 0, 0; i < N; i, ii = i+8, ii+4 {
-		w := (*[8]float64)(unsafe.Add(ptr, uintptr(i)*unsafe.Sizeof(float64(0))))
-		wOut0 := (*[4]T)(unsafe.Add(ptrOut, uintptr(ii)*unsafe.Sizeof(T(0))))
-		wOut1 := (*[4]T)(unsafe.Add(ptrOut, uintptr(ii+N/2)*unsafe.Sizeof(T(0))))
+		w := (*[8]float64)(unsafe.Add(r, uintptr(i)*LF))
+		wOut0 := (*[4]T)(unsafe.Add(rOut, uintptr(ii)*LT))
+		wOut1 := (*[4]T)(unsafe.Add(rOut, uintptr(ii+N/2)*LT))
 
 		wOut0[0] += T(int64(w[0]))
 		wOut0[1] += T(int64(w[1]))
@@ -255,13 +266,16 @@ func unfoldPolySubTo[T num.Integer](pOut []T, fp []float64) {
 	}
 
 	N := len(fp)
-	ptr := unsafe.Pointer(&fp[0])
-	ptrOut := unsafe.Pointer(&pOut[0])
+	LT := unsafe.Sizeof(T(0))
+	LF := unsafe.Sizeof(float64(0))
+
+	r := unsafe.Pointer(&fp[:1][0])
+	rOut := unsafe.Pointer(&pOut[:1][0])
 
 	for i, ii := 0, 0; i < N; i, ii = i+8, ii+4 {
-		w := (*[8]float64)(unsafe.Add(ptr, uintptr(i)*unsafe.Sizeof(float64(0))))
-		wOut0 := (*[4]T)(unsafe.Add(ptrOut, uintptr(ii)*unsafe.Sizeof(T(0))))
-		wOut1 := (*[4]T)(unsafe.Add(ptrOut, uintptr(ii+N/2)*unsafe.Sizeof(T(0))))
+		w := (*[8]float64)(unsafe.Add(r, uintptr(i)*LF))
+		wOut0 := (*[4]T)(unsafe.Add(rOut, uintptr(ii)*LT))
+		wOut1 := (*[4]T)(unsafe.Add(rOut, uintptr(ii+N/2)*LT))
 
 		wOut0[0] -= T(int64(w[0]))
 		wOut0[1] -= T(int64(w[1]))

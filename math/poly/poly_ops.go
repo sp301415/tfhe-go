@@ -13,7 +13,7 @@ func (e *Evaluator[T]) AddPoly(p0, p1 Poly[T]) Poly[T] {
 
 // AddPolyTo computes pOut = p0 + p1.
 func (e *Evaluator[T]) AddPolyTo(pOut, p0, p1 Poly[T]) {
-	checkConsistentPoly(e.rank, pOut, p0, p1)
+	checkLength(e.rank, len(pOut.Coeffs), len(p0.Coeffs), len(p1.Coeffs))
 
 	vec.AddTo(pOut.Coeffs, p0.Coeffs, p1.Coeffs)
 }
@@ -27,7 +27,7 @@ func (e *Evaluator[T]) SubPoly(p0, p1 Poly[T]) Poly[T] {
 
 // SubPolyTo computes pOut = p0 - p1.
 func (e *Evaluator[T]) SubPolyTo(pOut, p0, p1 Poly[T]) {
-	checkConsistentPoly(e.rank, pOut, p0, p1)
+	checkLength(e.rank, len(pOut.Coeffs), len(p0.Coeffs), len(p1.Coeffs))
 
 	vec.SubTo(pOut.Coeffs, p0.Coeffs, p1.Coeffs)
 }
@@ -41,7 +41,7 @@ func (e *Evaluator[T]) NegPoly(p Poly[T]) Poly[T] {
 
 // NegPolyTo computes pOut = -p.
 func (e *Evaluator[T]) NegPolyTo(pOut, p Poly[T]) {
-	checkConsistentPoly(e.rank, pOut, p)
+	checkLength(e.rank, len(pOut.Coeffs), len(p.Coeffs))
 
 	vec.NegTo(pOut.Coeffs, p.Coeffs)
 }
@@ -55,21 +55,21 @@ func (e *Evaluator[T]) ScalarMulPoly(p Poly[T], c T) Poly[T] {
 
 // ScalarMulPolyTo computes pOut = c * p.
 func (e *Evaluator[T]) ScalarMulPolyTo(pOut, p Poly[T], c T) {
-	checkConsistentPoly(e.rank, pOut, p)
+	checkLength(e.rank, len(pOut.Coeffs), len(p.Coeffs))
 
 	vec.ScalarMulTo(pOut.Coeffs, p.Coeffs, c)
 }
 
 // ScalarMulAddPolyTo computes pOut += c * p.
 func (e *Evaluator[T]) ScalarMulAddPolyTo(pOut, p Poly[T], c T) {
-	checkConsistentPoly(e.rank, pOut, p)
+	checkLength(e.rank, len(pOut.Coeffs), len(p.Coeffs))
 
 	vec.ScalarMulAddTo(pOut.Coeffs, p.Coeffs, c)
 }
 
 // ScalarMulSubPolyTo computes pOut -= c * p.
 func (e *Evaluator[T]) ScalarMulSubPolyTo(pOut, p Poly[T], c T) {
-	checkConsistentPoly(e.rank, pOut, p)
+	checkLength(e.rank, len(pOut.Coeffs), len(p.Coeffs))
 
 	vec.ScalarMulSubTo(pOut.Coeffs, p.Coeffs, c)
 }
@@ -83,8 +83,7 @@ func (e *Evaluator[T]) FFTPolyMulPoly(p Poly[T], fp FFTPoly) Poly[T] {
 
 // FFTPolyMulPolyTo computes pOut = fp * p.
 func (e *Evaluator[T]) FFTPolyMulPolyTo(pOut, p Poly[T], fp FFTPoly) {
-	checkConsistentPoly(e.rank, pOut, p)
-	checkConsistentFFTPoly(e.rank, fp)
+	checkLength(e.rank, len(pOut.Coeffs), len(p.Coeffs), len(fp.Coeffs))
 
 	e.FwdFFTTo(e.buf.fp, p)
 	e.MulFFTPolyTo(e.buf.fp, e.buf.fp, fp)
@@ -93,8 +92,7 @@ func (e *Evaluator[T]) FFTPolyMulPolyTo(pOut, p Poly[T], fp FFTPoly) {
 
 // FFTPolyMulAddPolyTo computes pOut += fp * p.
 func (e *Evaluator[T]) FFTPolyMulAddPolyTo(pOut, p Poly[T], fp FFTPoly) {
-	checkConsistentPoly(e.rank, pOut, p)
-	checkConsistentFFTPoly(e.rank, fp)
+	checkLength(e.rank, len(pOut.Coeffs), len(p.Coeffs), len(fp.Coeffs))
 
 	e.FwdFFTTo(e.buf.fp, p)
 	e.MulFFTPolyTo(e.buf.fp, e.buf.fp, fp)
@@ -103,8 +101,7 @@ func (e *Evaluator[T]) FFTPolyMulAddPolyTo(pOut, p Poly[T], fp FFTPoly) {
 
 // FFTPolyMulSubPolyTo computes pOut -= fp * p.
 func (e *Evaluator[T]) FFTPolyMulSubPolyTo(pOut, p Poly[T], fp FFTPoly) {
-	checkConsistentPoly(e.rank, pOut, p)
-	checkConsistentFFTPoly(e.rank, fp)
+	checkLength(e.rank, len(pOut.Coeffs), len(p.Coeffs), len(fp.Coeffs))
 
 	e.FwdFFTTo(e.buf.fp, p)
 	e.MulFFTPolyTo(e.buf.fp, e.buf.fp, fp)
@@ -123,7 +120,7 @@ func (e *Evaluator[T]) MonomialMulPoly(p Poly[T], d int) Poly[T] {
 // p0 and pOut should not overlap. For inplace multiplication,
 // use [*Evaluator.MonomialMulPolyInPlace].
 func (e *Evaluator[T]) MonomialMulPolyTo(pOut, p Poly[T], d int) {
-	checkConsistentPoly(e.rank, pOut, p)
+	checkLength(e.rank, len(pOut.Coeffs), len(p.Coeffs))
 
 	switch k := d & (2*e.rank - 1); {
 	case e.rank <= k:
@@ -159,7 +156,7 @@ func (e *Evaluator[T]) MonomialMulPolyTo(pOut, p Poly[T], d int) {
 
 // MonomialMulPolyInPlace computes p = X^d * p.
 func (e *Evaluator[T]) MonomialMulPolyInPlace(p Poly[T], d int) {
-	checkConsistentPoly(e.rank, p)
+	checkLength(e.rank, len(p.Coeffs))
 
 	kk := d & (e.rank - 1)
 	vec.RotateInPlace(p.Coeffs, kk)
@@ -188,7 +185,7 @@ func (e *Evaluator[T]) MonomialMulPolyInPlace(p Poly[T], d int) {
 //
 // p and pOut should not overlap.
 func (e *Evaluator[T]) MonomialMulAddPolyTo(pOut, p Poly[T], d int) {
-	checkConsistentPoly(e.rank, pOut, p)
+	checkLength(e.rank, len(pOut.Coeffs), len(p.Coeffs))
 
 	switch k := d & (2*e.rank - 1); {
 	case e.rank <= k:
@@ -226,7 +223,7 @@ func (e *Evaluator[T]) MonomialMulAddPolyTo(pOut, p Poly[T], d int) {
 //
 // p and pOut should not overlap.
 func (e *Evaluator[T]) MonomialMulSubPolyTo(pOut, p Poly[T], d int) {
-	checkConsistentPoly(e.rank, pOut, p)
+	checkLength(e.rank, len(pOut.Coeffs), len(p.Coeffs))
 
 	switch k := d & (2*e.rank - 1); {
 	case e.rank <= k:
@@ -278,7 +275,7 @@ func (e *Evaluator[T]) PermutePoly(p Poly[T], d int) Poly[T] {
 // Panics when d is not odd.
 // This is because the permutation is not bijective when d is even.
 func (e *Evaluator[T]) PermutePolyTo(pOut, p Poly[T], d int) {
-	checkConsistentPoly(e.rank, pOut, p)
+	checkLength(e.rank, len(pOut.Coeffs), len(p.Coeffs))
 
 	if d&1 == 0 {
 		panic("d not odd")
@@ -299,7 +296,7 @@ func (e *Evaluator[T]) PermutePolyTo(pOut, p Poly[T], d int) {
 // Panics when d is not odd.
 // This is because the permutation is not bijective when d is even.
 func (e *Evaluator[T]) PermutePolyInPlace(p Poly[T], d int) {
-	checkConsistentPoly(e.rank, p)
+	checkLength(e.rank, len(p.Coeffs))
 
 	e.PermutePolyTo(e.buf.pOut, p, d)
 	p.CopyFrom(e.buf.pOut)
@@ -312,7 +309,7 @@ func (e *Evaluator[T]) PermutePolyInPlace(p Poly[T], d int) {
 // Panics when d is not odd.
 // This is because the permutation is not bijective when d is even.
 func (e *Evaluator[T]) PermuteAddPolyTo(pOut, p Poly[T], d int) {
-	checkConsistentPoly(e.rank, pOut, p)
+	checkLength(e.rank, len(pOut.Coeffs), len(p.Coeffs))
 
 	if d&1 == 0 {
 		panic("d not odd")
@@ -335,7 +332,7 @@ func (e *Evaluator[T]) PermuteAddPolyTo(pOut, p Poly[T], d int) {
 // Panics when d is not odd.
 // This is because the permutation is not bijective when d is even.
 func (e *Evaluator[T]) PermuteSubPolyTo(pOut, p Poly[T], d int) {
-	checkConsistentPoly(e.rank, pOut, p)
+	checkLength(e.rank, len(pOut.Coeffs), len(p.Coeffs))
 
 	if d&1 == 0 {
 		panic("d not odd")
