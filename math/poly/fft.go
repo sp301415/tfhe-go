@@ -1,5 +1,7 @@
 package poly
 
+import "unsafe"
+
 // FwdFFT returns FwdFFT(p).
 func (e *Evaluator[T]) FwdFFT(p Poly[T]) FFTPoly {
 	fpOut := NewFFTPoly(e.rank)
@@ -44,23 +46,35 @@ func (e *Evaluator[T]) MonomialFwdFFT(d int) FFTPoly {
 func (e *Evaluator[T]) MonomialFwdFFTTo(fpOut FFTPoly, d int) {
 	checkLength(e.rank, len(fpOut.Coeffs))
 
+	LI := unsafe.Sizeof(int(0))
+	LC := unsafe.Sizeof(complex128(0))
+	LF := unsafe.Sizeof(float64(0))
+
+	rIdx := unsafe.Pointer(&e.twMonoIdx[:1][0])
+	r := unsafe.Pointer(&e.twMono[:1][0])
+	v := unsafe.Pointer(&fpOut.Coeffs[:1][0])
+
 	d &= 2*e.rank - 1
 	for j, jj := 0, 0; j < e.rank; j, jj = j+8, jj+4 {
-		c0 := e.twMono[(e.twMonoIdx[jj+0]*d)&(2*e.rank-1)]
-		fpOut.Coeffs[j+0] = real(c0)
-		fpOut.Coeffs[j+4] = imag(c0)
+		ii := (*[4]int)(unsafe.Add(rIdx, uintptr(jj)*LI))
+		w := (*[8]float64)(unsafe.Add(v, uintptr(j)*LF))
 
-		c1 := e.twMono[(e.twMonoIdx[jj+1]*d)&(2*e.rank-1)]
-		fpOut.Coeffs[j+1] = real(c1)
-		fpOut.Coeffs[j+5] = imag(c1)
+		c0 := *(*complex128)(unsafe.Add(r, uintptr((ii[0]*d)&(2*e.rank-1))*LC))
+		c1 := *(*complex128)(unsafe.Add(r, uintptr((ii[1]*d)&(2*e.rank-1))*LC))
+		c2 := *(*complex128)(unsafe.Add(r, uintptr((ii[2]*d)&(2*e.rank-1))*LC))
+		c3 := *(*complex128)(unsafe.Add(r, uintptr((ii[3]*d)&(2*e.rank-1))*LC))
 
-		c2 := e.twMono[(e.twMonoIdx[jj+2]*d)&(2*e.rank-1)]
-		fpOut.Coeffs[j+2] = real(c2)
-		fpOut.Coeffs[j+6] = imag(c2)
+		w[0] = real(c0)
+		w[4] = imag(c0)
 
-		c3 := e.twMono[(e.twMonoIdx[jj+3]*d)&(2*e.rank-1)]
-		fpOut.Coeffs[j+3] = real(c3)
-		fpOut.Coeffs[j+7] = imag(c3)
+		w[1] = real(c1)
+		w[5] = imag(c1)
+
+		w[2] = real(c2)
+		w[6] = imag(c2)
+
+		w[3] = real(c3)
+		w[7] = imag(c3)
 	}
 }
 
@@ -97,13 +111,17 @@ func (e *Evaluator[T]) MonomialSubOneFwdFFTTo(fpOut FFTPoly, d int) {
 		c2 := *(*complex128)(unsafe.Add(r, uintptr((ii[2]*d)&(2*e.rank-1))*LC))
 		c3 := *(*complex128)(unsafe.Add(r, uintptr((ii[3]*d)&(2*e.rank-1))*LC))
 
-		c2 := e.twMono[(e.twMonoIdx[jj+2]*d)&(2*e.rank-1)]
-		fpOut.Coeffs[j+2] = real(c2) - 1
-		fpOut.Coeffs[j+6] = imag(c2)
+		w[0] = real(c0) - 1
+		w[4] = imag(c0)
 
-		c3 := e.twMono[(e.twMonoIdx[jj+3]*d)&(2*e.rank-1)]
-		fpOut.Coeffs[j+3] = real(c3) - 1
-		fpOut.Coeffs[j+7] = imag(c3)
+		w[1] = real(c1) - 1
+		w[5] = imag(c1)
+
+		w[2] = real(c2) - 1
+		w[6] = imag(c2)
+
+		w[3] = real(c3) - 1
+		w[7] = imag(c3)
 	}
 }
 
