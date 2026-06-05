@@ -153,18 +153,18 @@ fmt.Println(dec.DecryptLWEBool(ctOut))
 ```
 
 ## Benchmarks
-All benchmarks were measured on a machine equipped with Intel Xeon Platinum 8268 CPU @ 2.90GHz and 384GB of RAM.
+All benchmarks were measured on a machine equipped with Intel i9-11900 CPU @ 2.50GHz and 64GB of RAM.
 
 |Precision|Bootstrapping Time|
 |---------|-------|
-|Binary|9.295ms|
-|Uint2|7.187ms|
-|Uint3|10.25ms|
-|Uint4|12.47ms|
-|Uint5|14.23ms|
-|Uint6|21.88ms|
-|Uint7|36.60ms|
-|Uint8|78.88ms|
+|Binary|4.723ms|
+|Uint2|3.800ms|
+|Uint3|5.213ms|
+|Uint4|6.289ms|
+|Uint5|6.998ms|
+|Uint6|11.51ms|
+|Uint7|21.01ms|
+|Uint8|46.65ms|
 
 You can use the standard go test tool to reproduce benchmarks:
 ```
