@@ -138,7 +138,7 @@ func (e *Evaluator[T]) InvFFTSubTo(pOut Poly[T], fp FFTPoly) {
 
 // InvFFTToUnsafe computes pOut = InvFFT(fp).
 //
-// This method is slightly faster than [*Evaluator.InvFFTTo], but it modifies fp directly.
+// This method is slightly faster than [Evaluator.InvFFTTo], but it modifies fp directly.
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
 func (e *Evaluator[T]) InvFFTToUnsafe(pOut Poly[T], fp FFTPoly) {
 	checkLength(e.rank, len(fp.Coeffs), len(pOut.Coeffs))
@@ -150,7 +150,7 @@ func (e *Evaluator[T]) InvFFTToUnsafe(pOut Poly[T], fp FFTPoly) {
 
 // InvFFTAddToUnsafe computes pOut += InvFFT(fp).
 //
-// This method is slightly faster than [*Evaluator.InvFFTAddTo], but it modifies fp directly.
+// This method is slightly faster than [Evaluator.InvFFTAddTo], but it modifies fp directly.
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
 func (e *Evaluator[T]) InvFFTAddToUnsafe(pOut Poly[T], fp FFTPoly) {
 	checkLength(e.rank, len(fp.Coeffs), len(pOut.Coeffs))
@@ -162,7 +162,7 @@ func (e *Evaluator[T]) InvFFTAddToUnsafe(pOut Poly[T], fp FFTPoly) {
 
 // InvFFTSubToUnsafe computes pOut -= InvFFT(fp).
 //
-// This method is slightly faster than [*Evaluator.InvFFTSubTo], but it modifies fp directly.
+// This method is slightly faster than [Evaluator.InvFFTSubTo], but it modifies fp directly.
 // Use it only if you don't need fp after this method (e.g. fp is a buffer).
 func (e *Evaluator[T]) InvFFTSubToUnsafe(pOut Poly[T], fp FFTPoly) {
 	checkLength(e.rank, len(fp.Coeffs), len(pOut.Coeffs))

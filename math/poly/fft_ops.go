@@ -176,7 +176,7 @@ func (e *Evaluator[T]) PermuteFFTPoly(fp FFTPoly, d int) FFTPoly {
 // PermuteFFTPolyTo computes fpOut = fp(X^d).
 //
 // fp and fpOut should not overlap. For inplace permutation,
-// use [*Evaluator.PermuteFFTPolyInPlace].
+// use [Evaluator.PermuteFFTPolyInPlace].
 //
 // Panics when d is not odd.
 // This is because the permutation is not bijective when d is even.

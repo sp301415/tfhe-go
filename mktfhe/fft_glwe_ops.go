@@ -158,10 +158,10 @@ func (e *Evaluator[T]) FFTPolyMulSubFFTGLWETo(ctOut, ct FFTGLWECiphertext[T], fp
 	}
 }
 
-// PermuteGLWETo computes ctOut = ct(X^d).
+// PermuteFFTGLWETo computes ctOut = ct(X^d).
 //
 // ct and ctOut should not overlap. For inplace permutation,
-// use [*Evaluator.PermuteFFTGLWEInPlace].
+// use [Evaluator.PermuteFFTGLWEInPlace].
 //
 // Panics when d is not odd.
 // This is because the permutation is not bijective when d is even.
@@ -171,7 +171,7 @@ func (e *Evaluator[T]) PermuteFFTGLWETo(ctOut, ct FFTGLWECiphertext[T], d int) {
 	}
 }
 
-// PermuteGLWEInPlace computes ct = ct(X^d).
+// PermuteFFTGLWEInPlace computes ct = ct(X^d).
 //
 // Panics when d is not odd.
 // This is because the permutation is not bijective when d is even.
@@ -181,7 +181,7 @@ func (e *Evaluator[T]) PermuteFFTGLWEInPlace(ct FFTGLWECiphertext[T], d int) {
 	}
 }
 
-// PermuteAddGLWETo computes ctOut += ct(X^d).
+// PermuteAddFFTGLWETo computes ctOut += ct(X^d).
 //
 // ct and ctOut should not overlap.
 //
@@ -193,7 +193,7 @@ func (e *Evaluator[T]) PermuteAddFFTGLWETo(ctOut, ct FFTGLWECiphertext[T], d int
 	}
 }
 
-// PermuteSubGLWETo computes ctOut -= ct(X^d).
+// PermuteSubFFTGLWETo computes ctOut -= ct(X^d).
 //
 // ct and ctOut should not overlap.
 //

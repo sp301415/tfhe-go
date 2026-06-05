@@ -8,7 +8,7 @@ type FFTGLWESecretKey[T TorusInt] struct {
 	Value []poly.FFTPoly
 }
 
-// NewFFTGLWESecretKey creates a new FFTGLWESecretKey.
+// NewFFTGLWESecretKey creates a new [FFTGLWESecretKey].
 func NewFFTGLWESecretKey[T TorusInt](params Parameters[T]) FFTGLWESecretKey[T] {
 	sk := make([]poly.FFTPoly, params.glweRank)
 	for i := range sk {
@@ -17,7 +17,7 @@ func NewFFTGLWESecretKey[T TorusInt](params Parameters[T]) FFTGLWESecretKey[T] {
 	return FFTGLWESecretKey[T]{Value: sk}
 }
 
-// NewFFTGLWESecretKeyCustom creates a new FFTGLWESecretKey with given dimension and polyRank.
+// NewFFTGLWESecretKeyCustom creates a new [FFTGLWESecretKey] with given dimension and polyRank.
 func NewFFTGLWESecretKeyCustom[T TorusInt](glweRank, polyRank int) FFTGLWESecretKey[T] {
 	sk := make([]poly.FFTPoly, glweRank)
 	for i := range sk {
@@ -57,7 +57,7 @@ type FFTGLWECiphertext[T TorusInt] struct {
 	Value []poly.FFTPoly
 }
 
-// NewFFTGLWECiphertext creates a new FFTGLWECiphertext.
+// NewFFTGLWECiphertext creates a new [FFTGLWECiphertext].
 func NewFFTGLWECiphertext[T TorusInt](params Parameters[T]) FFTGLWECiphertext[T] {
 	ct := make([]poly.FFTPoly, params.glweRank+1)
 	for i := range ct {
@@ -66,7 +66,7 @@ func NewFFTGLWECiphertext[T TorusInt](params Parameters[T]) FFTGLWECiphertext[T]
 	return FFTGLWECiphertext[T]{Value: ct}
 }
 
-// NewFFTGLWECiphertextCustom creates a new FFTGLWECiphertext with given dimension and polyRank.
+// NewFFTGLWECiphertextCustom creates a new [FFTGLWECiphertext] with given dimension and polyRank.
 func NewFFTGLWECiphertextCustom[T TorusInt](glweRank, polyRank int) FFTGLWECiphertext[T] {
 	ct := make([]poly.FFTPoly, glweRank+1)
 	for i := range ct {
@@ -106,7 +106,7 @@ type FFTGLevCiphertext[T TorusInt] struct {
 	Value []FFTGLWECiphertext[T]
 }
 
-// NewFFTGLevCiphertext creates a new FFTGLevCiphertext.
+// NewFFTGLevCiphertext creates a new [FFTGLevCiphertext].
 func NewFFTGLevCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetParameters[T]) FFTGLevCiphertext[T] {
 	ct := make([]FFTGLWECiphertext[T], gadgetParams.level)
 	for i := 0; i < gadgetParams.level; i++ {
@@ -115,7 +115,7 @@ func NewFFTGLevCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetP
 	return FFTGLevCiphertext[T]{Value: ct, GadgetParams: gadgetParams}
 }
 
-// NewFFTGLevCiphertextCustom creates a new FFTGLevCiphertext with given dimension and polyRank.
+// NewFFTGLevCiphertextCustom creates a new [FFTGLevCiphertext] with given dimension and polyRank.
 func NewFFTGLevCiphertextCustom[T TorusInt](glweRank, polyRank int, gadgetParams GadgetParameters[T]) FFTGLevCiphertext[T] {
 	ct := make([]FFTGLWECiphertext[T], gadgetParams.level)
 	for i := 0; i < gadgetParams.level; i++ {
@@ -156,7 +156,7 @@ type FFTGGSWCiphertext[T TorusInt] struct {
 	Value []FFTGLevCiphertext[T]
 }
 
-// NewFFTGGSWCiphertext creates a new GGSW ciphertext.
+// NewFFTGGSWCiphertext creates a new [FFTGGSWCiphertext].
 func NewFFTGGSWCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetParameters[T]) FFTGGSWCiphertext[T] {
 	ct := make([]FFTGLevCiphertext[T], params.glweRank+1)
 	for i := 0; i < params.glweRank+1; i++ {
@@ -165,7 +165,7 @@ func NewFFTGGSWCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetP
 	return FFTGGSWCiphertext[T]{Value: ct, GadgetParams: gadgetParams}
 }
 
-// NewFFTGGSWCiphertextCustom creates a new GGSW ciphertext with given dimension and polyRank.
+// NewFFTGGSWCiphertextCustom creates a new [FFTGGSWCiphertext] with given dimension and polyRank.
 func NewFFTGGSWCiphertextCustom[T TorusInt](glweRank, polyRank int, gadgetParams GadgetParameters[T]) FFTGGSWCiphertext[T] {
 	ct := make([]FFTGLevCiphertext[T], glweRank+1)
 	for i := 0; i < glweRank+1; i++ {

@@ -8,7 +8,7 @@ import (
 	"github.com/sp301415/tfhe-go/tfhe"
 )
 
-// EvaluationKey is a public key for FHEW Evaluator.
+// FHEWEvaluationKey is a public key for FHEW Evaluator.
 type FHEWEvaluationKey[T tfhe.TorusInt] struct {
 	// BlindRotateKey is the key for blind rotation.
 	BlindRotateKey tfhe.BlindRotateKey[T]
@@ -16,7 +16,7 @@ type FHEWEvaluationKey[T tfhe.TorusInt] struct {
 	KeySwitchKey tfhe.LWEKeySwitchKey[T]
 	// GaloisKey is the key for Galois automorphisms.
 	// GaloisKey has length WindowSize + 1,
-	// where the first element is key for X -> X^-5,
+	// where the first element is a key for X -> X^-5,
 	// and the next WindowSize elements are keys for X -> X^5^i.
 	GaloisKey []tfhe.GLWEKeySwitchKey[T]
 }
@@ -24,7 +24,7 @@ type FHEWEvaluationKey[T tfhe.TorusInt] struct {
 // GenEvalKey samples a new evaluation key for bootstrapping.
 //
 // This can take a long time.
-// Use [*FHEWEncryptor.GenEvalKeyParallel] for better key generation performance.
+// Use [FHEWEncryptor.GenEvalKeyParallel] for better key generation performance.
 func (e *FHEWEncryptor[T]) GenEvalKey() FHEWEvaluationKey[T] {
 	return FHEWEvaluationKey[T]{
 		BlindRotateKey: e.GenBlindRotateKey(),
@@ -45,7 +45,7 @@ func (e *FHEWEncryptor[T]) GenEvalKeyParallel() FHEWEvaluationKey[T] {
 // GenBlindRotateKey samples a new bootstrapping key.
 //
 // This can take a long time.
-// Use [*FHEWEncryptor.GenBlindRotateKeyParallel] for better key generation performance.
+// Use [FHEWEncryptor.GenBlindRotateKeyParallel] for better key generation performance.
 func (e *FHEWEncryptor[T]) GenBlindRotateKey() tfhe.BlindRotateKey[T] {
 	brk := tfhe.NewBlindRotateKey(e.Params.baseParams)
 

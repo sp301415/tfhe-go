@@ -126,14 +126,14 @@ func (brk BlindRotateKey[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int
 	var buf [8]byte
 
-	base := brk.GadgetParameters.base
+	base := brk.GadgetParams.base
 	binary.BigEndian.PutUint64(buf[:], uint64(base))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
 	}
 	n += int64(nWrite)
 
-	level := brk.GadgetParameters.level
+	level := brk.GadgetParams.level
 	binary.BigEndian.PutUint64(buf[:], uint64(level))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err

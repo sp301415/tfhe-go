@@ -7,7 +7,7 @@ import (
 // GenEvalKey samples a new evaluation key for bootstrapping.
 //
 // This can take a long time.
-// Use [*Encryptor.GenEvalKeyParallel] for better key generation performance.
+// Use [Encryptor.GenEvalKeyParallel] for better key generation performance.
 func (e *Encryptor[T]) GenEvalKey() EvaluationKey[T] {
 	return EvaluationKey[T]{
 		EvaluationKey: e.SubEncryptor.GenEvalKey(),
@@ -29,7 +29,7 @@ func (e *Encryptor[T]) GenEvalKeyParallel() EvaluationKey[T] {
 // used for bootstrapping.
 //
 // This can take a long time.
-// Use [*Encryptor.GenDefaultKeySwitchKeyParallel] for better key generation performance.
+// Use [Encryptor.GenDefaultKeySwitchKeyParallel] for better key generation performance.
 func (e *Encryptor[T]) GenDefaultKeySwitchKey() tfhe.LWEKeySwitchKey[T] {
 	return e.SubEncryptor.GenDefaultKeySwitchKey()
 }

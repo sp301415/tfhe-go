@@ -114,7 +114,7 @@ fmt.Println(enc.DecryptLWEBool(ctOut))
 
 ### Multi-Key TFHE
 ```go
-// This parameters can take up to two parties.
+// This parameter set can take up to two parties.
 params := mktfhe.ParamsBinaryParty2.Compile()
 
 // Sample a seed for CRS.

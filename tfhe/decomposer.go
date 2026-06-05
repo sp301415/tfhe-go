@@ -9,7 +9,7 @@ import (
 // according to the gadget parameters.
 //
 // Decomposer is not safe for concurrent use.
-// Use [*Decomposer.SafeCopy] to get a safe copy.
+// Use [Decomposer.SafeCopy] to get a safe copy.
 type Decomposer[T TorusInt] struct {
 	// PolyEvaluator is a PolyEvaluator for this Decomposer.
 	PolyEvaluator *poly.Evaluator[T]
@@ -27,7 +27,7 @@ type decomposerBuffer[T TorusInt] struct {
 	fpDcmp []poly.FFTPoly
 }
 
-// NewDecomposer creates a new Decomposer.
+// NewDecomposer creates a new [Decomposer].
 func NewDecomposer[T TorusInt](N int) *Decomposer[T] {
 	return &Decomposer[T]{
 		PolyEvaluator: poly.NewEvaluator[T](N),
@@ -58,7 +58,7 @@ func (d *Decomposer[T]) SafeCopy() *Decomposer[T] {
 	}
 }
 
-// ScalarBuffer returns a internal buffer for scalar decomposition with respect to gadgetParams.
+// ScalarBuffer returns an internal buffer for scalar decomposition with respect to gadgetParams.
 //
 // You can also set the length of the internal buffer by calling this function and ignoring the return value.
 func (d *Decomposer[T]) ScalarBuffer(gadgetParams GadgetParameters[T]) []T {
@@ -71,7 +71,7 @@ func (d *Decomposer[T]) ScalarBuffer(gadgetParams GadgetParameters[T]) []T {
 	return d.buf.cDcmp
 }
 
-// PolyBuffer returns a internal buffer for polynomial decomposition with respect to gadgetParams.
+// PolyBuffer returns an internal buffer for polynomial decomposition with respect to gadgetParams.
 //
 // You can also set the length of the internal buffer by calling this function and ignoring the return value.
 func (d *Decomposer[T]) PolyBuffer(gadgetParams GadgetParameters[T]) []poly.Poly[T] {
@@ -87,7 +87,7 @@ func (d *Decomposer[T]) PolyBuffer(gadgetParams GadgetParameters[T]) []poly.Poly
 	return d.buf.pDcmp
 }
 
-// FFTPolyBuffer returns a internal buffer for polynomial decomposition in Fourier domain with respect to gadgetParams.
+// FFTPolyBuffer returns an internal buffer for polynomial decomposition in Fourier domain with respect to gadgetParams.
 //
 // You can also set the length of the internal buffer by calling this function and ignoring the return value.
 func (d *Decomposer[T]) FFTPolyBuffer(gadgetParams GadgetParameters[T]) []poly.FFTPoly {

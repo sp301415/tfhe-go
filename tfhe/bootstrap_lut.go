@@ -13,7 +13,7 @@ type LookUpTable[T TorusInt] struct {
 	Value []poly.Poly[T]
 }
 
-// NewLUT creates a new lookup table.
+// NewLUT creates a new [LookUpTable].
 func NewLUT[T TorusInt](params Parameters[T]) LookUpTable[T] {
 	lut := make([]poly.Poly[T], params.lutExtendFactor)
 	for i := 0; i < params.lutExtendFactor; i++ {
@@ -23,7 +23,7 @@ func NewLUT[T TorusInt](params Parameters[T]) LookUpTable[T] {
 	return LookUpTable[T]{Value: lut}
 }
 
-// NewLUTCustom creates a new lookup table with custom size.
+// NewLUTCustom creates a new [LookUpTable] with custom size.
 func NewLUTCustom[T TorusInt](extendFactor, polyRank int) LookUpTable[T] {
 	lut := make([]poly.Poly[T], extendFactor)
 	for i := 0; i < extendFactor; i++ {

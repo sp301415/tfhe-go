@@ -106,7 +106,7 @@ func (e *ManyLUTEvaluator[T]) GenLUTCustomFullTo(lutOut tfhe.LookUpTable[T], f [
 	}
 }
 
-// BootstrapFunc returns a bootstrapped LWE ciphertext with respect to given function.
+// BootstrapFunc returns a bootstrapped LWE ciphertext with respect to the given function.
 //
 // Panics if len(f) > LUTCount.
 func (e *ManyLUTEvaluator[T]) BootstrapFunc(ct tfhe.LWECiphertext[T], f []func(int) int) []tfhe.LWECiphertext[T] {
@@ -114,7 +114,7 @@ func (e *ManyLUTEvaluator[T]) BootstrapFunc(ct tfhe.LWECiphertext[T], f []func(i
 	return e.BootstrapLUT(ct, e.buf.lut)
 }
 
-// BootstrapFuncTo bootstraps LWE ciphertext with respect to given function and writes it to ctOut.
+// BootstrapFuncTo bootstraps LWE ciphertext with respect to the given function and writes it to ctOut.
 //
 // Panics if len(f) > LUTCount.
 // If len(ctOut) > LUTCount, only the first LUTCount elements are written.
@@ -124,7 +124,7 @@ func (e *ManyLUTEvaluator[T]) BootstrapFuncTo(ctOut []tfhe.LWECiphertext[T], ct 
 	e.BootstrapLUTTo(ctOut, ct, e.buf.lut)
 }
 
-// BootstrapLUT returns a bootstrapped LWE ciphertext with respect to given LUT.
+// BootstrapLUT returns a bootstrapped LWE ciphertext with respect to the given LUT.
 func (e *ManyLUTEvaluator[T]) BootstrapLUT(ct tfhe.LWECiphertext[T], lut tfhe.LookUpTable[T]) []tfhe.LWECiphertext[T] {
 	ctOut := make([]tfhe.LWECiphertext[T], e.Params.lutCount)
 	for i := 0; i < e.Params.lutCount; i++ {
@@ -134,7 +134,7 @@ func (e *ManyLUTEvaluator[T]) BootstrapLUT(ct tfhe.LWECiphertext[T], lut tfhe.Lo
 	return ctOut
 }
 
-// BootstrapLUTTo bootstraps LWE ciphertext with respect to given LUT and writes it to ctOut.
+// BootstrapLUTTo bootstraps LWE ciphertext with respect to the given LUT and writes it to ctOut.
 //
 // If len(ctOut) > LUTCount, only the first LUTCount elements are written.
 // Panics if len(ctOut) < LUTCount.

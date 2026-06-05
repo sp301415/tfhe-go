@@ -12,16 +12,16 @@ type GaussianSampler[T num.Integer] struct {
 	baseSampler *UniformSampler[uint32]
 }
 
-// NewGaussianSampler creates a new GaussianSampler.
+// NewGaussianSampler creates a new [GaussianSampler].
 //
-// Panics when read from crypto/rand or AES initialization fails.
+// Panics when reading from crypto/rand fails or AES initialization fails.
 func NewGaussianSampler[T num.Integer]() *GaussianSampler[T] {
 	return &GaussianSampler[T]{
 		baseSampler: NewUniformSampler[uint32](),
 	}
 }
 
-// NewGaussianSamplerWithSeed creates a new GaussianSampler, with user supplied seed.
+// NewGaussianSamplerWithSeed creates a new [GaussianSampler] with a user-supplied seed.
 //
 // Panics when AES initialization fails.
 func NewGaussianSamplerWithSeed[T num.Integer](seed []byte, stdDev float64) *GaussianSampler[T] {

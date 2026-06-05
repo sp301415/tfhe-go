@@ -1,6 +1,6 @@
 package tfhe
 
-// LWEKeySwitchKey is a LWE keyswitch key from one LWEKey to another LWEKey.
+// LWEKeySwitchKey is an LWE keyswitch key from one LWEKey to another LWEKey.
 type LWEKeySwitchKey[T TorusInt] struct {
 	GadgetParams GadgetParameters[T]
 
@@ -8,7 +8,7 @@ type LWEKeySwitchKey[T TorusInt] struct {
 	Value []LevCiphertext[T]
 }
 
-// NewLWEKeySwitchKey creates a new LWEKeySwitchingKey.
+// NewLWEKeySwitchKey creates a new [LWEKeySwitchKey].
 func NewLWEKeySwitchKey[T TorusInt](params Parameters[T], inputDimension int, gadgetParams GadgetParameters[T]) LWEKeySwitchKey[T] {
 	ksk := make([]LevCiphertext[T], inputDimension)
 	for i := 0; i < inputDimension; i++ {
@@ -17,7 +17,7 @@ func NewLWEKeySwitchKey[T TorusInt](params Parameters[T], inputDimension int, ga
 	return LWEKeySwitchKey[T]{Value: ksk, GadgetParams: gadgetParams}
 }
 
-// NewLWEKeySwitchKeyCustom creates a new LWEKeySwitchingKey with custom parameters.
+// NewLWEKeySwitchKeyCustom creates a new [LWEKeySwitchKey] with custom parameters.
 func NewLWEKeySwitchKeyCustom[T TorusInt](inputDimension, outputDimension int, gadgetParams GadgetParameters[T]) LWEKeySwitchKey[T] {
 	ksk := make([]LevCiphertext[T], inputDimension)
 	for i := 0; i < inputDimension; i++ {
@@ -26,12 +26,12 @@ func NewLWEKeySwitchKeyCustom[T TorusInt](inputDimension, outputDimension int, g
 	return LWEKeySwitchKey[T]{Value: ksk, GadgetParams: gadgetParams}
 }
 
-// NewKeySwitchKeyForBootstrap creates a new LWEKeySwitchingKey for bootstrapping.
+// NewKeySwitchKeyForBootstrap creates a new [LWEKeySwitchKey] for bootstrapping.
 func NewKeySwitchKeyForBootstrap[T TorusInt](params Parameters[T]) LWEKeySwitchKey[T] {
 	return NewLWEKeySwitchKeyCustom(params.glweDimension-params.lweDimension, params.lweDimension, params.keySwitchParams)
 }
 
-// NewKeySwitchKeyForBootstrapCustom creates a new LWEKeySwitchingKey with custom parameters.
+// NewKeySwitchKeyForBootstrapCustom creates a new [LWEKeySwitchKey] with custom parameters.
 func NewKeySwitchKeyForBootstrapCustom[T TorusInt](lweDimension, glweRank, polyRank int, gadgetParams GadgetParameters[T]) LWEKeySwitchKey[T] {
 	return NewLWEKeySwitchKeyCustom(glweRank*polyRank-lweDimension, lweDimension, gadgetParams)
 }
@@ -67,28 +67,28 @@ func (ksk *LWEKeySwitchKey[T]) Clear() {
 
 // GLWEKeySwitchKey is a GLWE keyswitch key from one GLWEKey to another GLWEKey.
 type GLWEKeySwitchKey[T TorusInt] struct {
-	GadgetParameters GadgetParameters[T]
+	GadgetParams GadgetParameters[T]
 
 	// Value has length InputGLWERank.
 	Value []FFTGLevCiphertext[T]
 }
 
-// NewGLWEKeySwitchKey creates a new GLWEKeySwitchingKey.
+// NewGLWEKeySwitchKey creates a new [GLWEKeySwitchKey].
 func NewGLWEKeySwitchKey[T TorusInt](params Parameters[T], inputGLWERank int, gadgetParams GadgetParameters[T]) GLWEKeySwitchKey[T] {
 	ksk := make([]FFTGLevCiphertext[T], inputGLWERank)
 	for i := 0; i < inputGLWERank; i++ {
 		ksk[i] = NewFFTGLevCiphertext(params, gadgetParams)
 	}
-	return GLWEKeySwitchKey[T]{Value: ksk, GadgetParameters: gadgetParams}
+	return GLWEKeySwitchKey[T]{Value: ksk, GadgetParams: gadgetParams}
 }
 
-// NewGLWEKeySwitchKeyCustom creates a new GLWEKeySwitchingKey with custom parameters.
+// NewGLWEKeySwitchKeyCustom creates a new [GLWEKeySwitchKey] with custom parameters.
 func NewGLWEKeySwitchKeyCustom[T TorusInt](inputGLWERank, outputGLWERank, polyRank int, gadgetParams GadgetParameters[T]) GLWEKeySwitchKey[T] {
 	ksk := make([]FFTGLevCiphertext[T], inputGLWERank)
 	for i := 0; i < inputGLWERank; i++ {
 		ksk[i] = NewFFTGLevCiphertextCustom(outputGLWERank, polyRank, gadgetParams)
 	}
-	return GLWEKeySwitchKey[T]{Value: ksk, GadgetParameters: gadgetParams}
+	return GLWEKeySwitchKey[T]{Value: ksk, GadgetParams: gadgetParams}
 }
 
 // InputGLWERank returns the input GLWERank of this key.
@@ -102,7 +102,7 @@ func (ksk GLWEKeySwitchKey[T]) Copy() GLWEKeySwitchKey[T] {
 	for i := range ksk.Value {
 		kskCopy[i] = ksk.Value[i].Copy()
 	}
-	return GLWEKeySwitchKey[T]{Value: kskCopy, GadgetParameters: ksk.GadgetParameters}
+	return GLWEKeySwitchKey[T]{Value: kskCopy, GadgetParams: ksk.GadgetParams}
 }
 
 // CopyFrom copies values from key.
@@ -110,7 +110,7 @@ func (ksk *GLWEKeySwitchKey[T]) CopyFrom(kskIn GLWEKeySwitchKey[T]) {
 	for i := range ksk.Value {
 		ksk.Value[i].CopyFrom(kskIn.Value[i])
 	}
-	ksk.GadgetParameters = kskIn.GadgetParameters
+	ksk.GadgetParams = kskIn.GadgetParams
 }
 
 // Clear clears the key.

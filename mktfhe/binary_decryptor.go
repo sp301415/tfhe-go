@@ -6,13 +6,13 @@ import "github.com/sp301415/tfhe-go/tfhe"
 type BinaryDecryptor[T tfhe.TorusInt] struct {
 	// BinaryEncoder is an embedded encoder for this BinaryDecryptor.
 	*tfhe.BinaryEncoder[T]
-	// Params is parameters for this BinaryDecryptor.
+	// Params is the parameter set for this BinaryDecryptor.
 	Params Parameters[T]
 	// Decryptor is a generic Decryptor for this BinaryDecryptor.
 	Decryptor *Decryptor[T]
 }
 
-// NewBinaryDecryptor creates a new BinaryDecryptor.
+// NewBinaryDecryptor creates a new [BinaryDecryptor].
 func NewBinaryDecryptor[T tfhe.TorusInt](params Parameters[T], sk map[int]tfhe.SecretKey[T]) *BinaryDecryptor[T] {
 	return &BinaryDecryptor[T]{
 		BinaryEncoder: tfhe.NewBinaryEncoder(params.subParams),
@@ -40,7 +40,7 @@ func (d *BinaryDecryptor[T]) DecryptLWEBool(ct LWECiphertext[T]) bool {
 
 // DecryptLWEBits decrypts a slice of binary LWE ciphertext
 // to integer message.
-// The order of bits of LWE ciphertexts are assumed to be little-endian.
+// The order of bits of LWE ciphertexts is assumed to be little-endian.
 func (d *BinaryDecryptor[T]) DecryptLWEBits(ct []LWECiphertext[T]) int {
 	var message int
 	for i := len(ct) - 1; i >= 0; i-- {

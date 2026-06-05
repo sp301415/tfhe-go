@@ -200,14 +200,14 @@ func (ksk GLWEKeySwitchKey[T]) headerWriteTo(w io.Writer) (n int64, err error) {
 	var nWrite int
 	var buf [8]byte
 
-	base := ksk.GadgetParameters.base
+	base := ksk.GadgetParams.base
 	binary.BigEndian.PutUint64(buf[:], uint64(base))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err
 	}
 	n += int64(nWrite)
 
-	level := ksk.GadgetParameters.level
+	level := ksk.GadgetParams.level
 	binary.BigEndian.PutUint64(buf[:], uint64(level))
 	if nWrite, err = w.Write(buf[:]); err != nil {
 		return n + int64(nWrite), err

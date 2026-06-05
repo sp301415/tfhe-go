@@ -5,26 +5,26 @@ import (
 	"github.com/sp301415/tfhe-go/tfhe"
 )
 
-// BootstrapFunc returns a bootstrapped LWE ciphertext with respect to given function.
+// BootstrapFunc returns a bootstrapped LWE ciphertext with respect to the given function.
 func (e *FHEWEvaluator[T]) BootstrapFunc(ct tfhe.LWECiphertext[T], f func(int) int) tfhe.LWECiphertext[T] {
 	e.GenLUTTo(e.buf.lut, f)
 	return e.BootstrapLUT(ct, e.buf.lut)
 }
 
-// BootstrapFuncTo bootstraps LWE ciphertext with respect to given function and writes it to ctOut.
+// BootstrapFuncTo bootstraps LWE ciphertext with respect to the given function and writes it to ctOut.
 func (e *FHEWEvaluator[T]) BootstrapFuncTo(ctOut tfhe.LWECiphertext[T], ct tfhe.LWECiphertext[T], f func(int) int) {
 	e.GenLUTTo(e.buf.lut, f)
 	e.BootstrapLUTTo(ctOut, ct, e.buf.lut)
 }
 
-// BootstrapLUT returns a bootstrapped LWE ciphertext with respect to given LUT.
+// BootstrapLUT returns a bootstrapped LWE ciphertext with respect to the given LUT.
 func (e *FHEWEvaluator[T]) BootstrapLUT(ct tfhe.LWECiphertext[T], lut tfhe.LookUpTable[T]) tfhe.LWECiphertext[T] {
 	ctOut := tfhe.NewLWECiphertext(e.Params.baseParams)
 	e.BootstrapLUTTo(ctOut, ct, lut)
 	return ctOut
 }
 
-// BootstrapLUTTo bootstraps LWE ciphertext with respect to given LUT and writes it to ctOut.
+// BootstrapLUTTo bootstraps LWE ciphertext with respect to the given LUT and writes it to ctOut.
 func (e *FHEWEvaluator[T]) BootstrapLUTTo(ctOut tfhe.LWECiphertext[T], ct tfhe.LWECiphertext[T], lut tfhe.LookUpTable[T]) {
 	switch e.Params.baseParams.BootstrapOrder() {
 	case tfhe.OrderKeySwitchBlindRotate:

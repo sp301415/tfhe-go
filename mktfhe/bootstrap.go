@@ -7,26 +7,26 @@ import (
 	"github.com/sp301415/tfhe-go/tfhe"
 )
 
-// BootstrapFunc returns a bootstrapped LWE ciphertext with respect to given function.
+// BootstrapFunc returns a bootstrapped LWE ciphertext with respect to the given function.
 func (e *Evaluator[T]) BootstrapFunc(ct LWECiphertext[T], f func(int) int) LWECiphertext[T] {
 	e.subEvaluator.GenLUTTo(e.buf.lut, f)
 	return e.BootstrapLUT(ct, e.buf.lut)
 }
 
-// BootstrapFuncTo bootstraps LWE ciphertext with respect to given function and writes it to ctOut.
+// BootstrapFuncTo bootstraps LWE ciphertext with respect to the given function and writes it to ctOut.
 func (e *Evaluator[T]) BootstrapFuncTo(ctOut, ct LWECiphertext[T], f func(int) int) {
 	e.subEvaluator.GenLUTTo(e.buf.lut, f)
 	e.BootstrapLUTTo(ctOut, ct, e.buf.lut)
 }
 
-// BootstrapLUT returns a bootstrapped LWE ciphertext with respect to given LUT.
+// BootstrapLUT returns a bootstrapped LWE ciphertext with respect to the given LUT.
 func (e *Evaluator[T]) BootstrapLUT(ct LWECiphertext[T], lut tfhe.LookUpTable[T]) LWECiphertext[T] {
 	ctOut := NewLWECiphertext(e.Params)
 	e.BootstrapLUTTo(ctOut, ct, lut)
 	return ctOut
 }
 
-// BootstrapLUTTo bootstraps LWE ciphertext with respect to given LUT and writes it to ctOut.
+// BootstrapLUTTo bootstraps LWE ciphertext with respect to the given LUT and writes it to ctOut.
 func (e *Evaluator[T]) BootstrapLUTTo(ctOut, ct LWECiphertext[T], lut tfhe.LookUpTable[T]) {
 	switch e.Params.BootstrapOrder() {
 	case tfhe.OrderKeySwitchBlindRotate:
@@ -40,26 +40,26 @@ func (e *Evaluator[T]) BootstrapLUTTo(ctOut, ct LWECiphertext[T], lut tfhe.LookU
 	}
 }
 
-// BootstrapFuncParallel returns a bootstrapped LWE ciphertext with respect to given function in parallel.
+// BootstrapFuncParallel returns a bootstrapped LWE ciphertext with respect to the given function in parallel.
 func (e *Evaluator[T]) BootstrapFuncParallel(ct LWECiphertext[T], f func(int) int) LWECiphertext[T] {
 	e.subEvaluator.GenLUTTo(e.buf.lut, f)
 	return e.BootstrapLUTParallel(ct, e.buf.lut)
 }
 
-// BootstrapFuncParallelTo bootstraps LWE ciphertext with respect to given function and writes it to ctOut in parallel.
+// BootstrapFuncParallelTo bootstraps LWE ciphertext with respect to the given function and writes it to ctOut in parallel.
 func (e *Evaluator[T]) BootstrapFuncParallelTo(ctOut, ct LWECiphertext[T], f func(int) int) {
 	e.subEvaluator.GenLUTTo(e.buf.lut, f)
 	e.BootstrapLUTParallelTo(ctOut, ct, e.buf.lut)
 }
 
-// BootstrapLUTParallel returns a bootstrapped LWE ciphertext with respect to given LUT in parallel.
+// BootstrapLUTParallel returns a bootstrapped LWE ciphertext with respect to the given LUT in parallel.
 func (e *Evaluator[T]) BootstrapLUTParallel(ct LWECiphertext[T], lut tfhe.LookUpTable[T]) LWECiphertext[T] {
 	ctOut := NewLWECiphertext(e.Params)
 	e.BootstrapLUTParallelTo(ctOut, ct, lut)
 	return ctOut
 }
 
-// BootstrapLUTParallelTo bootstraps LWE ciphertext with respect to given LUT and writes it to ctOut in parallel.
+// BootstrapLUTParallelTo bootstraps LWE ciphertext with respect to the given LUT and writes it to ctOut in parallel.
 func (e *Evaluator[T]) BootstrapLUTParallelTo(ctOut, ct LWECiphertext[T], lut tfhe.LookUpTable[T]) {
 	switch e.Params.BootstrapOrder() {
 	case tfhe.OrderKeySwitchBlindRotate:

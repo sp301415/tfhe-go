@@ -13,11 +13,11 @@ import (
 //
 // Encoder is safe for concurrent use.
 type Encoder[T TorusInt] struct {
-	// Params is parameters for this Encoder.
+	// Params is the parameter set for this Encoder.
 	Params Parameters[T]
 }
 
-// NewEncoder returns a initialized Encoder with given parameters.
+// NewEncoder creates a new [Encoder].
 func NewEncoder[T TorusInt](params Parameters[T]) *Encoder[T] {
 	return &Encoder[T]{
 		Params: params,

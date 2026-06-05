@@ -8,12 +8,12 @@ import (
 // FHEWEvaluator wraps around [tfhe.Evaluator] and implements FHEW blind rotation.
 //
 // FHEWEvaluator is not safe for concurrent use.
-// Use [*FHEWEvaluator.SafeCopy] to get a safe copy.
+// Use [FHEWEvaluator.SafeCopy] to get a safe copy.
 type FHEWEvaluator[T tfhe.TorusInt] struct {
 	// Evaluator is an embedded [tfhe.Evaluator] for this FHEWEvaluator.
 	*tfhe.Evaluator[T]
 
-	// Params is parameters for this Evaluator.
+	// Params is the parameter set for this Evaluator.
 	Params FHEWParameters[T]
 
 	// EvalKey is the evaluation key for this Evaluator.
@@ -38,14 +38,14 @@ type fhewEvaluatorBuffer[T tfhe.TorusInt] struct {
 	ctRotate tfhe.GLWECiphertext[T]
 	// ctExtract is an extracted LWE ciphertext after Blind Rotation.
 	ctExtract tfhe.LWECiphertext[T]
-	// ctKeySwitch is the LWEDimension sized ciphertext from keyswitching for bootstrapping.
+	// ctKeySwitch is the LWEDimension-sized ciphertext from keyswitching for bootstrapping.
 	ctKeySwitch tfhe.LWECiphertext[T]
 
 	// lut is an empty lut, used for BlindRotateFunc.
 	lut tfhe.LookUpTable[T]
 }
 
-// NewFHEWEvaluator creates a new FHEWEvaluator.
+// NewFHEWEvaluator creates a new [FHEWEvaluator].
 func NewFHEWEvaluator[T tfhe.TorusInt](params FHEWParameters[T], evk FHEWEvaluationKey[T]) *FHEWEvaluator[T] {
 	autIdxMap := make([]int, 2*params.baseParams.PolyRank())
 	autIdx := 1
@@ -69,7 +69,7 @@ func NewFHEWEvaluator[T tfhe.TorusInt](params FHEWParameters[T], evk FHEWEvaluat
 	}
 }
 
-// newFHEWEvaluatorBuffer creates a new fhewEvaluatorBuffer.
+// newFHEWEvaluatorBuffer creates a new [fhewEvaluatorBuffer].
 func newFHEWEvaluatorBuffer[T tfhe.TorusInt](params FHEWParameters[T]) fhewEvaluatorBuffer[T] {
 	ctFFTAccDcmp := make([][]poly.FFTPoly, params.baseParams.GLWERank()+1)
 	for i := 0; i < params.baseParams.GLWERank()+1; i++ {

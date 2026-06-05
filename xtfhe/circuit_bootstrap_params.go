@@ -19,7 +19,7 @@ type CircuitBootstrapParametersLiteral[T tfhe.TorusInt] struct {
 
 // Compile transforms ParametersLiteral to read-only Parameters.
 // If there is any invalid parameter in the literal, it panics.
-// Default parameters are guaranteed to be compiled without panics.
+// Default parameters are guaranteed to compile without panicking.
 func (p CircuitBootstrapParametersLiteral[T]) Compile() CircuitBootstrapParameters[T] {
 	return CircuitBootstrapParameters[T]{
 		manyLUTParameters: p.ManyLUTParams.Compile(),
@@ -30,7 +30,7 @@ func (p CircuitBootstrapParametersLiteral[T]) Compile() CircuitBootstrapParamete
 	}
 }
 
-// CircuitBootstrapParametersLiteral is a parameter set for Circuit Bootstrapping.
+// CircuitBootstrapParameters is a parameter set for Circuit Bootstrapping.
 type CircuitBootstrapParameters[T tfhe.TorusInt] struct {
 	// manyLUTParameters is a base ManyLUTParameters for this CircuitBootstrapParameters.
 	manyLUTParameters ManyLUTParameters[T]
@@ -48,8 +48,8 @@ func (p CircuitBootstrapParameters[T]) ManyLUTParams() ManyLUTParameters[T] {
 	return p.manyLUTParameters
 }
 
-// Params returns the base parameters for this ManyLUTParameters.
-func (p CircuitBootstrapParameters[T]) Params() tfhe.Parameters[T] {
+// BaseParams returns the base parameters for this ManyLUTParameters.
+func (p CircuitBootstrapParameters[T]) BaseParams() tfhe.Parameters[T] {
 	return p.manyLUTParameters.baseParams
 }
 

@@ -13,7 +13,7 @@ type Poly[T num.Integer] struct {
 	Coeffs []T
 }
 
-// NewPoly creates a polynomial with rank N with empty coefficients.
+// NewPoly creates a [Poly].
 //
 // Panics when N is not a power of two, or when N is smaller than [MinRank].
 func NewPoly[T num.Integer](N int) Poly[T] {
@@ -27,7 +27,7 @@ func NewPoly[T num.Integer](N int) Poly[T] {
 	return Poly[T]{Coeffs: make([]T, N)}
 }
 
-// From creates a new polynomial from given coefficient slice.
+// From creates a new polynomial from the given coefficient slice.
 // The given slice is copied, and extended to rank N.
 func From[T num.Integer](coeffs []T, N int) Poly[T] {
 	p := NewPoly[T](N)
@@ -46,7 +46,7 @@ func (p *Poly[T]) CopyFrom(pIn Poly[T]) {
 }
 
 // Rank returns the rank of the polynomial.
-// This is equivalent with length of coefficients.
+// This is equivalent to the length of the coefficients.
 func (p Poly[T]) Rank() int {
 	return len(p.Coeffs)
 }
@@ -78,7 +78,7 @@ type FFTPoly struct {
 	Coeffs []float64
 }
 
-// NewFFTPoly creates a fourier polynomial with rank N/2 with empty coefficients.
+// NewFFTPoly creates a [FFTPoly].
 //
 // Panics when N is not a power of two, or when N is smaller than [MinRank].
 func NewFFTPoly(N int) FFTPoly {

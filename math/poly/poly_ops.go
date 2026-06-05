@@ -118,7 +118,7 @@ func (e *Evaluator[T]) MonomialMulPoly(p Poly[T], d int) Poly[T] {
 // MonomialMulPolyTo computes pOut = X^d * p.
 //
 // p0 and pOut should not overlap. For inplace multiplication,
-// use [*Evaluator.MonomialMulPolyInPlace].
+// use [Evaluator.MonomialMulPolyInPlace].
 func (e *Evaluator[T]) MonomialMulPolyTo(pOut, p Poly[T], d int) {
 	checkLength(e.rank, len(pOut.Coeffs), len(p.Coeffs))
 
@@ -270,7 +270,7 @@ func (e *Evaluator[T]) PermutePoly(p Poly[T], d int) Poly[T] {
 // PermutePolyTo computes pOut = p(X^d).
 //
 // p0 and pOut should not overlap. For inplace permutation,
-// use [*Evaluator.PermutePolyInPlace].
+// use [Evaluator.PermutePolyInPlace].
 //
 // Panics when d is not odd.
 // This is because the permutation is not bijective when d is even.

@@ -6,13 +6,13 @@ import "github.com/sp301415/tfhe-go/tfhe"
 type BinaryPublicEncryptor[T tfhe.TorusInt] struct {
 	// BinaryEncoder is an embedded encoder for this BinaryPublicEncryptor.
 	*tfhe.BinaryEncoder[T]
-	// Params is parameters for this BinaryPublicEncryptor.
+	// Params is the parameter set for this BinaryPublicEncryptor.
 	Params Parameters[T]
 	// Encryptor is a generic PublicEncryptor for this BinaryPublicEncryptor.
 	Encryptor *PublicEncryptor[T]
 }
 
-// NewBinaryPublicEncryptor creates a new BinaryPublicEncryptor.
+// NewBinaryPublicEncryptor creates a new [BinaryPublicEncryptor].
 func NewBinaryPublicEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, pk tfhe.PublicKey[T]) *BinaryPublicEncryptor[T] {
 	return &BinaryPublicEncryptor[T]{
 		BinaryEncoder: tfhe.NewBinaryEncoder(params.subParams),
@@ -47,7 +47,7 @@ func (e *BinaryPublicEncryptor[T]) EncryptLWEBoolTo(ctOut LWECiphertext[T], mess
 }
 
 // EncryptLWEBits encrypts each bits of an integer message.
-// The order of the bits are little-endian.
+// The order of the bits is little-endian.
 func (e *BinaryPublicEncryptor[T]) EncryptLWEBits(message, bits int) []LWECiphertext[T] {
 	ctOut := make([]LWECiphertext[T], bits)
 	e.EncryptLWEBitsTo(ctOut, message)
@@ -55,7 +55,7 @@ func (e *BinaryPublicEncryptor[T]) EncryptLWEBits(message, bits int) []LWECipher
 }
 
 // EncryptLWEBitsTo encrypts each bits of an integer message.
-// The order of the bits are little-endian,
+// The order of the bits is little-endian,
 // and will be cut by the length of ctOut.
 func (e *BinaryPublicEncryptor[T]) EncryptLWEBitsTo(ctOut []LWECiphertext[T], message int) {
 	for i := 0; i < len(ctOut); i++ {

@@ -205,7 +205,7 @@ func (e *Evaluator[T]) MonomialMulSubGLWETo(ctOut, ct GLWECiphertext[T], d int) 
 // PermuteGLWETo computes ctOut = ct(X^d).
 //
 // ct and ctOut should not overlap. For inplace permutation,
-// use [*Evaluator.PermuteGLWEInPlace].
+// use [Evaluator.PermuteGLWEInPlace].
 //
 // Panics when d is not odd.
 // This is because the permutation is not bijective when d is even.
@@ -215,7 +215,7 @@ func (e *Evaluator[T]) PermuteGLWETo(ctOut, ct GLWECiphertext[T], d int) {
 	}
 }
 
-// PermuteGLWEInPlace computes ct0 = ct(X^d).
+// PermuteGLWEInPlace computes ct = ct(X^d).
 //
 // Panics when d is not odd.
 // This is because the permutation is not bijective when d is even.

@@ -9,24 +9,24 @@ import (
 // All keys should be treated as read-only.
 // Changing them mid-operation will usually result in wrong results.
 //
-// LWEKey and GLWEKey is sampled together, as explained in https://eprint.iacr.org/2023/958.
+// LWEKey and GLWEKey are sampled together, as explained in https://eprint.iacr.org/2023/958.
 // As a result, LWEKey and GLWEKey share the same backing slice, so modifying one will affect the other.
 type SecretKey[T TorusInt] struct {
-	// LWELargeKey is a LWE key with length GLWEDimension.
-	// Essentially, this is same as GLWEKey but parsed differently.
+	// LWELargeKey is an LWE key with length GLWEDimension.
+	// Essentially, this is the same as GLWEKey but parsed differently.
 	LWELargeKey LWESecretKey[T]
 	// GLWEKey is a key used for GLWE encryption and decryption.
-	// Essentially, this is same as LWEKey but parsed differently.
+	// Essentially, this is the same as LWEKey but parsed differently.
 	GLWEKey GLWESecretKey[T]
 	// FFTGLWEKey is a fourier transformed GLWEKey.
 	// Used for GLWE encryption.
 	FFTGLWEKey FFTGLWESecretKey[T]
-	// LWEKey is a LWE key with length LWEDimension.
+	// LWEKey is an LWE key with length LWEDimension.
 	// Essentially, this is the first LWEDimension elements of LWEKey.
 	LWEKey LWESecretKey[T]
 }
 
-// NewSecretKey creates a new SecretKey.
+// NewSecretKey creates a new [SecretKey].
 // Each key shares the same backing slice, held by LWEKey.
 func NewSecretKey[T TorusInt](params Parameters[T]) SecretKey[T] {
 	lweLargeKey := LWESecretKey[T]{Value: make([]T, params.glweDimension)}
@@ -47,7 +47,7 @@ func NewSecretKey[T TorusInt](params Parameters[T]) SecretKey[T] {
 	}
 }
 
-// NewSecretKeyCustom creates a new SecretKey with given dimension and polyRank.
+// NewSecretKeyCustom creates a new [SecretKey] with given dimension and polyRank.
 // Each key shares the same backing slice, held by LWEKey.
 func NewSecretKeyCustom[T TorusInt](lweDimension, glweRank, polyRank int) SecretKey[T] {
 	lweLargeKey := LWESecretKey[T]{Value: make([]T, glweRank*polyRank)}
@@ -118,7 +118,7 @@ type PublicKey[T TorusInt] struct {
 	GLWEKey GLWEPublicKey[T]
 }
 
-// NewPublicKey creates a new PublicKey.
+// NewPublicKey creates a new [PublicKey].
 //
 // Panics when the parameters do not support public key encryption.
 func NewPublicKey[T TorusInt](params Parameters[T]) PublicKey[T] {
@@ -132,7 +132,7 @@ func NewPublicKey[T TorusInt](params Parameters[T]) PublicKey[T] {
 	}
 }
 
-// NewPublicKeyCustom creates a new PublicKey with given dimension and polyRank.
+// NewPublicKeyCustom creates a new [PublicKey] with given dimension and polyRank.
 func NewPublicKeyCustom[T TorusInt](glweRank, polyRank int) PublicKey[T] {
 	return PublicKey[T]{
 		LWEKey:  NewLWEPublicKeyCustom[T](glweRank, polyRank),

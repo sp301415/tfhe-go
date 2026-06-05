@@ -10,14 +10,14 @@ import (
 // This is meant to be private, only for clients.
 //
 // Encryptor is not safe for concurrent use.
-// Use [*Encryptor.SafeCopy] to get a safe copy.
+// Use [Encryptor.SafeCopy] to get a safe copy.
 type Encryptor[T TorusInt] struct {
 	// Encoder is an embedded encoder for this Encryptor.
 	*Encoder[T]
 	// GLWETransformer is an embedded GLWETransformer for this Encryptor.
 	*GLWETransformer[T]
 
-	// Params is parameters for this Encryptor.
+	// Params is the parameter set for this Encryptor.
 	Params Parameters[T]
 
 	// UniformSampler is used for sampling the mask of encryptions.
@@ -34,7 +34,7 @@ type Encryptor[T TorusInt] struct {
 	//
 	// The LWE key used for LWE ciphertexts is determined by
 	// BootstrapOrder.
-	// For encrypting/decrypting LWE ciphertexts, use [*Encryptor DefaultLWEKey].
+	// For encrypting/decrypting LWE ciphertexts, use [Encryptor.DefaultLWESecretKey].
 	SecretKey SecretKey[T]
 
 	buf encryptorBuffer[T]
@@ -42,15 +42,15 @@ type Encryptor[T TorusInt] struct {
 
 // encryptorBuffer is a buffer for Encryptor.
 type encryptorBuffer[T TorusInt] struct {
-	// ptGLWE is a GLWE plaintext for GLWE encryption / decryptions.
+	// ptGLWE is a GLWE plaintext for GLWE encryption and decryption.
 	ptGLWE GLWEPlaintext[T]
-	// ctGLWE is a standard GLWE Ciphertext for Fourier encryption / decryptions.
+	// ctGLWE is a standard GLWE Ciphertext for Fourier encryption and decryption.
 	ctGLWE GLWECiphertext[T]
 	// ptGGSW is GLWEKey * Pt in GGSW encryption.
 	ptGGSW poly.Poly[T]
 }
 
-// NewEncryptor returns a initialized Encryptor with given parameters.
+// NewEncryptor creates a new [Encryptor].
 // It also automatically samples LWE and GLWE key.
 func NewEncryptor[T TorusInt](params Parameters[T]) *Encryptor[T] {
 	// Fill samplers to call encryptor.GenSecretKey()
@@ -74,7 +74,7 @@ func NewEncryptor[T TorusInt](params Parameters[T]) *Encryptor[T] {
 	return &encryptor
 }
 
-// NewEncryptorWithKey returns a initialized Encryptor with given parameters and key.
+// NewEncryptorWithKey creates a new [Encryptor] with given parameters and key.
 // This does not copy secret keys.
 func NewEncryptorWithKey[T TorusInt](params Parameters[T], sk SecretKey[T]) *Encryptor[T] {
 	return &Encryptor[T]{
@@ -95,7 +95,7 @@ func NewEncryptorWithKey[T TorusInt](params Parameters[T], sk SecretKey[T]) *Enc
 	}
 }
 
-// newEncryptorBuffer creates a new encryptorBuffer.
+// newEncryptorBuffer creates a new [encryptorBuffer].
 func newEncryptorBuffer[T TorusInt](params Parameters[T]) encryptorBuffer[T] {
 	return encryptorBuffer[T]{
 		ptGLWE: NewGLWEPlaintext(params),

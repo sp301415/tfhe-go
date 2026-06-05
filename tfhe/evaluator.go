@@ -10,14 +10,14 @@ import (
 // This is meant to be public, usually for servers.
 //
 // Evaluator is not safe for concurrent use.
-// Use [*Evaluator.SafeCopy] to get a safe copy.
+// Use [Evaluator.SafeCopy] to get a safe copy.
 type Evaluator[T TorusInt] struct {
 	// Encoder is an embedded encoder for this Evaluator.
 	*Encoder[T]
 	// GLWETransformer is an embedded GLWETransformer for this Evaluator.
 	*GLWETransformer[T]
 
-	// Params is parameters for this Evaluator.
+	// Params is the parameter set for this Evaluator.
 	Params Parameters[T]
 
 	// Decomposer is an Decomposer for this Evaluator.
@@ -39,7 +39,7 @@ type evaluatorBuffer[T TorusInt] struct {
 	// fpMul is a fourier transformed polynomial for multiplications.
 	fpMul poly.FFTPoly
 
-	// ctProdLWE is a LWE ciphertext buffer for ExternalProdLWE and KeySwitchLWE.
+	// ctProdLWE is an LWE ciphertext buffer for ExternalProdLWE and KeySwitchLWE.
 	ctProdLWE LWECiphertext[T]
 	// ctFFTProdGLWE is a fourier transformed ctGLWEOut in ExternalProdGLWE and KeySwitchGLWE.
 	ctFFTProdGLWE FFTGLWECiphertext[T]
@@ -66,7 +66,7 @@ type evaluatorBuffer[T TorusInt] struct {
 	ctRotate GLWECiphertext[T]
 	// ctExtract is an extracted LWE ciphertext after Blind Rotation.
 	ctExtract LWECiphertext[T]
-	// ctKeySwitch is a LWEDimension sized ciphertext from keyswitching for bootstrapping.
+	// ctKeySwitch is an LWEDimension-sized ciphertext from keyswitching for bootstrapping.
 	ctKeySwitch LWECiphertext[T]
 
 	// lut is an empty lut, used for BlindRotateFunc.
@@ -75,7 +75,7 @@ type evaluatorBuffer[T TorusInt] struct {
 	lutRaw []T
 }
 
-// NewEvaluator creates a new Evaluator based on parameters.
+// NewEvaluator creates a new [Evaluator].
 // This does not copy evaluation keys, since they may be large.
 func NewEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *Evaluator[T] {
 	decomposer := NewDecomposer[T](params.polyRank)
@@ -100,7 +100,7 @@ func NewEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *Evalu
 	}
 }
 
-// newEvaluatorBuffer creates a new evaluatorBuffer.
+// newEvaluatorBuffer creates a new [evaluatorBuffer].
 func newEvaluatorBuffer[T TorusInt](params Parameters[T]) evaluatorBuffer[T] {
 	ctAcc := make([]GLWECiphertext[T], params.lutExtendFactor)
 	ctFFTAcc := make([]FFTGLWECiphertext[T], params.lutExtendFactor)

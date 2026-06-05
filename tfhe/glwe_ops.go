@@ -170,7 +170,7 @@ func (e *Evaluator[T]) MonomialMulGLWE(ct GLWECiphertext[T], d int) GLWECipherte
 // MonomialMulGLWETo computes ctOut = X^d * ct.
 //
 // ct and ctOut should not overlap. For inplace multiplication,
-// use [*Evaluator.MonomialMulGLWEInPlace].
+// use [Evaluator.MonomialMulGLWEInPlace].
 func (e *Evaluator[T]) MonomialMulGLWETo(ctOut, ct GLWECiphertext[T], d int) {
 	for i := 0; i < e.Params.glweRank+1; i++ {
 		e.PolyEvaluator.MonomialMulPolyTo(ctOut.Value[i], ct.Value[i], d)
@@ -215,7 +215,7 @@ func (e *Evaluator[T]) PermuteGLWE(ct GLWECiphertext[T], d int) GLWECiphertext[T
 // PermuteGLWETo computes ctOut = ct(X^d).
 //
 // ct and ctOut should not overlap. For inplace permutation,
-// use [*Evaluator.PermuteGLWEInPlace].
+// use [Evaluator.PermuteGLWEInPlace].
 //
 // Panics when d is not odd.
 // This is because the permutation is not bijective when d is even.

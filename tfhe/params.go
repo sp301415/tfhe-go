@@ -18,9 +18,9 @@ type TorusInt interface {
 // GadgetParametersLiteral is a structure for Gadget Decomposition,
 // which is used in Lev, GSW, GLev and GGSW encryptions.
 type GadgetParametersLiteral[T TorusInt] struct {
-	// Base is a base of gadget. It must be power of two.
+	// Base is the gadget base. It must be a power of two.
 	Base T
-	// Level is a length of gadget.
+	// Level is the gadget length.
 	Level int
 }
 
@@ -58,19 +58,19 @@ func (p GadgetParametersLiteral[T]) Compile() GadgetParameters[T] {
 	}
 }
 
-// GadgetParameters is a read-only, compiled parameters based on GadgetParametersLiteral.
+// GadgetParameters is a read-only, compiled parameter set based on GadgetParametersLiteral.
 type GadgetParameters[T TorusInt] struct {
-	// Base is a base of gadget. It must be power of two.
+	// Base is the gadget base. It must be a power of two.
 	base T
 	// LogBase equals log(Base).
 	logBase int
-	// Level is a length of gadget.
+	// Level is the gadget length.
 	level int
 	// sizeT is the size of T in bits.
 	sizeT int
 }
 
-// Base is a base of gadget. It must be power of two.
+// Base is the gadget base. It must be a power of two.
 func (p GadgetParameters[T]) Base() T {
 	return p.base
 }
@@ -80,7 +80,7 @@ func (p GadgetParameters[T]) LogBase() int {
 	return p.logBase
 }
 
-// Level is a length of gadget.
+// Level is the gadget length.
 func (p GadgetParameters[T]) Level() int {
 	return p.level
 }
@@ -236,13 +236,13 @@ func (o BootstrapOrder) String() string {
 //
 // # Warning
 //
-// Unless you are a cryptographic expert, DO NOT set these by yourself;
+// Unless you are a cryptographic expert, DO NOT set these yourself;
 // always use the default parameters provided.
 type ParametersLiteral[T TorusInt] struct {
-	// LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
+	// LWEDimension is the dimension of the LWE lattice used. Usually this is denoted by n.
 	LWEDimension int
-	// GLWERank is the rank of GLWE lattice used. Usually this is denoted by k.
-	// Length of GLWE secret key is GLWERank, and length of GLWE ciphertext is GLWERank+1.
+	// GLWERank is the rank of the GLWE lattice used. Usually this is denoted by k.
+	// The length of GLWE secret key is GLWERank, and the length of GLWE ciphertext is GLWERank+1.
 	GLWERank int
 	// PolyRank is the rank of polynomials in GLWE entities. Usually this is denoted by N.
 	PolyRank int
@@ -260,7 +260,7 @@ type ParametersLiteral[T TorusInt] struct {
 	// GLWEStdDev is the normalized standard deviation used for gaussian error sampling in GLWE encryption.
 	GLWEStdDev float64
 
-	// BlockSize is the size of block to be used for LWE key sampling.
+	// BlockSize is the size of the block to be used for LWE key sampling.
 	//
 	// This is used in Block Binary Key distribution, as explained in https://eprint.iacr.org/2023/958.
 	// To use the original TFHE bootstrapping, set this to 1.
@@ -367,13 +367,13 @@ func (p ParametersLiteral[T]) WithBootstrapOrder(bootstrapOrder BootstrapOrder) 
 
 // Compile transforms ParametersLiteral to read-only Parameters.
 // If there is any invalid parameter in the literal, it panics.
-// Default parameters are guaranteed to be compiled without panics.
+// Default parameters are guaranteed to compile without panicking.
 //
 // # Warning
 //
 // This method performs only basic sanity checks.
 // Just because a parameter compiles does not necessarily mean it is safe or correct.
-// Unless you are a cryptographic expert, DO NOT set parameters by yourself;
+// Unless you are a cryptographic expert, DO NOT set parameters yourself;
 // always use the default parameters provided.
 func (p ParametersLiteral[T]) Compile() Parameters[T] {
 	if p.LUTSize == 0 {
@@ -438,12 +438,12 @@ func (p ParametersLiteral[T]) Compile() Parameters[T] {
 
 // Parameters are read-only, compiled parameters based on ParametersLiteral.
 type Parameters[T TorusInt] struct {
-	// LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
+	// LWEDimension is the dimension of the LWE lattice used. Usually this is denoted by n.
 	lweDimension int
 	// GLWEDimension is the dimension of GLWE lattice used, which is GLWERank * PolyRank.
 	glweDimension int
-	// GLWERank is the rank of GLWE lattice used. Usually this is denoted by k.
-	// Length of GLWE secret key is GLWERank, and length of GLWE ciphertext is GLWERank+1.
+	// GLWERank is the rank of the GLWE lattice used. Usually this is denoted by k.
+	// The length of GLWE secret key is GLWERank, and the length of GLWE ciphertext is GLWERank+1.
 	glweRank int
 	// PolyRank is the degree of polynomials in GLWE entities. Usually this is denoted by N.
 	polyRank int
@@ -459,9 +459,9 @@ type Parameters[T TorusInt] struct {
 	// GLWEStdDev is the normalized standard deviation used for gaussian error sampling in GLWE encryption.
 	glweStdDev float64
 
-	// BlockSize is the size of block to be used for LWE key sampling.
+	// BlockSize is the size of the block to be used for LWE key sampling.
 	blockSize int
-	// BlockCount is a number of blocks in LWESecretkey. Equal to LWEDimension / BlockSize.
+	// BlockCount is the number of blocks in LWESecretKey. Equal to LWEDimension / BlockSize.
 	blockCount int
 
 	// MessageModulus is the modulus of the encoded message.
@@ -494,7 +494,7 @@ func (p Parameters[T]) DefaultLWEDimension() int {
 	return p.glweDimension
 }
 
-// LWEDimension is the dimension of LWE lattice used. Usually this is denoted by n.
+// LWEDimension is the dimension of the LWE lattice used. Usually this is denoted by n.
 func (p Parameters[T]) LWEDimension() int {
 	return p.lweDimension
 }
@@ -505,7 +505,7 @@ func (p Parameters[T]) GLWEDimension() int {
 }
 
 // GLWERank is the dimension of GLWE lattice used. Usually this is denoted by k.
-// Length of GLWE secret key is GLWERank, and length of GLWE ciphertext is GLWERank+1.
+// The length of GLWE secret key is GLWERank, and the length of GLWE ciphertext is GLWERank+1.
 func (p Parameters[T]) GLWERank() int {
 	return p.glweRank
 }
@@ -577,12 +577,12 @@ func (p Parameters[T]) GLWEStdDevQ() float64 {
 	return p.glweStdDev * p.floatQ
 }
 
-// BlockSize is the size of block to be used for LWE key sampling.
+// BlockSize is the size of the block to be used for LWE key sampling.
 func (p Parameters[T]) BlockSize() int {
 	return p.blockSize
 }
 
-// BlockCount is a number of blocks in LWESecretkey. Equal to LWEDimension / BlockSize.
+// BlockCount is the number of blocks in LWESecretKey. Equal to LWEDimension / BlockSize.
 func (p Parameters[T]) BlockCount() int {
 	return p.blockCount
 }

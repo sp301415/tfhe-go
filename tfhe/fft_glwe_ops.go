@@ -171,10 +171,10 @@ func (e *Evaluator[T]) PermuteFFTGLWE(ct FFTGLWECiphertext[T], d int) FFTGLWECip
 	return ctOut
 }
 
-// PermuteFourierTo computes ctOut = ct(X^d).
+// PermuteFFTGLWETo computes ctOut = ct(X^d).
 //
 // ct and ctOut should not overlap. For inplace permutation,
-// use [*Evaluator.PermuteFFTGLWEInPlace].
+// use [Evaluator.PermuteFFTGLWEInPlace].
 //
 // Panics when d is not odd.
 // This is because the permutation is not bijective when d is even.
@@ -184,7 +184,7 @@ func (e *Evaluator[T]) PermuteFFTGLWETo(ctOut, ct FFTGLWECiphertext[T], d int) {
 	}
 }
 
-// PermuteGLWEInPlace computes ct = ct(X^d).
+// PermuteFFTGLWEInPlace computes ct = ct(X^d).
 //
 // Panics when d is not odd.
 // This is because the permutation is not bijective when d is even.

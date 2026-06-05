@@ -41,17 +41,17 @@ func (e *Evaluator[T]) KeySwitchGLWE(ct GLWECiphertext[T], ksk GLWEKeySwitchKey[
 // KeySwitchGLWETo switches key of ct and writes it to ctOut.
 // Input ciphertext should be of length ksk.InputGLWERank + 1.
 func (e *Evaluator[T]) KeySwitchGLWETo(ctOut, ct GLWECiphertext[T], ksk GLWEKeySwitchKey[T]) {
-	fpDcmp := e.Decomposer.FFTPolyBuffer(ksk.GadgetParameters)
+	fpDcmp := e.Decomposer.FFTPolyBuffer(ksk.GadgetParams)
 
-	e.Decomposer.FourierDecomposePolyTo(fpDcmp, ct.Value[1], ksk.GadgetParameters)
+	e.Decomposer.FourierDecomposePolyTo(fpDcmp, ct.Value[1], ksk.GadgetParams)
 	e.FFTPolyMulFFTGLWETo(e.buf.ctFFTProdGLWE, ksk.Value[0].Value[0], fpDcmp[0])
-	for j := 1; j < ksk.GadgetParameters.level; j++ {
+	for j := 1; j < ksk.GadgetParams.level; j++ {
 		e.FFTPolyMulAddFFTGLWETo(e.buf.ctFFTProdGLWE, ksk.Value[0].Value[j], fpDcmp[j])
 	}
 
 	for i := 1; i < ksk.InputGLWERank(); i++ {
-		e.Decomposer.FourierDecomposePolyTo(fpDcmp, ct.Value[i+1], ksk.GadgetParameters)
-		for j := 0; j < ksk.GadgetParameters.level; j++ {
+		e.Decomposer.FourierDecomposePolyTo(fpDcmp, ct.Value[i+1], ksk.GadgetParams)
+		for j := 0; j < ksk.GadgetParams.level; j++ {
 			e.FFTPolyMulAddFFTGLWETo(e.buf.ctFFTProdGLWE, ksk.Value[i].Value[j], fpDcmp[j])
 		}
 	}

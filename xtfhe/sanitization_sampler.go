@@ -29,7 +29,7 @@ type CDTSampler[T num.Integer] struct {
 	offset int64
 }
 
-// NewCDTSampler creates a new CDTSampler.
+// NewCDTSampler creates a new [CDTSampler].
 func NewCDTSampler[T num.Integer](center float64, stdDev float64) *CDTSampler[T] {
 	cFloor := math.Floor(center)
 	cFrac := center - cFloor

@@ -9,7 +9,7 @@ import (
 
 // SanitizationParametersLiteral is a structure for TFHE Sanitization Parameters.
 type SanitizationParametersLiteral[T tfhe.TorusInt] struct {
-	// BaseParams is a base parameters for this SanitizationParametersLiteral.
+	// BaseParams is the base parameter set for this SanitizationParametersLiteral.
 	BaseParams tfhe.ParametersLiteral[T]
 
 	// RandSigma is the standard deviation used for
@@ -29,7 +29,7 @@ type SanitizationParametersLiteral[T tfhe.TorusInt] struct {
 
 // Compile transforms ParametersLiteral to read-only Parameters.
 // If there is any invalid parameter in the literal, it panics.
-// Default parameters are guaranteed to be compiled without panics.
+// Default parameters are guaranteed to compile without panicking.
 func (p SanitizationParametersLiteral[T]) Compile() SanitizationParameters[T] {
 	baseParameters := p.BaseParams.Compile()
 
@@ -65,7 +65,7 @@ func (p SanitizationParametersLiteral[T]) Compile() SanitizationParameters[T] {
 
 // SanitizationParameters is a parameter set for TFHE Sanitization.
 type SanitizationParameters[T tfhe.TorusInt] struct {
-	// baseParams is a base parameters for this SanitizationParameters.
+	// baseParams is the base parameter set for this SanitizationParameters.
 	baseParams tfhe.Parameters[T]
 
 	// floatQ is the value of Q as float64.
@@ -95,7 +95,7 @@ func (p SanitizationParameters[T]) BaseParams() tfhe.Parameters[T] {
 // Discrete Gaussian sampling in Rand operation.
 //
 // This is a normalized standard deviation.
-// For actual sampling, use [Parameters.RandSigmaQ].
+// For actual sampling, use [SanitizationParameters.RandSigmaQ].
 func (p SanitizationParameters[T]) RandSigma() float64 {
 	return p.randSigma
 }
@@ -109,7 +109,7 @@ func (p SanitizationParameters[T]) RandSigmaQ() float64 {
 // Rounded Gaussian sampling in Rand operation.
 //
 // This is a normalized standard deviation.
-// For actual sampling, use [Parameters.RandTauQ].
+// For actual sampling, use [SanitizationParameters.RandTauQ].
 func (p SanitizationParameters[T]) RandTau() float64 {
 	return p.randTau
 }
@@ -123,7 +123,7 @@ func (p SanitizationParameters[T]) RandTauQ() float64 {
 // Discrete Gaussian sampling in LinEval operation.
 //
 // This is a normalized standard deviation.
-// For actual sampling, use [Parameters.LinEvalSigmaQ].
+// For actual sampling, use [SanitizationParameters.LinEvalSigmaQ].
 func (p SanitizationParameters[T]) LinEvalSigma() float64 {
 	return p.linEvalSigma
 }
@@ -137,7 +137,7 @@ func (p SanitizationParameters[T]) LinEvalSigmaQ() float64 {
 // Rounded Gaussian sampling in LinEval operation.
 //
 // This is a normalized standard deviation.
-// For actual sampling, use [Parameters.LinEvalTauQ].
+// For actual sampling, use [SanitizationParameters.LinEvalTauQ].
 func (p SanitizationParameters[T]) LinEvalTau() float64 {
 	return p.linEvalTau
 }

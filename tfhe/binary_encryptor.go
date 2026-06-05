@@ -4,17 +4,17 @@ package tfhe
 // This is meant to be private, only for clients.
 //
 // BinaryEncryptor is not safe for concurrent use.
-// Use [*BinaryEncryptor.SafeCopy] to get a safe copy.
+// Use [BinaryEncryptor.SafeCopy] to get a safe copy.
 type BinaryEncryptor[T TorusInt] struct {
 	// BinaryEncoder is an embedded encoder for this BinaryEncryptor.
 	*BinaryEncoder[T]
-	// Params is parameters for this BinaryEncryptor.
+	// Params is the parameter set for this BinaryEncryptor.
 	Params Parameters[T]
 	// Encryptor is a generic Encryptor for this BinaryEncryptor.
 	Encryptor *Encryptor[T]
 }
 
-// NewBinaryEncryptor returns a initialized BinaryEncryptor with given parameters.
+// NewBinaryEncryptor creates a new [BinaryEncryptor].
 // It also automatically samples LWE and GLWE key.
 func NewBinaryEncryptor[T TorusInt](params Parameters[T]) *BinaryEncryptor[T] {
 	return &BinaryEncryptor[T]{
@@ -24,7 +24,7 @@ func NewBinaryEncryptor[T TorusInt](params Parameters[T]) *BinaryEncryptor[T] {
 	}
 }
 
-// NewBinaryEncryptorWithKey returns a initialized BinaryEncryptor with given parameters and key.
+// NewBinaryEncryptorWithKey creates a new [BinaryEncryptor] with given parameters and key.
 func NewBinaryEncryptorWithKey[T TorusInt](params Parameters[T], sk SecretKey[T]) *BinaryEncryptor[T] {
 	return &BinaryEncryptor[T]{
 		BinaryEncoder: NewBinaryEncoder(params),
@@ -62,7 +62,7 @@ func (e *BinaryEncryptor[T]) DecryptLWEBool(ct LWECiphertext[T]) bool {
 }
 
 // EncryptLWEBits encrypts each bits of an integer message.
-// The order of the bits are little-endian.
+// The order of the bits is little-endian.
 func (e *BinaryEncryptor[T]) EncryptLWEBits(message, bits int) []LWECiphertext[T] {
 	ctOut := make([]LWECiphertext[T], bits)
 	e.EncryptLWEBitsTo(ctOut, message)
@@ -81,7 +81,7 @@ func (e *BinaryEncryptor[T]) EncryptLWEBitsTo(ctOut []LWECiphertext[T], message 
 
 // DecryptLWEBits decrypts a slice of binary LWE ciphertext
 // to integer message.
-// The order of bits of LWE ciphertexts are assumed to be little-endian.
+// The order of bits of LWE ciphertexts is assumed to be little-endian.
 func (e *BinaryEncryptor[T]) DecryptLWEBits(ct []LWECiphertext[T]) int {
 	var message int
 	for i := len(ct) - 1; i >= 0; i-- {
@@ -108,7 +108,7 @@ func (e *BinaryEncryptor[T]) PublicEncryptor() *BinaryPublicEncryptor[T] {
 // GenEvalKey samples a new evaluation key for bootstrapping.
 //
 // This can take a long time.
-// Use [*BinaryEncryptor.GenEvalKeyParallel] for better key generation performance.
+// Use [BinaryEncryptor.GenEvalKeyParallel] for better key generation performance.
 func (e *BinaryEncryptor[T]) GenEvalKey() EvaluationKey[T] {
 	return e.Encryptor.GenEvalKey()
 }

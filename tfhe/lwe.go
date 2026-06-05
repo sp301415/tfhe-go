@@ -4,18 +4,18 @@ import (
 	"github.com/sp301415/tfhe-go/math/vec"
 )
 
-// LWESecretKey is a LWE secret key, sampled from uniform or block binary distribution.
+// LWESecretKey is an LWE secret key, sampled from uniform or block binary distribution.
 type LWESecretKey[T TorusInt] struct {
 	// Value has length DefaultLWEDimension.
 	Value []T
 }
 
-// NewLWESecretKey creates a new LWESecretKey.
+// NewLWESecretKey creates a new [LWESecretKey].
 func NewLWESecretKey[T TorusInt](params Parameters[T]) LWESecretKey[T] {
 	return LWESecretKey[T]{Value: make([]T, params.DefaultLWEDimension())}
 }
 
-// NewLWESecretKeyCustom creates a new LWESecretKey with given dimension.
+// NewLWESecretKeyCustom creates a new [LWESecretKey] with given dimension.
 func NewLWESecretKeyCustom[T TorusInt](lweDimension int) LWESecretKey[T] {
 	return LWESecretKey[T]{Value: make([]T, lweDimension)}
 }
@@ -35,7 +35,7 @@ func (sk *LWESecretKey[T]) Clear() {
 	vec.Fill(sk.Value, 0)
 }
 
-// LWEPublicKey is a LWE public key, derived from the LWE secret key.
+// LWEPublicKey is an LWE public key, derived from the LWE secret key.
 // It is essentially a GLWE encryption of zero, but with reversed GLWE key,
 // as explained in https://eprint.iacr.org/2023/603.
 // This means that not all parameters support public key encryption.
@@ -44,7 +44,7 @@ type LWEPublicKey[T TorusInt] struct {
 	Value []GLWECiphertext[T]
 }
 
-// NewLWEPublicKey creates a new LWEPublicKey.
+// NewLWEPublicKey creates a new [LWEPublicKey].
 //
 // Panics when the parameters do not support public key encryption.
 func NewLWEPublicKey[T TorusInt](params Parameters[T]) LWEPublicKey[T] {
@@ -59,7 +59,7 @@ func NewLWEPublicKey[T TorusInt](params Parameters[T]) LWEPublicKey[T] {
 	return LWEPublicKey[T]{Value: pk}
 }
 
-// NewLWEPublicKeyCustom creates a new LWEPublicKey with given dimension and polyRank.
+// NewLWEPublicKeyCustom creates a new [LWEPublicKey] with given dimension and polyRank.
 func NewLWEPublicKeyCustom[T TorusInt](glweRank, polyRank int) LWEPublicKey[T] {
 	pk := make([]GLWECiphertext[T], glweRank)
 	for i := 0; i < glweRank; i++ {
@@ -97,7 +97,7 @@ type LWEPlaintext[T TorusInt] struct {
 	Value T
 }
 
-// NewLWEPlaintext creates a new LWEPlaintext.
+// NewLWEPlaintext creates a new [LWEPlaintext].
 func NewLWEPlaintext[T TorusInt]() LWEPlaintext[T] {
 	return LWEPlaintext[T]{}
 }
@@ -127,12 +127,12 @@ type LWECiphertext[T TorusInt] struct {
 	Value []T
 }
 
-// NewLWECiphertext creates a new LWECiphertext.
+// NewLWECiphertext creates a new [LWECiphertext].
 func NewLWECiphertext[T TorusInt](params Parameters[T]) LWECiphertext[T] {
 	return LWECiphertext[T]{Value: make([]T, params.DefaultLWEDimension()+1)}
 }
 
-// NewLWECiphertextCustom creates a new LWECiphertext with given dimension.
+// NewLWECiphertextCustom creates a new [LWECiphertext] with given dimension.
 func NewLWECiphertextCustom[T TorusInt](lweDimension int) LWECiphertext[T] {
 	return LWECiphertext[T]{Value: make([]T, lweDimension+1)}
 }
@@ -160,7 +160,7 @@ type LevCiphertext[T TorusInt] struct {
 	Value []LWECiphertext[T]
 }
 
-// NewLevCiphertext creates a new LevCiphertext.
+// NewLevCiphertext creates a new [LevCiphertext].
 func NewLevCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetParameters[T]) LevCiphertext[T] {
 	ct := make([]LWECiphertext[T], gadgetParams.level)
 	for i := 0; i < gadgetParams.level; i++ {
@@ -169,7 +169,7 @@ func NewLevCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetParam
 	return LevCiphertext[T]{Value: ct, GadgetParams: gadgetParams}
 }
 
-// NewLevCiphertextCustom creates a new LevCiphertext with given dimension.
+// NewLevCiphertextCustom creates a new [LevCiphertext] with given dimension.
 func NewLevCiphertextCustom[T TorusInt](lweDimension int, gadgetParams GadgetParameters[T]) LevCiphertext[T] {
 	ct := make([]LWECiphertext[T], gadgetParams.level)
 	for i := 0; i < gadgetParams.level; i++ {
@@ -211,7 +211,7 @@ type GSWCiphertext[T TorusInt] struct {
 	Value []LevCiphertext[T]
 }
 
-// NewGSWCiphertext creates a new GSW ciphertext.
+// NewGSWCiphertext creates a new [GSWCiphertext].
 func NewGSWCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetParameters[T]) GSWCiphertext[T] {
 	lweDimension := params.DefaultLWEDimension()
 	ct := make([]LevCiphertext[T], lweDimension+1)
@@ -221,7 +221,7 @@ func NewGSWCiphertext[T TorusInt](params Parameters[T], gadgetParams GadgetParam
 	return GSWCiphertext[T]{Value: ct, GadgetParams: gadgetParams}
 }
 
-// NewGSWCiphertextCustom creates a new GSW ciphertext with given dimension.
+// NewGSWCiphertextCustom creates a new [GSWCiphertext] with given dimension.
 func NewGSWCiphertextCustom[T TorusInt](lweDimension int, gadgetParams GadgetParameters[T]) GSWCiphertext[T] {
 	ct := make([]LevCiphertext[T], lweDimension+1)
 	for i := 0; i < lweDimension+1; i++ {

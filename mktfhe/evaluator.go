@@ -17,7 +17,7 @@ type Evaluator[T tfhe.TorusInt] struct {
 	// This is always guaranteed to be a working, non-nil evaluator without a key.
 	subEvaluator *tfhe.Evaluator[T]
 	// SubEvaluators are single-key Evaluators for this Evaluator.
-	// If an evaluation key does not exist for given index, it is nil.
+	// If an evaluation key does not exist for the given index, it is nil.
 	SubEvaluators []*tfhe.Evaluator[T]
 
 	// Decomposer is a Decomposer for this Evaluator.
@@ -25,19 +25,19 @@ type Evaluator[T tfhe.TorusInt] struct {
 	// PolyEvaluator is a PolyEvaluator for this Evaluator.
 	PolyEvaluator *poly.Evaluator[T]
 
-	// Params is parameters for this Evaluator.
+	// Params is the parameter set for this Evaluator.
 	Params Parameters[T]
 
 	// PartyBitMap is a bitmap for parties.
 	// If a party of a given index exists, it is true.
 	PartyBitMap []bool
 
-	// EvalKey are the evaluation key for this Evaluator.
+	// EvalKey contains the evaluation keys for this Evaluator.
 	// This is shared with SubEvaluators.
-	// If an evaluation key does not exist for given index, it is empty.
+	// If an evaluation key does not exist for the given index, it is empty.
 	EvalKey []EvaluationKey[T]
 
-	// gadgetLUTs are the gadget LUT for the Blind Rotation.
+	// gadgetLUTs are the gadget LUTs for the Blind Rotation.
 	gadgetLUTs []tfhe.LookUpTable[T]
 
 	buf evaluatorBuffer[T]
@@ -71,14 +71,14 @@ type evaluatorBuffer[T tfhe.TorusInt] struct {
 	ctRotate GLWECiphertext[T]
 	// ctExtract is the extracted LWE ciphertext after Blind Rotation.
 	ctExtract LWECiphertext[T]
-	// ctKeySwitch is the LWEDimension sized ciphertext from keyswitching for bootstrapping.
+	// ctKeySwitch is the LWEDimension-sized ciphertext from keyswitching for bootstrapping.
 	ctKeySwitch LWECiphertext[T]
 
 	// lut is an empty lut, used for BlindRotateFunc.
 	lut tfhe.LookUpTable[T]
 }
 
-// NewEvaluator creates a new Evaluator.
+// NewEvaluator creates a new [Evaluator].
 // Only indices between 0 and params.PartyCount is valid for evk.
 func NewEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationKey[T]) *Evaluator[T] {
 	subEvals := make([]*tfhe.Evaluator[T], params.partyCount)
@@ -123,7 +123,7 @@ func NewEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationK
 	}
 }
 
-// newEvaluatorBuffer creates a new evaluatorBuffer.
+// newEvaluatorBuffer creates a new [evaluatorBuffer].
 func newEvaluatorBuffer[T tfhe.TorusInt](params Parameters[T]) evaluatorBuffer[T] {
 	ctRelin := NewGLWECiphertext(params)
 	ctRelinT := make([]tfhe.GLWECiphertext[T], params.GLWERank()+1)
@@ -165,8 +165,8 @@ func newEvaluatorBuffer[T tfhe.TorusInt](params Parameters[T]) evaluatorBuffer[T
 	}
 }
 
-// AddEvaluationKey adds an evaluation key for given index.
-// If an evaluation key already exists for given index, it is overwritten.
+// AddEvaluationKey adds an evaluation key for the given index.
+// If an evaluation key already exists for the given index, it is overwritten.
 func (e *Evaluator[T]) AddEvaluationKey(idx int, evk EvaluationKey[T]) {
 	e.SubEvaluators[idx] = tfhe.NewEvaluator(e.Params.subParams, evk.EvaluationKey)
 	e.EvalKey[idx] = evk

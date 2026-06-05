@@ -9,7 +9,7 @@ import (
 type BinaryEvaluator[T tfhe.TorusInt] struct {
 	// BinaryEncoder is an embedded encoder for this BinaryEvaluator.
 	*tfhe.BinaryEncoder[T]
-	// Params is parameters for this BinaryEvaluator.
+	// Params is the parameter set for this BinaryEvaluator.
 	Params Parameters[T]
 	// Evaluator is a generic Evaluator for this BinaryEvaluator.
 	Evaluator *Evaluator[T]
@@ -17,7 +17,7 @@ type BinaryEvaluator[T tfhe.TorusInt] struct {
 	signLUT tfhe.LookUpTable[T]
 }
 
-// NewBinaryEvaluator creates a new BinaryEvaluator based on parameters.
+// NewBinaryEvaluator creates a new [BinaryEvaluator].
 // This does not copy evaluation keys, since they are large.
 func NewBinaryEvaluator[T tfhe.TorusInt](params Parameters[T], evk map[int]EvaluationKey[T]) *BinaryEvaluator[T] {
 	signLUT := tfhe.NewLUT(params.subParams)

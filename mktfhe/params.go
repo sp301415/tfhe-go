@@ -17,13 +17,13 @@ import (
 //
 // # Warning
 //
-// Unless you are a cryptographic expert, DO NOT set these by yourself;
+// Unless you are a cryptographic expert, DO NOT set these yourself;
 // always use the default parameters provided.
 type ParametersLiteral[T tfhe.TorusInt] struct {
 	// SubParams is the single-key ParametersLiteral for this multi-key Parameters.
 	SubParams tfhe.ParametersLiteral[T]
 
-	// PartyCount is the number of maximum parties that this parameter supports.
+	// PartyCount is the maximum number of parties that this parameter supports.
 	PartyCount int
 
 	// AccumulatorParams is the gadget parameters for the accumulator.
@@ -106,13 +106,13 @@ func (p ParametersLiteral[T]) WithBootstrapOrder(bootstrapOrder tfhe.BootstrapOr
 
 // Compile transforms ParametersLiteral to read-only Parameters.
 // If there is any invalid parameter in the literal, it panics.
-// Default parameters are guaranteed to be compiled without panics.
+// Default parameters are guaranteed to compile without panicking.
 //
 // # Warning
 //
 // This method performs only basic sanity checks.
 // Just because a parameter compiles does not necessarily mean it is safe or correct.
-// Unless you are a cryptographic expert, DO NOT set parameters by yourself;
+// Unless you are a cryptographic expert, DO NOT set parameters yourself;
 // always use the default parameters provided.
 func (p ParametersLiteral[T]) Compile() Parameters[T] {
 	subParams := p.SubParams.Compile()
@@ -141,7 +141,7 @@ type Parameters[T tfhe.TorusInt] struct {
 	// SingleKeyParameters is a single-key Parameters for this multi-key Parameters.
 	subParams tfhe.Parameters[T]
 
-	// PartyCount is the number of maximum parties
+	// PartyCount is the maximum number of parties
 	// that this parameter supports.
 	partyCount int
 
@@ -151,7 +151,7 @@ type Parameters[T tfhe.TorusInt] struct {
 	relinKeyParams tfhe.GadgetParameters[T]
 }
 
-// PartyCount returns the number of maximum parties
+// PartyCount returns the maximum number of parties
 // that this parameter supports.
 func (p Parameters[T]) PartyCount() int {
 	return p.partyCount
@@ -229,12 +229,12 @@ func (p Parameters[T]) GLWEStdDevQ() float64 {
 	return p.subParams.GLWEStdDevQ()
 }
 
-// BlockSize is the size of block to be used for LWE key sampling.
+// BlockSize is the size of the block to be used for LWE key sampling.
 func (p Parameters[T]) BlockSize() int {
 	return p.subParams.BlockSize()
 }
 
-// BlockCount is a number of blocks in LWESecretkey. Equal to LWEDimension / BlockSize.
+// BlockCount is the number of blocks in LWESecretKey. Equal to LWEDimension / BlockSize.
 func (p Parameters[T]) BlockCount() int {
 	return p.subParams.BlockCount()
 }

@@ -10,16 +10,16 @@ import (
 // For more details, see https://eprint.iacr.org/2024/1318.
 //
 // CircuitBootstrapper is not safe for concurrent use.
-// Use [*CircuitBootstrapper.SafeCopy] to get a safe copy.
+// Use [CircuitBootstrapper.SafeCopy] to get a safe copy.
 type CircuitBootstrapper[T tfhe.TorusInt] struct {
-	// Evaluator is an embedded Evaluator for this CircuitBootstrapper.
+	// ManyLUTEvaluator is an embedded Evaluator for this CircuitBootstrapper.
 	*ManyLUTEvaluator[T]
 	// BFVEvaluator is an embedded BFVEvaluator for this CircuitBootstrapper.
 	*BFVEvaluator[T]
 	// Decomposer is a Decomposer for this CircuitBootstrapper.
 	Decomposer *tfhe.Decomposer[T]
 
-	// Params is parameters for this CircuitBootstrapper.
+	// Params is the parameter set for this CircuitBootstrapper.
 	Params CircuitBootstrapParameters[T]
 
 	// EvalKey is a circuit bootstrapping key for this CircuitBootstrapper.
@@ -30,7 +30,7 @@ type CircuitBootstrapper[T tfhe.TorusInt] struct {
 
 // circuitBootstrapBuffer is a buffer for CircuitBootstrapper.
 type circuitBootstrapBuffer[T tfhe.TorusInt] struct {
-	// fs are the functions for LUT.
+	// fs are the functions for the LUT.
 	fs []func(x int) T
 	// lut is an empty lut.
 	lut tfhe.LookUpTable[T]
@@ -50,16 +50,16 @@ type circuitBootstrapBuffer[T tfhe.TorusInt] struct {
 	ctGGSWOut tfhe.GGSWCiphertext[T]
 }
 
-// NewCircuitBootstrapper creates a new CircuitBootstrapper.
-// For circuit bootstrapping, we need relin key and galois keys for LWE to GLWE.
+// NewCircuitBootstrapper creates a new [CircuitBootstrapper].
+// For circuit bootstrapping, we need a relin key and Galois keys for LWE to GLWE.
 func NewCircuitBootstrapper[T tfhe.TorusInt](params CircuitBootstrapParameters[T], evk tfhe.EvaluationKey[T], cbk CircuitBootstrapKey[T]) *CircuitBootstrapper[T] {
-	decomposer := tfhe.NewDecomposer[T](params.Params().PolyRank())
+	decomposer := tfhe.NewDecomposer[T](params.BaseParams().PolyRank())
 	decomposer.PolyBuffer(params.schemeSwitchParameters)
 	decomposer.FFTPolyBuffer(params.schemeSwitchParameters)
 
 	return &CircuitBootstrapper[T]{
 		ManyLUTEvaluator: NewManyLUTEvaluator(params.manyLUTParameters, evk),
-		BFVEvaluator:     NewBFVEvaluator(params.Params(), BFVEvaluationKey[T]{GaloisKeys: cbk.TraceKeys}),
+		BFVEvaluator:     NewBFVEvaluator(params.BaseParams(), BFVEvaluationKey[T]{GaloisKeys: cbk.TraceKeys}),
 		Decomposer:       decomposer,
 
 		Params:  params,
@@ -69,32 +69,32 @@ func NewCircuitBootstrapper[T tfhe.TorusInt](params CircuitBootstrapParameters[T
 	}
 }
 
-// newCircuitBootstrapBuffer creates a new circuitBootstrapBuffer.
+// newCircuitBootstrapBuffer creates a new [circuitBootstrapBuffer].
 func newCircuitBootstrapBuffer[T tfhe.TorusInt](params CircuitBootstrapParameters[T]) circuitBootstrapBuffer[T] {
 	fs := make([]func(x int) T, params.manyLUTParameters.lutCount)
 	for i := 0; i < params.manyLUTParameters.lutCount; i++ {
 		fs[i] = func(x int) T { return 0 }
 	}
 
-	ctFFTDcmp := make([][]poly.FFTPoly, params.Params().GLWERank()+1)
-	for i := 0; i < params.Params().GLWERank()+1; i++ {
+	ctFFTDcmp := make([][]poly.FFTPoly, params.BaseParams().GLWERank()+1)
+	for i := 0; i < params.BaseParams().GLWERank()+1; i++ {
 		ctFFTDcmp[i] = make([]poly.FFTPoly, params.schemeSwitchParameters.Level())
 		for j := 0; j < params.schemeSwitchParameters.Level(); j++ {
-			ctFFTDcmp[i][j] = poly.NewFFTPoly(params.Params().PolyRank())
+			ctFFTDcmp[i][j] = poly.NewFFTPoly(params.BaseParams().PolyRank())
 		}
 	}
 
 	return circuitBootstrapBuffer[T]{
 		fs:  fs,
-		lut: tfhe.NewLUT(params.Params()),
+		lut: tfhe.NewLUT(params.BaseParams()),
 
 		ctFFTDcmp: ctFFTDcmp,
 
-		ctKeySwitch:  tfhe.NewLWECiphertextCustom[T](params.Params().LWEDimension()),
-		ctPack:       tfhe.NewGLWECiphertext(params.Params()),
-		ctRotate:     tfhe.NewGLWECiphertext(params.Params()),
-		ctFFTGLWEOut: tfhe.NewFFTGLWECiphertext(params.Params()),
-		ctGGSWOut:    tfhe.NewGGSWCiphertext(params.Params(), params.outputParameters),
+		ctKeySwitch:  tfhe.NewLWECiphertextCustom[T](params.BaseParams().LWEDimension()),
+		ctPack:       tfhe.NewGLWECiphertext(params.BaseParams()),
+		ctRotate:     tfhe.NewGLWECiphertext(params.BaseParams()),
+		ctFFTGLWEOut: tfhe.NewFFTGLWECiphertext(params.BaseParams()),
+		ctGGSWOut:    tfhe.NewGGSWCiphertext(params.BaseParams(), params.outputParameters),
 	}
 }
 
@@ -115,7 +115,7 @@ func (e *CircuitBootstrapper[T]) SafeCopy() *CircuitBootstrapper[T] {
 
 // CircuitBootstrap performs Circuit Bootstrapping and returns the result.
 func (e *CircuitBootstrapper[T]) CircuitBootstrap(ct tfhe.LWECiphertext[T]) tfhe.FFTGGSWCiphertext[T] {
-	ctOut := tfhe.NewFFTGGSWCiphertext(e.Params.Params(), e.Params.outputParameters)
+	ctOut := tfhe.NewFFTGGSWCiphertext(e.Params.BaseParams(), e.Params.outputParameters)
 	e.CircuitBootstrapTo(ctOut, ct)
 	return ctOut
 }
@@ -137,7 +137,7 @@ func (e *CircuitBootstrapper[T]) CircuitBootstrapTo(ctOut tfhe.FFTGGSWCiphertext
 		}
 
 		e.GenLUTFullTo(e.buf.lut, e.buf.fs)
-		switch e.Params.Params().BootstrapOrder() {
+		switch e.Params.BaseParams().BootstrapOrder() {
 		case tfhe.OrderBlindRotateKeySwitch:
 			e.BlindRotateTo(e.buf.ctRotate, ct, e.buf.lut)
 		case tfhe.OrderKeySwitchBlindRotate:
@@ -145,29 +145,29 @@ func (e *CircuitBootstrapper[T]) CircuitBootstrapTo(ctOut tfhe.FFTGGSWCiphertext
 			e.BlindRotateTo(e.buf.ctRotate, e.buf.ctKeySwitch, e.buf.lut)
 		}
 
-		for j := 0; j < e.Params.Params().GLWERank()+1; j++ {
-			for k := 0; k < e.Params.Params().PolyRank(); k++ {
-				e.buf.ctRotate.Value[j].Coeffs[k] = num.DivRoundBits(e.buf.ctRotate.Value[j].Coeffs[k], e.Params.Params().LogPolyRank())
+		for j := 0; j < e.Params.BaseParams().GLWERank()+1; j++ {
+			for k := 0; k < e.Params.BaseParams().PolyRank(); k++ {
+				e.buf.ctRotate.Value[j].Coeffs[k] = num.DivRoundBits(e.buf.ctRotate.Value[j].Coeffs[k], e.Params.BaseParams().LogPolyRank())
 			}
 		}
 
 		for j, jj := start, 0; j < end; j, jj = j+1, jj+1 {
 			e.MonomialMulGLWETo(e.buf.ctGGSWOut.Value[0].Value[j], e.buf.ctRotate, -jj)
-			for k := 0; k < e.Params.Params().LogPolyRank(); k++ {
-				e.PermuteTo(e.buf.ctPack, e.buf.ctGGSWOut.Value[0].Value[j], 1<<(e.Params.Params().LogPolyRank()-k)+1)
+			for k := 0; k < e.Params.BaseParams().LogPolyRank(); k++ {
+				e.PermuteTo(e.buf.ctPack, e.buf.ctGGSWOut.Value[0].Value[j], 1<<(e.Params.BaseParams().LogPolyRank()-k)+1)
 				e.AddGLWETo(e.buf.ctGGSWOut.Value[0].Value[j], e.buf.ctGGSWOut.Value[0].Value[j], e.buf.ctPack)
 			}
 
-			for k := 0; k < e.Params.Params().GLWERank()+1; k++ {
+			for k := 0; k < e.Params.BaseParams().GLWERank()+1; k++ {
 				e.Decomposer.DecomposePolyTo(pDcmp, e.buf.ctGGSWOut.Value[0].Value[j].Value[k], e.Params.schemeSwitchParameters)
 				for l := 0; l < e.Params.schemeSwitchParameters.Level(); l++ {
 					e.PolyEvaluator.FwdFFTTo(e.buf.ctFFTDcmp[k][l], pDcmp[l])
 				}
 			}
 
-			for k := 0; k < e.Params.Params().GLWERank(); k++ {
+			for k := 0; k < e.Params.BaseParams().GLWERank(); k++ {
 				e.ExternalProdFFTGLWETo(e.buf.ctFFTGLWEOut, e.EvalKey.SchemeSwitchKey[k], e.buf.ctFFTDcmp)
-				for l := 0; l < e.Params.Params().GLWERank()+1; l++ {
+				for l := 0; l < e.Params.BaseParams().GLWERank()+1; l++ {
 					e.PolyEvaluator.InvFFTToUnsafe(e.buf.ctGGSWOut.Value[k+1].Value[j].Value[l], e.buf.ctFFTGLWEOut.Value[l])
 				}
 			}

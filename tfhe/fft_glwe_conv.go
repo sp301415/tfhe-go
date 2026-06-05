@@ -8,13 +8,13 @@ import "github.com/sp301415/tfhe-go/math/poly"
 // so usually manual instantiation isn't needed.
 //
 // GLWETransformer is not safe for concurrent use.
-// Use [*GLWETransformer.SafeCopy] to get a safe copy.
+// Use [GLWETransformer.SafeCopy] to get a safe copy.
 type GLWETransformer[T TorusInt] struct {
 	// PolyEvaluator is a PolyEvaluator for this GLWETransformer.
 	PolyEvaluator *poly.Evaluator[T]
 }
 
-// NewGLWETransformer returns a new GLWETransformer with given parameters.
+// NewGLWETransformer returns a new [GLWETransformer].
 func NewGLWETransformer[T TorusInt](N int) *GLWETransformer[T] {
 	return &GLWETransformer[T]{
 		PolyEvaluator: poly.NewEvaluator[T](N),

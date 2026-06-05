@@ -14,7 +14,7 @@ import (
 const bufSize = 8192
 
 // UniformSampler samples values from uniform distribution.
-// This uses AES-CTR as a underlying prng.
+// This uses AES-CTR as the underlying PRNG.
 type UniformSampler[T num.Integer] struct {
 	prng cipher.Stream
 
@@ -25,9 +25,9 @@ type UniformSampler[T num.Integer] struct {
 	maxT      T
 }
 
-// NewUniformSampler creates a new UniformSampler.
+// NewUniformSampler creates a new [UniformSampler].
 //
-// Panics when read from crypto/rand or AES initialization fails.
+// Panics when reading from crypto/rand fails or AES initialization fails.
 func NewUniformSampler[T num.Integer]() *UniformSampler[T] {
 	var seed [32]byte
 	if _, err := rand.Read(seed[:]); err != nil {
@@ -37,7 +37,7 @@ func NewUniformSampler[T num.Integer]() *UniformSampler[T] {
 	return NewUniformSamplerWithSeed[T](seed[:])
 }
 
-// NewUniformSamplerWithSeed creates a new UniformSampler, with user supplied seed.
+// NewUniformSamplerWithSeed creates a new [UniformSampler] with a user-supplied seed.
 //
 // Panics when AES initialization fails.
 func NewUniformSamplerWithSeed[T num.Integer](seed []byte) *UniformSampler[T] {

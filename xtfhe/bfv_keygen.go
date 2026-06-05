@@ -17,18 +17,18 @@ type BFVEvaluationKey[T tfhe.TorusInt] struct {
 // BFVKeyGenerator generates keyswitching keys for BFV type operations.
 //
 // BFVKeyGenerator is not safe for concurrent use.
-// Use [*BFVKeyGenerator.SafeCopy] to get a safe copy.
+// Use [BFVKeyGenerator.SafeCopy] to get a safe copy.
 type BFVKeyGenerator[T tfhe.TorusInt] struct {
 	// Encryptor is a base encryptor for this BFVKeyGenerator.
 	Encryptor *tfhe.Encryptor[T]
 	// PolyEvaluator is a PolyEvaluator for this BFVKeyGenerator.
 	PolyEvaluator *poly.Evaluator[T]
 
-	// Params is parameters for this BFVKeyGenerator.
+	// Params is the parameter set for this BFVKeyGenerator.
 	Params tfhe.Parameters[T]
 }
 
-// NewBFVKeyGenerator creates a new BFVKeyGenerator.
+// NewBFVKeyGenerator creates a new [BFVKeyGenerator].
 func NewBFVKeyGenerator[T tfhe.TorusInt](params tfhe.Parameters[T], sk tfhe.SecretKey[T]) *BFVKeyGenerator[T] {
 	return &BFVKeyGenerator[T]{
 		Encryptor:     tfhe.NewEncryptorWithKey(params, sk),
@@ -75,7 +75,7 @@ func (kg *BFVKeyGenerator[T]) GenRelinKey(kskParams tfhe.GadgetParameters[T]) tf
 	return kg.Encryptor.GenGLWEKeySwitchKey(skOut, kskParams)
 }
 
-// GenGaloisKeys generate galois keys for BFV automorphism.
+// GenGaloisKeys generates Galois keys for BFV automorphism.
 func (kg *BFVKeyGenerator[T]) GenGaloisKeys(idx []int, kskParams tfhe.GadgetParameters[T]) map[int]tfhe.GLWEKeySwitchKey[T] {
 	galKeys := make(map[int]tfhe.GLWEKeySwitchKey[T], len(idx))
 	skOut := tfhe.NewGLWESecretKey(kg.Params)

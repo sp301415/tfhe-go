@@ -6,13 +6,13 @@ package tfhe
 //
 // BinaryEncoder is safe for concurrent use.
 type BinaryEncoder[T TorusInt] struct {
-	// Params is parameters for this Encoder.
+	// Params is the parameter set for this Encoder.
 	Params Parameters[T]
 	// Encoder is a generic Encoder for this BinaryEncoder.
 	Encoder *Encoder[T]
 }
 
-// NewBinaryEncoder returns a initialized BinaryEncoder with given parameters.
+// NewBinaryEncoder creates a new [BinaryEncoder].
 func NewBinaryEncoder[T TorusInt](params Parameters[T]) *BinaryEncoder[T] {
 	return &BinaryEncoder[T]{
 		Params:  params,

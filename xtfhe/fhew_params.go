@@ -11,11 +11,11 @@ import (
 //
 // BlockSize must be 1, and PolyRank does not equal LUTSize.
 type FHEWParametersLiteral[T tfhe.TorusInt] struct {
-	// BaseParams is a base parameters for this FHEWParametersLiteral.
+	// BaseParams is the base parameter set for this FHEWParametersLiteral.
 	BaseParams tfhe.ParametersLiteral[T]
 
 	// SecretKeyStdDev is the standard deviation of the secret key.
-	// Must be smaller than [poly.ShortPolyBound] / 8Q.
+	// Must be smaller than 2^[poly.ShortLogBound] / 8Q.
 	SecretKeyStdDev float64
 
 	// WindowSize is the window size for the FHEW blind rotation.
@@ -24,7 +24,7 @@ type FHEWParametersLiteral[T tfhe.TorusInt] struct {
 
 // Compile transforms ParametersLiteral to read-only Parameters.
 // If there is any invalid parameter in the literal, it panics.
-// Default parameters are guaranteed to be compiled without panics.
+// Default parameters are guaranteed to compile without panicking.
 func (p FHEWParametersLiteral[T]) Compile() FHEWParameters[T] {
 	baseParams := p.BaseParams.Compile()
 
@@ -53,11 +53,11 @@ func (p FHEWParametersLiteral[T]) Compile() FHEWParameters[T] {
 
 // FHEWParameters are read-only, compiled parameters for FHEW.
 type FHEWParameters[T tfhe.TorusInt] struct {
-	// BaseParams is a base parameters for this FHEWParameters.
+	// BaseParams is the base parameter set for this FHEWParameters.
 	baseParams tfhe.Parameters[T]
 
 	// SecretKeyStdDev is the standard deviation of the secret key.
-	// Must be smaller than [poly.ShortPolyBound] / 8Q.
+	// Must be smaller than 2^[poly.ShortLogBound] / 8Q.
 	secretKeyStdDev float64
 
 	// WindowSize is the window size for the FHEW blind rotation.

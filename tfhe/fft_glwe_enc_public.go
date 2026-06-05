@@ -5,7 +5,7 @@ func (e *PublicEncryptor[T]) EncryptFFTGLWE(messages []int) FFTGLWECiphertext[T]
 	return e.EncryptFFTGLWEPlaintext(e.EncodeGLWE(messages))
 }
 
-// EncryptFFTGLWETo encrypts and encrypts integer messages to FFTGLWE ciphertext and writes it to ctOut.
+// EncryptFFTGLWETo encodes and encrypts integer messages to FFTGLWE ciphertext and writes it to ctOut.
 func (e *PublicEncryptor[T]) EncryptFFTGLWETo(ctOut FFTGLWECiphertext[T], messages []int) {
 	e.EncryptFFTGLWEPlaintextTo(ctOut, e.EncodeGLWE(messages))
 }

@@ -11,7 +11,7 @@ type GLWETransformer[T tfhe.TorusInt] struct {
 	PolyEvaluator *poly.Evaluator[T]
 }
 
-// NewGLWETransformer creates a new GLWE transformer with given parameters.
+// NewGLWETransformer creates a new GLWE [GLWETransformer].
 func NewGLWETransformer[T tfhe.TorusInt](N int) *GLWETransformer[T] {
 	return &GLWETransformer[T]{
 		PolyEvaluator: poly.NewEvaluator[T](N),

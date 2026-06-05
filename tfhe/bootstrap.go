@@ -4,26 +4,26 @@ import (
 	"math"
 )
 
-// BootstrapFunc returns a bootstrapped LWE ciphertext with respect to given function.
+// BootstrapFunc returns a bootstrapped LWE ciphertext with respect to the given function.
 func (e *Evaluator[T]) BootstrapFunc(ct LWECiphertext[T], f func(int) int) LWECiphertext[T] {
 	e.GenLUTTo(e.buf.lut, f)
 	return e.BootstrapLUT(ct, e.buf.lut)
 }
 
-// BootstrapFuncTo bootstraps LWE ciphertext with respect to given function and writes it to ctOut.
+// BootstrapFuncTo bootstraps LWE ciphertext with respect to the given function and writes it to ctOut.
 func (e *Evaluator[T]) BootstrapFuncTo(ctOut, ct LWECiphertext[T], f func(int) int) {
 	e.GenLUTTo(e.buf.lut, f)
 	e.BootstrapLUTTo(ctOut, ct, e.buf.lut)
 }
 
-// BootstrapLUT returns a bootstrapped LWE ciphertext with respect to given LUT.
+// BootstrapLUT returns a bootstrapped LWE ciphertext with respect to the given LUT.
 func (e *Evaluator[T]) BootstrapLUT(ct LWECiphertext[T], lut LookUpTable[T]) LWECiphertext[T] {
 	ctOut := NewLWECiphertext(e.Params)
 	e.BootstrapLUTTo(ctOut, ct, lut)
 	return ctOut
 }
 
-// BootstrapLUTTo bootstraps LWE ciphertext with respect to given LUT and writes it to ctOut.
+// BootstrapLUTTo bootstraps LWE ciphertext with respect to the given LUT and writes it to ctOut.
 func (e *Evaluator[T]) BootstrapLUTTo(ctOut, ct LWECiphertext[T], lut LookUpTable[T]) {
 	switch e.Params.bootstrapOrder {
 	case OrderKeySwitchBlindRotate:

@@ -10,7 +10,7 @@ type FHEWEncryptor[T tfhe.TorusInt] struct {
 	// Encryptor is an embedded [tfhe.Encryptor] for this FHEWEncryptor.
 	*tfhe.Encryptor[T]
 
-	// Params is parameters for this FHEWEncryptor.
+	// Params is the parameter set for this FHEWEncryptor.
 	Params FHEWParameters[T]
 
 	buf fhewEncryptorBuffer[T]
@@ -20,13 +20,13 @@ type FHEWEncryptor[T tfhe.TorusInt] struct {
 type fhewEncryptorBuffer[T tfhe.TorusInt] struct {
 	// skPermute is a permuted secret key.
 	skPermute tfhe.GLWESecretKey[T]
-	// ctGLWE is a standard GLWE Ciphertext for Fourier encryption / decryptions.
+	// ctGLWE is a standard GLWE Ciphertext for Fourier encryption and decryption.
 	ctGLWE tfhe.GLWECiphertext[T]
 	// ptGGSW is GLWEKey * Pt in GGSW encryption.
 	ptGGSW poly.Poly[T]
 }
 
-// NewFHEWEncryptor creates a new FHEWEncryptor.
+// NewFHEWEncryptor creates a new [FHEWEncryptor].
 func NewFHEWEncryptor[T tfhe.TorusInt](params FHEWParameters[T]) *FHEWEncryptor[T] {
 	encryptor := FHEWEncryptor[T]{
 		Encryptor: tfhe.NewEncryptorWithKey(params.BaseParams(), tfhe.SecretKey[T]{}),
@@ -38,7 +38,7 @@ func NewFHEWEncryptor[T tfhe.TorusInt](params FHEWParameters[T]) *FHEWEncryptor[
 	return &encryptor
 }
 
-// NewFHEWEncryptorWithKey creates a new FHEWEncryptor with given parameters and secret key.
+// NewFHEWEncryptorWithKey creates a new [FHEWEncryptor] with given parameters and secret key.
 func NewFHEWEncryptorWithKey[T tfhe.TorusInt](params FHEWParameters[T], sk tfhe.SecretKey[T]) *FHEWEncryptor[T] {
 	return &FHEWEncryptor[T]{
 		Encryptor: tfhe.NewEncryptorWithKey(params.BaseParams(), sk),
@@ -47,7 +47,7 @@ func NewFHEWEncryptorWithKey[T tfhe.TorusInt](params FHEWParameters[T], sk tfhe.
 	}
 }
 
-// newFHEWEncryptorBuffer creates a new fhewEncryptorBuffer.
+// newFHEWEncryptorBuffer creates a new [fhewEncryptorBuffer].
 func newFHEWEncryptorBuffer[T tfhe.TorusInt](params FHEWParameters[T]) fhewEncryptorBuffer[T] {
 	return fhewEncryptorBuffer[T]{
 		skPermute: tfhe.NewGLWESecretKey(params.BaseParams()),

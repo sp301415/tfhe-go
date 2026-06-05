@@ -10,20 +10,20 @@ import (
 // Ideally, a multi-key ciphertext should be decrypted
 // by a distributed decryption protocol.
 // However, in TFHE, this procedure is very difficult and slow.
-// Therefore, we provide a all-knowing decryptor for simplicity.
+// Therefore, we provide an all-knowing decryptor for simplicity.
 //
 // Decryptor is not safe for concurrent use.
-// Use [*Decryptor.SafeCopy] to get a safe copy.
+// Use [Decryptor.SafeCopy] to get a safe copy.
 type Decryptor[T tfhe.TorusInt] struct {
 	// Encoder is an embedded Encoder for this Decryptor.
 	*tfhe.Encoder[T]
 	// GLWETransformer is an embedded GLWETransformer for this Decryptor.
 	*GLWETransformer[T]
-	// SubDecryptors are single-key Encryptors for this Decryptor.
+	// SubDecryptors are single-key Encryptor instances used by this Decryptor.
 	// If a secret key of a given index does not exist, it is nil.
 	SubDecryptors []*tfhe.Encryptor[T]
 
-	// Params is parameters for the decryptor.
+	// Params is the parameter set for this Decryptor.
 	Params Parameters[T]
 	// PartyBitMap is a bitmap for parties.
 	// If a party of a given index exists, it is true.
@@ -50,7 +50,7 @@ type decryptorBuffer[T tfhe.TorusInt] struct {
 	ctSubGLWE tfhe.GLWECiphertext[T]
 }
 
-// NewDecryptor creates a new Decryptor.
+// NewDecryptor creates a new [Decryptor].
 // Only indices between 0 and params.PartyCount is valid for sk.
 func NewDecryptor[T tfhe.TorusInt](params Parameters[T], sk map[int]tfhe.SecretKey[T]) *Decryptor[T] {
 	subEncs := make([]*tfhe.Encryptor[T], len(sk))
@@ -76,7 +76,7 @@ func NewDecryptor[T tfhe.TorusInt](params Parameters[T], sk map[int]tfhe.SecretK
 	}
 }
 
-// newDecryptorBuffer creates a new decryptorBuffer.
+// newDecryptorBuffer creates a new [decryptorBuffer].
 func newDecryptorBuffer[T tfhe.TorusInt](params Parameters[T]) decryptorBuffer[T] {
 	return decryptorBuffer[T]{
 		ptGLWE: tfhe.NewGLWEPlaintext(params.subParams),

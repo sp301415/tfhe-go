@@ -11,7 +11,7 @@ import (
 // GenEvalKey samples a new evaluation key for bootstrapping.
 //
 // This can take a long time.
-// Use [*Encryptor.GenEvalKeyParallel] for better key generation performance.
+// Use [Encryptor.GenEvalKeyParallel] for better key generation performance.
 func (e *Encryptor[T]) GenEvalKey() EvaluationKey[T] {
 	return EvaluationKey[T]{
 		BlindRotateKey: e.GenBlindRotateKey(),
@@ -30,7 +30,7 @@ func (e *Encryptor[T]) GenEvalKeyParallel() EvaluationKey[T] {
 // GenBlindRotateKey samples a new bootstrapping key.
 //
 // This can take a long time.
-// Use [*Encryptor.GenBlindRotateKeyParallel] for better key generation performance.
+// Use [Encryptor.GenBlindRotateKeyParallel] for better key generation performance.
 func (e *Encryptor[T]) GenBlindRotateKey() BlindRotateKey[T] {
 	brk := NewBlindRotateKey(e.Params)
 
@@ -107,7 +107,7 @@ func (e *Encryptor[T]) GenBlindRotateKeyParallel() BlindRotateKey[T] {
 // used for bootstrapping.
 //
 // This can take a long time.
-// Use [*Encryptor.GenDefaultKeySwitchKeyParallel] for better key generation performance.
+// Use [Encryptor.GenDefaultKeySwitchKeyParallel] for better key generation performance.
 func (e *Encryptor[T]) GenDefaultKeySwitchKey() LWEKeySwitchKey[T] {
 	skIn := LWESecretKey[T]{Value: e.SecretKey.LWELargeKey.Value[e.Params.lweDimension:]}
 	ksk := NewKeySwitchKeyForBootstrap(e.Params)

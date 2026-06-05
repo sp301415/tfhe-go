@@ -15,7 +15,7 @@ type Encryptor[T tfhe.TorusInt] struct {
 	// SubEncryptor is a single-key Encryptor for this Encryptor.
 	SubEncryptor *tfhe.Encryptor[T]
 
-	// Params is parameters for this Encryptor.
+	// Params is the parameter set for this Encryptor.
 	Params Parameters[T]
 	// Index is the index of the party.
 	Index int
@@ -48,7 +48,7 @@ type encryptorBuffer[T tfhe.TorusInt] struct {
 	ctSubGLWE tfhe.GLWECiphertext[T]
 }
 
-// NewEncryptor creates a new Encryptor.
+// NewEncryptor creates a new [Encryptor].
 func NewEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte) *Encryptor[T] {
 	if idx > params.partyCount {
 		panic("index larger than PartyCount")
@@ -79,7 +79,7 @@ func NewEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte
 	}
 }
 
-// NewEncryptorWithKey creates a new Encryptor with a given key.
+// NewEncryptorWithKey creates a new [Encryptor] with a given key.
 //
 // Panics if the index is larger than PartyCount.
 func NewEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte, sk tfhe.SecretKey[T]) *Encryptor[T] {
@@ -110,7 +110,7 @@ func NewEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed
 	}
 }
 
-// newEncryptorBuffer creates a new encryptorBuffer.
+// newEncryptorBuffer creates a new [encryptorBuffer].
 func newEncryptorBuffer[T tfhe.TorusInt](params Parameters[T]) encryptorBuffer[T] {
 	return encryptorBuffer[T]{
 		ptGLWE: tfhe.NewGLWEPlaintext(params.subParams),
@@ -214,7 +214,7 @@ func (e *Encryptor[T]) EncryptFFTGLWE(messages []int) FFTGLWECiphertext[T] {
 	return e.EncryptFFTGLWEPlaintext(e.EncodeGLWE(messages))
 }
 
-// EncryptFFTGLWETo encrypts and encrypts integer messages to FFTGLWE ciphertext and writes it to ctOut.
+// EncryptFFTGLWETo encodes and encrypts integer messages to FFTGLWE ciphertext and writes it to ctOut.
 func (e *Encryptor[T]) EncryptFFTGLWETo(ctOut FFTGLWECiphertext[T], messages []int) {
 	e.EncryptFFTGLWEPlaintextTo(ctOut, e.EncodeGLWE(messages))
 }

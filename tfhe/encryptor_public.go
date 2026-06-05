@@ -12,14 +12,14 @@ import (
 // This means that not all parameters support public key encryption.
 //
 // PublicEncryptor is not safe for concurrent use.
-// Use [*PublicEncryptor.SafeCopy] to get a safe copy.
+// Use [PublicEncryptor.SafeCopy] to get a safe copy.
 type PublicEncryptor[T TorusInt] struct {
 	// Encoder is an embedded encoder for this PublicEncryptor.
 	*Encoder[T]
 	// GLWETransformer is an embedded GLWETransformer for this PublicEncryptor.
 	*GLWETransformer[T]
 
-	// Params is a parameters for this PublicEncryptor.
+	// Params is the parameter set for this PublicEncryptor.
 	Params Parameters[T]
 
 	// UniformSampler is used for sampling the mask of encryptions.
@@ -40,9 +40,9 @@ type PublicEncryptor[T TorusInt] struct {
 
 // publicEncryptorBuffer is a buffer for PublicEncryptor.
 type publicEncryptorBuffer[T TorusInt] struct {
-	// ptGLWE is a GLWE plaintext for GLWE encryption / decryptions.
+	// ptGLWE is a GLWE plaintext for GLWE encryption and decryption.
 	ptGLWE GLWEPlaintext[T]
-	// ctGLWE is a standard GLWE Ciphertext for Fourier encryption / decryptions.
+	// ctGLWE is a standard GLWE Ciphertext for Fourier encryption and decryption.
 	ctGLWE GLWECiphertext[T]
 
 	// auxKey is an auxiliary key for encryption.
@@ -52,7 +52,7 @@ type publicEncryptorBuffer[T TorusInt] struct {
 	auxFourierKey FFTGLWESecretKey[T]
 }
 
-// NewPublicEncryptor creates a new PublicEncryptor.
+// NewPublicEncryptor creates a new [PublicEncryptor].
 //
 // Panics when the parameters do not support public key encryption.
 func NewPublicEncryptor[T TorusInt](params Parameters[T], pk PublicKey[T]) *PublicEncryptor[T] {
@@ -78,7 +78,7 @@ func NewPublicEncryptor[T TorusInt](params Parameters[T], pk PublicKey[T]) *Publ
 	}
 }
 
-// newPublicEncryptorBuffer creates a new publicEncryptorBuffer.
+// newPublicEncryptorBuffer creates a new [publicEncryptorBuffer].
 func newPublicEncryptorBuffer[T TorusInt](params Parameters[T]) publicEncryptorBuffer[T] {
 	return publicEncryptorBuffer[T]{
 		ptGLWE: NewGLWEPlaintext(params),

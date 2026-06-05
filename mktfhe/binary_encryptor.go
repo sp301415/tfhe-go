@@ -8,13 +8,13 @@ import (
 type BinaryEncryptor[T tfhe.TorusInt] struct {
 	// BinaryEncoder is an embedded encoder for this BinaryEncryptor.
 	*tfhe.BinaryEncoder[T]
-	// Params is parameters for this BinaryEncryptor.
+	// Params is the parameter set for this BinaryEncryptor.
 	Params Parameters[T]
 	// Encryptor is a generic Encryptor for this BinaryEncryptor.
 	Encryptor *Encryptor[T]
 }
 
-// NewBinaryEncryptor creates a new BinaryEncryptor.
+// NewBinaryEncryptor creates a new [BinaryEncryptor].
 func NewBinaryEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte) *BinaryEncryptor[T] {
 	return &BinaryEncryptor[T]{
 		BinaryEncoder: tfhe.NewBinaryEncoder(params.subParams),
@@ -23,7 +23,7 @@ func NewBinaryEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed 
 	}
 }
 
-// NewBinaryEncryptorWithKey creates a new BinaryEncryptor with a given key.
+// NewBinaryEncryptorWithKey creates a new [BinaryEncryptor] with a given key.
 func NewBinaryEncryptorWithKey[T tfhe.TorusInt](params Parameters[T], idx int, crsSeed []byte, sk tfhe.SecretKey[T]) *BinaryEncryptor[T] {
 	return &BinaryEncryptor[T]{
 		BinaryEncoder: tfhe.NewBinaryEncoder(params.subParams),
@@ -58,7 +58,7 @@ func (e *BinaryEncryptor[T]) EncryptLWEBoolTo(ctOut LWECiphertext[T], message bo
 }
 
 // EncryptLWEBits encrypts each bits of an integer message.
-// The order of the bits are little-endian.
+// The order of the bits is little-endian.
 func (e *BinaryEncryptor[T]) EncryptLWEBits(message, bits int) []LWECiphertext[T] {
 	ctOut := make([]LWECiphertext[T], bits)
 	e.EncryptLWEBitsTo(ctOut, message)
@@ -66,7 +66,7 @@ func (e *BinaryEncryptor[T]) EncryptLWEBits(message, bits int) []LWECiphertext[T
 }
 
 // EncryptLWEBitsTo encrypts each bits of an integer message.
-// The order of the bits are little-endian,
+// The order of the bits is little-endian,
 // and will be cut by the length of ctOut.
 func (e *BinaryEncryptor[T]) EncryptLWEBitsTo(ctOut []LWECiphertext[T], message int) {
 	for i := 0; i < len(ctOut); i++ {
@@ -78,7 +78,7 @@ func (e *BinaryEncryptor[T]) EncryptLWEBitsTo(ctOut []LWECiphertext[T], message 
 // GenEvalKey samples a new evaluation key for bootstrapping.
 //
 // This can take a long time.
-// Use [*Encryptor.GenEvalKeyParallel] for better key generation performance.
+// Use [Encryptor.GenEvalKeyParallel] for better key generation performance.
 func (e *BinaryEncryptor[T]) GenEvalKey() EvaluationKey[T] {
 	return e.Encryptor.GenEvalKey()
 }

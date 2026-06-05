@@ -26,7 +26,7 @@ func checkLength(xs ...int) {
 	}
 }
 
-// Equals returns if two vectors are equal.
+// Equals returns whether two vectors are equal.
 func Equals[T comparable](v0, v1 []T) bool {
 	if len(v0) != len(v1) {
 		return false

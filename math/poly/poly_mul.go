@@ -218,7 +218,7 @@ func (e *Evaluator[T]) MulSubPolyTo(pOut, p0, p1 Poly[T]) {
 
 // ShortFFTPolyMulPoly returns fpShort * p, under the assumption that fpShort is a short polynomial.
 // (i.e., all coefficients are bounded by [ShortLogBound] bits.)
-// This is faster than [*Evaluator.MulPoly], and the result is exact unlike [*Evaluator.FFTPolyMulPoly].
+// This is faster than [Evaluator.MulPoly], and the result is exact unlike [Evaluator.FFTPolyMulPoly].
 func (e *Evaluator[T]) ShortFFTPolyMulPoly(p Poly[T], fpShort FFTPoly) Poly[T] {
 	pOut := e.NewPoly()
 	e.ShortFFTPolyMulPolyTo(pOut, p, fpShort)
@@ -227,7 +227,7 @@ func (e *Evaluator[T]) ShortFFTPolyMulPoly(p Poly[T], fpShort FFTPoly) Poly[T] {
 
 // ShortFFTPolyMulPolyTo computes pOut = fpShort * p, under the assumption that fpShort is a short polynomial.
 // (i.e., all coefficients are bounded by [ShortLogBound] bits.)
-// This is faster than [*Evaluator.MulPolyTo], and the result is exact unlike [*Evaluator.FFTPolyMulPolyTo].
+// This is faster than [Evaluator.MulPolyTo], and the result is exact unlike [Evaluator.FFTPolyMulPolyTo].
 func (e *Evaluator[T]) ShortFFTPolyMulPolyTo(pOut, p Poly[T], fpShort FFTPoly) {
 	checkLength(e.rank, len(pOut.Coeffs), len(p.Coeffs), len(fpShort.Coeffs))
 
@@ -274,7 +274,7 @@ func (e *Evaluator[T]) ShortFFTPolyMulPolyTo(pOut, p Poly[T], fpShort FFTPoly) {
 
 // ShortFFTPolyMulAddPolyTo computes pOut += fpShort * p, under the assumption that fpShort is a short polynomial.
 // (i.e., all coefficients are bounded by [ShortLogBound] bits.)
-// This is faster than [*Evaluator.MulAddPolyTo], and the result is exact unlike [*Evaluator.FFTPolyMulAddPolyTo].
+// This is faster than [Evaluator.MulAddPolyTo], and the result is exact unlike [Evaluator.FFTPolyMulAddPolyTo].
 func (e *Evaluator[T]) ShortFFTPolyMulAddPolyTo(pOut, p Poly[T], fpShort FFTPoly) {
 	checkLength(e.rank, len(pOut.Coeffs), len(p.Coeffs), len(fpShort.Coeffs))
 
@@ -321,7 +321,7 @@ func (e *Evaluator[T]) ShortFFTPolyMulAddPolyTo(pOut, p Poly[T], fpShort FFTPoly
 
 // ShortFFTPolyMulSubPolyTo computes pOut -= fpShort * p, under the assumption that fpShort is a short polynomial.
 // (i.e., all coefficients are bounded by [ShortLogBound] bits.)
-// This is faster than [*Evaluator.MulSubPolyTo], and the result is exact unlike [*Evaluator.FFTPolyMulSubPolyTo].
+// This is faster than [Evaluator.MulSubPolyTo], and the result is exact unlike [Evaluator.FFTPolyMulSubPolyTo].
 func (e *Evaluator[T]) ShortFFTPolyMulSubPolyTo(pOut, p Poly[T], fpShort FFTPoly) {
 	checkLength(e.rank, len(pOut.Coeffs), len(p.Coeffs), len(fpShort.Coeffs))
 

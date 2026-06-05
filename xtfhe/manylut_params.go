@@ -9,7 +9,7 @@ import (
 //
 // PolyRank does not equal LUTSize.
 type ManyLUTParametersLiteral[T tfhe.TorusInt] struct {
-	// BaseParams is a base parameters for this ManyLUTParametersLiteral.
+	// BaseParams is the base parameter set for this ManyLUTParametersLiteral.
 	BaseParams tfhe.ParametersLiteral[T]
 
 	// LUTCount is the number of LUTs that can be evaluated at once.
@@ -19,7 +19,7 @@ type ManyLUTParametersLiteral[T tfhe.TorusInt] struct {
 
 // Compile transforms ParametersLiteral to read-only Parameters.
 // If there is any invalid parameter in the literal, it panics.
-// Default parameters are guaranteed to be compiled without panics.
+// Default parameters are guaranteed to compile without panicking.
 func (p ManyLUTParametersLiteral[T]) Compile() ManyLUTParameters[T] {
 	baseParams := p.BaseParams.Compile()
 
@@ -40,7 +40,7 @@ func (p ManyLUTParametersLiteral[T]) Compile() ManyLUTParameters[T] {
 
 // ManyLUTParameters is a parameter set for PBSManyLUT.
 type ManyLUTParameters[T tfhe.TorusInt] struct {
-	// baseParams is a base parameters for this ManyLUTParameters.
+	// baseParams is the base parameter set for this ManyLUTParameters.
 	baseParams tfhe.Parameters[T]
 
 	// LUTCount is the number of LUTs that can be evaluated at once.

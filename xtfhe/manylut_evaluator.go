@@ -9,12 +9,12 @@ import (
 // For more details, see https://eprint.iacr.org/2021/729.
 //
 // ManyLUTEvaluator is not safe for concurrent use.
-// Use [*ManyLUTEvaluator.SafeCopy] to get a safe copy.
+// Use [ManyLUTEvaluator.SafeCopy] to get a safe copy.
 type ManyLUTEvaluator[T tfhe.TorusInt] struct {
 	// Evaluator is an embedded Evaluator for this ManyLUTEvaluator.
 	*tfhe.Evaluator[T]
 
-	// Params is parameters for this ManyLUTEvaluator.
+	// Params is the parameter set for this ManyLUTEvaluator.
 	Params ManyLUTParameters[T]
 
 	buf manyLUTEvaluatorBuffer[T]
@@ -35,14 +35,14 @@ type manyLUTEvaluatorBuffer[T tfhe.TorusInt] struct {
 	ctRotate tfhe.GLWECiphertext[T]
 	// ctExtract is the extracted LWE ciphertext after Blind Rotation.
 	ctExtract tfhe.LWECiphertext[T]
-	// ctKeySwitch is the LWEDimension sized ciphertext from keyswitching for bootstrapping.
+	// ctKeySwitch is the LWEDimension-sized ciphertext from keyswitching for bootstrapping.
 	ctKeySwitch tfhe.LWECiphertext[T]
 
 	// lut is an empty lut, used for BlindRotateFunc.
 	lut tfhe.LookUpTable[T]
 }
 
-// NewManyLUTEvaluator creates a new ManyLUTEvaluator.
+// NewManyLUTEvaluator creates a new [ManyLUTEvaluator].
 func NewManyLUTEvaluator[T tfhe.TorusInt](params ManyLUTParameters[T], evk tfhe.EvaluationKey[T]) *ManyLUTEvaluator[T] {
 	return &ManyLUTEvaluator[T]{
 		Evaluator: tfhe.NewEvaluator(params.baseParams, evk),
@@ -53,7 +53,7 @@ func NewManyLUTEvaluator[T tfhe.TorusInt](params ManyLUTParameters[T], evk tfhe.
 	}
 }
 
-// newManyLUTEvaluatorBuffer creates a new manyLUTEvaluatorBuffer.
+// newManyLUTEvaluatorBuffer creates a new [manyLUTEvaluatorBuffer].
 func newManyLUTEvaluatorBuffer[T tfhe.TorusInt](params ManyLUTParameters[T]) manyLUTEvaluatorBuffer[T] {
 	ctFFTAccDcmp := make([][]poly.FFTPoly, params.baseParams.GLWERank()+1)
 	for i := 0; i < params.baseParams.GLWERank()+1; i++ {

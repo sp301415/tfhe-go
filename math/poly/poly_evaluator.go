@@ -15,11 +15,12 @@ const (
 	MinRank = 1 << 4
 
 	// ShortLogBound is a maximum bound for the coefficients of "short" polynomials
-	// used in [*Evaluator.ShortFFTPolyMul] functions.
+	// used in [Evaluator.ShortFFTPolyMul] functions.
 	// Currently, this is set to 8 bits.
 	ShortLogBound = 8
 
-	// splitLogBound is denotes the maximum bits of N*B1^2*B2^2, where B1, B2 is the splitting bound of polynomial multiplication.
+	// splitLogBound denotes the maximum number of bits in N*B1^2*B2^2,
+	// where B1 and B2 are the splitting bounds for polynomial multiplication.
 	// Currently, this is set to 48, which gives failure rate less than 2^-284.
 	splitLogBound = 48
 )
@@ -34,25 +35,25 @@ const (
 // However, for operations that cannot, InPlace methods are implemented separately.
 //
 // Evaluator is not safe for concurrent use.
-// Use [*Evaluator.SafeCopy] to get a safe copy.
+// Use [Evaluator.SafeCopy] to get a safe copy.
 type Evaluator[T num.Integer] struct {
-	// rank is the rank of polynomial that this transformer can handle.
+	// rank is the polynomial rank that this transformer can handle.
 	rank int
-	// q is a float64 value of Q.
+	// q is the float64 value of Q.
 	q float64
 
-	// tw is the twiddle factors for fourier transform.
-	// This is stored as "long" form, so that access to the factors are contiguous.
+	// tw contains the twiddle factors for fourier transform.
+	// This is stored in "long" form, so that access to the factors is contiguous.
 	// Unlike other complex128 slices, tw is in natural representation.
 	tw []complex128
-	// twInv is the twiddle factors for inverse fourier transform.
-	// This is stored as "long" form, so that access to the factors are contiguous.
+	// twInv contains the twiddle factors for inverse fourier transform.
+	// This is stored in "long" form, so that access to the factors is contiguous.
 	// Unlike other complex128 slices, twInv is in natural representation.
 	twInv []complex128
-	// twMono is the twiddle factors for monomial fourier transform.
+	// twMono contains the twiddle factors for monomial fourier transform.
 	// Unlike other complex128 slices, twMono is in natural representation.
 	twMono []complex128
-	// twMonoIdx is the precomputed bit-reversed index for monomial fourier transform.
+	// twMonoIdx contains the precomputed bit-reversed indices for monomial fourier transform.
 	// Equivalent to BitReverse([-1, 3, 7, ..., 2N-3]).
 	twMonoIdx []int
 
@@ -66,18 +67,18 @@ type evaluatorBuffer[T num.Integer] struct {
 	// fpOut is an intermediate output fourier polynomial for InPlace operations.
 	fpOut FFTPoly
 
-	// fp is an FFT value of p.
+	// fp is the FFT value of p.
 	fp FFTPoly
-	// fpInv is an InvFFT value of fp.
+	// fpInv is the InvFFT value of fp.
 	fpInv FFTPoly
 
-	// pSplit is the split value of p0 in [*Evaluator.ShortFFTPolyMul].
+	// pSplit is the split value of p0 in [Evaluator.ShortFFTPolyMul].
 	pSplit Poly[T]
-	// fpSplit is the fourier transformed pSplit in [*Evaluator.ShortFFTPolyMul].
+	// fpSplit is the fourier transformed pSplit in [Evaluator.ShortFFTPolyMul].
 	fpSplit []FFTPoly
 }
 
-// NewEvaluator creates a new Evaluator with rank N.
+// NewEvaluator creates a new [Evaluator].
 //
 // Panics when N is not a power of two, or when N is smaller than [MinRank].
 func NewEvaluator[T num.Integer](N int) *Evaluator[T] {
@@ -150,21 +151,21 @@ func genTwiddleFactors(N int) (tw, twInv []complex128) {
 	return tw, twInv
 }
 
-// splitParameters generates splitBits and splitCount for [*Evaluator.MulPoly].
+// splitParameters generates splitBits and splitCount for [Evaluator.MulPoly].
 func splitParameters[T num.Integer](N int) (splitBits T, splitCount int) {
 	splitBits = T(splitLogBound-num.Log2(N)) / 4
 	splitCount = int(math.Ceil(float64(num.SizeT[T]()) / float64(splitBits)))
 	return
 }
 
-// splitParamsShort generates splitBits and splitCount for [*Evaluator.ShortFFTPolyMulPoly].
+// splitParamsShort generates splitBits and splitCount for [Evaluator.ShortFFTPolyMulPoly].
 func splitParamsShort[T num.Integer](N int) (splitBits T, splitCount int) {
 	splitBits = T(splitLogBound-2*ShortLogBound-num.Log2(N)) / 2
 	splitCount = int(math.Ceil(float64(num.SizeT[T]()) / float64(splitBits)))
 	return
 }
 
-// newEvaluatorBuffer creates a new evaluatorBuffer.
+// newEvaluatorBuffer creates a new [evaluatorBuffer].
 func newEvaluatorBuffer[T num.Integer](N int) evaluatorBuffer[T] {
 	_, splitCount := splitParamsShort[T](N)
 

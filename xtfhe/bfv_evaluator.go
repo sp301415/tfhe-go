@@ -9,7 +9,7 @@ import (
 // BFVEvaluator evaluates BFV-type operations on GLWE ciphertexts.
 //
 // BFVEvaluator is not safe for concurrent use.
-// Use [*BFVEvaluator.SafeCopy] to get a safe copy.
+// Use [BFVEvaluator.SafeCopy] to get a safe copy.
 type BFVEvaluator[T tfhe.TorusInt] struct {
 	// Evaluator is a base evaluator for this BFVEvaluator.
 	// Note that it does not hold evaluation keys, so bootstrapping is not supported.
@@ -17,10 +17,10 @@ type BFVEvaluator[T tfhe.TorusInt] struct {
 	// PolyEvaluator is a PolyEvaluator for this BFVEvaluator.
 	PolyEvaluator *poly.Evaluator[T]
 
-	// Params is parameters for this BFVEvaluator.
+	// Params is the parameter set for this BFVEvaluator.
 	Params tfhe.Parameters[T]
 
-	// EvalKey is the keyswitching keys for this BFVEvaluator.
+	// EvalKey contains the keyswitching keys for this BFVEvaluator.
 	EvalKey BFVEvaluationKey[T]
 
 	buf bfvEvaluatorBuffer[T]
@@ -40,7 +40,7 @@ type bfvEvaluatorBuffer[T tfhe.TorusInt] struct {
 	ctPack tfhe.GLWECiphertext[T]
 }
 
-// NewBFVEvaluator creates a new BFVEvaluator.
+// NewBFVEvaluator creates a new [BFVEvaluator].
 func NewBFVEvaluator[T tfhe.TorusInt](params tfhe.Parameters[T], evk BFVEvaluationKey[T]) *BFVEvaluator[T] {
 	return &BFVEvaluator[T]{
 		Evaluator:     tfhe.NewEvaluator(params, tfhe.EvaluationKey[T]{}),
@@ -51,7 +51,7 @@ func NewBFVEvaluator[T tfhe.TorusInt](params tfhe.Parameters[T], evk BFVEvaluati
 	}
 }
 
-// newBFVEvaluatorBuffer creates a new BFVEvaluatorBuffer.
+// newBFVEvaluatorBuffer creates a new [bfvEvaluatorBuffer].
 func newBFVEvaluatorBuffer[T tfhe.TorusInt](params tfhe.Parameters[T]) bfvEvaluatorBuffer[T] {
 	tensorRank := params.GLWERank() * (params.GLWERank() + 3) / 2
 	return bfvEvaluatorBuffer[T]{
@@ -145,7 +145,7 @@ func (e *BFVEvaluator[T]) MulTo(ctOut, ct0, ct1 tfhe.GLWECiphertext[T]) {
 
 // Permute returns ctOut = ct(x^d), using BFV automorphism.
 //
-// Panics if BFVEvaluator does not have galois key for d.
+// Panics if BFVEvaluator does not have a Galois key for d.
 func (e *BFVEvaluator[T]) Permute(ct tfhe.GLWECiphertext[T], d int) tfhe.GLWECiphertext[T] {
 	ctOut := tfhe.NewGLWECiphertext(e.Params)
 	e.PermuteTo(ctOut, ct, d)
@@ -154,20 +154,20 @@ func (e *BFVEvaluator[T]) Permute(ct tfhe.GLWECiphertext[T], d int) tfhe.GLWECip
 
 // PermuteTo assigns ctOut = ct(x^d), using BFV automorphism.
 //
-// Panics if BFVEvaluator does not have galois key for d.
+// Panics if BFVEvaluator does not have a Galois key for d.
 func (e *BFVEvaluator[T]) PermuteTo(ctOut, ct tfhe.GLWECiphertext[T], d int) {
 	e.Evaluator.PermuteGLWETo(e.buf.ctPermute, ct, d)
 	e.Evaluator.KeySwitchGLWETo(ctOut, e.buf.ctPermute, e.EvalKey.GaloisKeys[d])
 }
 
-// Pack packs a LWE ciphertext to GLWE ciphertext.
+// Pack packs an LWE ciphertext to GLWE ciphertext.
 func (e *BFVEvaluator[T]) Pack(ct tfhe.LWECiphertext[T]) tfhe.GLWECiphertext[T] {
 	ctOut := tfhe.NewGLWECiphertext(e.Params)
 	e.PackTo(ctOut, ct)
 	return ctOut
 }
 
-// PackTo packs a LWE ciphertext to GLWE ciphertext.
+// PackTo packs an LWE ciphertext to GLWE ciphertext.
 func (e *BFVEvaluator[T]) PackTo(ctOut tfhe.GLWECiphertext[T], ct tfhe.LWECiphertext[T]) {
 	ctOut.Value[0].Clear()
 	ctOut.Value[0].Coeffs[0] = ct.Value[0]

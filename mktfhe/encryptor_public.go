@@ -4,22 +4,21 @@ import (
 	"github.com/sp301415/tfhe-go/tfhe"
 )
 
-// Encryptor is a multi-key variant of [tfhe.PublicEncryptor].
+// PublicEncryptor is a multi-key variant of [tfhe.PublicEncryptor].
 type PublicEncryptor[T tfhe.TorusInt] struct {
 	// Encoder is an embedded Encoder for this PublicEncryptor.
 	*tfhe.Encoder[T]
-	// GLWETansformer is an embedded GLWETransformer for this PublicEncryptor.
+	// GLWETransformer is an embedded GLWETransformer for this PublicEncryptor.
 	*GLWETransformer[T]
 	// SubEncryptor is a single-key PublicEncryptor for this PublicEncryptor.
 	SubEncryptor *tfhe.PublicEncryptor[T]
 
-	// Params is parameters for this PublicEncryptor.
+	// Params is the parameter set for this PublicEncryptor.
 	Params Parameters[T]
 	// Index is the index of the party.
 	Index int
 
 	// PublicKey is the public key for this PublicEncryptor.
-	// This is shared with SingleKeyPublicEncryptor.
 	PublicKey tfhe.PublicKey[T]
 
 	buf publicEncryptorBuffer[T]
@@ -38,7 +37,7 @@ type publicEncryptorBuffer[T tfhe.TorusInt] struct {
 	ctSubGLWE tfhe.GLWECiphertext[T]
 }
 
-// NewPublicEncryptor creates a new PublicEncryptor.
+// NewPublicEncryptor creates a new [PublicEncryptor].
 func NewPublicEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, publicKey tfhe.PublicKey[T]) *PublicEncryptor[T] {
 	if idx > params.partyCount {
 		panic("index larger than PartyCount")
@@ -58,7 +57,7 @@ func NewPublicEncryptor[T tfhe.TorusInt](params Parameters[T], idx int, publicKe
 	}
 }
 
-// newPublicEncryptorBuffer creates a new publicEncryptorBuffer.
+// newPublicEncryptorBuffer creates a new [publicEncryptorBuffer].
 func newPublicEncryptorBuffer[T tfhe.TorusInt](params Parameters[T]) publicEncryptorBuffer[T] {
 	return publicEncryptorBuffer[T]{
 		ptGLWE: tfhe.NewGLWEPlaintext(params.subParams),
@@ -157,7 +156,7 @@ func (e *PublicEncryptor[T]) EncryptFFTGLWE(messages []int) FFTGLWECiphertext[T]
 	return e.EncryptFFTGLWEPlaintext(e.EncodeGLWE(messages))
 }
 
-// EncryptFFTGLWETo encrypts and encrypts integer messages to FFTGLWE ciphertext and writes it to ctOut.
+// EncryptFFTGLWETo encodes and encrypts integer messages to FFTGLWE ciphertext and writes it to ctOut.
 func (e *PublicEncryptor[T]) EncryptFFTGLWETo(ctOut FFTGLWECiphertext[T], messages []int) {
 	e.EncryptFFTGLWEPlaintextTo(ctOut, e.EncodeGLWE(messages))
 }

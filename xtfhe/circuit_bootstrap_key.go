@@ -8,7 +8,7 @@ type CircuitBootstrapKey[T tfhe.TorusInt] struct {
 	// It has length GLWERank,
 	// with i-th element being an FFTGGSWCiphertext of i-th secret key.
 	SchemeSwitchKey []tfhe.FFTGGSWCiphertext[T]
-	// TraceKeys is a map of galois keys used for LWE to GLWE packing.
+	// TraceKeys is a map of Galois keys used for LWE to GLWE packing.
 	TraceKeys map[int]tfhe.GLWEKeySwitchKey[T]
 }
 
@@ -17,14 +17,14 @@ type CircuitBootstrapKeyGenerator[T tfhe.TorusInt] struct {
 	// BFVKeyGenerator is a BFVKeyGenerator for this CircuitBootstrapKeyGenerator.
 	*BFVKeyGenerator[T]
 
-	// Params is parameters for this CircuitBootstrapKeyGenerator.
+	// Params is the parameter set for this CircuitBootstrapKeyGenerator.
 	Params CircuitBootstrapParameters[T]
 }
 
-// NewCircuitBootstrapKeyGenerator creates a new CircuitBootstrapKeyGenerator.
+// NewCircuitBootstrapKeyGenerator creates a new [CircuitBootstrapKeyGenerator].
 func NewCircuitBootstrapKeyGenerator[T tfhe.TorusInt](params CircuitBootstrapParameters[T], sk tfhe.SecretKey[T]) *CircuitBootstrapKeyGenerator[T] {
 	return &CircuitBootstrapKeyGenerator[T]{
-		BFVKeyGenerator: NewBFVKeyGenerator(params.Params(), sk),
+		BFVKeyGenerator: NewBFVKeyGenerator(params.BaseParams(), sk),
 		Params:          params,
 	}
 }
@@ -40,8 +40,8 @@ func (kg *CircuitBootstrapKeyGenerator[T]) SafeCopy() *CircuitBootstrapKeyGenera
 
 // GenCircuitBootstrapKey generates a key for Circuit Bootstrapping.
 func (kg *CircuitBootstrapKeyGenerator[T]) GenCircuitBootstrapKey() CircuitBootstrapKey[T] {
-	schemeSwitchKey := make([]tfhe.FFTGGSWCiphertext[T], kg.Params.Params().GLWERank())
-	for i := 0; i < kg.Params.Params().GLWERank(); i++ {
+	schemeSwitchKey := make([]tfhe.FFTGGSWCiphertext[T], kg.Params.BaseParams().GLWERank())
+	for i := 0; i < kg.Params.BaseParams().GLWERank(); i++ {
 		schemeSwitchKey[i] = kg.Encryptor.EncryptFFTGGSWPoly(kg.Encryptor.SecretKey.GLWEKey.Value[i], kg.Params.schemeSwitchParameters)
 	}
 

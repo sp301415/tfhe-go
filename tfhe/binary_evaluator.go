@@ -9,11 +9,11 @@ import (
 // This is meant to be public, usually for servers.
 //
 // BinaryEvaluator is not safe for concurrent use.
-// Use [*BinaryEvaluator.SafeCopy] to get a safe copy.
+// Use [BinaryEvaluator.SafeCopy] to get a safe copy.
 type BinaryEvaluator[T TorusInt] struct {
 	// BinaryEncoder is an embedded encoder for this BinaryEvaluator.
 	*BinaryEncoder[T]
-	// Params is parameters for this BinaryEvaluator.
+	// Params is the parameter set for this BinaryEvaluator.
 	Params Parameters[T]
 	// Evaluator is a generic Evaluator for this BinaryEvaluator.
 	Evaluator *Evaluator[T]
@@ -21,7 +21,7 @@ type BinaryEvaluator[T TorusInt] struct {
 	signLUT LookUpTable[T]
 }
 
-// NewBinaryEvaluator creates a new BinaryEvaluator based on parameters.
+// NewBinaryEvaluator creates a new [BinaryEvaluator].
 // This does not copy evaluation keys, since they are large.
 func NewBinaryEvaluator[T TorusInt](params Parameters[T], evk EvaluationKey[T]) *BinaryEvaluator[T] {
 	signLUT := NewLUT(params)

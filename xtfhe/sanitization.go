@@ -10,12 +10,12 @@ import (
 // For more details, see https://eprint.iacr.org/2025/216.
 //
 // Sanitizer is not safe for concurrent use.
-// Use [*Sanitizer.SafeCopy] to get a safe copy.
+// Use [Sanitizer.SafeCopy] to get a safe copy.
 type Sanitizer[T tfhe.TorusInt] struct {
 	// Evaluator is an embedded Evaluator for this Sanitizer.
 	*tfhe.Evaluator[T]
 
-	// Params is parameters for this Sanitizer.
+	// Params is the parameter set for this Sanitizer.
 	Params SanitizationParameters[T]
 
 	// PublicKey is the public key for this Sanitizer.
@@ -45,14 +45,14 @@ type sanitizerBuffer[T tfhe.TorusInt] struct {
 	ctReRand tfhe.LWECiphertext[T]
 	// ctRotate is a blind rotated GLWE ciphertext for bootstrapping.
 	ctRotate tfhe.GLWECiphertext[T]
-	// ctKeySwitch is a LWEDimension sized ciphertext from keyswitching for bootstrapping.
+	// ctKeySwitch is an LWEDimension-sized ciphertext from keyswitching for bootstrapping.
 	ctKeySwitch tfhe.LWECiphertext[T]
 
 	// lut is an empty lut, used for BlindRotateFunc.
 	lut tfhe.LookUpTable[T]
 }
 
-// NewSanitizer creates a new Sanitizer.
+// NewSanitizer creates a new [Sanitizer].
 func NewSanitizer[T tfhe.TorusInt](params SanitizationParameters[T], pk tfhe.PublicKey[T], evk tfhe.EvaluationKey[T]) *Sanitizer[T] {
 	return &Sanitizer[T]{
 		Evaluator: tfhe.NewEvaluator(params.baseParams, evk),
@@ -72,7 +72,7 @@ func NewSanitizer[T tfhe.TorusInt](params SanitizationParameters[T], pk tfhe.Pub
 	}
 }
 
-// newSanitizerBuffer creates a new sanitizerBuffer.
+// newSanitizerBuffer creates a new [sanitizerBuffer].
 func newSanitizerBuffer[T tfhe.TorusInt](params SanitizationParameters[T]) sanitizerBuffer[T] {
 	return sanitizerBuffer[T]{
 		pGaussian: poly.NewPoly[T](params.baseParams.PolyRank()),
@@ -108,7 +108,7 @@ func (s *Sanitizer[T]) SafeCopy() *Sanitizer[T] {
 	}
 }
 
-// ReRandGLWE rerandomizes the mask of the given GLWE ciphertext to uniform.
+// ReRandGLWETo rerandomizes the mask of the given GLWE ciphertext to uniform.
 func (s *Sanitizer[T]) ReRandGLWETo(ctOut, ct tfhe.GLWECiphertext[T]) {
 	ctOut.CopyFrom(ct)
 
@@ -123,7 +123,7 @@ func (s *Sanitizer[T]) ReRandGLWETo(ctOut, ct tfhe.GLWECiphertext[T]) {
 	s.AddGLWETo(ctOut, ctOut, s.buf.ctRandGLWE)
 }
 
-// ReRandGLWE rerandomizes the mask of the given LWE ciphertext to uniform.
+// ReRandLWETo rerandomizes the mask of the given LWE ciphertext to uniform.
 // Input and output ciphertexts should be of length GLWEDimension + 1.
 func (s *Sanitizer[T]) ReRandLWETo(ctOut, ct tfhe.LWECiphertext[T]) {
 	ctOut.CopyFrom(ct)
@@ -140,26 +140,26 @@ func (s *Sanitizer[T]) ReRandLWETo(ctOut, ct tfhe.LWECiphertext[T]) {
 	ctOut.Value[0] += s.RoundedGaussianSampler.Sample(s.Params.RandTauQ())
 }
 
-// SanitizeFunc returns a sanitized and bootstrapped LWE ciphertext with respect to given function.
+// SanitizeFunc returns a sanitized and bootstrapped LWE ciphertext with respect to the given function.
 func (s *Sanitizer[T]) SanitizeFunc(ct tfhe.LWECiphertext[T], f func(int) int) tfhe.LWECiphertext[T] {
 	s.GenLUTTo(s.buf.lut, f)
 	return s.SanitizeLUT(ct, s.buf.lut)
 }
 
-// SanitizeFuncTo sanitizes and bootstraps LWE ciphertext with respect to given function and writes it to ctOut.
+// SanitizeFuncTo sanitizes and bootstraps LWE ciphertext with respect to the given function and writes it to ctOut.
 func (s *Sanitizer[T]) SanitizeFuncTo(ctOut, ct tfhe.LWECiphertext[T], f func(int) int) {
 	s.GenLUTTo(s.buf.lut, f)
 	s.SanitizeLUTTo(ctOut, ct, s.buf.lut)
 }
 
-// SanitizeLUT returns a sanitized and bootstrapped LWE ciphertext with respect to given LUT.
+// SanitizeLUT returns a sanitized and bootstrapped LWE ciphertext with respect to the given LUT.
 func (s *Sanitizer[T]) SanitizeLUT(ct tfhe.LWECiphertext[T], lut tfhe.LookUpTable[T]) tfhe.LWECiphertext[T] {
 	ctOut := tfhe.NewLWECiphertext(s.Params.baseParams)
 	s.SanitizeLUTTo(ctOut, ct, lut)
 	return ctOut
 }
 
-// SanitizeLUTTo sanitizes and bootstraps LWE ciphertext with respect to given LUT and writes it to ctOut.
+// SanitizeLUTTo sanitizes and bootstraps LWE ciphertext with respect to the given LUT and writes it to ctOut.
 func (s *Sanitizer[T]) SanitizeLUTTo(ctOut, ct tfhe.LWECiphertext[T], lut tfhe.LookUpTable[T]) {
 	s.ReRandLWETo(s.buf.ctReRand, ct)
 	reRandBody := s.buf.ctReRand.Value[0]
