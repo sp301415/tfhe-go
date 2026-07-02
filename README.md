@@ -2,7 +2,6 @@
 <p align="center">Go implementation of (MK)TFHE scheme</p>
 <p align="center">
   <a href="https://pkg.go.dev/github.com/sp301415/tfhe-go"><img src="https://pkg.go.dev/badge/github.com/sp301415/tfhe-go.svg"/></a>
-  <a href="https://goreportcard.com/report/github.com/sp301415/tfhe-go"><img src="https://goreportcard.com/badge/github.com/sp301415/tfhe-go"/></a>
   <img src="https://github.com/sp301415/tfhe-go/actions/workflows/ci.yml/badge.svg"/></a>
 </p>
 <p align="center"><img src="LOGO.png" width="300"/></p>
