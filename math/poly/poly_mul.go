@@ -157,7 +157,7 @@ func (e *Evaluator[T]) MulSubPolyTo(pOut, p0, p1 Poly[T]) {
 		fp0 := e.FwdFFT(p0)
 		fp1 := e.FwdFFT(p1)
 		e.MulFFTPolyTo(fp0, fp0, fp1)
-		e.InvFFTAddToUnsafe(pOut, fp0)
+		e.InvFFTSubToUnsafe(pOut, fp0)
 		return
 	}
 

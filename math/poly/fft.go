@@ -32,7 +32,7 @@ func (e *Evaluator[T]) FwdFFTSubTo(fpOut FFTPoly, p Poly[T]) {
 
 	foldPolyTo(e.buf.fp.Coeffs, p.Coeffs)
 	fwdFFTInPlace(e.buf.fp.Coeffs, e.tw)
-	subCmplxTo(fpOut.Coeffs, e.buf.fp.Coeffs, fpOut.Coeffs)
+	subCmplxTo(fpOut.Coeffs, fpOut.Coeffs, e.buf.fp.Coeffs)
 }
 
 // MonomialFwdFFT returns FFT(X^d).

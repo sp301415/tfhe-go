@@ -194,19 +194,26 @@ func cmplxMulCmplxTo(vOut, v []float64, c complex128) {
 	rOut := unsafe.Pointer(&vOut[:1][0])
 	r := unsafe.Pointer(&v[:1][0])
 
+	var vOutR, vOutI float64
 	for i := 0; i < len(vOut); i += 8 {
 		wOut := (*[8]float64)(unsafe.Add(rOut, uintptr(i)*L))
 		w := (*[8]float64)(unsafe.Add(r, uintptr(i)*L))
 
-		wOut[0] = w[0]*cR - w[4]*cI
-		wOut[1] = w[1]*cR - w[5]*cI
-		wOut[2] = w[2]*cR - w[6]*cI
-		wOut[3] = w[3]*cR - w[7]*cI
+		vOutR = w[0]*cR - w[4]*cI
+		vOutI = w[0]*cI + w[4]*cR
+		wOut[0], wOut[4] = vOutR, vOutI
 
-		wOut[4] = w[0]*cI + w[4]*cR
-		wOut[5] = w[1]*cI + w[5]*cR
-		wOut[6] = w[2]*cI + w[6]*cR
-		wOut[7] = w[3]*cI + w[7]*cR
+		vOutR = w[1]*cR - w[5]*cI
+		vOutI = w[1]*cI + w[5]*cR
+		wOut[1], wOut[5] = vOutR, vOutI
+
+		vOutR = w[2]*cR - w[6]*cI
+		vOutI = w[2]*cI + w[6]*cR
+		wOut[2], wOut[6] = vOutR, vOutI
+
+		vOutR = w[3]*cR - w[7]*cI
+		vOutI = w[3]*cI + w[7]*cR
+		wOut[3], wOut[7] = vOutR, vOutI
 	}
 }
 
@@ -224,19 +231,26 @@ func cmplxMulAddCmplxTo(vOut, v []float64, c complex128) {
 	rOut := unsafe.Pointer(&vOut[:1][0])
 	r := unsafe.Pointer(&v[:1][0])
 
+	var vOutR, vOutI float64
 	for i := 0; i < len(vOut); i += 8 {
 		wOut := (*[8]float64)(unsafe.Add(rOut, uintptr(i)*L))
 		w := (*[8]float64)(unsafe.Add(r, uintptr(i)*L))
 
-		wOut[0] += w[0]*cR - w[4]*cI
-		wOut[1] += w[1]*cR - w[5]*cI
-		wOut[2] += w[2]*cR - w[6]*cI
-		wOut[3] += w[3]*cR - w[7]*cI
+		vOutR = wOut[0] + (w[0]*cR - w[4]*cI)
+		vOutI = wOut[4] + (w[0]*cI + w[4]*cR)
+		wOut[0], wOut[4] = vOutR, vOutI
 
-		wOut[4] += w[0]*cI + w[4]*cR
-		wOut[5] += w[1]*cI + w[5]*cR
-		wOut[6] += w[2]*cI + w[6]*cR
-		wOut[7] += w[3]*cI + w[7]*cR
+		vOutR = wOut[1] + (w[1]*cR - w[5]*cI)
+		vOutI = wOut[5] + (w[1]*cI + w[5]*cR)
+		wOut[1], wOut[5] = vOutR, vOutI
+
+		vOutR = wOut[2] + (w[2]*cR - w[6]*cI)
+		vOutI = wOut[6] + (w[2]*cI + w[6]*cR)
+		wOut[2], wOut[6] = vOutR, vOutI
+
+		vOutR = wOut[3] + (w[3]*cR - w[7]*cI)
+		vOutI = wOut[7] + (w[3]*cI + w[7]*cR)
+		wOut[3], wOut[7] = vOutR, vOutI
 	}
 }
 
@@ -254,19 +268,26 @@ func cmplxMulSubCmplxTo(vOut, v []float64, c complex128) {
 	rOut := unsafe.Pointer(&vOut[:1][0])
 	r := unsafe.Pointer(&v[:1][0])
 
+	var vOutR, vOutI float64
 	for i := 0; i < len(vOut); i += 8 {
 		wOut := (*[8]float64)(unsafe.Add(rOut, uintptr(i)*L))
 		w := (*[8]float64)(unsafe.Add(r, uintptr(i)*L))
 
-		wOut[0] -= w[0]*cR - w[4]*cI
-		wOut[1] -= w[1]*cR - w[5]*cI
-		wOut[2] -= w[2]*cR - w[6]*cI
-		wOut[3] -= w[3]*cR - w[7]*cI
+		vOutR = wOut[0] - (w[0]*cR - w[4]*cI)
+		vOutI = wOut[4] - (w[0]*cI + w[4]*cR)
+		wOut[0], wOut[4] = vOutR, vOutI
 
-		wOut[4] -= w[0]*cI + w[4]*cR
-		wOut[5] -= w[1]*cI + w[5]*cR
-		wOut[6] -= w[2]*cI + w[6]*cR
-		wOut[7] -= w[3]*cI + w[7]*cR
+		vOutR = wOut[1] - (w[1]*cR - w[5]*cI)
+		vOutI = wOut[5] - (w[1]*cI + w[5]*cR)
+		wOut[1], wOut[5] = vOutR, vOutI
+
+		vOutR = wOut[2] - (w[2]*cR - w[6]*cI)
+		vOutI = wOut[6] - (w[2]*cI + w[6]*cR)
+		wOut[2], wOut[6] = vOutR, vOutI
+
+		vOutR = wOut[3] - (w[3]*cR - w[7]*cI)
+		vOutI = wOut[7] - (w[3]*cI + w[7]*cR)
+		wOut[3], wOut[7] = vOutR, vOutI
 	}
 }
 
