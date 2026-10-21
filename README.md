@@ -181,14 +181,13 @@ To cite TFHE-go, please use the following BibTeX entry:
 ```tex
 @misc{TFHE-go,
   title={{TFHE-go}},
-  author={Intak Hwang},
+  author={Intak Hwang, Seonhong Min},
   year={2023},
   howpublished = {Online: \url{https://github.com/sp301415/tfhe-go}},
 }
 ```
 
 ## Acknowledgements
-Special thanks to Seonhong Min([@snu-lukemin](https://github.com/snu-lukemin)) for providing many helpful insights.
 TFHE-go logo is designed by [@mlgng2010](https://www.instagram.com/mlgng2010/), based on the Go Gopher by [Renee French](https://reneefrench.blogspot.com).
 
 ## References
